@@ -1,473 +1,1494 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>العيادة التخصصية لطب وجراحة الفم والأسنان - د. علي النقيب</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- استدعاء مكتبات Firebase السحابية -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Cairo', sans-serif; }
-        @media print {
-            body * { visibility: hidden; }
-            #printableArea, #printableArea * { visibility: visible; }
-            #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
-            .no-print { display: none; }
-        }
-        .tooth-btn {
-            width: 28px;
-            height: 32px;
-            font-size: 10px;
-            font-weight: bold;
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .tooth-btn.selected {
-            background-color: #1d4ed8;
-            color: white;
-            border-color: #1e40af;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>العيادة التخصصية لطب وجراحة الفم والأسنان - د. علي النقيب</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Cairo', sans-serif; }
+  @media print {
+    body * { visibility: hidden; }
+    #printableArea, #printableArea * { visibility: visible; }
+    #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+    .no-print { display: none !important; }
+  }
+  .clinic-logo svg, .clinic-logo img { width: 100%; height: 100%; display: block; }
+  .dental-arch { width: 100%; height: auto; display: block; overflow: visible; }
+  .tooth { cursor: pointer; }
+  .tooth .crown { fill: url(#toothGrad); stroke: #94a3b8; stroke-width: 0.9; transition: all .18s ease; }
+  .tooth .shine { fill: #fff; opacity: .55; pointer-events: none; }
+  .tooth .num { font-family: 'Cairo', sans-serif; font-size: 7.5px; font-weight: 800; fill: #475569; pointer-events: none; text-anchor: middle; }
+  .tooth:hover .crown { fill: url(#toothGradHover); stroke: #6366f1; }
+  .tooth.selected .crown { fill: url(#toothGradSel); stroke: #1e3a8a; stroke-width: 1.3; }
+  .tooth.selected .shine { opacity: .25; }
+  .tooth.selected .num { fill: #fff; }
+  .gum { fill: url(#gumGrad); opacity: .9; }
+  .ai-glow { background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #06b6d4 100%); background-size: 200% 200%; animation: aiglow 3s ease infinite; }
+  @keyframes aiglow { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  .ai-typing::after { content: '...'; animation: dots 1.4s infinite; }
+  @keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
+  .ai-result-box { animation: fadeSlide .4s ease; }
+  @keyframes fadeSlide { from{opacity:0; transform: translateY(8px);} to{opacity:1; transform: translateY(0);} }
+  #lightbox img { max-width: 100%; max-height: 100%; }
+  .canvas-container { position: relative; display: inline-block; cursor: crosshair; }
+  .canvas-container canvas { position: absolute; top: 0; left: 0; }
+  .ref-table { font-size: 10px; width: 100%; border-collapse: collapse; }
+  .ref-table th { background: #1e3a8a; color: #fff; padding: 4px 6px; font-weight: 700; }
+  .ref-table td { padding: 3px 6px; border-bottom: 1px solid #e5e7eb; }
+  .ref-table tr:nth-child(even) { background: #f8fafc; }
+  .ref-table .ok { color: #059669; font-weight: 700; }
+  .ref-table .warn { color: #d97706; font-weight: 700; }
+  .ref-table .bad { color: #dc2626; font-weight: 700; }
+</style>
 </head>
 <body class="bg-gray-50 text-gray-800 p-2">
 
-    <!-- شاشة تسجيل الدخول (حماية النظام للطبيب والموظفين) -->
-    <div id="loginOverlay" class="fixed inset-0 bg-blue-950 flex items-center justify-center z-50 p-4">
-        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4 border border-blue-100">
-            <div class="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-blue-200 mb-2">🦷</div>
-            <h2 class="text-lg font-bold text-blue-900">تسجيل دخول النظام</h2>
-            <p class="text-xs text-gray-600">الرجاء إدخال كلمة المرور الخاصة بالطبيب أو الموظف المعتمد للوصول للعيادة</p>
-            <input type="password" id="loginPassword" placeholder="كلمة المرور..." class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-blue-700 transition">دخول النظام</button>
-            <p id="loginError" class="text-xs text-red-600 hidden font-semibold">كلمة المرور غير صحيحة!</p>
-        </div>
+<!-- شاشة تسجيل الدخول -->
+<div id="loginOverlay" class="fixed inset-0 bg-blue-950 flex items-center justify-center z-50 p-4">
+  <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4 border border-blue-100">
+    <div class="w-20 h-20 mx-auto mb-2 clinic-logo rounded-2xl overflow-hidden shadow-lg shadow-blue-200"></div>
+    <h2 class="text-lg font-bold text-blue-900">تسجيل دخول النظام</h2>
+    <p class="text-xs text-gray-600">الرجاء إدخال كلمة المرور الخاصة بالطبيب أو الموظف المعتمد</p>
+    <input type="password" id="loginPassword" placeholder="كلمة المرور..." class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
+    <button onclick="checkPassword()" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-blue-700 transition">دخول النظام</button>
+    <p id="loginError" class="text-xs text-red-600 hidden font-semibold">كلمة المرور غير صحيحة!</p>
+  </div>
+</div>
+
+<div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col p-4 rounded-xl border border-gray-100">
+
+  <!-- رأس العيادة -->
+  <header class="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 shadow-xl border border-blue-800">
+    <div class="absolute -top-14 -left-14 w-40 h-40 bg-cyan-400/20 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-16 -right-12 w-48 h-48 bg-indigo-400/20 rounded-full blur-3xl"></div>
+    <div class="relative p-5 text-center">
+      <div class="relative w-20 h-20 mx-auto mb-3">
+        <div class="clinic-logo w-20 h-20 rounded-2xl overflow-hidden ring-2 ring-white/25 shadow-lg shadow-blue-900/60 bg-white/5"></div>
+        <button type="button" onclick="document.getElementById('logoInput').click()" title="تغيير الشعار"
+          class="absolute -bottom-1.5 -left-1.5 w-7 h-7 bg-white text-blue-800 rounded-full text-[11px] shadow-md flex items-center justify-center hover:bg-blue-50 transition no-print">✎</button>
+        <input type="file" id="logoInput" accept="image/*" class="hidden">
+      </div>
+      <h1 class="text-[16px] leading-snug font-extrabold tracking-wide drop-shadow-sm">العيادة التخصصية لطب وجراحة الفم والأسنان</h1>
+      <div class="flex items-center justify-center gap-2 my-2.5">
+        <span class="h-px w-10 bg-gradient-to-l from-transparent to-cyan-300/80"></span>
+        <span class="text-cyan-300 text-[10px]">✦</span>
+        <span class="text-cyan-300 text-xs">🦷</span>
+        <span class="text-cyan-300 text-[10px]">✦</span>
+        <span class="h-px w-10 bg-gradient-to-r from-transparent to-cyan-300/80"></span>
+      </div>
+      <p class="text-[15px] font-bold tracking-wide">د. علي النقيب</p>
+      <p class="text-[10px] font-bold text-cyan-300 tracking-[0.25em] mt-0.5">NAQClinixAI</p>
+      <div class="mt-3.5 pt-3 border-t border-white/15 text-[11px] text-blue-100 space-y-1">
+        <p class="flex items-center justify-center gap-1.5"><span>📍</span> أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p>
+        <p class="flex items-center justify-center gap-1.5" dir="ltr"><span>📞</span> 777700412 &nbsp;•&nbsp; 771816548</p>
+      </div>
+      <button onclick="openAISettings()" class="mt-3 text-[10px] bg-white/10 hover:bg-white/20 text-cyan-200 px-3 py-1 rounded-full border border-white/20 transition no-print">
+        ⚙️ إعدادات الذكاء الاصطناعي
+      </button>
     </div>
+  </header>
 
-    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col p-4 rounded-xl border border-gray-100">
-        
-        <!-- رأس العيادة مع الشعار البارز -->
-        <header class="bg-gradient-to-br from-blue-900 to-indigo-900 text-white p-4 text-center rounded-xl mb-4 shadow-md">
-            <div class="w-12 h-12 bg-white/10 rounded-xl mx-auto flex items-center justify-center text-2xl mb-2 backdrop-blur-sm border border-white/20">🦷</div>
-            <h1 class="text-base font-extrabold tracking-wide">العيادة التخصصية لطب وجراحة الفم والأسنان</h1>
-            <p class="text-sm font-bold text-blue-200 mt-0.5">د. علي النقيب — NAQClinixAI</p>
-            <div class="mt-2 pt-2 border-t border-white/10 text-[11px] text-blue-100 space-y-0.5">
-                <p>العنوان: أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p>
-                <p>هاتف: 777700412 - 771816548</p>
+  <main class="flex-1 space-y-4 no-print">
+
+    <!-- 1. المرضى -->
+    <section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2">
+      <h2 class="font-bold text-blue-900 text-sm flex items-center gap-1"><span>👤</span> المرضى - مريض جديد</h2>
+      <div class="grid grid-cols-2 gap-2">
+        <div><label class="text-[10px] text-gray-600 block">رقم الملف (تلقائي):</label>
+          <input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+        <div><label class="text-[10px] text-gray-600 block">تاريخ التسجيل:</label>
+          <input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+      </div>
+      <input type="text" id="patientName" placeholder="الاسم كامل (الرباعي)" class="w-full p-2 border rounded-lg text-sm bg-white">
+      <div class="grid grid-cols-3 gap-2">
+        <select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white">
+          <option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option>
+        </select>
+        <input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm bg-white">
+        <input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="tel" id="patientPhone" placeholder="الهاتف" class="w-full p-2 border rounded-lg text-sm bg-white">
+        <input type="tel" id="whatsappPhone" placeholder="الواتساب" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="text" id="patientAllergies" placeholder="الحساسية (أدوية/بنج)" class="w-full p-2 border rounded-lg text-sm bg-white">
+        <input type="text" id="chronicDiseases" placeholder="الأمراض المزمنة" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <select id="smokingHabit" class="w-full p-2 border rounded-lg text-sm bg-white">
+          <option value="">التدخين</option><option value="لا يدخن">لا يدخن</option>
+          <option value="مدخن خفيف">مدخن خفيف</option><option value="مدخن">مدخن</option>
+        </select>
+        <select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white">
+          <option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option>
+          <option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- 2. نوع العمل + مخطط الأسنان -->
+    <section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+      <h2 class="font-bold text-indigo-900 mb-2 text-sm flex items-center gap-1"><span>🦷</span> نوع العمل وعدد الأسنان</h2>
+      <select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
+        <option value="">اختر نوع العمل الطبي...</option>
+        <option value="تشخيص عام">تشخيص عام وتقييم</option>
+        <option value="تجميل وتناغم وجه">تجميل وتناغم وجه (فينير/ابتسامة)</option>
+        <option value="حشوات تجميلية">حشوات تجميلية (كومبوزيت)</option>
+        <option value="علاج عصب">علاج/سحب عصب (Root Canal)</option>
+        <option value="تلبيسات وتركيبات">تلبيسات وتركيبات (تاج/جسر)</option>
+        <option value="جراحة وخلع">جراحة وخلع (بما فيها ضرس العقل)</option>
+        <option value="تنظيف اللثة">تنظيف وتلميع اللثة (Scaling)</option>
+        <option value="علاج لثة متقدم">علاج لثة متقدم (جراحة لثة)</option>
+        <option value="زراعة الأسنان">زراعة الأسنان (Implant)</option>
+        <option value="تقويم الأسنان">تقويم الأسنان (Orthodontics)</option>
+        <option value="طب أسنان الأطفال">طب أسنان الأطفال (Pediatric)</option>
+        <option value="أخرى">أخرى</option>
+      </select>
+      <input type="number" id="teethCount" placeholder="عدد الأسنان المستهدفة" class="w-full p-2 border rounded-lg text-sm bg-white mb-2">
+      <div class="bg-gradient-to-b from-slate-50 to-white p-3 rounded-xl border border-indigo-200 mt-2 shadow-sm">
+        <p class="text-[11px] text-gray-600 mb-1 text-center font-bold">🦷 الفك العلوي</p>
+        <svg id="upperArchSvg" class="dental-arch" viewBox="0 0 400 88" preserveAspectRatio="xMidYMid meet"></svg>
+        <p class="text-[11px] text-gray-600 mb-1 mt-2 text-center font-bold">🦷 الفك السفلي</p>
+        <svg id="lowerArchSvg" class="dental-arch" viewBox="0 40 400 88" preserveAspectRatio="xMidYMid meet"></svg>
+        <p class="text-center text-xs text-blue-700 mt-3 font-bold bg-blue-50 py-1.5 rounded-lg" id="selectedTeethDisplay">الأسنان المحددة: لا يوجد</p>
+      </div>
+    </section>
+
+    <!-- 3. التشخيص والخطط -->
+    <section class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+      <h2 class="font-bold text-gray-800 text-sm">التشخيص والخطط والبدائل</h2>
+      <textarea id="complaint" placeholder="الشكوى الرئيسية والفحص السريري..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+      <textarea id="treatmentPlan" placeholder="الخطة العلاجية الأساسية..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+      <textarea id="alternativePlan" placeholder="العلاج البديل المقترح..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+    </section>
+
+    <!-- 4. AI التشخيص -->
+    <section class="relative overflow-hidden rounded-2xl border-2 border-purple-300 shadow-lg">
+      <div class="ai-glow p-3 text-white">
+        <div class="flex items-center justify-between">
+          <h2 class="font-extrabold text-sm flex items-center gap-2"><span class="text-lg">🤖</span> المساعد الذكي لطب الأسنان</h2>
+          <span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span>
+        </div>
+        <p class="text-[10px] opacity-90 mt-1">توليد تشخيص دقيق، خطة علاجية، وبدائل علاجية</p>
+      </div>
+      <div class="bg-white p-3 space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="generateAIDiagnosis()" id="btnAIDiag"
+            class="col-span-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg shadow-purple-200 hover:from-purple-700 hover:to-indigo-700 transition flex items-center justify-center gap-2">
+            <span class="text-base">✨</span> توليد التشخيص والخطة العلاجية
+          </button>
+          <button onclick="clearAIResults()" class="bg-gray-100 text-gray-700 p-2 rounded-xl text-[11px] font-bold hover:bg-gray-200 transition">مسح النتائج</button>
+          <button onclick="applyAIToForm()" class="bg-emerald-100 text-emerald-800 p-2 rounded-xl text-[11px] font-bold hover:bg-emerald-200 transition">تطبيق على النموذج</button>
+        </div>
+        <div id="aiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-purple-50 text-purple-700 font-bold"></div>
+        <div id="aiResults" class="hidden space-y-3"></div>
+        <details class="bg-slate-50 rounded-lg border border-slate-200 p-2">
+          <summary class="text-[11px] font-bold text-slate-700 cursor-pointer">➕ ملاحظات سريرية إضافية</summary>
+          <div class="mt-2 space-y-2">
+            <div class="grid grid-cols-2 gap-2 text-[10px]">
+              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border cursor-pointer"><input type="checkbox" id="sym_pain" class="accent-purple-600"> ألم حاد/نابض</label>
+              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border cursor-pointer"><input type="checkbox" id="sym_swelling" class="accent-purple-600"> تورم/خراج</label>
+              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border cursor-pointer"><input type="checkbox" id="sym_bleeding" class="accent-purple-600"> نزيف لثة</label>
+              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border cursor-pointer"><input type="checkbox" id="sym_mobility" class="accent-purple-600"> حركة سن</label>
+              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border cursor-pointer"><input type="checkbox" id="sym_sensitivity" class="accent-purple-600"> حساسية حرارية</label>
+              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border cursor-pointer"><input type="checkbox" id="sym_badBreath" class="accent-purple-600"> رائحة فم</label>
+              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border cursor-pointer"><input type="checkbox" id="sym_bruxism" class="accent-purple-600"> صرير أسنان</label>
+              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border cursor-pointer"><input type="checkbox" id="sym_trauma" class="accent-purple-600"> رض/كسر</label>
             </div>
-        </header>
+            <input type="text" id="aiExtraNotes" placeholder="ملاحظات إضافية..." class="w-full p-2 border rounded-lg text-[11px] bg-white">
+          </div>
+        </details>
+      </div>
+    </section>
 
-        <!-- نموذج الإدخال الرئيسي -->
-        <main class="flex-1 space-y-4 no-print">
-            
-            <!-- 1. المرضى (مريض جديد برقم ملف وتاريخ تسجيل تلقائي) -->
-            <section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2">
-                <h2 class="font-bold text-blue-900 text-sm flex items-center gap-1"><span>👤</span> المرضى - مريض جديد</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="text-[10px] text-gray-600 block">رقم الملف (تلقائي):</label>
-                        <input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900">
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-gray-600 block">تاريخ التسجيل:</label>
-                        <input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900">
-                    </div>
-                </div>
-                <input type="text" id="patientName" placeholder="الاسم كامل (الرباعي)" class="w-full p-2 border rounded-lg text-sm bg-white">
-                <div class="grid grid-cols-3 gap-2">
-                    <select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white">
-                        <option value="">الجنس</option>
-                        <option value="ذكر">ذكر</option>
-                        <option value="أنثى">أنثى</option>
-                    </select>
-                    <input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    <input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm bg-white">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="tel" id="patientPhone" placeholder="الهاتف" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    <input type="tel" id="whatsappPhone" placeholder="الواتساب" class="w-full p-2 border rounded-lg text-sm bg-white">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="patientAllergies" placeholder="الحساسية (أدوية/بنج)" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    <input type="text" id="chronicDiseases" placeholder="الأمراض المزمنة" class="w-full p-2 border rounded-lg text-sm bg-white">
-                </div>
-            </section>
-
-            <!-- 2. المواعيد -->
-            <section class="bg-purple-50 p-3 rounded-xl border border-purple-100 space-y-2">
-                <h2 class="font-bold text-purple-900 text-sm flex items-center gap-1"><span>📅</span> المواعيد</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="appFileNumber" placeholder="رقم الملف" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    <input type="date" id="appointmentDate" class="w-full p-2 border rounded-lg text-sm bg-white">
-                </div>
-                <input type="text" id="appPatientName" placeholder="اسم المريض للموعد" class="w-full p-2 border rounded-lg text-sm bg-white">
-            </section>
-
-            <!-- نوع العمل وعدد الأسنان ونموذج التفاعل -->
-            <section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
-                <h2 class="font-bold text-indigo-900 mb-2 text-sm flex items-center gap-1"><span>🦷</span> نوع العمل وعدد الأسنان</h2>
-                <select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
-                    <option value="">اختر نوع العمل الطبي...</option>
-                    <option value="تجميل وتناغم وجه">تجميل وتناغم وجه (Cosmetic & Facial Harmony)</option>
-                    <option value="حشوات تجميلية">حشوات تجميلية (Composite Restoration)</option>
-                    <option value="علاج عصب">علاج عصب (Root Canal Treatment)</option>
-                    <option value="تلبيسات وتركيبات">تلبيسات وتركيبات (Crowns & Bridges)</option>
-                    <option value="جراحة وخلع">جراحة وخلع (Oral Surgery & Extraction)</option>
-                    <option value="تنظيف اللثة">تنظيف وتلميع اللثة (Scaling & Polishing)</option>
-                    <option value="أخرى">أخرى</option>
-                </select>
-                <input type="number" id="teethCount" placeholder="عدد الأسنان المستهدفة" class="w-full p-2 border rounded-lg text-sm bg-white mb-2">
-                
-                <!-- نموذج الأسنان التفاعلي الفك العلوي والسفلي -->
-                <div class="bg-white p-3 rounded-xl border border-indigo-200 mt-2 shadow-sm">
-                    <p class="text-[11px] text-gray-600 mb-1 text-center font-bold">🦷 الفك العلوي</p>
-                    <div id="upperArch" class="flex flex-wrap justify-center gap-1 mb-3"></div>
-                    <p class="text-[11px] text-gray-600 mb-1 text-center font-bold">🦷 الفك السفلي</p>
-                    <div id="lowerArch" class="flex flex-wrap justify-center gap-1"></div>
-                    <p class="text-center text-xs text-blue-700 mt-3 font-bold bg-blue-50 py-1.5 rounded-lg" id="selectedTeethDisplay">الأسنان المحددة: لا يوجد</p>
-                </div>
-            </section>
-
-            <!-- التشخيص والخطط العلاجية -->
-            <section class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
-                <h2 class="font-bold text-gray-800 text-sm">التشخيص والخطط والبدائل</h2>
-                <textarea id="complaint" placeholder="الشكوى الرئيسية والفحص السريري..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-                <textarea id="treatmentPlan" placeholder="الخطة العلاجية الأساسية..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-                <textarea id="alternativePlan" placeholder="العلاج البديل المقترح..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-            </section>
-
-            <!-- الحسابات المالية والدفعات -->
-            <section class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2">
-                <h2 class="font-bold text-green-900 text-sm">الحسابات المالية والدفعات</h2>
-                <div>
-                    <label class="text-xs text-gray-600">المبلغ الكلي:</label>
-                    <input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white">
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <div>
-                        <label class="text-[11px] text-gray-600">الدفعة 1:</label>
-                        <input type="number" id="payment1" oninput="calculateFinancials()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    </div>
-                    <div>
-                        <label class="text-[11px] text-gray-600">الدفعة 2:</label>
-                        <input type="number" id="payment2" oninput="calculateFinancials()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    </div>
-                    <div>
-                        <label class="text-[11px] text-gray-600">الدفعة 3:</label>
-                        <input type="number" id="payment3" oninput="calculateFinancials()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    </div>
-                </div>
-                <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center shadow-sm">
-                    <span class="text-xs font-bold text-gray-700">المبلغ المتبقي:</span>
-                    <span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span>
-                </div>
-            </section>
-
-            <!-- 3. الإيرادات اليوميه حسب الدفع -->
-            <section class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2">
-                <h2 class="font-bold text-emerald-900 text-sm">الإيرادات اليوميه حسب الدفع</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="number" id="revenueAmount" placeholder="المبلغ المدفوع" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    <select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm bg-white">
-                        <option value="">حالة الدفع...</option>
-                        <option value="مدفوع كامل">مدفوع كامل</option>
-                        <option value="جزئي">جزئي</option>
-                        <option value="غير مدفوع">غير مدفوع</option>
-                        <option value="ملغي">ملغي</option>
-                    </select>
-                </div>
-                <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center shadow-sm">
-                    <span class="text-xs font-bold text-gray-700">إجمالي الإيرادات:</span>
-                    <span id="totalRevenueDisplay" class="text-sm font-bold text-emerald-700">0 ريال</span>
-                </div>
-            </section>
-
-            <!-- 4. المصروفات -->
-            <section class="bg-red-50 p-3 rounded-xl border border-red-100 space-y-2">
-                <h2 class="font-bold text-red-900 text-sm">المصروفات</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="المبلغ" class="w-full p-2 border rounded-lg text-sm bg-white">
-                    <input type="text" id="expenseType" placeholder="نوع المصروف" class="w-full p-2 border rounded-lg text-sm bg-white">
-                </div>
-                <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center shadow-sm">
-                    <span class="text-xs font-bold text-gray-700">إجمالي المصروفات:</span>
-                    <span id="totalExpensesDisplay" class="text-sm font-bold text-red-700">0 ريال</span>
-                </div>
-            </section>
-
-            <!-- 5. اجمالي صافي الايرادات -->
-            <section class="bg-cyan-50 p-3 rounded-xl border border-cyan-200 shadow-sm">
-                <div class="flex justify-between items-center">
-                    <h2 class="font-bold text-cyan-900 text-sm">إجمالي صافي الايرادات:</h2>
-                    <span id="netRevenueDisplay" class="text-base font-extrabold text-cyan-900">0 ريال</span>
-                </div>
-            </section>
-
-            <!-- صور الأسنان والأشعة -->
-            <section class="bg-yellow-50 p-3 rounded-xl border border-yellow-100">
-                <h2 class="font-bold text-yellow-900 mb-2 text-sm">صور الأسنان والأشعة</h2>
-                <input type="file" id="patientPhoto" accept="image/*" capture="environment" class="w-full p-2 border rounded-lg text-xs bg-white mb-2">
-                <div id="imagePreviewContainer" class="flex flex-wrap gap-2"></div>
-            </section>
-
-            <!-- أزرار الإجراءات -->
-            <div class="flex gap-2 pt-2">
-                <button onclick="savePatientRecord()" class="flex-1 bg-blue-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition">حفظ بالسحابة</button>
-                <button onclick="printReport()" class="flex-1 bg-gray-700 text-white p-3 rounded-xl text-sm font-bold shadow hover:bg-gray-800 transition">طباعة التقرير</button>
-                <button onclick="printInvoice()" class="flex-1 bg-green-600 text-white p-3 rounded-xl text-sm font-bold shadow hover:bg-green-700 transition">طباعة الفاتورة</button>
-            </div>
-        </main>
-
-        <!-- منطقة الطباعة المخصصة بالشعار والعنوان -->
-        <div id="printableArea" class="hidden p-6 bg-white text-right space-y-4">
-            <div class="text-center border-b-2 border-blue-900 pb-3 mb-4">
-                <h2 class="font-extrabold text-xl text-blue-900">العيادة التخصصية لطب وجراحة الفم والأسنان</h2>
-                <p class="text-sm font-bold text-blue-700 mt-1">د. علي النقيب — NAQClinixAI</p>
-                <p class="text-xs text-gray-500 mt-1">أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم | هاتف: 777700412 - 771816548</p>
-            </div>
-            <div id="printBodyContent" class="text-sm space-y-3"></div>
+    <!-- 5. تحليل الصور بالذكاء الاصطناعي (مطور) -->
+    <section class="relative rounded-2xl border-2 border-cyan-300 shadow-lg bg-white overflow-hidden">
+      <div class="bg-gradient-to-r from-cyan-600 to-blue-600 p-3 text-white">
+        <h2 class="font-extrabold text-sm flex items-center gap-2"><span class="text-lg">🔬</span> تحليل الصور والأشعة بالذكاء الاصطناعي</h2>
+        <p class="text-[10px] opacity-90 mt-1">تحليل حقيقي + رسم النتائج على الصور + جداول تناسبات وقيم مرجعية</p>
+      </div>
+      <div class="p-3 space-y-3">
+        <!-- اختيار نوع التحليل -->
+        <div class="grid grid-cols-2 gap-2">
+          <select id="analysisFocus" class="col-span-2 p-2 border rounded-lg text-xs bg-white">
+            <option value="تحليل شامل">تحليل شامل (لثة + عظم + أسنان + ابتسامة)</option>
+            <option value="تحليل اللثة">تحليل اللثة (Gum Analysis)</option>
+            <option value="تحليل العظم">تحليل العظم (Bone Assessment)</option>
+            <option value="تحليل التسوس">كشف التسوس والحشوات</option>
+            <option value="تحليل التركيبات">تقييم التلبيسات والتركيبات</option>
+            <option value="تحليل الزراعة">تقييم الزراعة (Implant Site)</option>
+            <option value="تحليل التقويم">تحليل التقويم (Cephalometric/Ortho)</option>
+            <option value="أشعة بانورامية">تفسير أشعة بانورامية (OPG)</option>
+            <option value="أشعة بريابيكال">تفسير أشعة بريابيكال (Periapical)</option>
+            <option value="تحليل الابتسامة">تحليل الابتسامة والتناسبات</option>
+          </select>
         </div>
 
-        <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">
-            نظام إدارة العيادة السحابي الآمن © 2026
-        </footer>
+        <!-- أزرار التحليل -->
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="analyzeImagesWithAI()" id="btnAIImg"
+            class="col-span-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg shadow-cyan-200 hover:from-cyan-700 hover:to-blue-700 transition flex items-center justify-center gap-2">
+            <span class="text-base">🧠</span> تحليل الصور المرفوعة بالذكاء الاصطناعي
+          </button>
+          <button onclick="toggleAnnotations()" class="bg-slate-100 text-slate-700 p-2 rounded-xl text-[11px] font-bold hover:bg-slate-200 transition">👁️ إظهار/إخفاء الرسم</button>
+          <button onclick="exportAnnotatedImage()" class="bg-indigo-100 text-indigo-800 p-2 rounded-xl text-[11px] font-bold hover:bg-indigo-200 transition">💾 حفظ الصورة المرسومة</button>
+        </div>
+
+        <div id="imgAiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-cyan-50 text-cyan-700 font-bold"></div>
+
+        <!-- منطقة عرض الصور مع الرسم -->
+        <div id="annotatedImagesArea" class="hidden space-y-3"></div>
+
+        <!-- نتائج التحليل النصية -->
+        <div id="imgAiResults" class="hidden space-y-3"></div>
+
+        <!-- جداول التناسبات والقيم المرجعية -->
+        <div id="proportionTables" class="hidden space-y-3"></div>
+
+        <p class="text-[10px] text-gray-500 text-center leading-relaxed bg-gray-50 p-2 rounded-lg">
+          💡 المحرك المدمج يعمل دائماً • Gemini Vision يحلل الصور فعلياً عند إدخال مفتاح API
+        </p>
+      </div>
+    </section>
+
+    <!-- 6. الحسابات المالية -->
+    <section class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2">
+      <h2 class="font-bold text-green-900 text-sm">الحسابات المالية والدفعات</h2>
+      <div><label class="text-xs text-gray-600">المبلغ الكلي:</label>
+        <input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white"></div>
+      <div class="grid grid-cols-3 gap-2">
+        <div><label class="text-[11px] text-gray-600">الدفعة 1:</label><input type="number" id="payment1" oninput="calculateFinancials()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white"></div>
+        <div><label class="text-[11px] text-gray-600">الدفعة 2:</label><input type="number" id="payment2" oninput="calculateFinancials()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white"></div>
+        <div><label class="text-[11px] text-gray-600">الدفعة 3:</label><input type="number" id="payment3" oninput="calculateFinancials()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white"></div>
+      </div>
+      <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center shadow-sm">
+        <span class="text-xs font-bold text-gray-700">المبلغ المتبقي:</span>
+        <span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span>
+      </div>
+    </section>
+
+    <!-- 7. الإيرادات والمصروفات -->
+    <section class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2">
+      <h2 class="font-bold text-emerald-900 text-sm">الإيرادات اليوميه</h2>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="number" id="revenueAmount" placeholder="المبلغ المدفوع" class="w-full p-2 border rounded-lg text-sm bg-white">
+        <select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm bg-white">
+          <option value="">حالة الدفع...</option><option value="مدفوع كامل">مدفوع كامل</option>
+          <option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option><option value="ملغي">ملغي</option>
+        </select>
+      </div>
+      <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center shadow-sm">
+        <span class="text-xs font-bold text-gray-700">إجمالي الإيرادات:</span>
+        <span id="totalRevenueDisplay" class="text-sm font-bold text-emerald-700">0 ريال</span>
+      </div>
+    </section>
+    <section class="bg-red-50 p-3 rounded-xl border border-red-100 space-y-2">
+      <h2 class="font-bold text-red-900 text-sm">المصروفات</h2>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="المبلغ" class="w-full p-2 border rounded-lg text-sm bg-white">
+        <input type="text" id="expenseType" placeholder="نوع المصروف" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center shadow-sm">
+        <span class="text-xs font-bold text-gray-700">إجمالي المصروفات:</span>
+        <span id="totalExpensesDisplay" class="text-sm font-bold text-red-700">0 ريال</span>
+      </div>
+    </section>
+    <section class="bg-cyan-50 p-3 rounded-xl border border-cyan-200 shadow-sm">
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-cyan-900 text-sm">إجمالي صافي الايرادات:</h2>
+        <span id="netRevenueDisplay" class="text-base font-extrabold text-cyan-900">0 ريال</span>
+      </div>
+    </section>
+
+    <!-- 8. صور المريض والأشعة -->
+    <section class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold text-amber-900 text-sm flex items-center gap-1"><span>📸</span> صور المريض والأشعة</h2>
+        <span id="imageCounter" class="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">0 صورة</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <label class="flex items-center justify-center gap-1.5 bg-emerald-600 text-white p-2.5 rounded-xl text-xs font-bold shadow cursor-pointer hover:bg-emerald-700 transition">
+          <span class="text-base">📷</span> صورة سريرية
+          <input type="file" id="clinicalPhotoInput" accept="image/*" multiple class="hidden">
+        </label>
+        <label class="flex items-center justify-center gap-1.5 bg-indigo-600 text-white p-2.5 rounded-xl text-xs font-bold shadow cursor-pointer hover:bg-indigo-700 transition">
+          <span class="text-base">🩻</span> صورة أشعة
+          <input type="file" id="xrayInput" accept="image/*" multiple class="hidden">
+        </label>
+      </div>
+      <div id="imagePreviewContainer" class="grid grid-cols-3 gap-2"></div>
+    </section>
+
+    <!-- أزرار الإجراءات -->
+    <div class="flex gap-2 pt-2">
+      <button id="saveBtn" onclick="savePatientRecord()" class="flex-1 bg-blue-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition disabled:opacity-60">حفظ بالسحابة</button>
+      <button onclick="printReport()" class="flex-1 bg-gray-700 text-white p-3 rounded-xl text-sm font-bold shadow hover:bg-gray-800 transition">طباعة التقرير</button>
+      <button onclick="printInvoice()" class="flex-1 bg-green-600 text-white p-3 rounded-xl text-sm font-bold shadow hover:bg-green-700 transition">طباعة الفاتورة</button>
     </div>
+  </main>
 
-    <script>
-        // إعدادات Firebase الخاصة بمشروعك الحقيقي
-        const firebaseConfig = {
-            apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
-            authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
-            projectId: "naqclinixai-dental-clinic",
-            storageBucket: "naqclinixai-dental-clinic.firebasestorage.app",
-            messagingSenderId: "796796158387",
-            appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
-        };
+  <!-- منطقة الطباعة -->
+  <div id="printableArea" class="hidden p-6 bg-white text-right space-y-4">
+    <div class="text-center border-b-2 border-blue-900 pb-3 mb-4">
+      <div class="clinic-logo w-16 h-16 mx-auto mb-2"></div>
+      <h2 class="font-extrabold text-xl text-blue-900">العيادة التخصصية لطب وجراحة الفم والأسنان</h2>
+      <p class="text-sm font-bold text-blue-700 mt-1">د. علي النقيب — NAQClinixAI</p>
+      <p class="text-xs text-gray-500 mt-1">أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم | هاتف: 777700412 - 771816548</p>
+    </div>
+    <div id="printBodyContent" class="text-sm space-y-3"></div>
+  </div>
 
-        // تهيئة Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+  <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">نظام إدارة العيادة السحابي الآمن © 2026</footer>
+</div>
 
-        // كلمة المرور الخاصة بك
-        const CLINIC_PASSWORD = "naqeeb2026";
+<!-- نافذة إعدادات الذكاء الاصطناعي -->
+<div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print">
+  <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold text-purple-900 text-base flex items-center gap-2"><span>🤖</span> إعدادات الذكاء الاصطناعي</h3>
+      <button onclick="closeAISettings()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+    </div>
+    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-800 leading-relaxed">
+      <p class="font-bold mb-1">📌 كيف يعمل؟</p>
+      <p><strong>المحرك المدمج:</strong> يعمل دائماً بدون إنترنت — معرفة طبية شاملة مدمجة + جداول تناسبات.</p>
+      <p class="mt-1"><strong>Google Gemini Vision:</strong> تحليل حقيقي للصور + رسم النتائج على الصور + إرجاع إحداثيات Bounding Box.</p>
+      <p class="mt-1">احصل على مفتاح مجاني من <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-bold">Google AI Studio</a>.</p>
+    </div>
+    <div>
+      <label class="text-xs font-bold text-gray-700 block mb-1">🔑 مفتاح Gemini API:</label>
+      <input type="password" id="geminiApiKey" placeholder="AIza..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-600">
+    </div>
+    <div>
+      <label class="text-xs font-bold text-gray-700 block mb-1">🧠 محرك الذكاء الاصطناعي:</label>
+      <select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+        <option value="builtin">المحرك المدمج (بدون إنترنت)</option>
+        <option value="gemini">Gemini Vision (يتطلب مفتاح)</option>
+        <option value="auto">تلقائي (Gemini إن توفر)</option>
+      </select>
+    </div>
+    <div class="flex gap-2 pt-2">
+      <button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold hover:bg-purple-700 transition">حفظ</button>
+      <button onclick="testAIConnection()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition">اختبار</button>
+    </div>
+    <p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p>
+  </div>
+</div>
 
-        function checkPassword() {
-            const inputPass = document.getElementById('loginPassword').value;
-            if (inputPass === CLINIC_PASSWORD) {
-                document.getElementById('loginOverlay').style.display = 'none';
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
+<!-- Lightbox -->
+<div id="lightbox" class="fixed inset-0 bg-black/90 z-[60] hidden items-center justify-center p-4 no-print" onclick="closeLightbox()">
+  <img id="lightboxImg" class="max-w-full max-h-full rounded-xl shadow-2xl border-2 border-white/20">
+</div>
+
+<script>
+/* ================= Firebase ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
+  authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
+  projectId: "naqclinixai-dental-clinic",
+  storageBucket: "naqclinixai-dental-clinic.firebasestorage.app",
+  messagingSenderId: "796796158387",
+  appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let storage = null;
+try { storage = firebase.storage(); } catch (e) { console.warn("Storage غير متاح"); }
+
+const CLINIC_PASSWORD = "naqeeb2026";
+
+function checkPassword() {
+  const v = document.getElementById('loginPassword').value;
+  if (v === CLINIC_PASSWORD) document.getElementById('loginOverlay').style.display = 'none';
+  else document.getElementById('loginError').classList.remove('hidden');
+}
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
+
+/* ================= الشعار ================= */
+let logoUid = 0;
+function defaultLogoSVG() {
+  const uid = 'lg' + (++logoUid);
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="${uid}a" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="55%" stop-color="#2563eb"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient>
+      <linearGradient id="${uid}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbeafe"/></linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="24" fill="url(#${uid}a)"/>
+    <circle cx="50" cy="50" r="34" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+    <path d="M50 20 C 37 20, 27 27, 27 41 C 27 52, 31 61, 34 72 C 36 80, 38.5 87, 41.5 87 C 44.5 87, 44.5 77, 45.5 71 C 46.4 65.5, 48 61, 50 61 C 52 61, 53.6 65.5, 54.5 71 C 55.5 77, 55.5 87, 58.5 87 C 61.5 87, 64 80, 66 72 C 69 61, 73 52, 73 41 C 73 27, 63 20, 50 20 Z" fill="url(#${uid}b)"/>
+    <path d="M50 28 C 42 28, 36 32, 34.5 38" stroke="#93c5fd" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+function renderLogos() {
+  const c = localStorage.getItem('clinicLogo');
+  const html = c ? `<img src="${c}" alt="شعار">` : defaultLogoSVG();
+  document.querySelectorAll('.clinic-logo').forEach(el => { el.innerHTML = html; });
+}
+document.getElementById('logoInput').addEventListener('change', async function (e) {
+  const file = e.target.files[0]; if (!file) return;
+  try { const d = await compressImage(file, 400, 0.92); localStorage.setItem('clinicLogo', d); renderLogos(); } catch (err) {}
+  e.target.value = '';
+});
+
+/* ================= ضغط الصور ================= */
+function compressImage(file, maxDim = 900, quality = 0.62) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) { height = Math.round(height * maxDim / width); width = maxDim; }
+        else if (height > maxDim) { width = Math.round(width * maxDim / height); height = maxDim; }
+        const c = document.createElement('canvas');
+        c.width = width; c.height = height;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(c.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject; img.src = ev.target.result;
+    };
+    reader.onerror = reject; reader.readAsDataURL(file);
+  });
+}
+
+/* ================= مخطط الأسنان ================= */
+let selectedTeeth = [];
+const TOOTH_SHAPES = {
+  central: 'M 3,3 C 7,-1 17,-1 21,3 L 22.5,7 C 22,18 22,26 21.5,33 C 19,39 16.5,41 12,41 C 7.5,41 5,39 2.5,33 C 2,26 2,18 1.5,7 Z',
+  lateral: 'M 5,4 C 8,0.5 16,0.5 19,4 L 21,8 C 20.5,18 20.5,26 20,32 C 17.5,38 15,40 12,40 C 9,40 6.5,38 4,32 C 3.5,26 3.5,18 3,8 Z',
+  canine: 'M 4,3 C 8,-0.5 16,-0.5 20,3 L 22,8 C 21,14 19,20 17,25 L 12,42 L 7,25 C 5,20 3,14 2,8 Z',
+  premolar: 'M 3,5 C 6,1 9,2 12,2.5 C 15,2 18,1 21,5 L 22.5,9 C 22,17 21,25 20,30 C 17.5,38 14.5,39.5 12,39.5 C 9.5,39.5 6.5,38 4,30 C 3,25 2,17 1.5,9 Z',
+  molar: 'M 1.5,6 C 4,2 7,2.5 9.5,3 C 11,2 13,2 14.5,3 C 17,2.5 20,2 22.5,6 L 24,10 C 23.5,18 22.5,25 21,29 C 18,38 15,39.5 12,39.5 C 9,39.5 6,38 3,29 C 1.5,25 0.5,18 0,10 Z'
+};
+const TOOTH_TYPES = {
+  18:'molar',17:'molar',16:'molar',15:'premolar',14:'premolar',13:'canine',12:'lateral',11:'central',
+  21:'central',22:'lateral',23:'canine',24:'premolar',25:'premolar',26:'molar',27:'molar',28:'molar',
+  48:'molar',47:'molar',46:'molar',45:'premolar',44:'premolar',43:'canine',42:'lateral',41:'central',
+  31:'central',32:'lateral',33:'canine',34:'premolar',35:'premolar',36:'molar',37:'molar',38:'molar'
+};
+const UPPER_POS = [
+  {t:18,x:6,y:16,s:0.80},{t:17,x:30,y:11,s:0.88},{t:16,x:54,y:8,s:0.95},{t:15,x:79,y:12,s:0.82},
+  {t:14,x:103,y:18,s:0.82},{t:13,x:127,y:25,s:0.90},{t:12,x:151,y:32,s:0.82},{t:11,x:176,y:38,s:1.00},
+  {t:21,x:200,y:38,s:1.00},{t:22,x:225,y:32,s:0.82},{t:23,x:249,y:25,s:0.90},{t:24,x:273,y:18,s:0.82},
+  {t:25,x:297,y:12,s:0.82},{t:26,x:322,y:8,s:0.95},{t:27,x:346,y:11,s:0.88},{t:28,x:370,y:16,s:0.80}
+];
+const LOWER_POS = [
+  {t:48,x:6,y:56,s:0.80},{t:47,x:30,y:51,s:0.88},{t:46,x:54,y:48,s:0.95},{t:45,x:79,y:52,s:0.82},
+  {t:44,x:103,y:58,s:0.82},{t:43,x:127,y:65,s:0.90},{t:42,x:151,y:72,s:0.82},{t:41,x:176,y:78,s:1.00},
+  {t:31,x:200,y:78,s:1.00},{t:32,x:225,y:72,s:0.82},{t:33,x:249,y:65,s:0.90},{t:34,x:273,y:58,s:0.82},
+  {t:35,x:297,y:52,s:0.82},{t:36,x:322,y:48,s:0.95},{t:37,x:346,y:51,s:0.88},{t:38,x:370,y:56,s:0.80}
+];
+function buildToothSVG(e, isLower) {
+  const shape = TOOTH_SHAPES[TOOTH_TYPES[e.t]];
+  const flip = isLower ? ' transform="translate(0, 41) scale(1,-1)"' : '';
+  const sx = e.s >= 0.95 ? 12 : 11;
+  return `<g class="tooth" data-tooth="${e.t}" transform="translate(${e.x},${e.y}) scale(${e.s})">
+    <path class="crown" d="${shape}"${flip}/>
+    <ellipse class="shine" cx="${sx}" cy="13" rx="3" ry="5"${flip ? ' transform="translate(0, 41) scale(1,-1)"' : ''}/>
+    <text class="num" x="12" y="24">${e.t}</text>
+  </g>`;
+}
+function renderDentalChart() {
+  const defs = `<defs>
+    <linearGradient id="toothGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="55%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>
+    <linearGradient id="toothGradHover" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#eef2ff"/><stop offset="100%" stop-color="#c7d2fe"/></linearGradient>
+    <linearGradient id="toothGradSel" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient>
+    <linearGradient id="gumGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fda4af"/><stop offset="100%" stop-color="#fb7185"/></linearGradient>
+  </defs>`;
+  document.getElementById('upperArchSvg').innerHTML = defs +
+    `<path class="gum" d="M 0,4 C 60,-2 140,-2 200,2 C 260,-2 340,-2 400,4 L 400,20 C 320,14 260,16 200,20 C 140,16 80,14 0,20 Z"/>` +
+    UPPER_POS.map(e => buildToothSVG(e, false)).join('');
+  document.getElementById('lowerArchSvg').innerHTML = defs +
+    `<path class="gum" d="M 0,96 C 80,92 140,90 200,94 C 260,90 320,92 400,96 L 400,110 C 320,106 260,108 200,112 C 140,108 80,106 0,110 Z"/>` +
+    LOWER_POS.map(e => buildToothSVG(e, true)).join('');
+  document.querySelectorAll('.tooth').forEach(g => g.addEventListener('click', () => toggleTooth(g)));
+}
+function toggleTooth(g) {
+  const num = parseInt(g.dataset.tooth, 10);
+  const i = selectedTeeth.indexOf(num);
+  if (i > -1) { selectedTeeth.splice(i, 1); g.classList.remove('selected'); }
+  else { selectedTeeth.push(num); g.classList.add('selected'); }
+  selectedTeeth.sort((a, b) => a - b);
+  document.getElementById('selectedTeethDisplay').textContent = 'الأسنان المحددة: ' + (selectedTeeth.length ? selectedTeeth.join(' • ') : 'لا يوجد');
+}
+
+/* ================= التواريخ ================= */
+const currentDate = new Date().toLocaleDateString('ar-YE');
+document.getElementById('registrationDateDisplay').value = currentDate;
+function generateFileNumber() { document.getElementById('fileNumber').value = 'DR-' + Date.now().toString().slice(-6); }
+
+/* ================= معرض الصور ================= */
+let clinicImages = [];
+let currentAnnotations = {}; // { imageId: [ {type, label, x, y, w, h, color} ] }
+
+function renderGallery() {
+  const c = document.getElementById('imagePreviewContainer');
+  document.getElementById('imageCounter').textContent = clinicImages.length + ' صورة';
+  if (!clinicImages.length) {
+    c.innerHTML = `<div class="col-span-3 text-center text-[11px] text-amber-700/60 py-4 border border-dashed border-amber-300 rounded-xl bg-white/50">لا توجد صور مرفوعة بعد</div>`;
+    return;
+  }
+  c.innerHTML = clinicImages.map((img, i) => `
+    <div class="relative rounded-xl overflow-hidden border border-amber-200 bg-white shadow-sm group">
+      <img src="${img.dataUrl}" onclick="openLightbox(${i})" class="w-full h-24 object-cover cursor-zoom-in transition group-hover:scale-105">
+      <span class="absolute top-1 right-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold text-white shadow ${img.type === 'أشعة' ? 'bg-indigo-600' : 'bg-emerald-600'}">${img.type}</span>
+      <button type="button" onclick="removeImage(${i})" class="absolute top-1 left-1 w-5 h-5 bg-red-600 hover:bg-red-700 text-white rounded-full text-[10px] flex items-center justify-center shadow">✕</button>
+    </div>`).join('');
+}
+function removeImage(i) { if (confirm('حذف هذه الصورة؟')) { clinicImages.splice(i, 1); renderGallery(); } }
+function openLightbox(i) {
+  const img = clinicImages[i]; if (!img) return;
+  document.getElementById('lightboxImg').src = img.dataUrl;
+  const lb = document.getElementById('lightbox'); lb.classList.remove('hidden'); lb.classList.add('flex');
+}
+function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.add('hidden'); lb.classList.remove('flex'); }
+
+async function handleImageFiles(files, type) {
+  const list = Array.from(files).slice(0, 10);
+  if (clinicImages.length + list.length > 12) { alert('الحد الأقصى 12 صورة.'); return; }
+  for (const f of list) {
+    try { const d = await compressImage(f); clinicImages.push({ id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), dataUrl: d, url: null, type, date: currentDate }); } catch (e) {}
+  }
+  renderGallery();
+}
+document.getElementById('clinicalPhotoInput').addEventListener('change', e => { handleImageFiles(e.target.files, 'سريرية'); e.target.value = ''; });
+document.getElementById('xrayInput').addEventListener('change', e => { handleImageFiles(e.target.files, 'أشعة'); e.target.value = ''; });
+
+/* ================= الحسابات ================= */
+function calculateFinancials() {
+  const t = parseFloat(document.getElementById('totalAmount').value) || 0;
+  const p1 = parseFloat(document.getElementById('payment1').value) || 0;
+  const p2 = parseFloat(document.getElementById('payment2').value) || 0;
+  const p3 = parseFloat(document.getElementById('payment3').value) || 0;
+  const rem = t - (p1 + p2 + p3);
+  document.getElementById('remainingDisplay').textContent = rem + ' ريال';
+  document.getElementById('revenueAmount').value = p1 + p2 + p3;
+  calculateNet();
+  return rem;
+}
+function calculateNet() {
+  const r = parseFloat(document.getElementById('revenueAmount').value) || 0;
+  const e = parseFloat(document.getElementById('expenseAmount').value) || 0;
+  document.getElementById('totalRevenueDisplay').textContent = r + ' ريال';
+  document.getElementById('totalExpensesDisplay').textContent = e + ' ريال';
+  document.getElementById('netRevenueDisplay').textContent = (r - e) + ' ريال';
+}
+document.getElementById('revenueAmount').addEventListener('input', calculateNet);
+
+/* ============================================================
+   🧠 محرك الذكاء الاصطناعي - قاعدة معرفة طب الأسنان
+   ============================================================ */
+const AI_KB = {
+  toothMeta: {
+    central: { name: 'قاطع مركزي', group: 'أمامية', risky: ['كسر', 'تسوس', 'تصبغ', 'دياستيما', 'رض'] },
+    lateral: { name: 'قاطع جانبي', group: 'أمامية', risky: ['تسوس', 'تشوه شكلي', 'فراغ'] },
+    canine: { name: 'ناب', group: 'أمامية', risky: ['تسوس', 'انحشار', 'تآكل'] },
+    premolar: { name: 'ضاحك', group: 'خلفية', risky: ['تسوس', 'كسر', 'حساسية', 'صرير'] },
+    molar: { name: 'ضرس', group: 'خلفية', risky: ['تسوس عميق', 'التهاب لب', 'خراج', 'صدع'] }
+  },
+  treatments: {
+    'تجميل وتناغم وجه': {
+      diag: 'عدم تناسق ابتسامة، تصبغات، أو فراغات أمامية تؤثر على التناغم الوجهي',
+      plan: ['تصوير وتحليل ابتسامة (DSD)', 'تنظيف وتلميع مبدئي', 'تبييض أسنان احترافي', 'فينير إيماكس/زيركون للأسنان الظاهرة', 'تعديل حدود اللثة إن لزم', 'متابعة بعد أسبوعين ثم شهر'],
+      alt: ['تجميل جزئي بحشوات كومبوزيت طبقات', 'تقويم شفاف لتصحيح التناسق', 'تاج زيركون كامل للأسنان المتضررة']
+    },
+    'حشوات تجميلية': {
+      diag: 'تسوس نشط يحتاج تنظيف وإعادة بناء الأنسجة المفقودة',
+      plan: ['تخدير موضعي', 'إزالة التسوس بالحفر الدقيق', 'عزل السن (Rubber Dam)', 'تطبيق بوندنغ + حشوة كومبوزيت طبقات', 'تشكيل وتلميع', 'متابعة 3 أشهر'],
+      alt: ['حشوة GIC للمناطق غير المعرضة للضغط', 'تاج جزئي Inlay/Onlay للتسوس الواسع', 'علاج عصب إن كان التسوس لبّياً']
+    },
+    'علاج عصب': {
+      diag: 'التهاب لب لا رجعي أو نخر لب، يُرجّح وجود ألم نابض أو خراج',
+      plan: ['تخدير موضعي', 'عزل بالـ Rubber Dam', 'فتح غرفة اللب وإزالة اللب المصاب', 'قياس أطوال القنوات (Apex Locator)', 'تنظيف وتشكيل القنوات (ProTaper)', 'غسل NaOCl + EDTA', 'حشو القنوات (Gutta Percha)', 'حشوة مؤقتة', 'تاج نهائي (زيركون/إيماكس) بعد أسبوع'],
+      alt: ['إعادة علاج عصب سابق إن فشل', 'قلع السن إن كان غير قابل للإنقاذ', 'زراعة مكانية لاحقاً']
+    },
+    'تلبيسات وتركيبات': {
+      diag: 'فقد بنيوي واسع، سن معالج لبّياً، أو انكسار يحتاج تغطية كاملة',
+      plan: ['تحضير السن مع حماية النسيج الحيوي', 'أخذ طبعة رقمية/سيليكون', 'تاج مؤقت', 'تصنيع التاج بالمختبر (زيركون/E-max)', 'تجربة التاج على النموذج', 'تثبيت نهائي بإسمنت راتنجي', 'ضبط العضة والمتابعة'],
+      alt: ['حشوة تركيبة Inlay/Onlay', 'استخراج ثم زراعة', 'جسر ثابت للأسنان المجاورة']
+    },
+    'جراحة وخلع': {
+      diag: 'سن غير قابل للإصلاح، ضرس عقل منحشر، أو تسوس واسع',
+      plan: ['تقييم أشعة (Panoramic/Periapical)', 'تخدير موضعي + إجراء جراحي مناسب', 'قلع بسيط أو جراحي', 'تنظيف الجيب واستخراج الأنسجة', 'خياطة عند الحاجة', 'وصف مضاد حيوي + مسكن', 'توصيات ما بعد الجراحة', 'متابعة بعد 7 أيام'],
+      alt: ['محاولة إنقاذ السن بحشوة/علاج عصب', 'زراعة فورية عند صلاحية العظم', 'ترقيع عظمي عند نقص الكثافة']
+    },
+    'تنظيف اللثة': {
+      diag: 'التهاب لثة بسيط إلى متوسط، جيري متراكم، نزيف عند التنظيف',
+      plan: ['تقييم مؤشر اللثة (GI) وعمق الجيوب', 'تنظيف بالموجات فوق الصوتية', 'إزالة الجير تحت اللثة (Scaling)', 'تلميع بالفرشاة الدوارة', 'غسول كلورهيكسيدين 0.12% لمدة أسبوعين', 'تعليم العناية المنزلية', 'متابعة بعد شهر'],
+      alt: ['تنظيف لثة متقدم مع كشط جذور (SRP)', 'جراحة رفع لثة إن كانت الجيوب >5مم', 'ليزر لإزالة الأنسجة الملتهبة']
+    },
+    'علاج لثة متقدم': {
+      diag: 'التهاب دواعم متقدم مع فقد عظمي، جيوب عميقة، حركة أسنان',
+      plan: ['أشعة بانورامية لتقييم فقد العظم', 'قياس عمق الجيوب بشكل مفصّل', 'كشط وتنعيم الجذور الكامل (Full Mouth SRP)', 'مضاد حيوي جهازي عند الحاجة', 'إعادة تقييم بعد 6 أسابيع', 'جراحة رفع لثة (Flap) إن لزم', 'ترقيع عظمي للتجاويف', 'برنامج صيانة كل 3 أشهر'],
+      alt: ['العلاج غير الجراحي فقط للحالات الخفيفة', 'ليزر علاج اللثة', 'قلع الأسنان ذات الإنذار الوخيم', 'زراعة مع ترقيع عظمي']
+    },
+    'زراعة الأسنان': {
+      diag: 'فقد سن/أسنان مع عظم كافٍ أو يحتاج ترقيع قبل الزراعة',
+      plan: ['أشعة CBCT لقياس كثافة العظم', 'تخطيط رقمي للزرعة', 'ترقيع عظمي إن لزم + فترة 4-6 أشهر', 'تركيب الزرعة (Straumann/Osstem)', 'فترة التحام 3-6 أشهر', 'تركيب Abutment والهيلينغ', 'تصنيع التاج النهائي على الزرعة', 'متابعة دورية'],
+      alt: ['جسر ثابت تقليدي (يحتاج تحضير الأسنان المجاورة)', 'طقم جزئي متحرك', 'بروتوكول الزراعة الفورية مع تحميل فوري']
+    },
+    'تقويم الأسنان': {
+      diag: 'سوء إطباق، تزاحم، فراغات، أو عضة معكوسة/مفتوحة',
+      plan: ['دراسة تشخيصية (أشعة، صور، نماذج)', 'تخطيط العلاج على النموذج الرقمي', 'تثبيت البراكيت المعدني/الشفاف', 'أسلاك متتالية كل 3-4 أسابيع', 'مطاطات межفكية عند الحاجة', 'إزالة التقويم بعد الوصول للهدف', 'مثبت ثابت Retainer + متحرك', 'متابعة كل 3 أشهر لأول سنة'],
+      alt: ['تقويم شفاف (Invisalign/Clear Aligner)', 'تقويم لغوي (Lingual)', 'جراحة تقويمية لتقويم الفك']
+    },
+    'طب أسنان الأطفال': {
+      diag: 'حالة أسنان لبنية/مختلطة، تسوس مبكر، أو مشكلة نمو',
+      plan: ['تهيئة نفسية للطفل (Tell-Show-Do)', 'تخدير موضعي مناسب', 'حشوات ملونة أو GIC', 'فلورايد موضعي', 'حشو عصب لبّي (Pulpotomy) عند اللزوم', 'تاج ستانلس أو زيركون للأسنان اللبنية', 'تعليم الأم والطفل العناية', 'متابعة كل 6 أشهر'],
+      alt: ['حشوات زجاجية أيونية للرضع', 'خلع مبرمج للأسنان اللبنية المتسوسة', 'واقي شفاف للأسنان لمنع الصرير']
+    },
+    'تشخيص عام': {
+      diag: 'تقييم شامل لحالة الفم والأسنان',
+      plan: ['فحص بصري لكل الأسنان', 'أشعة حسب الحاجة', 'تقييم اللثة ومؤشرات النظافة', 'إعداد قائمة أولويات العلاج', 'إحالة لطبيب مختص عند الحاجة'],
+      alt: ['متابعة دورية كل 6 أشهر', 'تنظيف وقائي سنوي']
+    },
+    'أخرى': {
+      diag: 'حالة تحتاج تقييم إضافي',
+      plan: ['تقييم سريري شامل', 'أشعة مناسبة', 'خطة علاج تدريجية'],
+      alt: ['خيارات علاجية متعددة تُحدد لاحقاً']
+    }
+  },
+  ageModifier(age) {
+    const n = parseInt(age, 10);
+    if (!n || n < 1) return '';
+    if (n <= 6) return '👶 مريض في مرحلة الطفولة المبكرة: يُفضل العلاجات الوقائية والحد الأدنى التداخلي.';
+    if (n <= 12) return '🧒 عمر مدرسي: أسنان لبنية/مختلطة، مراعاة نمو الفك والتقويم المبكر.';
+    if (n <= 18) return '🧑 مراهق: مراقبة نمو الفك، تقويم الأسنان خيار مناسب.';
+    if (n <= 60) return '🧑 بالغ: علاجات ترميمية وجراحية معتادة.';
+    return '🧓 كبير سن: مراعاة جفاف الفم، الأدوية، فقد العظم.';
+  },
+  medModifier(allergies, chronic, smoking) {
+    const list = [];
+    if (allergies && allergies.trim() && allergies.trim() !== 'لا يوجد') list.push(`⚠️ حساسية: ${allergies} — تجنب الأدوية المسببة.`);
+    if (chronic && chronic.trim() && chronic.trim() !== 'لا يوجد') list.push(`💊 أمراض مزمنة: ${chronic} — قد تحتاج تعديل البروتوكول.`);
+    if (smoking === 'مدخن') list.push('🚬 مدخن: خطر أعلى لأمراض اللثة وفشل الزراعة.');
+    else if (smoking === 'مدخن خفيف') list.push('🚬 تدخين خفيف: مراقبة شفاء اللثة.');
+    return list;
+  }
+};
+
+/* ================= جداول التناسبات والقيم المرجعية ================= */
+const PROPORTION_DATA = {
+  goldenProportion: {
+    title: '📐 نسبة فيبوناتشي الذهبية (Golden Proportion)',
+    desc: 'النسبة المثالية بين عرض الأسنان الأمامية (1.618 : 1 : 0.618)',
+    rows: [
+      { item: 'القاطع المركزي / القاطع الجانبي', ideal: '1.618', range: '1.47 – 1.62', unit: 'نسبة' },
+      { item: 'القاطع الجانبي / الناب', ideal: '1.618', range: '1.21 – 1.35', unit: 'نسبة' },
+      { item: 'النسبة الكلية (CI:LI:C)', ideal: '1.618:1:0.618', range: '—', unit: '—' }
+    ]
+  },
+  goldenPercentage: {
+    title: '📊 النسبة الذهبية المئوية (Golden Percentage)',
+    desc: 'توزيع النسب المئوية لعرض الأسنان الستة الأمامية',
+    rows: [
+      { item: 'القاطع المركزي (يمين/يسار)', ideal: '25%', range: '22.1% – 25%', unit: '%' },
+      { item: 'القاطع الجانبي (يمين/يسار)', ideal: '15%', range: '15.2% – 15.5%', unit: '%' },
+      { item: 'الناب (يمين/يسار)', ideal: '10%', range: '10% – 12.7%', unit: '%' }
+    ]
+  },
+  redProportion: {
+    title: '🔴 نسبة RED (Recurring Esthetic Dental)',
+    desc: 'نسبة العرض المتكررة بين الأسنان المتتالية',
+    rows: [
+      { item: 'نسبة RED المثالية', ideal: '70%', range: '62% – 80%', unit: '%' },
+      { item: 'نسبة Preston (المثالية)', ideal: '64%', range: '62% – 66%', unit: '%' }
+    ]
+  },
+  gingivalValues: {
+    title: '🩸 قيم اللثة المرجعية (Gingival Values)',
+    desc: 'القياسات الطبيعية للأنسجة اللثوية',
+    rows: [
+      { item: 'عمق الجيب اللثوي (Pocket Depth)', ideal: '≤ 3 mm', range: '1 – 3 mm', unit: 'mm', status: 'طبيعي' },
+      { item: 'مستوى الارتباط السريري (CAL)', ideal: '0 mm', range: '0 mm', unit: 'mm', status: 'طبيعي' },
+      { item: 'نزيف عند التنظيف (BOP)', ideal: 'سلبي', range: 'سلبي', unit: '—', status: 'طبيعي' },
+      { item: 'سماكة اللثة (Gingival Thickness)', ideal: '≥ 1 mm', range: '1 – 2 mm', unit: 'mm', status: 'طبيعي' },
+      { item: 'عرض اللثة المُلتصقة (Attached Gingiva)', ideal: '≥ 2 mm', range: '2 – 4 mm', unit: 'mm', status: 'طبيعي' }
+    ]
+  },
+  boneValues: {
+    title: '🦴 قيم العظم المرجعية (Bone Values)',
+    desc: 'القياسات الطبيعية للعظم السنخي',
+    rows: [
+      { item: 'سماكة العظم الإكليلي (Crestal Bone)', ideal: '≥ 2 mm', range: '2 – 3 mm', unit: 'mm' },
+      { item: 'المسافة بين الجذر والزرعة', ideal: '≥ 1.5 mm', range: '1.5 – 2 mm', unit: 'mm' },
+      { item: 'ارتفاع العظم المتاح للزراعة', ideal: '≥ 10 mm', range: '10 – 13 mm', unit: 'mm' },
+      { item: 'عرض العظم للزراعة', ideal: '≥ 6 mm', range: '6 – 8 mm', unit: 'mm' }
+    ]
+  },
+  toothDimensions: {
+    title: '🦷 أبعاد الأسنان المرجعية (Tooth Dimensions)',
+    desc: 'الطول والعرض الطبيعي للأسنان الأمامية (مم)',
+    rows: [
+      { item: 'القاطع المركزي العلوي', ideal: '10.5 × 8.5', range: '9-12 × 7-9', unit: 'mm' },
+      { item: 'القاطع الجانبي العلوي', ideal: '9.0 × 6.5', range: '8-10 × 5-7', unit: 'mm' },
+      { item: 'الناب العلوي', ideal: '10.0 × 7.5', range: '9-11 × 7-8', unit: 'mm' },
+      { item: 'الضاحك الأول العلوي', ideal: '8.5 × 7.0', range: '8-9 × 6-8', unit: 'mm' },
+      { item: 'الضرس الأول العلوي', ideal: '7.5 × 10.0', range: '7-8 × 9-11', unit: 'mm' }
+    ]
+  },
+  facialValues: {
+    title: '😁 قيم الوجه والابتسامة (Facial & Smile Values)',
+    desc: 'النسب المثالية لتناسق الوجه والابتسامة',
+    rows: [
+      { item: 'خط الابتسامة (Smile Line)', ideal: 'منحني مقعر', range: 'مقعر/مستقيم', unit: '—' },
+      { item: 'خط الشفة العلوية', ideal: '2/3 من القاطع', range: '1/2 – 2/3', unit: '—' },
+      { item: 'خط الوسط الأمامي (Midline)', ideal: 'مطابق لخط الوجه', range: '0 – 1 mm انحراف', unit: 'mm' },
+      { item: 'كشف اللثة عند الابتسامة', ideal: '0 – 2 mm', range: '0 – 3 mm', unit: 'mm' },
+      { item: 'الزاوية الأنفية الشفوية', ideal: '90° – 100°', range: '85° – 105°', unit: '°' }
+    ]
+  },
+  angles: {
+    title: '📐 زوايا التقويم والتحليل السيفالومتري',
+    desc: 'القيم الطبيعية للزوايا المستخدمة في تحليل التقويم',
+    rows: [
+      { item: 'SNA (الفك العلوي للأمام)', ideal: '82°', range: '80° – 84°', unit: '°' },
+      { item: 'SNB (الفك السفلي للأمام)', ideal: '80°', range: '78° – 82°', unit: '°' },
+      { item: 'ANB (العلاقة بين الفكين)', ideal: '2°', range: '0° – 4°', unit: '°' },
+      { item: 'FMA (زاوية الفك السفلي)', ideal: '25°', range: '20° – 30°', unit: '°' },
+      { item: 'IMPA (زاوية القاطع السفلي)', ideal: '90°', range: '85° – 95°', unit: '°' },
+      { item: 'زاوية القاطع العلوي (U1-SN)', ideal: '103°', range: '100° – 107°', unit: '°' }
+    ]
+  }
+};
+
+function renderProportionTables() {
+  const container = document.getElementById('proportionTables');
+  let html = '<div class="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl border-2 border-indigo-200 p-3">';
+  html += '<h3 class="font-extrabold text-indigo-900 text-sm mb-3 text-center">📊 جداول التناسبات والقيم المرجعية</h3>';
+
+  Object.values(PROPORTION_DATA).forEach(section => {
+    html += `<details class="mb-2 bg-white rounded-lg border border-indigo-100 overflow-hidden" open>
+      <summary class="cursor-pointer font-bold text-[11px] text-indigo-800 bg-indigo-50 px-3 py-2 hover:bg-indigo-100 transition">${section.title}</summary>
+      <div class="p-2">
+        <p class="text-[10px] text-gray-500 mb-2">${section.desc}</p>
+        <table class="ref-table">
+          <thead><tr><th>القياس</th><th>القيمة المثالية</th><th>المدى الطبيعي</th><th>الوحدة</th></tr></thead>
+          <tbody>${section.rows.map(r => `
+            <tr>
+              <td>${r.item}</td>
+              <td class="ok">${r.ideal}</td>
+              <td>${r.range}</td>
+              <td>${r.unit}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </details>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  container.classList.remove('hidden');
+}
+
+/* ================= توليد التشخيص AI ================= */
+function generateAIDiagnosis() {
+  const work = document.getElementById('workType').value;
+  if (!selectedTeeth.length && !work) { alert('الرجاء تحديد الأسنان أو اختيار نوع العمل الطبي أولاً'); return; }
+  const status = document.getElementById('aiStatus');
+  const results = document.getElementById('aiResults');
+  const btn = document.getElementById('btnAIDiag');
+  btn.disabled = true;
+  status.classList.remove('hidden');
+  status.innerHTML = '<span class="ai-typing">🤖 جاري تحليل الحالة طبياً</span>';
+  results.classList.add('hidden');
+
+  setTimeout(() => {
+    const engine = getAIEngine();
+    if (engine === 'gemini' && getGeminiKey()) runGeminiDiagnosis();
+    else runBuiltinDiagnosis();
+  }, 600);
+}
+
+function getAIEngine() {
+  const mode = document.getElementById('aiEngine')?.value || 'auto';
+  const hasKey = !!getGeminiKey();
+  if (mode === 'auto') return hasKey ? 'gemini' : 'builtin';
+  return mode;
+}
+function getGeminiKey() { return (localStorage.getItem('geminiApiKey') || '').trim(); }
+
+function runBuiltinDiagnosis() {
+  const work = document.getElementById('workType').value || 'تشخيص عام';
+  const age = document.getElementById('patientAge').value;
+  const allergies = document.getElementById('patientAllergies').value;
+  const chronic = document.getElementById('chronicDiseases').value;
+  const smoking = document.getElementById('smokingHabit').value;
+  const hygiene = document.getElementById('oralHygiene').value;
+  const extra = document.getElementById('aiExtraNotes').value;
+
+  const symptoms = [];
+  const labels = { pain:'ألم حاد/نابض', swelling:'تورم/خراج', bleeding:'نزيف لثة', mobility:'حركة أسنان', sensitivity:'حساسية حرارية', badBreath:'رائحة فم', bruxism:'صرير أسنان', trauma:'رض/كسر حديث' };
+  Object.keys(labels).forEach(k => { if (document.getElementById('sym_' + k)?.checked) symptoms.push(labels[k]); });
+
+  const teethDetails = selectedTeeth.map(num => {
+    const type = TOOTH_TYPES[num] || 'molar';
+    const meta = AI_KB.toothMeta[type];
+    const jaw = num >= 11 && num <= 28 ? 'علوي' : 'سفلي';
+    return { num, type: meta.name, jaw, risky: meta.risky };
+  });
+
+  const treatment = AI_KB.treatments[work] || AI_KB.treatments['أخرى'];
+  let diag = `🔍 **التشخيص المبدئي:**\n• نوع العمل: ${work}\n`;
+  if (teethDetails.length) {
+    const front = teethDetails.filter(t => AI_KB.toothMeta[TOOTH_TYPES[t.num]]?.group === 'أمامية').length;
+    diag += `• الأسنان المستهدفة: ${selectedTeeth.join(', ')}\n  └ أمامية: ${front} | خلفية: ${teethDetails.length - front}\n`;
+    diag += `• التشخيص: ${treatment.diag}\n`;
+  } else diag += `• ${treatment.diag}\n`;
+  if (symptoms.length) diag += `• الأعراض: ${symptoms.join('، ')}\n`;
+  const ageNote = AI_KB.ageModifier(age);
+  if (ageNote) diag += `• ${ageNote}\n`;
+  AI_KB.medModifier(allergies, chronic, smoking).forEach(n => { diag += `• ${n}\n`; });
+  if (hygiene === 'ضعيفة') diag += `• ⚠️ نظافة فم ضعيفة — يجب تعزيز الوقاية.\n`;
+  if (extra) diag += `• ملاحظات: ${extra}\n`;
+
+  let plan = `🦷 **الخطة العلاجية الأساسية (${work}):**\n`;
+  treatment.plan.forEach((step, i) => { plan += `${i + 1}. ${step}\n`; });
+
+  let alt = `🔄 **الخطة البديلة:**\n`;
+  treatment.alt.forEach((a, i) => { alt += `${i + 1}. ${a}\n`; });
+
+  renderAIResults('محرك مدمج', diag, plan, alt);
+}
+
+async function runGeminiDiagnosis() {
+  const key = getGeminiKey();
+  if (!key) { runBuiltinDiagnosis(); return; }
+  const work = document.getElementById('workType').value || 'تشخيص عام';
+  const prompt = `أنت طبيب أسنان استشاري خبير. قدّم تشخيصاً طبياً دقيقاً وخطة علاجية وبديلاً علاجياً للحالة التالية باللغة العربية بنقاط.
+
+بيانات المريض:
+- العمر: ${document.getElementById('patientAge').value || 'غير محدد'}
+- الجنس: ${document.getElementById('patientGender').value || 'غير محدد'}
+- الحساسية: ${document.getElementById('patientAllergies').value || 'لا يوجد'}
+- الأمراض المزمنة: ${document.getElementById('chronicDiseases').value || 'لا يوجد'}
+- التدخين: ${document.getElementById('smokingHabit').value || 'غير محدد'}
+- نظافة الفم: ${document.getElementById('oralHygiene').value || 'غير محددة'}
+- الأسنان المحددة: ${selectedTeeth.length ? selectedTeeth.join(', ') : 'لم تحدد'}
+- نوع العمل: ${work}
+- الشكوى: ${document.getElementById('complaint').value || 'غير مذكورة'}
+
+المطلوب:
+1. التشخيص المبدئي
+2. الخطة العلاجية الأساسية (خطوات مرقمة)
+3. الخطة البديلة والمخاطر
+
+اكتب بأسلوب طبي دقيق بدون مقدمات.`;
+
+  try {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    if (!resp.ok) throw new Error('Gemini Error');
+    const data = await resp.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const sections = parseGeminiSections(text);
+    renderAIResults('Gemini AI', sections.diag, sections.plan, sections.alt || '—');
+  } catch (err) { console.warn(err); runBuiltinDiagnosis(); }
+}
+
+function parseGeminiSections(text) {
+  const diagM = text.match(/(?:التشخيص|1\)|1\.)[^\n]*\n([\s\S]*?)(?=(?:الخطة العلاجية|2\)|2\.|$))/);
+  const planM = text.match(/(?:الخطة العلاجية|2\)|2\.)[^\n]*\n([\s\S]*?)(?=(?:البديل|الخطة البديلة|3\)|3\.|$))/);
+  const altM = text.match(/(?:البديل|الخطة البديلة|3\)|3\.)[^\n]*\n([\s\S]*)$/);
+  return { diag: diagM ? diagM[1].trim() : text, plan: planM ? planM[1].trim() : '', alt: altM ? altM[1].trim() : '' };
+}
+
+function renderAIResults(engineName, diag, plan, alt) {
+  const status = document.getElementById('aiStatus');
+  const results = document.getElementById('aiResults');
+  const btn = document.getElementById('btnAIDiag');
+  status.innerHTML = `✅ تم التوليد عبر <strong>${engineName}</strong>`;
+  status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
+  window.__aiResults = { diag, plan, alt, engine: engineName, generatedAt: new Date().toISOString() };
+  const box = (title, content, color) => `<div class="ai-result-box bg-${color}-50 border border-${color}-200 rounded-xl p-3"><p class="font-extrabold text-${color}-900 text-xs mb-1.5">${title}</p><div class="text-[11px] text-gray-800 whitespace-pre-wrap leading-relaxed">${content}</div></div>`;
+  results.innerHTML = box('🔍 التشخيص', diag, 'blue') + box('🦷 الخطة العلاجية', plan, 'emerald') + box('🔄 الخطة البديلة', alt, 'amber');
+  results.classList.remove('hidden');
+  btn.disabled = false;
+}
+
+function clearAIResults() {
+  document.getElementById('aiResults').classList.add('hidden');
+  document.getElementById('aiResults').innerHTML = '';
+  document.getElementById('aiStatus').classList.add('hidden');
+  window.__aiResults = null;
+}
+function applyAIToForm() {
+  if (!window.__aiResults) { alert('لا توجد نتائج'); return; }
+  const { diag, plan, alt } = window.__aiResults;
+  document.getElementById('complaint').value = diag.trim();
+  document.getElementById('treatmentPlan').value = plan.trim();
+  document.getElementById('alternativePlan').value = alt.trim();
+  alert('✅ تم التطبيق');
+}
+
+/* ============================================================
+   🔬 تحليل الصور + الرسم عليها + جداول التناسبات
+   ============================================================ */
+let showAnnotations = true;
+
+function toggleAnnotations() {
+  showAnnotations = !showAnnotations;
+  document.querySelectorAll('.annotated-canvas').forEach(c => { c.style.display = showAnnotations ? 'block' : 'none'; });
+}
+
+async function analyzeImagesWithAI() {
+  if (!clinicImages.length) { alert('ارفع صورة أو أكثر أولاً'); return; }
+  const focus = document.getElementById('analysisFocus').value;
+  const status = document.getElementById('imgAiStatus');
+  const results = document.getElementById('imgAiResults');
+  const btn = document.getElementById('btnAIImg');
+  btn.disabled = true;
+  status.classList.remove('hidden');
+  status.innerHTML = '<span class="ai-typing">🔬 جاري تحليل الصور</span>';
+  results.classList.add('hidden');
+
+  const engine = getAIEngine();
+  const key = getGeminiKey();
+
+  try {
+    if (engine === 'gemini' && key) await runGeminiImageAnalysis(focus, key);
+    else { runBuiltinImageAnalysis(focus); renderAnnotatedImages(); renderProportionTables(); }
+  } catch (err) {
+    console.error(err);
+    status.innerHTML = '⚠️ فشل Gemini، يتم استخدام المحرك المدمج';
+    runBuiltinImageAnalysis(focus); renderAnnotatedImages(); renderProportionTables();
+  } finally { btn.disabled = false; }
+}
+
+/* ================= المحرك المدمج لتحليل الصور ================= */
+function runBuiltinImageAnalysis(focus) {
+  const status = document.getElementById('imgAiStatus');
+  const results = document.getElementById('imgAiResults');
+  const hygiene = document.getElementById('oralHygiene').value;
+  const smoking = document.getElementById('smokingHabit').value;
+  const age = parseInt(document.getElementById('patientAge').value) || 30;
+  const imgs = clinicImages;
+  const clinicalImgs = imgs.filter(i => i.type === 'سريرية').length;
+  const xrayImgs = imgs.filter(i => i.type === 'أشعة').length;
+
+  const findings = [];
+  findings.push(`📷 عدد الصور: ${imgs.length} (${clinicalImgs} سريرية، ${xrayImgs} أشعة)`);
+  findings.push(`🔎 نوع التحليل: ${focus}`);
+
+  if (focus.includes('شامل') || focus.includes('اللثة')) {
+    if (hygiene === 'ضعيفة') findings.push('🩸 اللثة: يُرجّح وجود التهاب لثة (Gingivitis) بسبب تراكم الجيري.');
+    else if (hygiene === 'جيدة') findings.push('🩸 اللثة: حالة عامة جيدة مع احتمال التهابات موضعية بسيطة.');
+    else if (hygiene === 'ممتازة') findings.push('🩸 اللثة: وردية ومتماسكة، حالة صحية ممتازة.');
+    if (document.getElementById('sym_bleeding').checked) findings.push('⚠️ نزيف عند التنظيف — التهاب لثة نشط.');
+  }
+  if (focus.includes('العظم') || focus.includes('شامل') || focus.includes('زراعة')) {
+    if (age > 50) findings.push('🦴 العظم: يُرجّح فقد عظمي فسيولوجي يحتاج تقييم بـ CBCT.');
+    else findings.push('🦴 العظم: يُنصح بأشعة CBCT لتقييم كثافة العظم.');
+    if (document.getElementById('sym_mobility').checked) findings.push('⚠️ حركة أسنان — فقد عظمي متقدم.');
+  }
+  if (focus.includes('التسوس') || focus.includes('شامل')) {
+    if (selectedTeeth.length) findings.push(`🦷 الأسنان المحددة (${selectedTeeth.length}) تُقيَّم للتسوس.`);
+    if (document.getElementById('sym_sensitivity').checked) findings.push('⚠️ حساسية حرارية — تسوس نشط أو انكشاف عنق.');
+    if (document.getElementById('sym_pain').checked) findings.push('⚠️ ألم حاد — تقييم لبّي عاجل.');
+  }
+  if (focus.includes('الابتسامة')) findings.push('😁 تحليل الابتسامة: قياس خط الابتسامة، خط الوسط، وكشف اللثة.');
+
+  const recommendations = [];
+  if (hygiene === 'ضعيفة') recommendations.push('تنظيف وتلميع اللثة (Scaling & Polishing)');
+  if (selectedTeeth.length >= 5) recommendations.push('تقسيم العلاج على جلسات متعددة');
+  recommendations.push('متابعة دورية كل 3-6 أشهر');
+  if (age > 45) recommendations.push('أشعة بانورامية (OPG)');
+
+  window.__aiImageResults = { focus, engine: 'محرك مدمج', findings, recommendations, imagesCount: imgs.length, generatedAt: new Date().toISOString() };
+
+  const html = `
+    <div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3">
+      <p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔍 النتائج التحليلية:</p>
+      <div class="text-[11px] text-gray-800 whitespace-pre-wrap">${findings.join('\n')}</div>
+    </div>
+    <div class="ai-result-box bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+      <p class="font-extrabold text-emerald-900 text-xs mb-1.5">✅ التوصيات:</p>
+      <div class="text-[11px] text-gray-800 whitespace-pre-wrap">${recommendations.map((r,i)=>`${i+1}. ${r}`).join('\n')}</div>
+    </div>`;
+
+  status.innerHTML = '✅ تحليل مبدئي (محرك مدمج)';
+  status.className = 'text-[11px] text-center p-2 rounded-lg bg-cyan-50 text-cyan-700 font-bold';
+  results.innerHTML = html;
+  results.classList.remove('hidden');
+}
+
+/* ================= Gemini Vision لتحليل الصور + رسم ================= */
+async function runGeminiImageAnalysis(focus, key) {
+  const status = document.getElementById('imgAiStatus');
+  const results = document.getElementById('imgAiResults');
+  const imgsToSend = clinicImages.slice(0, 6);
+  const parts = [{
+    text: `أنت طبيب أسنان استشاري. حلّل هذه الصور الطبية (${focus}) بدقة عالية.
+
+بيانات المريض:
+- العمر: ${document.getElementById('patientAge').value || 'غير محدد'}
+- الجنس: ${document.getElementById('patientGender').value || 'غير محدد'}
+- الأسنان المحددة: ${selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة'}
+- نظافة الفم: ${document.getElementById('oralHygiene').value || 'غير محددة'}
+
+المطلوب:
+1. الملاحظات التشريحية الظاهرة
+2. المشاكل المكتشفة (لثة، عظم، تسوس، تركيبات، إلخ)
+3. التشخيص المقترح
+4. توصيات علاجية مرتبة حسب الأولوية
+5. تحذيرات
+
+**مهم جداً:** لكل مشكلة أو ملاحظة تكتشفها في الصورة، أرجع إحداثياتها بصيغة JSON:
+[{"label": "اسم المشكلة", "box_2d": [ymin, xmin, ymax, xmax], "severity": "خفيف/متوسط/شديد"}]
+حيث box_2d قيم مُنَظَّمة من 0 إلى 1000 نسبة لأبعاد الصورة.
+
+اكتب النص بالعربية ثم ضع JSON بين علامتي \`\`\`json و \`\`\`.`
+  }];
+
+  for (const img of imgsToSend) {
+    parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
+  }
+
+  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts }] })
+  });
+  if (!resp.ok) throw new Error('Gemini API Error');
+  const data = await resp.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'لم يتم استلام رد.';
+
+  // استخراج JSON للـ bounding boxes
+  const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
+  let annotations = [];
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[1]);
+      if (Array.isArray(parsed)) {
+        annotations = parsed.map(a => ({
+          label: a.label || 'ملاحظة',
+          ymin: (a.box_2d?.[0] || 0) / 1000,
+          xmin: (a.box_2d?.[1] || 0) / 1000,
+          ymax: (a.box_2d?.[2] || 0) / 1000,
+          xmax: (a.box_2d?.[3] || 0) / 1000,
+          severity: a.severity || 'متوسط'
+        }));
+      }
+    } catch (e) { console.warn('JSON parse error', e); }
+  }
+
+  // تخزين annotations لكل صورة (نفس الإحداثيات للأولى حتى الآن)
+  const firstImgId = imgsToSend[0]?.id;
+  if (firstImgId && annotations.length) currentAnnotations[firstImgId] = annotations;
+
+  const cleanText = text.replace(/```json[\s\S]*?```/g, '').trim();
+
+  window.__aiImageResults = { focus, engine: 'Gemini Vision', fullText: cleanText, annotations, imagesCount: imgsToSend.length, generatedAt: new Date().toISOString() };
+
+  status.innerHTML = '✅ تحليل Gemini Vision (مع رسم النتائج)';
+  status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
+
+  let html = `<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3">
+    <p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 تحليل الصور (Gemini AI):</p>
+    <div class="text-[11px] text-gray-800 whitespace-pre-wrap">${cleanText}</div>
+  </div>`;
+
+  if (annotations.length) {
+    html += `<div class="ai-result-box bg-amber-50 border border-amber-200 rounded-xl p-3">
+      <p class="font-extrabold text-amber-900 text-xs mb-1.5">📍 الملاحظات المُكتشفة (${annotations.length}):</p>
+      <div class="text-[11px] text-gray-800 space-y-1">
+        ${annotations.map((a, i) => `<div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full inline-block" style="background:${getSeverityColor(a.severity)}"></span>
+          <strong>${a.label}</strong>
+          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background:${getSeverityColor(a.severity)}33;color:${getSeverityColor(a.severity)}">${a.severity}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  results.innerHTML = html;
+  results.classList.remove('hidden');
+
+  // رسم على الصور + جداول
+  renderAnnotatedImages();
+  renderProportionTables();
+}
+
+function getSeverityColor(sev) {
+  if (sev.includes('شديد')) return '#dc2626';
+  if (sev.includes('متوسط')) return '#d97706';
+  return '#059669';
+}
+
+/* ================= رسم النتائج على الصور باستخدام Canvas ================= */
+function renderAnnotatedImages() {
+  const area = document.getElementById('annotatedImagesArea');
+  if (!clinicImages.length) { area.classList.add('hidden'); return; }
+
+  area.innerHTML = '';
+  area.classList.remove('hidden');
+
+  clinicImages.forEach((img, idx) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'bg-white rounded-xl border-2 border-slate-200 overflow-hidden shadow-sm';
+
+    const header = document.createElement('div');
+    header.className = 'bg-slate-100 px-3 py-2 flex items-center justify-between border-b';
+    header.innerHTML = `<span class="text-[11px] font-bold text-slate-700">🖼️ صورة ${idx + 1} — ${img.type}</span>
+      <span class="text-[9px] text-slate-500">${img.date}</span>`;
+    wrapper.appendChild(header);
+
+    const container = document.createElement('div');
+    container.className = 'canvas-container relative';
+
+    const baseImg = document.createElement('img');
+    baseImg.src = img.dataUrl;
+    baseImg.className = 'max-w-full block';
+    baseImg.style.maxHeight = '400px';
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'annotated-canvas absolute top-0 left-0';
+    canvas.style.display = showAnnotations ? 'block' : 'none';
+    canvas.style.pointerEvents = 'none';
+
+    const draw = () => {
+      const w = baseImg.clientWidth;
+      const h = baseImg.clientHeight;
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+
+      // رسم annotations إن وجدت
+      const anns = currentAnnotations[img.id] || [];
+      anns.forEach((a, i) => {
+        const x = a.xmin * w;
+        const y = a.ymin * h;
+        const rw = (a.xmax - a.xmin) * w;
+        const rh = (a.ymax - a.ymin) * h;
+        const color = getSeverityColor(a.severity);
+
+        // مستطيل
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(x, y, rw, rh);
+
+        // تعبئة خفيفة
+        ctx.fillStyle = color + '22';
+        ctx.fillRect(x, y, rw, rh);
+
+        // تسمية
+        const label = `${i + 1}. ${a.label}`;
+        ctx.font = 'bold 12px Cairo, sans-serif';
+        const tw = ctx.measureText(label).width;
+        const lx = Math.max(2, x);
+        const ly = y > 22 ? y - 22 : y + rh + 2;
+        ctx.fillStyle = color;
+        ctx.fillRect(lx - 2, ly, tw + 12, 20);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(label, lx + 4, ly + 14);
+
+        // رقم الدائرة
+        ctx.beginPath();
+        ctx.arc(x + 10, y + 10, 9, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px Cairo, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(i + 1, x + 10, y + 14);
+        ctx.textAlign = 'start';
+      });
+
+      // إذا لم توجد annotations، ارسم شبكة مرجعية
+      if (!anns.length) {
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([4, 4]);
+        for (let i = 1; i < 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo(w * i / 3, 0); ctx.lineTo(w * i / 3, h);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, h * i / 3); ctx.lineTo(w, h * i / 3);
+          ctx.stroke();
         }
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '11px Cairo, sans-serif';
+        ctx.fillText('لم تُكتشف ملاحظات — اعرض الصورة على الطبيب', 10, 20);
+      }
+    };
 
-        let capturedImageStr = "";
-        let selectedTeeth = [];
-        const currentDate = new Date().toLocaleDateString('ar-YE');
+    baseImg.onload = () => { draw(); setTimeout(draw, 200); };
+    window.addEventListener('resize', draw);
 
-        document.getElementById('registrationDateDisplay').value = currentDate;
+    container.appendChild(baseImg);
+    container.appendChild(canvas);
+    wrapper.appendChild(container);
+    area.appendChild(wrapper);
+  });
+}
 
-        // توليد رقم ملف تلقائي تسلسلي
-        function generateFileNumber() {
-            let uniqueId = 'DR-' + Date.now().toString().slice(-6);
-            document.getElementById('fileNumber').value = uniqueId;
-        }
+/* ================= حفظ الصورة المرسومة ================= */
+function exportAnnotatedImage() {
+  if (!clinicImages.length) { alert('لا توجد صور'); return; }
+  // نجمع كل الصور في canvas واحد وننزله
+  const links = [];
+  document.querySelectorAll('.canvas-container').forEach((container, i) => {
+    const img = container.querySelector('img');
+    const canvas = container.querySelector('canvas');
+    if (!img || !canvas) return;
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = img.clientWidth;
+    exportCanvas.height = img.clientHeight;
+    const ctx = exportCanvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, exportCanvas.width, exportCanvas.height);
+    ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    links.push({ url: exportCanvas.toDataURL('image/png'), name: `annotated_${i + 1}.png` });
+  });
+  links.forEach(l => {
+    const a = document.createElement('a');
+    a.href = l.url; a.download = l.name; a.click();
+  });
+  if (links.length) alert(`✅ تم حفظ ${links.length} صورة مرسومة`);
+}
 
-        const upperTeethList = [18,17,16,15,14,13,12,11, 21,22,23,24,25,26,27,28];
-        const lowerTeethList = [48,47,46,45,44,43,42,41, 31,32,33,34,35,36,37,38];
+/* ================= إعدادات AI ================= */
+function openAISettings() {
+  document.getElementById('geminiApiKey').value = getGeminiKey();
+  document.getElementById('aiEngine').value = localStorage.getItem('aiEngine') || 'auto';
+  const m = document.getElementById('aiSettingsModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+}
+function closeAISettings() {
+  const m = document.getElementById('aiSettingsModal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+}
+function saveAISettings() {
+  const key = document.getElementById('geminiApiKey').value.trim();
+  const engine = document.getElementById('aiEngine').value;
+  if (key) localStorage.setItem('geminiApiKey', key); else localStorage.removeItem('geminiApiKey');
+  localStorage.setItem('aiEngine', engine);
+  const s = document.getElementById('aiSettingsStatus');
+  s.textContent = '✅ تم حفظ الإعدادات';
+  s.className = 'text-[11px] text-center font-bold text-emerald-600';
+  s.classList.remove('hidden');
+  setTimeout(() => s.classList.add('hidden'), 2500);
+  updateAIEngineBadge();
+}
+async function testAIConnection() {
+  const key = document.getElementById('geminiApiKey').value.trim();
+  const s = document.getElementById('aiSettingsStatus');
+  s.classList.remove('hidden');
+  s.textContent = '⏳ جاري الاختبار...';
+  s.className = 'text-[11px] text-center font-bold text-gray-600';
+  if (!key) { s.textContent = '⚠️ لم يتم إدخال مفتاح'; s.className = 'text-[11px] text-center font-bold text-amber-600'; return; }
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    if (r.ok) { s.textContent = '✅ المفتاح صالح'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; }
+    else { s.textContent = '❌ المفتاح غير صالح'; s.className = 'text-[11px] text-center font-bold text-red-600'; }
+  } catch (e) { s.textContent = '❌ فشل الاتصال'; s.className = 'text-[11px] text-center font-bold text-red-600'; }
+}
+function updateAIEngineBadge() {
+  const badge = document.getElementById('aiEngineBadge');
+  const engine = getAIEngine();
+  badge.textContent = engine === 'gemini' ? 'Gemini AI' : 'محرك مدمج';
+}
 
-        function renderTeethGrid() {
-            const upperContainer = document.getElementById('upperArch');
-            const lowerContainer = document.getElementById('lowerArch');
+/* ================= رفع الصور ================= */
+async function uploadImageToCloud(img, fileNumber) {
+  if (!storage) return null;
+  try {
+    const ref = storage.ref().child(`patients/${fileNumber}/${img.id}.jpg`);
+    const snap = await ref.putString(img.dataUrl, 'data_url');
+    return await snap.ref.getDownloadURL();
+  } catch (err) { return null; }
+}
 
-            upperTeethList.forEach(tooth => upperContainer.appendChild(createToothButton(tooth)));
-            lowerTeethList.forEach(tooth => lowerContainer.appendChild(createToothButton(tooth)));
-        }
+/* ================= حفظ السجل ================= */
+async function savePatientRecord() {
+  const name = document.getElementById('patientName').value.trim();
+  if (!name) { alert('أدخل اسم المريض أولاً'); return; }
+  const btn = document.getElementById('saveBtn');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'جاري الحفظ...';
 
-        function createToothButton(toothNumber) {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.textContent = toothNumber;
-            btn.className = 'tooth-btn';
-            btn.onclick = () => {
-                const index = selectedTeeth.indexOf(toothNumber);
-                if (index > -1) {
-                    selectedTeeth.splice(index, 1);
-                    btn.classList.remove('selected');
-                } else {
-                    selectedTeeth.push(toothNumber);
-                    btn.classList.add('selected');
-                }
-                selectedTeeth.sort((a, b) => a - b);
-                document.getElementById('selectedTeethDisplay').textContent = 'الأسنان المحددة: ' + (selectedTeeth.length > 0 ? selectedTeeth.join(', ') : 'لا يوجد');
-            };
-            return btn;
-        }
+  try {
+    const fileNumber = document.getElementById('fileNumber').value;
+    const imageRecords = [], inlineFallback = [];
+    for (const img of clinicImages) {
+      const url = await uploadImageToCloud(img, fileNumber);
+      if (url) imageRecords.push({ url, type: img.type, date: img.date, annotations: currentAnnotations[img.id] || [] });
+      else inlineFallback.push({ dataUrl: img.dataUrl, type: img.type, date: img.date, annotations: currentAnnotations[img.id] || [] });
+    }
+    let inlineSafe = inlineFallback;
+    if (JSON.stringify(inlineSafe).length > 650000) { inlineSafe = []; alert('بعض الصور كبيرة، تم حفظ السجل بدونها.'); }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            renderTeethGrid();
-            generateFileNumber();
-        });
+    const record = {
+      fileNumber, fullName: name,
+      gender: document.getElementById('patientGender').value,
+      age: document.getElementById('patientAge').value,
+      address: document.getElementById('patientAddress').value,
+      phone: document.getElementById('patientPhone').value,
+      whatsapp: document.getElementById('whatsappPhone').value,
+      allergies: document.getElementById('patientAllergies').value,
+      chronic: document.getElementById('chronicDiseases').value,
+      smoking: document.getElementById('smokingHabit').value,
+      hygiene: document.getElementById('oralHygiene').value,
+      workType: document.getElementById('workType').value,
+      teethCount: document.getElementById('teethCount').value,
+      selectedTeeth: selectedTeeth.join(', '),
+      complaint: document.getElementById('complaint').value,
+      treatmentPlan: document.getElementById('treatmentPlan').value,
+      alternativePlan: document.getElementById('alternativePlan').value,
+      aiGenerated: !!window.__aiResults,
+      aiDiagnosis: window.__aiResults ? {
+        diagnosis: window.__aiResults.diag,
+        treatmentPlan: window.__aiResults.plan,
+        alternativePlan: window.__aiResults.alt,
+        engine: window.__aiResults.engine,
+        generatedAt: window.__aiResults.generatedAt
+      } : null,
+      aiImageAnalysis: window.__aiImageResults ? {
+        focus: window.__aiImageResults.focus,
+        engine: window.__aiImageResults.engine,
+        findings: window.__aiImageResults.findings || null,
+        recommendations: window.__aiImageResults.recommendations || null,
+        fullText: window.__aiImageResults.fullText || null,
+        annotations: window.__aiImageResults.annotations || null,
+        imagesCount: window.__aiImageResults.imagesCount,
+        generatedAt: window.__aiImageResults.generatedAt
+      } : null,
+      symptoms: {
+        pain: document.getElementById('sym_pain').checked,
+        swelling: document.getElementById('sym_swelling').checked,
+        bleeding: document.getElementById('sym_bleeding').checked,
+        mobility: document.getElementById('sym_mobility').checked,
+        sensitivity: document.getElementById('sym_sensitivity').checked,
+        badBreath: document.getElementById('sym_badBreath').checked,
+        bruxism: document.getElementById('sym_bruxism').checked,
+        trauma: document.getElementById('sym_trauma').checked,
+        extraNotes: document.getElementById('aiExtraNotes').value
+      },
+      totalAmount: document.getElementById('totalAmount').value,
+      payment1: document.getElementById('payment1').value,
+      payment2: document.getElementById('payment2').value,
+      payment3: document.getElementById('payment3').value,
+      remaining: document.getElementById('remainingDisplay').textContent,
+      revenueStatus: document.getElementById('revenueStatus').value,
+      expenseAmount: document.getElementById('expenseAmount').value,
+      expenseType: document.getElementById('expenseType').value,
+      images: [...imageRecords, ...inlineSafe],
+      regDate: currentDate,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    await db.collection("patients").doc(fileNumber).set(record);
+    alert('✅ تم حفظ البيانات ونتائج الذكاء الاصطناعي بنجاح');
+    resetForm();
+  } catch (err) {
+    console.error(err);
+    alert('حدث خطأ أثناء الحفظ، تحقق من الاتصال.');
+  } finally { btn.disabled = false; btn.textContent = orig; }
+}
 
-        function calculateFinancials() {
-            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
-            const p1 = parseFloat(document.getElementById('payment1').value) || 0;
-            const p2 = parseFloat(document.getElementById('payment2').value) || 0;
-            const p3 = parseFloat(document.getElementById('payment3').value) || 0;
-            
-            const remaining = total - (p1 + p2 + p3);
-            document.getElementById('remainingDisplay').textContent = remaining + ' ريال';
+function resetForm() {
+  generateFileNumber();
+  ['patientName','patientAge','patientAddress','patientPhone','whatsappPhone','patientAllergies','chronicDiseases','teethCount','complaint','treatmentPlan','alternativePlan','totalAmount','payment1','payment2','payment3','expenseAmount','expenseType','aiExtraNotes'].forEach(id => document.getElementById(id).value = '');
+  ['patientGender','workType','revenueStatus','smokingHabit','oralHygiene'].forEach(id => document.getElementById(id).value = '');
+  ['sym_pain','sym_swelling','sym_bleeding','sym_mobility','sym_sensitivity','sym_badBreath','sym_bruxism','sym_trauma'].forEach(id => document.getElementById(id).checked = false);
+  selectedTeeth = [];
+  document.querySelectorAll('.tooth.selected').forEach(g => g.classList.remove('selected'));
+  document.getElementById('selectedTeethDisplay').textContent = 'الأسنان المحددة: لا يوجد';
+  clinicImages = []; currentAnnotations = {}; renderGallery();
+  calculateFinancials();
+  clearAIResults();
+  document.getElementById('imgAiResults').classList.add('hidden');
+  document.getElementById('imgAiStatus').classList.add('hidden');
+  document.getElementById('annotatedImagesArea').classList.add('hidden');
+  document.getElementById('proportionTables').classList.add('hidden');
+  window.__aiResults = null;
+  window.__aiImageResults = null;
+}
 
-            const totalPaid = p1 + p2 + p3;
-            document.getElementById('revenueAmount').value = totalPaid;
-            calculateNet();
-            return remaining;
-        }
+/* ================= الطباعة ================= */
+function buildImagesPrintHtml() {
+  if (!clinicImages.length) return '';
+  return `<div class="mt-4 pt-3 border-t">
+    <p class="font-bold text-xs mb-2 text-blue-900">الصور والأشعة المرفقة (${clinicImages.length}):</p>
+    <div class="grid grid-cols-3 gap-2">${clinicImages.map(img => `
+      <div class="text-center border rounded-lg overflow-hidden">
+        <img src="${img.dataUrl || img.url}" class="w-full h-24 object-cover">
+        <span class="block text-[9px] font-bold bg-gray-100 py-0.5">${img.type}</span>
+      </div>`).join('')}</div></div>`;
+}
 
-        function calculateNet() {
-            const revenue = parseFloat(document.getElementById('revenueAmount').value) || 0;
-            const expenses = parseFloat(document.getElementById('expenseAmount').value) || 0;
-            const net = revenue - expenses;
+function printReport() {
+  const name = document.getElementById('patientName').value;
+  if (!name) { alert('أدخل اسم المريض'); return; }
+  const teeth = selectedTeeth.length ? selectedTeeth.join(', ') : 'لا يوجد';
+  document.getElementById('printBodyContent').innerHTML = `
+    <h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي / خطة العلاج</h3>
+    <div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border">
+      <p><strong>رقم الملف:</strong> ${document.getElementById('fileNumber').value}</p>
+      <p><strong>التاريخ:</strong> ${currentDate}</p>
+      <p><strong>اسم المريض:</strong> ${name}</p>
+      <p><strong>العمر / الجنس:</strong> ${document.getElementById('patientAge').value||'-'} سنة (${document.getElementById('patientGender').value||'-'})</p>
+      <p class="col-span-2"><strong>السكن:</strong> ${document.getElementById('patientAddress').value||'-'}</p>
+    </div>
+    <div class="text-xs space-y-2 pt-2">
+      <p><strong>الحساسية / الأمراض المزمنة:</strong> ${document.getElementById('patientAllergies').value||'لا يوجد'} / ${document.getElementById('chronicDiseases').value||'لا يوجد'}</p>
+      <p><strong>نوع العمل:</strong> ${document.getElementById('workType').value||'-'}</p>
+      <p><strong>الأسنان المستهدفة:</strong> ${teeth}</p>
+      <p><strong>الشكوى والفحص:</strong> ${document.getElementById('complaint').value||'-'}</p>
+      <p><strong>الخطة العلاجية:</strong> ${document.getElementById('treatmentPlan').value||'-'}</p>
+      <p><strong>العلاج البديل:</strong> ${document.getElementById('alternativePlan').value||'-'}</p>
+    </div>
+    ${buildImagesPrintHtml()}
+    <div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب المعالج</p><p>د. علي النقيب</p></div>`;
+  window.print();
+}
 
-            document.getElementById('totalRevenueDisplay').textContent = revenue + ' ريال';
-            document.getElementById('totalExpensesDisplay').textContent = expenses + ' ريال';
-            document.getElementById('netRevenueDisplay').textContent = net + ' ريال';
-        }
+function printInvoice() {
+  const name = document.getElementById('patientName').value;
+  if (!name) { alert('أدخل اسم المريض'); return; }
+  const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+  const p1 = parseFloat(document.getElementById('payment1').value) || 0;
+  const p2 = parseFloat(document.getElementById('payment2').value) || 0;
+  const p3 = parseFloat(document.getElementById('payment3').value) || 0;
+  const remaining = calculateFinancials();
+  document.getElementById('printBodyContent').innerHTML = `
+    <h3 class="font-bold text-base text-green-900 border-b pb-1">سند قبض وفاتورة مالية</h3>
+    <div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border">
+      <p><strong>رقم الملف:</strong> ${document.getElementById('fileNumber').value}</p>
+      <p><strong>التاريخ:</strong> ${currentDate}</p>
+      <p class="col-span-2"><strong>اسم المريض:</strong> ${name}</p>
+      <p class="col-span-2"><strong>حالة الدفع:</strong> ${document.getElementById('revenueStatus').value||'-'}</p>
+    </div>
+    <div class="text-xs space-y-2 pt-2 border-t">
+      <p class="flex justify-between"><span>المبلغ الإجمالي:</span> <strong class="text-blue-900">${total} ريال</strong></p>
+      <p class="flex justify-between"><span>الدفعة الأولى:</span><span>${p1} ريال</span></p>
+      <p class="flex justify-between"><span>الدفعة الثانية:</span><span>${p2} ريال</span></p>
+      <p class="flex justify-between"><span>الدفعة الثالثة:</span><span>${p3} ريال</span></p>
+      <hr>
+      <p class="flex justify-between text-sm font-extrabold"><span>المبلغ المتبقي:</span><span class="text-red-600">${remaining} ريال</span></p>
+    </div>
+    <div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>ختم / توقيع العيادة</p><p>د. علي النقيب</p></div>`;
+  window.print();
+}
 
-        document.getElementById('revenueAmount').addEventListener('input', calculateNet);
-
-        document.getElementById('patientPhoto').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    capturedImageStr = event.target.result;
-                    document.getElementById('imagePreviewContainer').innerHTML = `<img src="${capturedImageStr}" class="w-20 h-20 object-cover rounded-lg border">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // حفظ البيانات سحابياً في Firebase Firestore
-        async function savePatientRecord() {
-            const name = document.getElementById('patientName').value.trim();
-            if(!name) {
-                alert('الرجاء إدخال اسم المريض الكامل أولاً');
-                return;
-            }
-
-            const record = {
-                fileNumber: document.getElementById('fileNumber').value,
-                fullName: name,
-                gender: document.getElementById('patientGender').value,
-                age: document.getElementById('patientAge').value,
-                address: document.getElementById('patientAddress').value,
-                phone: document.getElementById('patientPhone').value,
-                whatsapp: document.getElementById('whatsappPhone').value,
-                allergies: document.getElementById('patientAllergies').value,
-                chronic: document.getElementById('chronicDiseases').value,
-                workType: document.getElementById('workType').value,
-                selectedTeeth: selectedTeeth.join(', '),
-                complaint: document.getElementById('complaint').value,
-                treatmentPlan: document.getElementById('treatmentPlan').value,
-                totalAmount: document.getElementById('totalAmount').value,
-                regDate: currentDate,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            try {
-                await db.collection("patients").doc(record.fileNumber).set(record);
-                alert('تم حفظ البيانات بنجاح في سحابة العيادة!');
-                generateFileNumber(); // توليد رقم ملف جديد
-            } catch (error) {
-                console.error("خطأ في الحفظ: ", error);
-                alert('حدث خطأ أثناء الاتصال بالسحابة، تأكد من الإنترنت.');
-            }
-        }
-
-        function printReport() {
-            const name = document.getElementById('patientName').value || 'غير محدد';
-            const fileNo = document.getElementById('fileNumber').value || '-';
-            const age = document.getElementById('patientAge').value || '-';
-            const gender = document.getElementById('patientGender').value || '-';
-            const address = document.getElementById('patientAddress').value || '-';
-            const allergies = document.getElementById('patientAllergies').value || 'لا يوجد';
-            const chronic = document.getElementById('chronicDiseases').value || 'لا يوجد';
-            const work = document.getElementById('workType').value || '-';
-            const teeth = selectedTeeth.length > 0 ? selectedTeeth.join(', ') : 'لا يوجد';
-            const complaint = document.getElementById('complaint').value || '-';
-            const plan = document.getElementById('treatmentPlan').value || '-';
-
-            if(!document.getElementById('patientName').value) {
-                alert('الرجاء إدخال اسم المريض لطباعة التقرير');
-                return;
-            }
-
-            document.getElementById('printBodyContent').innerHTML = `
-                <h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي / خطة العلاج</h3>
-                <div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border">
-                    <p><strong>رقم الملف:</strong> ${fileNo}</p>
-                    <p><strong>التاريخ:</strong> ${currentDate}</p>
-                    <p><strong>اسم المريض:</strong> ${name}</p>
-                    <p><strong>العمر / الجنس:</strong> ${age} سنة (${gender})</p>
-                    <p class="col-span-2"><strong>السكن:</strong> ${address}</p>
-                </div>
-                <div class="text-xs space-y-2 pt-2">
-                    <p><strong>الحساسية والأمراض المزمنة:</strong> ${allergies} / ${chronic}</p>
-                    <p><strong>نوع العمل الطبي:</strong> ${work}</p>
-                    <p><strong>الأسنان المستهدفة:</strong> ${teeth}</p>
-                    <p><strong>الشكوى الرئيسية والفحص:</strong> ${complaint}</p>
-                    <p><strong>الخطة العلاجية:</strong> ${plan}</p>
-                </div>
-                <div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold">
-                    <p>توقيع الطبيب المعالج</p>
-                    <p>د. علي النقيب</p>
-                </div>
-            `;
-            window.print();
-        }
-
-        function printInvoice() {
-            const name = document.getElementById('patientName').value || 'غير محدد';
-            const fileNo = document.getElementById('fileNumber').value || '-';
-            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
-            const p1 = parseFloat(document.getElementById('payment1').value) || 0;
-            const p2 = parseFloat(document.getElementById('payment2').value) || 0;
-            const p3 = parseFloat(document.getElementById('payment3').value) || 0;
-            const remaining = calculateFinancials();
-            const revStatus = document.getElementById('revenueStatus').value || '-';
-
-            if(!document.getElementById('patientName').value) {
-                alert('الرجاء إدخال اسم المريض لإصدار الفاتورة');
-                return;
-            }
-
-            document.getElementById('printBodyContent').innerHTML = `
-                <h3 class="font-bold text-base text-green-900 border-b pb-1">سند قبض وفاتورة مالية</h3>
-                <div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border">
-                    <p><strong>رقم الملف:</strong> ${fileNo}</p>
-                    <p><strong>التاريخ:</strong> ${currentDate}</p>
-                    <p class="col-span-2"><strong>اسم المريض:</strong> ${name}</p>
-                    <p class="col-span-2"><strong>حالة الدفع:</strong> ${revStatus}</p>
-                </div>
-                <div class="text-xs space-y-2 pt-2 border-t">
-                    <p class="flex justify-between"><span>المبلغ الإجمالي:</span> <strong class="text-blue-900">${total} ريال</strong></p>
-                    <p class="flex justify-between"><span>الدفعة الأولى:</span> <span>${p1} ريال</span></p>
-                    <p class="flex justify-between"><span>الدفعة الثانية:</span> <span>${p2} ريال</span></p>
-                    <p class="flex justify-between"><span>الدفعة الثالثة:</span> <span>${p3} ريال</span></p>
-                    <hr>
-                    <p class="flex justify-between text-sm font-extrabold"><span>المبلغ المتبقي:</span> <span class="text-red-600">${remaining} ريال</span></p>
-                </div>
-                <div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold">
-                    <p>ختم / توقيع العيادة</p>
-                    <p>د. علي النقيب</p>
-                </div>
-            `;
-            window.print();
-        }
-    </script>
+/* ================= التهيئة ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  renderLogos();
+  renderDentalChart();
+  generateFileNumber();
+  renderGallery();
+  updateAIEngineBadge();
+  renderProportionTables();
+});
+</script>
 </body>
 </html>
