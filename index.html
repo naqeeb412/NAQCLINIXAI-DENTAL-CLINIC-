@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>العيادة التخصصية لطب وجراحة الفم والأسنان - د. علي النقيب</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء مكتبات Firebase السحابية -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #printableArea, #printableArea * { visibility: visible; }
+            #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none; }
+        }
+        .tooth-btn {
+            width: 28px;
+            height: 32px;
+            font-size: 10px;
+            font-weight: bold;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .tooth-btn.selected {
+            background-color: #1d4ed8;
+            color: white;
+            border-color: #1e40af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 p-2">
+
+    <!-- شاشة تسجيل الدخول (حماية النظام للطبيب والموظفين) -->
+    <div id="loginOverlay" class="fixed inset-0 bg-blue-950 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center space-y-4">
+            <h2 class="text-lg font-bold text-blue-900">تسجيل دخول النظام</h2>
+            <p class="text-xs text-gray-600">الرجاء إدخال كلمة المرور الخاصة بالطبيب أو الموظف المعتمد للوصول للعيادة</p>
+            <input type="password" id="loginPassword" placeholder="كلمة المرور..." class="w-full p-2.5 border rounded text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white p-2.5 rounded text-sm font-bold shadow hover:bg-blue-700">دخول النظام</button>
+            <p id="loginError" class="text-xs text-red-600 hidden font-semibold">كلمة المرور غير صحيحة!</p>
+        </div>
+    </div>
+
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col p-4 rounded-lg">
+        
+        <!-- رأس العيادة -->
+        <header class="bg-blue-900 text-white p-3 text-center rounded-lg mb-4">
+            <h1 class="text-base font-bold">العيادة التخصصية لطب وجراحة الفم والأسنان</h1>
+            <p class="text-sm font-semibold text-blue-200">د. علي النقيب</p>
+            <p class="text-xs text-gray-200 mt-1">العنوان: أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p>
+            <p class="text-xs text-gray-200">هاتف: 777700412 - 771816548</p>
+        </header>
+
+        <!-- نموذج الإدخال الرئيسي -->
+        <main class="flex-1 space-y-4 no-print">
+            
+            <!-- 1. المرضى (مريض جديد برقم ملف وتاريخ تسجيل تلقائي) -->
+            <section class="bg-blue-50 p-3 rounded-lg border border-blue-100 space-y-2">
+                <h2 class="font-bold text-blue-900 text-sm">المرضى - مريض جديد</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-gray-600 block">رقم الملف (تلقائي):</label>
+                        <input type="text" id="fileNumber" readonly class="w-full p-2 border rounded text-sm bg-gray-100 font-bold text-blue-900">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-600 block">تاريخ التسجيل:</label>
+                        <input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded text-sm bg-gray-100 font-bold text-blue-900">
+                    </div>
+                </div>
+                <input type="text" id="patientName" placeholder="الاسم كامل (الرباعي)" class="w-full p-2 border rounded text-sm bg-white">
+                <div class="grid grid-cols-3 gap-2">
+                    <select id="patientGender" class="w-full p-2 border rounded text-sm bg-white">
+                        <option value="">الجنس</option>
+                        <option value="ذكر">ذكر</option>
+                        <option value="أنثى">أنثى</option>
+                    </select>
+                    <input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded text-sm bg-white">
+                    <input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded text-sm bg-white">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="tel" id="patientPhone" placeholder="الهاتف" class="w-full p-2 border rounded text-sm bg-white">
+                    <input type="tel" id="whatsappPhone" placeholder="الواتساب" class="w-full p-2 border rounded text-sm bg-white">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="patientAllergies" placeholder="الحساسية (أدوية/بنج)" class="w-full p-2 border rounded text-sm bg-white">
+                    <input type="text" id="chronicDiseases" placeholder="الأمراض المزمنة" class="w-full p-2 border rounded text-sm bg-white">
+                </div>
+            </section>
+
+            <!-- 2. المواعيد -->
+            <section class="bg-purple-50 p-3 rounded-lg border border-purple-100 space-y-2">
+                <h2 class="font-bold text-purple-900 text-sm">المواعيد</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="appFileNumber" placeholder="رقم الملف" class="w-full p-2 border rounded text-sm bg-white">
+                    <input type="date" id="appointmentDate" class="w-full p-2 border rounded text-sm bg-white">
+                </div>
+                <input type="text" id="appPatientName" placeholder="اسم المريض للموعد" class="w-full p-2 border rounded text-sm bg-white">
+            </section>
+
+            <!-- نوع العمل وعدد الأسنان ونموذج التفاعل -->
+            <section class="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                <h2 class="font-bold text-indigo-900 mb-2 text-sm">نوع العمل وعدد الأسنان</h2>
+                <select id="workType" class="w-full p-2 mb-2 border rounded text-sm bg-white">
+                    <option value="">اختر نوع العمل الطبي...</option>
+                    <option value="تجميل وتناغم وجه">تجميل وتناغم وجه (Cosmetic & Facial Harmony)</option>
+                    <option value="حشوات تجميلية">حشوات تجميلية (Composite Restoration)</option>
+                    <option value="علاج عصب">علاج عصب (Root Canal Treatment)</option>
+                    <option value="تلبيسات وتركيبات">تلبيسات وتركيبات (Crowns & Bridges)</option>
+                    <option value="جراحة وخلع">جراحة وخلع (Oral Surgery & Extraction)</option>
+                    <option value="تنظيف اللثة">تنظيف وتلميع اللثة (Scaling & Polishing)</option>
+                    <option value="أخرى">أخرى</option>
+                </select>
+                <input type="number" id="teethCount" placeholder="عدد الأسنان المستهدفة" class="w-full p-2 border rounded text-sm bg-white mb-2">
+                
+                <!-- نموذج الأسنان التفاعلي -->
+                <div class="bg-gray-100 p-2 rounded border border-gray-300 mt-2">
+                    <p class="text-[11px] text-gray-600 mb-1 text-center font-semibold">الفك العلوي</p>
+                    <div id="upperArch" class="flex flex-wrap justify-center gap-1 mb-2"></div>
+                    <p class="text-[11px] text-gray-600 mb-1 text-center font-semibold">الفك السفلي</p>
+                    <div id="lowerArch" class="flex flex-wrap justify-center gap-1"></div>
+                    <p class="text-center text-xs text-blue-700 mt-2 font-bold" id="selectedTeethDisplay">الأسنان المحددة: لا يوجد</p>
+                </div>
+            </section>
+
+            <!-- التشخيص والخطط العلاجية -->
+            <section class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <h2 class="font-bold text-gray-800 mb-2 text-sm">التشخيص والخطط والبدائل</h2>
+                <textarea id="complaint" placeholder="الشكوى الرئيسية والفحص السريري..." class="w-full p-2 mb-2 border rounded text-sm bg-white h-14"></textarea>
+                <textarea id="treatmentPlan" placeholder="الخطة العلاجية الأساسية..." class="w-full p-2 mb-2 border rounded text-sm bg-white h-14"></textarea>
+                <textarea id="alternativePlan" placeholder="العلاج البديل المقترح..." class="w-full p-2 mb-2 border rounded text-sm bg-white h-14"></textarea>
+            </section>
+
+            <!-- الحسابات المالية والدفعات -->
+            <section class="bg-green-50 p-3 rounded-lg border border-green-100 space-y-2">
+                <h2 class="font-bold text-green-900 text-sm">الحسابات المالية والدفعات</h2>
+                <div>
+                    <label class="text-xs text-gray-600">المبلغ الكلي:</label>
+                    <input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="0" class="w-full p-1.5 border rounded text-sm bg-white">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="text-[11px] text-gray-600">الدفعة 1:</label>
+                        <input type="number" id="payment1" oninput="calculateFinancials()" placeholder="0" class="w-full p-1.5 border rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-gray-600">الدفعة 2:</label>
+                        <input type="number" id="payment2" oninput="calculateFinancials()" placeholder="0" class="w-full p-1.5 border rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-gray-600">الدفعة 3:</label>
+                        <input type="number" id="payment3" oninput="calculateFinancials()" placeholder="0" class="w-full p-1.5 border rounded text-sm bg-white">
+                    </div>
+                </div>
+                <div class="bg-white p-2 rounded border flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-700">المبلغ المتبقي:</span>
+                    <span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span>
+                </div>
+            </section>
+
+            <!-- 3. الإيرادات اليوميه حسب الدفع -->
+            <section class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 space-y-2">
+                <h2 class="font-bold text-emerald-900 text-sm">الإيرادات اليوميه حسب الدفع</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="revenueAmount" placeholder="المبلغ المدفوع" class="w-full p-2 border rounded text-sm bg-white">
+                    <select id="revenueStatus" class="w-full p-2 border rounded text-sm bg-white">
+                        <option value="">حالة الدفع...</option>
+                        <option value="مدفوع كامل">مدفوع كامل</option>
+                        <option value="جزئي">جزئي</option>
+                        <option value="غير مدفوع">غير مدفوع</option>
+                        <option value="ملغي">ملغي</option>
+                    </select>
+                </div>
+                <div class="bg-white p-2 rounded border flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-700">إجمالي الإيرادات:</span>
+                    <span id="totalRevenueDisplay" class="text-sm font-bold text-emerald-700">0 ريال</span>
+                </div>
+            </section>
+
+            <!-- 4. المصروفات -->
+            <section class="bg-red-50 p-3 rounded-lg border border-red-100 space-y-2">
+                <h2 class="font-bold text-red-900 text-sm">المصروفات</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="المبلغ" class="w-full p-2 border rounded text-sm bg-white">
+                    <input type="text" id="expenseType" placeholder="نوع المصروف" class="w-full p-2 border rounded text-sm bg-white">
+                </div>
+                <div class="bg-white p-2 rounded border flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-700">إجمالي المصروفات:</span>
+                    <span id="totalExpensesDisplay" class="text-sm font-bold text-red-700">0 ريال</span>
+                </div>
+            </section>
+
+            <!-- 5. اجمالي صافي الايرادات -->
+            <section class="bg-cyan-50 p-3 rounded-lg border border-cyan-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-bold text-cyan-900 text-sm">إجمالي صافي الايرادات:</h2>
+                    <span id="netRevenueDisplay" class="text-base font-extrabold text-cyan-900">0 ريال</span>
+                </div>
+            </section>
+
+            <!-- صور الأسنان والأشعة -->
+            <section class="bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                <h2 class="font-bold text-yellow-900 mb-2 text-sm">صور الأسنان والأشعة</h2>
+                <input type="file" id="patientPhoto" accept="image/*" capture="environment" class="w-full p-2 border rounded text-xs bg-white mb-2">
+                <div id="imagePreviewContainer" class="flex flex-wrap gap-2"></div>
+            </section>
+
+            <!-- أزرار الإجراءات -->
+            <div class="flex gap-2 pt-2">
+                <button onclick="savePatientRecord()" class="flex-1 bg-blue-600 text-white p-2.5 rounded text-sm font-bold shadow hover:bg-blue-700">حفظ بالسحابة</button>
+                <button onclick="printReport()" class="flex-1 bg-gray-700 text-white p-2.5 rounded text-sm font-bold shadow hover:bg-gray-800">طباعة التقرير</button>
+                <button onclick="printInvoice()" class="flex-1 bg-green-600 text-white p-2.5 rounded text-sm font-bold shadow hover:bg-green-700">طباعة الفاتورة</button>
+            </div>
+        </main>
+
+        <!-- منطقة الطباعة المخفية -->
+        <div id="printableArea" class="hidden p-4 bg-white text-right">
+            <div class="text-center border-b pb-2 mb-3">
+                <h2 class="font-bold text-lg">العيادة التخصصية لطب وجراحة الفم والأسنان</h2>
+                <p class="text-sm font-semibold">د. علي النقيب / دكتورة الأسنان</p>
+                <p class="text-xs text-gray-600">أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p>
+                <p class="text-xs text-gray-600">هاتف: 777700412 - 771816548</p>
+            </div>
+            <div id="printBodyContent" class="text-sm space-y-2"></div>
+        </div>
+
+        <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">
+            نظام إدارة العيادة السحابي الآمن © 2026
+        </footer>
+    </div>
+
+    <script>
+        // إعدادات Firebase الخاصة بمشروعك الحقيقي
+        const firebaseConfig = {
+            apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
+            authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
+            projectId: "naqclinixai-dental-clinic",
+            storageBucket: "naqclinixai-dental-clinic.firebasestorage.app",
+            messagingSenderId: "796796158387",
+            appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // كلمة المرور الخاصة بك
+        const CLINIC_PASSWORD = "naqeeb2026";
+
+        function checkPassword() {
+            const inputPass = document.getElementById('loginPassword').value;
+            if (inputPass === CLINIC_PASSWORD) {
+                document.getElementById('loginOverlay').style.display = 'none';
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        let capturedImageStr = "";
+        let selectedTeeth = [];
+        const currentDate = new Date().toLocaleDateString('ar-YE');
+
+        document.getElementById('registrationDateDisplay').value = currentDate;
+
+        // توليد رقم ملف تلقائي تسلسلي
+        function generateFileNumber() {
+            let uniqueId = 'DR-' + Date.now().toString().slice(-6);
+            document.getElementById('fileNumber').value = uniqueId;
+        }
+
+        const upperTeethList = [18,17,16,15,14,13,12,11, 21,22,23,24,25,26,27,28];
+        const lowerTeethList = [48,47,46,45,44,43,42,41, 31,32,33,34,35,36,37,38];
+
+        function renderTeethGrid() {
+            const upperContainer = document.getElementById('upperArch');
+            const lowerContainer = document.getElementById('lowerArch');
+
+            upperTeethList.forEach(tooth => upperContainer.appendChild(createToothButton(tooth)));
+            lowerTeethList.forEach(tooth => lowerContainer.appendChild(createToothButton(tooth)));
+        }
+
+        function createToothButton(toothNumber) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = toothNumber;
+            btn.className = 'tooth-btn';
+            btn.onclick = () => {
+                const index = selectedTeeth.indexOf(toothNumber);
+                if (index > -1) {
+                    selectedTeeth.splice(index, 1);
+                    btn.classList.remove('selected');
+                } else {
+                    selectedTeeth.push(toothNumber);
+                    btn.classList.add('selected');
+                }
+                selectedTeeth.sort((a, b) => a - b);
+                document.getElementById('selectedTeethDisplay').textContent = 'الأسنان المحددة: ' + (selectedTeeth.length > 0 ? selectedTeeth.join(', ') : 'لا يوجد');
+            };
+            return btn;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTeethGrid();
+            generateFileNumber();
+        });
+
+        function calculateFinancials() {
+            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const p1 = parseFloat(document.getElementById('payment1').value) || 0;
+            const p2 = parseFloat(document.getElementById('payment2').value) || 0;
+            const p3 = parseFloat(document.getElementById('payment3').value) || 0;
+            
+            const remaining = total - (p1 + p2 + p3);
+            document.getElementById('remainingDisplay').textContent = remaining + ' ريال';
+
+            const totalPaid = p1 + p2 + p3;
+            document.getElementById('revenueAmount').value = totalPaid;
+            calculateNet();
+            return remaining;
+        }
+
+        function calculateNet() {
+            const revenue = parseFloat(document.getElementById('revenueAmount').value) || 0;
+            const expenses = parseFloat(document.getElementById('expenseAmount').value) || 0;
+            const net = revenue - expenses;
+
+            document.getElementById('totalRevenueDisplay').textContent = revenue + ' ريال';
+            document.getElementById('totalExpensesDisplay').textContent = expenses + ' ريال';
+            document.getElementById('netRevenueDisplay').textContent = net + ' ريال';
+        }
+
+        document.getElementById('revenueAmount').addEventListener('input', calculateNet);
+
+        document.getElementById('patientPhoto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    capturedImageStr = event.target.result;
+                    document.getElementById('imagePreviewContainer').innerHTML = `<img src="${capturedImageStr}" class="w-20 h-20 object-cover rounded border">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // حفظ البيانات سحابياً في Firebase Firestore
+        async function savePatientRecord() {
+            const name = document.getElementById('patientName').value.trim();
+            if(!name) {
+                alert('الرجاء إدخال اسم المريض الكامل أولاً');
+                return;
+            }
+
+            const record = {
+                fileNumber: document.getElementById('fileNumber').value,
+                fullName: name,
+                gender: document.getElementById('patientGender').value,
+                age: document.getElementById('patientAge').value,
+                address: document.getElementById('patientAddress').value,
+                phone: document.getElementById('patientPhone').value,
+                whatsapp: document.getElementById('whatsappPhone').value,
+                allergies: document.getElementById('patientAllergies').value,
+                chronic: document.getElementById('chronicDiseases').value,
+                regDate: currentDate,
+                appFile: document.getElementById('appFileNumber').value,
+                appDate: document.getElementById('appointmentDate').value,
+                appPatient: document.getElementById('appPatientName').value,
+                revenue: document.getElementById('revenueAmount').value,
+                revenueStatus: document.getElementById('revenueStatus').value,
+                expense: document.getElementById('expenseAmount').value,
+                expenseType: document.getElementById('expenseType').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection("patients").doc(record.fileNumber).set(record);
+                alert('تم حفظ البيانات بنجاح في سحابة العيادة!');
+                generateFileNumber(); // توليد رقم ملف جديد
+            } catch (error) {
+                console.error("خطأ في الحفظ: ", error);
+                alert('حدث خطأ أثناء الاتصال بالسحابة، تأكد من الإنترنت.');
+            }
+        }
+
+        function printReport() {
+            const name = document.getElementById('patientName').value || 'غير محدد';
+            const fileNo = document.getElementById('fileNumber').value || '-';
+            const age = document.getElementById('patientAge').value || '-';
+            const gender = document.getElementById('patientGender').value || '-';
+            const address = document.getElementById('patientAddress').value || '-';
+            const allergies = document.getElementById('patientAllergies').value || 'لا يوجد';
+            const chronic = document.getElementById('chronicDiseases').value || 'لا يوجد';
+
+            if(!document.getElementById('patientName').value) {
+                alert('الرجاء إدخال اسم المريض لطباعة التقرير');
+                return;
+            }
+
+            document.getElementById('printBodyContent').innerHTML = `
+                <h3 class="font-bold text-center border-b pb-1 mb-2">ملف المريض والتقرير الطبي</h3>
+                <p><strong>رقم الملف:</strong> ${fileNo} | <strong>الاسم:</strong> ${name}</p>
+                <p><strong>الجنس:</strong> ${gender} | <strong>العمر:</strong> ${age} | <strong>السكن:</strong> ${address}</p>
+                <p><strong>الحساسية:</strong> ${allergies} | <strong>الأمراض المزمنة:</strong> ${chronic}</p>
+                <p><strong>تاريخ التسجيل:</strong> ${currentDate}</p>
+                <div class="mt-8 text-left">
+                    <p>توقيع الطبيب / دكتورة الأسنان</p>
+                </div>
+            `;
+            window.print();
+        }
+
+        function printInvoice() {
+            const name = document.getElementById('patientName').value || 'غير محدد';
+            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const p1 = parseFloat(document.getElementById('payment1').value) || 0;
+            const p2 = parseFloat(document.getElementById('payment2').value) || 0;
+            const p3 = parseFloat(document.getElementById('payment3').value) || 0;
+            const remaining = calculateFinancials();
+            const revStatus = document.getElementById('revenueStatus').value || '-';
+
+            if(!document.getElementById('patientName').value) {
+                alert('الرجاء إدخال اسم المريض لإصدار الفاتورة');
+                return;
+            }
+
+            document.getElementById('printBodyContent').innerHTML = `
+                <h3 class="font-bold text-center border-b pb-1 mb-2">سند قبض وفاتورة مالية</h3>
+                <p><strong>اسم المريض:</strong> ${name}</p>
+                <p><strong>تاريخ الإصدار:</strong> ${currentDate}</p>
+                <p><strong>حالة الدفع:</strong> ${revStatus}</p>
+                <hr class="my-2">
+                <p><strong>المبلغ الكلي:</strong> ${total} ريال</p>
+                <p><strong>الدفعة الأولى:</strong> ${p1} ريال</p>
+                <p><strong>الدفعة الثانية:</strong> ${p2} ريال</p>
+                <p><strong>الدفعة الثالثة:</strong> ${p3} ريال</p>
+                <hr class="my-2">
+                <p><strong>المبلغ المتبقي:</strong> <span style="color:red; font-weight:bold;">${remaining} ريال</span></p>
+                <div class="mt-8 text-left">
+                    <p>ختم / توقيع العيادة</p>
+                </div>
+            `;
+            window.print();
+        }
+    </script>
+</body>
+</html>
