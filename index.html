@@ -1020,14 +1020,13 @@ async function runGeminiDiagnosis() {
   const work = document.getElementById('workType').value || 'تشخيص عام';
   const prompt = 'أنت طبيب أسنان استشاري. قدّم تشخيصاً وخطة علاجية وبديلاً بالعربية بنقاط.\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، جنس ' + (document.getElementById('patientGender').value || '؟') + '.\n\nالأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '\nنوع العمل: ' + work + '\nالشكوى: ' + (document.getElementById('complaint').value || 'غير مذكورة') + '\n\nالمطلوب:\n1. التشخيص\n2. الخطة العلاجية\n3. البديل والمخاطر\n\nبدون مقدمات.';
 
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-001'];
+  const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
   let lastErr = '';
 
   for (const model of models) {
     try {
       const resp = await callGeminiAPI(key, model, { contents: [{ parts: [{ text: prompt }] }] });
       if (!resp.ok) {
-        const errText = await resp.text();
         lastErr = model + ': كود ' + resp.status;
         continue;
       }
@@ -1186,7 +1185,7 @@ async function runGeminiImageAnalysis(focus, key) {
     parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
   }
 
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-001'];
+  const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
   let text = '';
   let lastErr = '';
 
