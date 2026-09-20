@@ -1,3 +1,8 @@
+📦 الكود الكامل مع نظام المستخدمين والصلاحيات
+
+احفظ هذا الكود كاملاً في ملف index.html في مشروعك، ثم ارفعه على GitHub وNetlify.
+
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -49,19 +54,43 @@
 </head>
 <body class="bg-gray-50 text-gray-800 p-2">
 
+<!-- شاشة تسجيل الدخول -->
 <div id="loginOverlay" class="fixed inset-0 bg-blue-950 flex items-center justify-center z-50 p-4">
   <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4 border border-blue-100">
     <div class="w-20 h-20 mx-auto mb-2 clinic-logo rounded-2xl overflow-hidden shadow-lg shadow-blue-200"></div>
-    <h2 class="text-lg font-bold text-blue-900">تسجيل دخول النظام</h2>
-    <p class="text-xs text-gray-600">أدخل كلمة المرور للوصول</p>
-    <input type="password" id="loginPassword" placeholder="كلمة المرور..." class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
-    <button onclick="checkPassword()" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-blue-700">دخول</button>
-    <p id="loginError" class="text-xs text-red-600 hidden font-semibold">كلمة المرور غير صحيحة!</p>
+    <h2 class="text-lg font-bold text-blue-900">تسجيل الدخول</h2>
+    <p class="text-xs text-gray-600">أدخل بيانات حسابك</p>
+    <div class="text-right space-y-2">
+      <label class="text-[11px] font-bold text-gray-700 block">👤 اسم المستخدم</label>
+      <input type="text" id="loginUsername" placeholder="مثال: drali" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600" autocomplete="username">
+      <label class="text-[11px] font-bold text-gray-700 block">🔑 كلمة المرور</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600" autocomplete="current-password">
+    </div>
+    <button onclick="login()" id="loginBtn" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-blue-700">دخول النظام</button>
+    <p id="loginError" class="text-xs text-red-600 hidden font-semibold"></p>
   </div>
 </div>
 
 <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col p-4 rounded-xl border border-gray-100">
 
+  <!-- شريط المستخدم -->
+  <div id="userBar" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between shadow">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">👤</span>
+      <div>
+        <p id="userBarName" class="text-sm font-bold">-</p>
+        <p id="userBarRole" class="text-[10px] opacity-90">-</p>
+      </div>
+    </div>
+    <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">
+      🚪 خروج
+    </button>
+  </div>
+
+  <!-- رسالة ترحيب -->
+  <div id="welcomeBar" class="hidden bg-emerald-100 text-emerald-800 p-3 rounded-xl mb-3 text-center font-bold text-sm"></div>
+
+  <!-- رأس العيادة -->
   <header class="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 shadow-xl border border-blue-800">
     <div class="relative p-5 text-center">
       <div class="relative w-20 h-20 mx-auto mb-3">
@@ -85,78 +114,99 @@
       <button onclick="openAISettings()" class="mt-3 text-[10px] bg-white/10 hover:bg-white/20 text-cyan-200 px-3 py-1 rounded-full border border-white/20">⚙️ إعدادات الذكاء الاصطناعي</button>
     </div>
   </header>
+
   <main class="flex-1 space-y-4 no-print">
 
-  <section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2">
-    <h2 class="font-bold text-blue-900 text-sm">👤 المريض</h2>
-    <div class="grid grid-cols-2 gap-2">
-      <div><label class="text-[10px] text-gray-600 block">رقم الملف:</label>
-        <input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
-      <div><label class="text-[10px] text-gray-600 block">التاريخ:</label>
-        <input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
-    </div>
-    <input type="text" id="patientName" placeholder="الاسم كامل" class="w-full p-2 border rounded-lg text-sm bg-white">
-    <div class="grid grid-cols-3 gap-2">
-      <select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option>
-      </select>
-      <input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm bg-white">
-      <input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm bg-white">
-    </div>
-    <div class="grid grid-cols-2 gap-2">
-      <input type="tel" id="patientPhone" placeholder="الهاتف" class="w-full p-2 border rounded-lg text-sm bg-white">
-      <input type="tel" id="whatsappPhone" placeholder="الواتساب" class="w-full p-2 border rounded-lg text-sm bg-white">
-    </div>
-    <div class="grid grid-cols-2 gap-2">
-      <input type="text" id="patientAllergies" placeholder="الحساسية" class="w-full p-2 border rounded-lg text-sm bg-white">
-      <input type="text" id="chronicDiseases" placeholder="أمراض مزمنة" class="w-full p-2 border rounded-lg text-sm bg-white">
-    </div>
-    <div class="grid grid-cols-2 gap-2">
-      <select id="smokingHabit" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <option value="">التدخين</option><option value="لا يدخن">لا يدخن</option>
-        <option value="مدخن خفيف">مدخن خفيف</option><option value="مدخن">مدخن</option>
-      </select>
-      <select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option>
-        <option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option>
-      </select>
-    </div>
-  </section>
+    <!-- لوحة تحكم المدير (للمدير فقط) -->
+    <section id="adminPanelSection" class="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-xl border-2 border-amber-300 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-bold text-amber-900 text-sm">👑 لوحة تحكم المدير</h2>
+        <button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">إخفاء</button>
+      </div>
+      <div id="adminPanelContent" class="space-y-2">
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="openAddUserModal()" class="bg-emerald-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">➕ إضافة مستخدم</button>
+          <button onclick="openActivityLog()" class="bg-blue-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📝 سجل النشاطات</button>
+        </div>
+        <div id="usersList" class="space-y-2"></div>
+      </div>
+    </section>
 
-  <section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
-    <h2 class="font-bold text-indigo-900 mb-2 text-sm">🦷 نوع العمل</h2>
-    <select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
-      <option value="">اختر...</option>
-      <option value="تشخيص عام">تشخيص عام</option>
-      <option value="تجميل وتناغم وجه">تجميل وتناغم وجه</option>
-      <option value="حشوات تجميلية">حشوات تجميلية</option>
-      <option value="علاج عصب">علاج عصب</option>
-      <option value="تلبيسات وتركيبات">تلبيسات وتركيبات</option>
-      <option value="جراحة وخلع">جراحة وخلع</option>
-      <option value="تنظيف اللثة">تنظيف اللثة</option>
-      <option value="علاج لثة متقدم">علاج لثة متقدم</option>
-      <option value="زراعة الأسنان">زراعة الأسنان</option>
-      <option value="تقويم الأسنان">تقويم الأسنان</option>
-      <option value="طب أسنان الأطفال">أسنان الأطفال</option>
-      <option value="أخرى">أخرى</option>
-    </select>
-    <input type="number" id="teethCount" placeholder="عدد الأسنان" class="w-full p-2 border rounded-lg text-sm bg-white mb-2">
-    <div class="bg-white p-3 rounded-xl border border-indigo-200">
-      <p class="text-[11px] text-gray-600 mb-1 text-center font-bold">🦷 الفك العلوي</p>
-      <svg id="upperArchSvg" class="dental-arch" viewBox="0 0 400 88" preserveAspectRatio="xMidYMid meet"></svg>
-      <p class="text-[11px] text-gray-600 mb-1 mt-2 text-center font-bold">🦷 الفك السفلي</p>
-      <svg id="lowerArchSvg" class="dental-arch" viewBox="0 40 400 88" preserveAspectRatio="xMidYMid meet"></svg>
-      <p class="text-center text-xs text-blue-700 mt-3 font-bold bg-blue-50 py-1.5 rounded-lg" id="selectedTeethDisplay">الأسنان: لا يوجد</p>
-    </div>
-  </section>
+    <!-- 1. المريض -->
+    <section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2">
+      <h2 class="font-bold text-blue-900 text-sm">👤 المريض</h2>
+      <div class="grid grid-cols-2 gap-2">
+        <div><label class="text-[10px] text-gray-600 block">رقم الملف:</label>
+          <input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+        <div><label class="text-[10px] text-gray-600 block">التاريخ:</label>
+          <input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+      </div>
+      <input type="text" id="patientName" placeholder="الاسم كامل" class="w-full p-2 border rounded-lg text-sm bg-white">
+      <div class="grid grid-cols-3 gap-2">
+        <select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white">
+          <option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option>
+        </select>
+        <input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm bg-white">
+        <input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="tel" id="patientPhone" placeholder="الهاتف" class="w-full p-2 border rounded-lg text-sm bg-white">
+        <input type="tel" id="whatsappPhone" placeholder="الواتساب" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="text" id="patientAllergies" placeholder="الحساسية" class="w-full p-2 border rounded-lg text-sm bg-white">
+        <input type="text" id="chronicDiseases" placeholder="أمراض مزمنة" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <select id="smokingHabit" class="w-full p-2 border rounded-lg text-sm bg-white">
+          <option value="">التدخين</option><option value="لا يدخن">لا يدخن</option>
+          <option value="مدخن خفيف">مدخن خفيف</option><option value="مدخن">مدخن</option>
+        </select>
+        <select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white">
+          <option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option>
+          <option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option>
+        </select>
+      </div>
+    </section>
 
-  <section class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
-    <h2 class="font-bold text-gray-800 text-sm">التشخيص والخطط</h2>
-    <textarea id="complaint" placeholder="الشكوى..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-    <textarea id="treatmentPlan" placeholder="الخطة العلاجية..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-    <textarea id="alternativePlan" placeholder="البديل..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-  </section>
-      <section class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden">
+    <!-- 2. نوع العمل -->
+    <section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+      <h2 class="font-bold text-indigo-900 mb-2 text-sm">🦷 نوع العمل</h2>
+      <select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
+        <option value="">اختر...</option>
+        <option value="تشخيص عام">تشخيص عام</option>
+        <option value="تجميل وتناغم وجه">تجميل وتناغم وجه</option>
+        <option value="حشوات تجميلية">حشوات تجميلية</option>
+        <option value="علاج عصب">علاج عصب</option>
+        <option value="تلبيسات وتركيبات">تلبيسات وتركيبات</option>
+        <option value="جراحة وخلع">جراحة وخلع</option>
+        <option value="تنظيف اللثة">تنظيف اللثة</option>
+        <option value="علاج لثة متقدم">علاج لثة متقدم</option>
+        <option value="زراعة الأسنان">زراعة الأسنان</option>
+        <option value="تقويم الأسنان">تقويم الأسنان</option>
+        <option value="طب أسنان الأطفال">أسنان الأطفال</option>
+        <option value="أخرى">أخرى</option>
+      </select>
+      <input type="number" id="teethCount" placeholder="عدد الأسنان" class="w-full p-2 border rounded-lg text-sm bg-white mb-2">
+      <div class="bg-white p-3 rounded-xl border border-indigo-200">
+        <p class="text-[11px] text-gray-600 mb-1 text-center font-bold">🦷 الفك العلوي</p>
+        <svg id="upperArchSvg" class="dental-arch" viewBox="0 0 400 88" preserveAspectRatio="xMidYMid meet"></svg>
+        <p class="text-[11px] text-gray-600 mb-1 mt-2 text-center font-bold">🦷 الفك السفلي</p>
+        <svg id="lowerArchSvg" class="dental-arch" viewBox="0 40 400 88" preserveAspectRatio="xMidYMid meet"></svg>
+        <p class="text-center text-xs text-blue-700 mt-3 font-bold bg-blue-50 py-1.5 rounded-lg" id="selectedTeethDisplay">الأسنان: لا يوجد</p>
+      </div>
+    </section>
+
+    <!-- 3. التشخيص والخطط -->
+    <section class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+      <h2 class="font-bold text-gray-800 text-sm">التشخيص والخطط</h2>
+      <textarea id="complaint" placeholder="الشكوى..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+      <textarea id="treatmentPlan" placeholder="الخطة العلاجية..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+      <textarea id="alternativePlan" placeholder="البديل..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+    </section>
+
+    <!-- 4. المساعد الذكي -->
+    <section id="aiAssistantSection" class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden">
       <div class="ai-glow p-3 text-white">
         <div class="flex items-center justify-between">
           <h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2>
@@ -191,7 +241,8 @@
       </div>
     </section>
 
-    <section class="rounded-2xl border-2 border-cyan-300 shadow-lg bg-white overflow-hidden">
+    <!-- 5. تحليل الصور -->
+    <section id="imageAnalysisSection" class="rounded-2xl border-2 border-cyan-300 shadow-lg bg-white overflow-hidden">
       <div class="bg-gradient-to-r from-cyan-600 to-blue-600 p-3 text-white">
         <h2 class="font-extrabold text-sm">🔬 تحليل الصور والأشعة</h2>
         <p class="text-[10px] opacity-90 mt-1">رسم النتائج + جداول + PDF</p>
@@ -217,11 +268,14 @@
         <div id="imgAiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-cyan-50 text-cyan-700 font-bold"></div>
         <div id="annotatedImagesArea" class="hidden space-y-3"></div>
         <div id="imgAiResults" class="hidden space-y-3"></div>
-        <div id="proportionTables" class="hidden space-y-3"></div>
+        <div id="proportionTablesSection" class="hidden">
+          <div id="proportionTables" class="space-y-3"></div>
+        </div>
       </div>
     </section>
 
-    <section class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2">
+    <!-- 6. الحسابات المالية -->
+    <section id="financialSection" class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2">
       <h2 class="font-bold text-green-900 text-sm">الحسابات المالية</h2>
       <input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="المبلغ الكلي" class="w-full p-2 border rounded-lg text-sm">
       <div class="grid grid-cols-3 gap-2">
@@ -235,7 +289,8 @@
       </div>
     </section>
 
-    <section class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2">
+    <!-- 7. الإيرادات والمصروفات -->
+    <section id="revenueSection" class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2">
       <h2 class="font-bold text-emerald-900 text-sm">الإيرادات والمصروفات</h2>
       <div class="grid grid-cols-2 gap-2">
         <input type="number" id="revenueAmount" placeholder="الإيراد" class="w-full p-2 border rounded-lg text-sm">
@@ -243,16 +298,19 @@
           <option value="">الحالة...</option><option value="مدفوع كامل">مدفوع كامل</option>
           <option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option>
         </select>
+      </div>
+      <div id="expenseSection" class="grid grid-cols-2 gap-2">
         <input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="مصروف" class="w-full p-2 border rounded-lg text-sm">
         <input type="text" id="expenseType" placeholder="نوع المصروف" class="w-full p-2 border rounded-lg text-sm">
       </div>
       <div class="grid grid-cols-3 gap-1 text-center text-[10px]">
         <div class="bg-white p-1.5 rounded border"><div class="text-emerald-700 font-bold" id="totalRevenueDisplay">0</div><div>إيرادات</div></div>
-        <div class="bg-white p-1.5 rounded border"><div class="text-red-700 font-bold" id="totalExpensesDisplay">0</div><div>مصروفات</div></div>
-        <div class="bg-white p-1.5 rounded border"><div class="text-cyan-700 font-bold" id="netRevenueDisplay">0</div><div>صافي</div></div>
+        <div id="netRevenueSection" class="bg-white p-1.5 rounded border"><div class="text-red-700 font-bold" id="totalExpensesDisplay">0</div><div>مصروفات</div></div>
+        <div id="netRevenueDisplayWrap" class="bg-white p-1.5 rounded border"><div class="text-cyan-700 font-bold" id="netRevenueDisplay">0</div><div>صافي</div></div>
       </div>
     </section>
 
+    <!-- 8. صور المريض -->
     <section class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-3">
       <div class="flex items-center justify-between">
         <h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2>
@@ -265,6 +323,7 @@
       <div id="imagePreviewContainer" class="grid grid-cols-3 gap-2"></div>
     </section>
 
+    <!-- الأزرار -->
     <div class="space-y-2 pt-2">
       <button id="saveBtn" onclick="savePatientRecord()" class="w-full bg-blue-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">💾 حفظ في السحابة</button>
       <div class="grid grid-cols-2 gap-2">
@@ -291,7 +350,8 @@
   <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">© 2026 NAQClinixAI</footer>
 </div>
 
- <div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print">
+<!-- نافذة إعدادات AI -->
+<div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print">
   <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between">
       <h3 class="font-bold text-purple-900 text-base">🤖 إعدادات الذكاء الاصطناعي</h3>
@@ -323,11 +383,52 @@
   </div>
 </div>
 
+<!-- نافذة إضافة مستخدم -->
+<div id="addUserModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print">
+  <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم جديد</h3>
+      <button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button>
+    </div>
+    <div class="space-y-2">
+      <label class="text-xs font-bold text-gray-700 block">اسم المستخدم (بالإنجليزية):</label>
+      <input type="text" id="newUsername" placeholder="مثال: drmohammed" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr">
+      <label class="text-xs font-bold text-gray-700 block">كلمة المرور:</label>
+      <input type="text" id="newPassword" placeholder="كلمة مرور قوية" class="w-full p-2.5 border rounded-lg text-sm">
+      <label class="text-xs font-bold text-gray-700 block">الاسم الكامل:</label>
+      <input type="text" id="newFullName" placeholder="د. محمد أحمد" class="w-full p-2.5 border rounded-lg text-sm">
+      <label class="text-xs font-bold text-gray-700 block">الدور:</label>
+      <select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white">
+        <option value="doctor">👨‍⚕️ طبيب</option>
+        <option value="employee">👨‍💼 موظف</option>
+        <option value="admin">👑 مدير</option>
+      </select>
+    </div>
+    <div class="flex gap-2 pt-2">
+      <button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button>
+      <button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button>
+    </div>
+    <p id="addUserStatus" class="text-[11px] text-center font-bold hidden"></p>
+  </div>
+</div>
+
+<!-- نافذة سجل النشاطات -->
+<div id="activityModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print">
+  <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold text-blue-900 text-base">📝 سجل النشاطات</h3>
+      <button onclick="closeActivityLog()" class="text-gray-400 text-xl">✕</button>
+    </div>
+    <div id="activityList" class="space-y-2 text-xs"></div>
+  </div>
+</div>
+
 <div id="lightbox" class="fixed inset-0 bg-black/90 z-[60] hidden items-center justify-center p-4 no-print" onclick="closeLightbox()">
   <img id="lightboxImg" class="max-w-full max-h-full rounded-xl">
 </div>
 
 <script>
+/* ================= Firebase ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
   authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
@@ -341,15 +442,296 @@ const db = firebase.firestore();
 let storage = null;
 try { storage = firebase.storage(); } catch (e) { console.warn("Storage:", e); }
 
-const CLINIC_PASSWORD = "naqeeb2026";
+/* ================= نظام المستخدمين ================= */
+let currentUser = null;
 
-function checkPassword() {
-  const v = document.getElementById('loginPassword').value;
-  if (v === CLINIC_PASSWORD) document.getElementById('loginOverlay').style.display = 'none';
-  else document.getElementById('loginError').classList.remove('hidden');
+async function login() {
+  const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+
+  errEl.classList.add('hidden');
+  if (!username || !password) {
+    errEl.textContent = '⚠️ أدخل اسم المستخدم وكلمة المرور';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ جاري التحقق...';
+
+  try {
+    const doc = await db.collection('users').doc(username).get();
+    if (!doc.exists) {
+      errEl.textContent = '❌ اسم المستخدم غير موجود';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    const user = doc.data();
+    if (user.password !== password) {
+      errEl.textContent = '❌ كلمة المرور غير صحيحة';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if (user.active !== true) {
+      errEl.textContent = '🚫 حسابك موقوف — راجع المدير';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    currentUser = {
+      username: username,
+      fullName: user.fullName || username,
+      role: user.role || 'employee',
+      loginTime: new Date().toISOString()
+    };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+    try {
+      await db.collection('activity').add({
+        username, fullName: currentUser.fullName, role: currentUser.role,
+        action: 'تسجيل دخول',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (e) {}
+
+    document.getElementById('loginOverlay').style.display = 'none';
+    applyPermissions();
+    updateUserBar();
+    showWelcome();
+
+    if (currentUser.role === 'admin') loadUsersList();
+
+  } catch (err) {
+    console.error(err);
+    errEl.textContent = '❌ خطأ في الاتصال — تحقق من الإنترنت';
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'دخول النظام';
+  }
 }
-document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
 
+function logout() {
+  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  try {
+    if (currentUser) {
+      db.collection('activity').add({
+        username: currentUser.username, fullName: currentUser.fullName,
+        role: currentUser.role, action: 'تسجيل خروج',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(() => {});
+    }
+  } catch (e) {}
+  localStorage.removeItem('currentUser');
+  location.reload();
+}
+
+function applyPermissions() {
+  if (!currentUser) return;
+  const role = currentUser.role;
+  const hideElements = (ids) => ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+
+  if (role === 'employee') {
+    hideElements(['aiAssistantSection', 'imageAnalysisSection', 'proportionTablesSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']);
+  } else if (role === 'doctor') {
+    hideElements(['financialSection', 'revenueSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']);
+  }
+}
+
+function updateUserBar() {
+  if (!currentUser) return;
+  const bar = document.getElementById('userBar');
+  if (!bar) return;
+  bar.classList.remove('hidden');
+  const roleLabel = currentUser.role === 'admin' ? '👑 مدير' : currentUser.role === 'doctor' ? '👨‍⚕️ طبيب' : '👨‍💼 موظف';
+  document.getElementById('userBarName').textContent = currentUser.fullName;
+  document.getElementById('userBarRole').textContent = roleLabel;
+}
+
+function showWelcome() {
+  if (!currentUser) return;
+  const w = document.getElementById('welcomeBar');
+  if (!w) return;
+  w.textContent = `👋 مرحباً ${currentUser.fullName}`;
+  w.classList.remove('hidden');
+  setTimeout(() => w.classList.add('hidden'), 4000);
+}
+
+window.addEventListener('load', () => {
+  try {
+    const saved = localStorage.getItem('currentUser');
+    if (saved) {
+      currentUser = JSON.parse(saved);
+      document.getElementById('loginOverlay').style.display = 'none';
+      applyPermissions();
+      updateUserBar();
+      if (currentUser.role === 'admin') loadUsersList();
+    }
+  } catch (e) {}
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginOverlay').classList.contains('hidden')) {
+    const el = document.activeElement;
+    if (el && (el.id === 'loginPassword' || el.id === 'loginUsername')) login();
+  }
+});
+
+/* ================= إدارة المستخدمين (للمدير) ================= */
+async function loadUsersList() {
+  const container = document.getElementById('usersList');
+  if (!container) return;
+  container.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">جاري التحميل...</p>';
+  try {
+    const snap = await db.collection('users').get();
+    if (snap.empty) {
+      container.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">لا يوجد مستخدمون</p>';
+      return;
+    }
+    let html = '<p class="text-[11px] font-bold text-amber-900 mb-1">👥 المستخدمون الحاليون:</p>';
+    snap.forEach(doc => {
+      const u = doc.data();
+      const roleIcon = u.role === 'admin' ? '👑' : u.role === 'doctor' ? '👨‍⚕️' : '👨‍💼';
+      const roleName = u.role === 'admin' ? 'مدير' : u.role === 'doctor' ? 'طبيب' : 'موظف';
+      const isMe = currentUser && currentUser.username === doc.id;
+      html += `<div class="bg-white border rounded-lg p-2 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">${roleIcon}</span>
+          <div>
+            <p class="text-xs font-bold">${u.fullName || doc.id} ${isMe ? '<span class="text-emerald-600">(أنت)</span>' : ''}</p>
+            <p class="text-[10px] text-gray-500">@${doc.id} — ${roleName}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${u.active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${u.active ? 'نشط' : 'موقوف'}</span>
+          ${!isMe ? `
+            <button onclick="toggleUserActive('${doc.id}', ${!u.active})" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">${u.active ? 'إيقاف' : 'تفعيل'}</button>
+            <button onclick="deleteUser('${doc.id}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">حذف</button>
+          ` : ''}
+        </div>
+      </div>`;
+    });
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<p class="text-center text-xs text-red-500 py-2">فشل التحميل</p>';
+  }
+}
+
+function toggleAdminPanel() {
+  const c = document.getElementById('adminPanelContent');
+  const t = document.getElementById('adminPanelToggle');
+  if (c.style.display === 'none') {
+    c.style.display = 'block';
+    t.textContent = 'إخفاء';
+  } else {
+    c.style.display = 'none';
+    t.textContent = 'إظهار';
+  }
+}
+
+function openAddUserModal() { document.getElementById('addUserModal').classList.remove('hidden'); document.getElementById('addUserModal').classList.add('flex'); }
+function closeAddUserModal() { document.getElementById('addUserModal').classList.add('hidden'); document.getElementById('addUserModal').classList.remove('flex'); }
+
+async function addNewUser() {
+  const username = document.getElementById('newUsername').value.trim().toLowerCase();
+  const password = document.getElementById('newPassword').value.trim();
+  const fullName = document.getElementById('newFullName').value.trim();
+  const role = document.getElementById('newRole').value;
+  const status = document.getElementById('addUserStatus');
+
+  if (!username || !password || !fullName) {
+    status.textContent = '⚠️ أكمل جميع الحقول';
+    status.className = 'text-[11px] text-center font-bold text-amber-600';
+    status.classList.remove('hidden');
+    return;
+  }
+  if (!/^[a-z0-9]+$/.test(username)) {
+    status.textContent = '⚠️ اسم المستخدم بأحرف إنجليزية صغيرة وأرقام فقط';
+    status.className = 'text-[11px] text-center font-bold text-amber-600';
+    status.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const existing = await db.collection('users').doc(username).get();
+    if (existing.exists) {
+      status.textContent = '⚠️ اسم المستخدم موجود مسبقاً';
+      status.className = 'text-[11px] text-center font-bold text-red-600';
+      status.classList.remove('hidden');
+      return;
+    }
+
+    await db.collection('users').doc(username).set({
+      username, password, fullName, role,
+      active: true,
+      createdAt: Date.now()
+    });
+
+    status.textContent = '✅ تم إضافة المستخدم بنجاح';
+    status.className = 'text-[11px] text-center font-bold text-emerald-600';
+    status.classList.remove('hidden');
+    setTimeout(() => { closeAddUserModal(); loadUsersList(); }, 1500);
+  } catch (e) {
+    status.textContent = '❌ فشل الإضافة';
+    status.className = 'text-[11px] text-center font-bold text-red-600';
+    status.classList.remove('hidden');
+  }
+}
+
+async function toggleUserActive(username, active) {
+  if (!confirm(active ? 'تفعيل هذا المستخدم؟' : 'إيقاف هذا المستخدم؟')) return;
+  try {
+    await db.collection('users').doc(username).update({ active });
+    loadUsersList();
+  } catch (e) { alert('فشل التحديث'); }
+}
+
+async function deleteUser(username) {
+  if (!confirm('هل تريد حذف هذا المستخدم نهائياً؟')) return;
+  try {
+    await db.collection('users').doc(username).delete();
+    loadUsersList();
+  } catch (e) { alert('فشل الحذف'); }
+}
+
+async function openActivityLog() {
+  const m = document.getElementById('activityModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+  const list = document.getElementById('activityList');
+  list.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">جاري التحميل...</p>';
+  try {
+    const snap = await db.collection('activity').orderBy('timestamp', 'desc').limit(50).get();
+    if (snap.empty) {
+      list.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">لا توجد نشاطات</p>';
+      return;
+    }
+    let html = '';
+    snap.forEach(doc => {
+      const a = doc.data();
+      const time = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleString('ar-YE') : '-';
+      const actionIcon = a.action.includes('دخول') ? '🟢' : '🔴';
+      html += `<div class="bg-gray-50 border rounded-lg p-2">
+        <div class="flex justify-between items-center">
+          <span class="font-bold text-gray-800">${actionIcon} ${a.action}</span>
+          <span class="text-[10px] text-gray-500">${time}</span>
+        </div>
+        <p class="text-[10px] text-gray-600 mt-1">👤 ${a.fullName || a.username} (${a.username})</p>
+      </div>`;
+    });
+    list.innerHTML = html;
+  } catch (e) {
+    list.innerHTML = '<p class="text-center text-xs text-red-500 py-2">فشل التحميل — تحقق من قواعد Firestore</p>';
+  }
+}
+function closeActivityLog() {
+  const m = document.getElementById('activityModal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+}
+
+/* ================= الشعار ================= */
 let logoUid = 0;
 function defaultLogoSVG() {
   const uid = 'lg' + (++logoUid);
@@ -389,6 +771,7 @@ function compressImage(file, maxDim, quality) {
   });
 }
 
+/* ================= مخطط الأسنان ================= */
 let selectedTeeth = [];
 const TOOTH_SHAPES = {
   central: 'M 3,3 C 7,-1 17,-1 21,3 L 22.5,7 C 22,18 22,26 21.5,33 C 19,39 16.5,41 12,41 C 7.5,41 5,39 2.5,33 C 2,26 2,18 1.5,7 Z',
@@ -440,11 +823,12 @@ const currentDate = new Date().toLocaleDateString('ar-YE');
 document.getElementById('registrationDateDisplay').value = currentDate;
 function generateFileNumber() { document.getElementById('fileNumber').value = 'DR-' + Date.now().toString().slice(-6); }
 
+/* ================= معرض الصور ================= */
 let clinicImages = [];
 let currentAnnotations = {};
 let mergedImageCache = {};
 
- function renderGallery() {
+function renderGallery() {
   const c = document.getElementById('imagePreviewContainer');
   document.getElementById('imageCounter').textContent = clinicImages.length + ' صورة';
   if (!clinicImages.length) {
@@ -474,6 +858,7 @@ async function handleImageFiles(files, type) {
 document.getElementById('clinicalPhotoInput').addEventListener('change', e => { handleImageFiles(e.target.files, 'سريرية'); e.target.value = ''; });
 document.getElementById('xrayInput').addEventListener('change', e => { handleImageFiles(e.target.files, 'أشعة'); e.target.value = ''; });
 
+/* ================= الحسابات ================= */
 function calculateFinancials() {
   const t = parseFloat(document.getElementById('totalAmount').value) || 0;
   const p1 = parseFloat(document.getElementById('payment1').value) || 0;
@@ -494,6 +879,7 @@ function calculateNet() {
 }
 document.getElementById('revenueAmount').addEventListener('input', calculateNet);
 
+/* ================= قاعدة معرفة AI ================= */
 const AI_KB = {
   toothMeta: { central: { name: 'قاطع مركزي', group: 'أمامية' }, lateral: { name: 'قاطع جانبي', group: 'أمامية' }, canine: { name: 'ناب', group: 'أمامية' }, premolar: { name: 'ضاحك', group: 'خلفية' }, molar: { name: 'ضرس', group: 'خلفية' } },
   treatments: {
@@ -533,7 +919,7 @@ function renderProportionTables() {
   });
   html += '</div>';
   container.innerHTML = html;
-  container.classList.remove('hidden');
+  document.getElementById('proportionTablesSection').classList.remove('hidden');
 }
 
 function generateAIDiagnosis() {
@@ -592,7 +978,7 @@ async function runGeminiDiagnosis() {
   const key = getGeminiKey();
   if (!key) { runBuiltinDiagnosis(); return; }
   const work = document.getElementById('workType').value || 'تشخيص عام';
-  const prompt = 'أنت طبيب أسنان استشاري. قدّم تشخيصاً وخطة علاجية وبديلاً بالعربية بنقاط.\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + ' سنة، جنس ' + (document.getElementById('patientGender').value || '؟') + '، حساسية: ' + (document.getElementById('patientAllergies').value || 'لا') + '، أمراض: ' + (document.getElementById('chronicDiseases').value || 'لا') + '.\n\nالأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '\nنوع العمل: ' + work + '\nالشكوى: ' + (document.getElementById('complaint').value || 'غير مذكورة') + '\n\nالمطلوب:\n1. التشخيص\n2. الخطة العلاجية (مرقمة)\n3. البديل والمخاطر\n\nبدون مقدمات.';
+  const prompt = 'أنت طبيب أسنان استشاري. قدّم تشخيصاً وخطة علاجية وبديلاً بالعربية بنقاط.\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، جنس ' + (document.getElementById('patientGender').value || '؟') + '، حساسية: ' + (document.getElementById('patientAllergies').value || 'لا') + '، أمراض: ' + (document.getElementById('chronicDiseases').value || 'لا') + '.\n\nالأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '\nنوع العمل: ' + work + '\nالشكوى: ' + (document.getElementById('complaint').value || 'غير مذكورة') + '\n\nالمطلوب:\n1. التشخيص\n2. الخطة العلاجية\n3. البديل والمخاطر\n\nبدون مقدمات.';
   try {
     const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + key, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -638,7 +1024,9 @@ function applyAIToForm() {
   document.getElementById('alternativePlan').value = r.alt.trim();
   alert('✅ تم التطبيق');
 }
- let showAnnotations = true;
+
+/* ================= تحليل الصور ================= */
+let showAnnotations = true;
 function toggleAnnotations() {
   showAnnotations = !showAnnotations;
   document.querySelectorAll('.annotated-canvas').forEach(c => { c.style.display = showAnnotations ? 'block' : 'none'; });
@@ -728,7 +1116,7 @@ async function runGeminiImageAnalysis(focus, key) {
   const status = document.getElementById('imgAiStatus');
   const results = document.getElementById('imgAiResults');
   const imgsToSend = clinicImages.slice(0, 6);
-  const promptText = 'أنت طبيب أسنان استشاري. حلّل الصور المرفوعة (' + focus + ').\n\nبيانات المريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، جنس ' + (document.getElementById('patientGender').value || '؟') + '، أسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '.\n\nاكتب تحليلاً بالعربية، ثم أعِد JSON بين ```json و ``` بهذه البنية:\n{"boxes":[{"label":"التهاب لثة","xmin":0.2,"ymin":0.3,"xmax":0.4,"ymax":0.5,"severity":"متوسط","tooth":11}],"landmarks":[{"name":"قمة اللثة","x":0.35,"y":0.4}],"measurements":[{"name":"عرض القاطع","x1":0.3,"y1":0.4,"x2":0.42,"y2":0.4,"value":"8.5 مم"}],"angles":[{"name":"ANB","p1":{"x":0.3,"y":0.3},"p2":{"x":0.5,"y":0.5},"p3":{"x":0.7,"y":0.3},"value":2}],"midline":0.5,"gumLine":[{"x":0.2,"y":0.35},{"x":0.5,"y":0.33},{"x":0.8,"y":0.35}],"boneLine":[{"x":0.2,"y":0.42},{"x":0.5,"y":0.40},{"x":0.8,"y":0.42}],"goldenLines":[0.35,0.42,0.50,0.58,0.65]}\n\nكل الإحداثيات من 0 إلى 1.';
+  const promptText = 'أنت طبيب أسنان استشاري. حلّل الصور المرفوعة (' + focus + ').\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، جنس ' + (document.getElementById('patientGender').value || '؟') + '، أسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '.\n\nاكتب تحليلاً بالعربية، ثم أعِد JSON بين ```json و ``` بهذه البنية:\n{"boxes":[{"label":"التهاب لثة","xmin":0.2,"ymin":0.3,"xmax":0.4,"ymax":0.5,"severity":"متوسط","tooth":11}],"landmarks":[{"name":"قمة اللثة","x":0.35,"y":0.4}],"measurements":[{"name":"عرض القاطع","x1":0.3,"y1":0.4,"x2":0.42,"y2":0.4,"value":"8.5 مم"}],"angles":[{"name":"ANB","p1":{"x":0.3,"y":0.3},"p2":{"x":0.5,"y":0.5},"p3":{"x":0.7,"y":0.3},"value":2}],"midline":0.5,"gumLine":[{"x":0.2,"y":0.35},{"x":0.5,"y":0.33},{"x":0.8,"y":0.35}],"boneLine":[{"x":0.2,"y":0.42},{"x":0.5,"y":0.40},{"x":0.8,"y":0.42}],"goldenLines":[0.35,0.42,0.50,0.58,0.65]}\n\nكل الإحداثيات من 0 إلى 1.';
   const parts = [{ text: promptText }];
   for (const img of imgsToSend) {
     parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
@@ -950,6 +1338,7 @@ function exportAnnotatedImage() {
   alert('✅ تم تنزيل ' + keys.length + ' صورة');
 }
 
+/* ================= PDF ================= */
 async function exportToPDF(type) {
   type = type || 'report';
   const name = document.getElementById('patientName').value || '';
@@ -983,7 +1372,8 @@ async function exportToPDF(type) {
 function buildReportContent() {
   const name = document.getElementById('patientName').value;
   const teeth = selectedTeeth.length ? selectedTeeth.join(', ') : 'لا يوجد';
-  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p><strong>المريض:</strong> ' + name + '</p><p><strong>العمر/الجنس:</strong> ' + (document.getElementById('patientAge').value || '-') + ' (' + (document.getElementById('patientGender').value || '-') + ')</p><p class="col-span-2"><strong>السكن:</strong> ' + (document.getElementById('patientAddress').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2"><p><strong>الحساسية/الأمراض:</strong> ' + (document.getElementById('patientAllergies').value || 'لا يوجد') + ' / ' + (document.getElementById('chronicDiseases').value || 'لا يوجد') + '</p><p><strong>نوع العمل:</strong> ' + (document.getElementById('workType').value || '-') + '</p><p><strong>الأسنان:</strong> ' + teeth + '</p><p><strong>الشكوى:</strong> ' + (document.getElementById('complaint').value || '-') + '</p><p><strong>الخطة العلاجية:</strong> ' + (document.getElementById('treatmentPlan').value || '-') + '</p><p><strong>البديل:</strong> ' + (document.getElementById('alternativePlan').value || '-') + '</p></div>' + buildAnnotatedImagesHTML() + '<div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب</p><p>د. علي النقيب</p></div>';
+  const userInfo = currentUser ? 'أُنشئ بواسطة: ' + currentUser.fullName : '';
+  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p><strong>المريض:</strong> ' + name + '</p><p><strong>العمر/الجنس:</strong> ' + (document.getElementById('patientAge').value || '-') + ' (' + (document.getElementById('patientGender').value || '-') + ')</p><p class="col-span-2"><strong>السكن:</strong> ' + (document.getElementById('patientAddress').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2"><p><strong>الحساسية/الأمراض:</strong> ' + (document.getElementById('patientAllergies').value || 'لا يوجد') + ' / ' + (document.getElementById('chronicDiseases').value || 'لا يوجد') + '</p><p><strong>نوع العمل:</strong> ' + (document.getElementById('workType').value || '-') + '</p><p><strong>الأسنان:</strong> ' + teeth + '</p><p><strong>الشكوى:</strong> ' + (document.getElementById('complaint').value || '-') + '</p><p><strong>الخطة العلاجية:</strong> ' + (document.getElementById('treatmentPlan').value || '-') + '</p><p><strong>البديل:</strong> ' + (document.getElementById('alternativePlan').value || '-') + '</p>' + (userInfo ? '<p class="text-[10px] text-gray-500 mt-2">' + userInfo + '</p>' : '') + '</div>' + buildAnnotatedImagesHTML() + '<div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب</p><p>د. علي النقيب</p></div>';
 }
 
 function buildInvoiceContent() {
@@ -1013,6 +1403,7 @@ function printReport() {
   window.print();
 }
 
+/* ================= حفظ السجل ================= */
 async function savePatientRecord() {
   const name = document.getElementById('patientName').value.trim();
   if (!name) { alert('أدخل اسم المريض'); return; }
@@ -1080,6 +1471,8 @@ async function savePatientRecord() {
         expense: document.getElementById('expenseAmount').value,
         expenseType: document.getElementById('expenseType').value
       },
+      createdBy: currentUser ? currentUser.username : 'unknown',
+      createdByName: currentUser ? currentUser.fullName : 'unknown',
       regDate: currentDate,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -1175,11 +1568,12 @@ function resetForm() {
   document.getElementById('imgAiResults').classList.add('hidden');
   document.getElementById('imgAiStatus').classList.add('hidden');
   document.getElementById('annotatedImagesArea').classList.add('hidden');
-  document.getElementById('proportionTables').classList.add('hidden');
+  document.getElementById('proportionTablesSection').classList.add('hidden');
   window.__aiResults = null;
   window.__aiImageResults = null;
 }
 
+/* ================= إعدادات AI ================= */
 function openAISettings() {
   document.getElementById('geminiApiKey').value = getGeminiKey();
   document.getElementById('aiEngine').value = localStorage.getItem('aiEngine') || 'auto';
@@ -1228,8 +1622,8 @@ document.addEventListener("DOMContentLoaded", () => {
   generateFileNumber();
   renderGallery();
   updateAIEngineBadge();
-  renderProportionTables();
 });
 </script>
 </body>
 </html>
+```
