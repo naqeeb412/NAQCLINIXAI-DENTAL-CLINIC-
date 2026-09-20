@@ -341,7 +341,7 @@
     </div>
     <div>
       <label class="text-xs font-bold text-gray-700 block mb-1">🔑 مفتاح Gemini:</label>
-      <input type="password" id="geminiApiKey" placeholder="AIza..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50">
+      <input type="password" id="geminiApiKey" placeholder="AIza... أو AQ..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50">
     </div>
     <div>
       <label class="text-xs font-bold text-gray-700 block mb-1">🧠 المحرك:</label>
@@ -688,7 +688,7 @@ async function openActivityLog() {
 }
 function closeActivityLog() { const m = document.getElementById('activityModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
-/* ================= الشعار - Dentofacial ================= */
+/* ================= الشعار ================= */
 let logoUid = 0;
 function defaultLogoSVG() {
   const uid = 'lg' + (++logoUid);
@@ -995,39 +995,59 @@ function runBuiltinDiagnosis() {
   renderAIResults('محرك مدمج', diag, plan, alt);
 }
 
+/* ============ Gemini - نسخة تدعم AIzaSy و AQ. ============ */
+async function callGeminiAPI(key, model, body) {
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
+  const headers = { 'Content-Type': 'application/json' };
+
+  if (key.startsWith('AQ.')) {
+    // مفتاح جديد - يستخدم الهيدر
+    headers['x-goog-api-key'] = key;
+    return await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+  } else {
+    // مفتاح قديم - يستخدم URL
+    return await fetch(url + '?key=' + key, { method: 'POST', headers, body: JSON.stringify(body) });
+  }
+}
+
 async function runGeminiDiagnosis() {
   const key = getGeminiKey();
   if (!key) { runBuiltinDiagnosis(); return; }
   const work = document.getElementById('workType').value || 'تشخيص عام';
   const prompt = 'أنت طبيب أسنان استشاري. قدّم تشخيصاً وخطة علاجية وبديلاً بالعربية بنقاط.\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، جنس ' + (document.getElementById('patientGender').value || '؟') + '.\n\nالأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '\nنوع العمل: ' + work + '\nالشكوى: ' + (document.getElementById('complaint').value || 'غير مذكورة') + '\n\nالمطلوب:\n1. التشخيص\n2. الخطة العلاجية\n3. البديل والمخاطر\n\nبدون مقدمات.';
 
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', '', 'gemini-pro'];
-  let lastErr = null;
+  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+  let lastErr = '';
+
   for (const model of models) {
     try {
-      const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
+      const resp = await callGeminiAPI(key, model, { contents: [{ parts: [{ text: prompt }] }] });
       if (!resp.ok) {
         const errText = await resp.text();
-        console.warn('فشل ' + model + ':', errText);
-        lastErr = errText;
+        lastErr = model + ': ' + resp.status + ' - ' + errText.substring(0, 150);
         continue;
       }
       const data = await resp.json();
       const text = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
-      if (!text) { lastErr = 'نص فارغ'; continue; }
+      if (!text) { lastErr = model + ': رد فارغ'; continue; }
       const sections = parseGeminiSections(text);
       renderAIResults('Gemini AI', sections.diag, sections.plan, sections.alt || '—');
       return;
     } catch (err) {
-      console.warn('خطأ في ' + model + ':', err);
-      lastErr = err.message;
+      lastErr = model + ': ' + err.message;
     }
   }
-  console.error('فشلت كل النماذج. آخر خطأ:', lastErr);
+
+  console.error('Gemini فشل:', lastErr);
+  alert('⚠️ تعذّر الاتصال بـ Gemini\n\n' + lastErr + '\n\nسيتم استخدام المحرك المدمج.');
   runBuiltinDiagnosis();
+}
+
+function parseGeminiSections(text) {
+  const diagM = text.match(/(?:التشخيص|1\)|1\.)[^\n]*\n([\s\S]*?)(?=(?:الخطة|2\)|2\.|$))/);
+  const planM = text.match(/(?:الخطة العلاجية|2\)|2\.)[^\n]*\n([\s\S]*?)(?=(?:البديل|3\)|3\.|$))/);
+  const altM = text.match(/(?:البديل|3\)|3\.)[^\n]*\n([\s\S]*)$/);
+  return { diag: diagM ? diagM[1].trim() : text, plan: planM ? planM[1].trim() : '', alt: altM ? altM[1].trim() : '' };
 }
 
 function renderAIResults(engineName, diag, plan, alt) {
@@ -1157,26 +1177,21 @@ async function runGeminiImageAnalysis(focus, key) {
 
   const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
   let text = '';
-  let lastErr = null;
+  let lastErr = '';
 
   for (const model of models) {
     try {
-      const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts }] })
-      });
+      const resp = await callGeminiAPI(key, model, { contents: [{ parts }] });
       if (!resp.ok) {
         const errText = await resp.text();
-        console.warn('فشل ' + model + ':', errText);
-        lastErr = errText;
+        lastErr = model + ': ' + resp.status + ' - ' + errText.substring(0, 150);
         continue;
       }
       const data = await resp.json();
       text = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
       if (text) break;
     } catch (err) {
-      console.warn('خطأ في ' + model + ':', err);
-      lastErr = err.message;
+      lastErr = model + ': ' + err.message;
     }
   }
 
@@ -1659,10 +1674,17 @@ async function testAIConnection() {
   s.className = 'text-[11px] text-center font-bold text-gray-600';
   if (!key) { s.textContent = '⚠️ أدخل المفتاح'; s.className = 'text-[11px] text-center font-bold text-amber-600'; return; }
   try {
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + key);
+    let r;
+    if (key.startsWith('AQ.')) {
+      r = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+        headers: { 'x-goog-api-key': key }
+      });
+    } else {
+      r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + key);
+    }
     if (r.ok) { s.textContent = '✅ المفتاح صالح'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; }
-    else { s.textContent = '❌ المفتاح غير صالح'; s.className = 'text-[11px] text-center font-bold text-red-600'; }
-  } catch (e) { s.textContent = '❌ فشل الاتصال'; s.className = 'text-[11px] text-center font-bold text-red-600'; }
+    else { const t = await r.text(); s.textContent = '❌ ' + t.substring(0, 100); s.className = 'text-[11px] text-center font-bold text-red-600'; }
+  } catch (e) { s.textContent = '❌ فشل الاتصال: ' + e.message; s.className = 'text-[11px] text-center font-bold text-red-600'; }
 }
 function updateAIEngineBadge() {
   const badge = document.getElementById('aiEngineBadge');
