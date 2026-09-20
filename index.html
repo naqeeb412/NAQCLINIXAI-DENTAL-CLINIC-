@@ -1000,23 +1000,34 @@ async function runGeminiDiagnosis() {
   if (!key) { runBuiltinDiagnosis(); return; }
   const work = document.getElementById('workType').value || 'تشخيص عام';
   const prompt = 'أنت طبيب أسنان استشاري. قدّم تشخيصاً وخطة علاجية وبديلاً بالعربية بنقاط.\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، جنس ' + (document.getElementById('patientGender').value || '؟') + '.\n\nالأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '\nنوع العمل: ' + work + '\nالشكوى: ' + (document.getElementById('complaint').value || 'غير مذكورة') + '\n\nالمطلوب:\n1. التشخيص\n2. الخطة العلاجية\n3. البديل والمخاطر\n\nبدون مقدمات.';
-  try {
-    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + key, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
-    if (!resp.ok) throw new Error('Gemini Error');
-    const data = await resp.json();
-    const text = data.candidates[0].content.parts[0].text || '';
-    const sections = parseGeminiSections(text);
-    renderAIResults('Gemini AI', sections.diag, sections.plan, sections.alt || '—');
-  } catch (err) { console.warn(err); runBuiltinDiagnosis(); }
-}
-function parseGeminiSections(text) {
-  const diagM = text.match(/(?:التشخيص|1\)|1\.)[^\n]*\n([\s\S]*?)(?=(?:الخطة|2\)|2\.|$))/);
-  const planM = text.match(/(?:الخطة العلاجية|2\)|2\.)[^\n]*\n([\s\S]*?)(?=(?:البديل|3\)|3\.|$))/);
-  const altM = text.match(/(?:البديل|3\)|3\.)[^\n]*\n([\s\S]*)$/);
-  return { diag: diagM ? diagM[1].trim() : text, plan: planM ? planM[1].trim() : '', alt: altM ? altM[1].trim() : '' };
+
+  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+  let lastErr = null;
+  for (const model of models) {
+    try {
+      const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+      if (!resp.ok) {
+        const errText = await resp.text();
+        console.warn('فشل ' + model + ':', errText);
+        lastErr = errText;
+        continue;
+      }
+      const data = await resp.json();
+      const text = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
+      if (!text) { lastErr = 'نص فارغ'; continue; }
+      const sections = parseGeminiSections(text);
+      renderAIResults('Gemini AI', sections.diag, sections.plan, sections.alt || '—');
+      return;
+    } catch (err) {
+      console.warn('خطأ في ' + model + ':', err);
+      lastErr = err.message;
+    }
+  }
+  console.error('فشلت كل النماذج. آخر خطأ:', lastErr);
+  runBuiltinDiagnosis();
 }
 
 function renderAIResults(engineName, diag, plan, alt) {
@@ -1138,25 +1149,52 @@ async function runGeminiImageAnalysis(focus, key) {
   const results = document.getElementById('imgAiResults');
   const imgsToSend = clinicImages.slice(0, 6);
   const promptText = 'أنت طبيب أسنان استشاري. حلّل الصور المرفوعة (' + focus + ').\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، أسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '.\n\nاكتب تحليلاً بالعربية، ثم أعِد JSON بين ```json و ``` بهذه البنية:\n{"boxes":[{"label":"التهاب لثة","xmin":0.2,"ymin":0.3,"xmax":0.4,"ymax":0.5,"severity":"متوسط","tooth":11}],"landmarks":[{"name":"قمة اللثة","x":0.35,"y":0.4}],"measurements":[{"name":"عرض القاطع","x1":0.3,"y1":0.4,"x2":0.42,"y2":0.4,"value":"8.5 مم"}],"angles":[{"name":"ANB","p1":{"x":0.3,"y":0.3},"p2":{"x":0.5,"y":0.5},"p3":{"x":0.7,"y":0.3},"value":2}],"midline":0.5,"gumLine":[{"x":0.2,"y":0.35},{"x":0.5,"y":0.33},{"x":0.8,"y":0.35}],"boneLine":[{"x":0.2,"y":0.42},{"x":0.5,"y":0.40},{"x":0.8,"y":0.42}],"goldenLines":[0.35,0.42,0.50,0.58,0.65]}\n\nكل الإحداثيات من 0 إلى 1.';
+
   const parts = [{ text: promptText }];
   for (const img of imgsToSend) {
     parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
   }
-  const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + key, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts }] })
-  });
-  if (!resp.ok) throw new Error('Gemini API Error');
-  const data = await resp.json();
-  const text = data.candidates[0].content.parts[0].text || '';
+
+  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+  let text = '';
+  let lastErr = null;
+
+  for (const model of models) {
+    try {
+      const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts }] })
+      });
+      if (!resp.ok) {
+        const errText = await resp.text();
+        console.warn('فشل ' + model + ':', errText);
+        lastErr = errText;
+        continue;
+      }
+      const data = await resp.json();
+      text = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
+      if (text) break;
+    } catch (err) {
+      console.warn('خطأ في ' + model + ':', err);
+      lastErr = err.message;
+    }
+  }
+
+  if (!text) {
+    throw new Error('فشلت كل النماذج: ' + lastErr);
+  }
+
   const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
   let parsed = { boxes: [], landmarks: [], measurements: [], angles: [], midline: null, gumLine: [], boneLine: [], goldenLines: [] };
   if (jsonMatch) { try { const p = JSON.parse(jsonMatch[1]); parsed = Object.assign(parsed, p); } catch (e) {} }
   const cleanText = text.replace(/```json[\s\S]*?```/g, '').trim();
   imgsToSend.forEach(img => { currentAnnotations[img.id] = { __full: parsed }; });
+
   window.__aiImageResults = { focus, engine: 'Gemini Vision', fullText: cleanText, annotations: parsed.boxes, landmarks: parsed.landmarks, measurements: parsed.measurements, angles: parsed.angles, midline: parsed.midline, gumLine: parsed.gumLine, boneLine: parsed.boneLine, goldenLines: parsed.goldenLines, imagesCount: imgsToSend.length, generatedAt: new Date().toISOString() };
+
   status.innerHTML = '✅ Gemini Vision';
   status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
+
   let html = '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 تحليل Gemini:</p><div class="text-[11px] whitespace-pre-wrap">' + cleanText + '</div></div>';
   if (parsed.boxes && parsed.boxes.length) {
     html += '<div class="ai-result-box bg-amber-50 border border-amber-200 rounded-xl p-3"><p class="font-extrabold text-amber-900 text-xs mb-1.5">📍 الملاحظات (' + parsed.boxes.length + '):</p><div class="text-[11px] space-y-1">';
