@@ -416,7 +416,7 @@ const db = firebase.firestore();
 let storage = null;
 try { storage = firebase.storage(); } catch (e) { console.warn("Storage:", e); }
 
-/* ================= نظام المستخدمين والصلاحيات ================= */
+/* ================= نظام المستخدمين - نسخة تشخيصية ================= */
 let currentUser = null;
 
 async function login() {
@@ -436,15 +436,47 @@ async function login() {
   btn.textContent = '⏳ جاري التحقق...';
 
   try {
-    const snapshot = await db.collection('users').where('username', '==', username).limit(1).get();
-    if (snapshot.empty) {
+    // ============ تشخيص: عرض كل المستخدمين ============
+    const allSnap = await db.collection('users').get();
+    let diag = '📋 المستخدمون الموجودون في Firebase:\n\n';
+    if (allSnap.empty) {
+      diag += '(لا يوجد أي مستخدم في المجموعة users)\n';
+      diag += '\n💡 تأكد من إنشاء مستند في مجموعة users';
+    } else {
+      allSnap.forEach(d => {
+        const u = d.data();
+        diag += '▪ ID: "' + d.id + '"\n';
+        diag += '  username: "' + (u.username || '') + '"\n';
+        diag += '  password: "' + (u.password || '') + '"\n';
+        diag += '  active: ' + u.active + ' (نوعه: ' + typeof u.active + ')\n';
+        diag += '  role: "' + (u.role || '') + '"\n\n';
+      });
+    }
+    diag += '━━━━━━━━━━━━━━━━━━━━━\n';
+    diag += '🔎 بحث عن: "' + username + '"\n';
+    diag += '🔑 كلمة المرور المُدخلة: "' + password + '"';
+    alert(diag);
+
+    // ============ محاولة 1: البحث بـ Document ID ============
+    let user = null;
+    const docDirect = await db.collection('users').doc(username).get();
+    if (docDirect.exists) {
+      user = docDirect.data();
+      console.log('✅ تم إيجاد المستخدم بـ Document ID');
+    } else {
+      // ============ محاولة 2: البحث بحقل username ============
+      const snapshot = await db.collection('users').where('username', '==', username).limit(1).get();
+      if (!snapshot.empty) {
+        user = snapshot.docs[0].data();
+        console.log('✅ تم إيجاد المستخدم بحقل username');
+      }
+    }
+
+    if (!user) {
       errEl.textContent = '❌ اسم المستخدم غير موجود';
       errEl.classList.remove('hidden');
       return;
     }
-
-    const doc = snapshot.docs[0];
-    const user = doc.data();
 
     if (user.password !== password) {
       errEl.textContent = '❌ كلمة المرور غير صحيحة';
@@ -452,7 +484,7 @@ async function login() {
       return;
     }
     if (user.active !== true) {
-      errEl.textContent = '🚫 حسابك موقوف — راجع المدير';
+      errEl.textContent = '🚫 حسابك موقوف';
       errEl.classList.remove('hidden');
       return;
     }
@@ -481,7 +513,7 @@ async function login() {
 
   } catch (err) {
     console.error(err);
-    errEl.textContent = '❌ خطأ في الاتصال — تحقق من الإنترنت';
+    errEl.textContent = '❌ خطأ: ' + err.message;
     errEl.classList.remove('hidden');
   } finally {
     btn.disabled = false;
@@ -626,15 +658,7 @@ async function addNewUser() {
   }
 
   try {
-    const existing = await db.collection('users').where('username', '==', username).limit(1).get();
-    if (!existing.empty) {
-      status.textContent = '⚠️ اسم المستخدم موجود مسبقاً';
-      status.className = 'text-[11px] text-center font-bold text-red-600';
-      status.classList.remove('hidden');
-      return;
-    }
-
-    await db.collection('users').add({
+    await db.collection('users').doc(username).set({
       username, password, fullName, role,
       active: true,
       createdAt: Date.now()
@@ -645,7 +669,7 @@ async function addNewUser() {
     status.classList.remove('hidden');
     setTimeout(() => { closeAddUserModal(); loadUsersList(); }, 1500);
   } catch (e) {
-    status.textContent = '❌ فشل الإضافة';
+    status.textContent = '❌ فشل الإضافة: ' + e.message;
     status.className = 'text-[11px] text-center font-bold text-red-600';
     status.classList.remove('hidden');
   }
