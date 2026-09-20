@@ -66,39 +66,24 @@
 </div>
 
 <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col p-4 rounded-xl border border-gray-100">
-
   <div id="userBar" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between shadow">
-    <div class="flex items-center gap-2">
-      <span class="text-2xl">👤</span>
-      <div>
-        <p id="userBarName" class="text-sm font-bold">-</p>
-        <p id="userBarRole" class="text-[10px] opacity-90">-</p>
-      </div>
-    </div>
+    <div class="flex items-center gap-2"><span class="text-2xl">👤</span><div><p id="userBarName" class="text-sm font-bold">-</p><p id="userBarRole" class="text-[10px] opacity-90">-</p></div></div>
     <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🚪 خروج</button>
   </div>
-
   <div id="welcomeBar" class="hidden bg-emerald-100 text-emerald-800 p-3 rounded-xl mb-3 text-center font-bold text-sm"></div>
 
   <header class="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 shadow-xl border border-blue-800">
     <div class="relative p-5 text-center">
       <div class="relative w-24 h-24 mx-auto mb-3">
         <div class="clinic-logo w-24 h-24 rounded-2xl overflow-hidden ring-2 ring-white/25 shadow-lg bg-white/5"></div>
-        <button type="button" onclick="document.getElementById('logoInput').click()" title="تغيير الشعار" class="absolute -bottom-1.5 -left-1.5 w-7 h-7 bg-white text-blue-800 rounded-full text-[11px] shadow-md flex items-center justify-center">✎</button>
+        <button type="button" onclick="document.getElementById('logoInput').click()" class="absolute -bottom-1.5 -left-1.5 w-7 h-7 bg-white text-blue-800 rounded-full text-[11px] shadow-md flex items-center justify-center">✎</button>
         <input type="file" id="logoInput" accept="image/*" class="hidden">
       </div>
       <h1 class="text-[16px] leading-snug font-extrabold tracking-wide">العيادة التخصصية لطب وجراحة الفم والأسنان</h1>
-      <div class="flex items-center justify-center gap-2 my-2.5">
-        <span class="h-px w-10 bg-gradient-to-l from-transparent to-cyan-300/80"></span>
-        <span class="text-cyan-300 text-xs">🦷</span>
-        <span class="h-px w-10 bg-gradient-to-r from-transparent to-cyan-300/80"></span>
-      </div>
+      <div class="flex items-center justify-center gap-2 my-2.5"><span class="h-px w-10 bg-gradient-to-l from-transparent to-cyan-300/80"></span><span class="text-cyan-300 text-xs">🦷</span><span class="h-px w-10 bg-gradient-to-r from-transparent to-cyan-300/80"></span></div>
       <p class="text-[15px] font-bold">د. علي النقيب</p>
       <p class="text-[10px] font-bold text-cyan-300 tracking-[0.25em] mt-0.5">NAQClinixAI</p>
-      <div class="mt-3.5 pt-3 border-t border-white/15 text-[11px] text-blue-100 space-y-1">
-        <p>📍 أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p>
-        <p dir="ltr">📞 777700412 • 771816548</p>
-      </div>
+      <div class="mt-3.5 pt-3 border-t border-white/15 text-[11px] text-blue-100 space-y-1"><p>📍 أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p><p dir="ltr">📞 777700412 • 771816548</p></div>
       <button onclick="openAISettings()" class="mt-3 text-[10px] bg-white/10 hover:bg-white/20 text-cyan-200 px-3 py-1 rounded-full border border-white/20">⚙️ إعدادات الذكاء الاصطناعي</button>
     </div>
   </header>
@@ -106,14 +91,19 @@
   <main class="flex-1 space-y-4 no-print">
 
     <section id="adminPanelSection" class="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-xl border-2 border-amber-300 shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="font-bold text-amber-900 text-sm">👑 لوحة تحكم المدير</h2>
-        <button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">إخفاء</button>
-      </div>
+      <div class="flex items-center justify-between mb-2"><h2 class="font-bold text-amber-900 text-sm">👑 لوحة تحكم المدير</h2><button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">إخفاء</button></div>
       <div id="adminPanelContent" class="space-y-2">
         <div class="grid grid-cols-2 gap-2">
           <button onclick="openAddUserModal()" class="bg-emerald-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">➕ إضافة مستخدم</button>
           <button onclick="openActivityLog()" class="bg-blue-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📝 سجل النشاطات</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="openDailyReport()" class="bg-cyan-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📊 تقرير اليوم</button>
+          <button onclick="openAllExpenses()" class="bg-orange-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">💸 مصروفات الشهر</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="openMonthlyReport()" class="bg-purple-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 التقرير الشهري</button>
+          <button onclick="closeDay()" class="bg-rose-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">🔒 إغلاق اليوم</button>
         </div>
         <div id="usersList" class="space-y-2"></div>
       </div>
@@ -122,16 +112,12 @@
     <section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2">
       <h2 class="font-bold text-blue-900 text-sm">👤 المريض</h2>
       <div class="grid grid-cols-2 gap-2">
-        <div><label class="text-[10px] text-gray-600 block">رقم الملف:</label>
-          <input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
-        <div><label class="text-[10px] text-gray-600 block">التاريخ:</label>
-          <input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+        <div><label class="text-[10px] text-gray-600 block">رقم الملف:</label><input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+        <div><label class="text-[10px] text-gray-600 block">التاريخ:</label><input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
       </div>
       <input type="text" id="patientName" placeholder="الاسم كامل" class="w-full p-2 border rounded-lg text-sm bg-white">
       <div class="grid grid-cols-3 gap-2">
-        <select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white">
-          <option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option>
-        </select>
+        <select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
         <input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm bg-white">
         <input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm bg-white">
       </div>
@@ -144,33 +130,15 @@
         <input type="text" id="chronicDiseases" placeholder="أمراض مزمنة" class="w-full p-2 border rounded-lg text-sm bg-white">
       </div>
       <div class="grid grid-cols-2 gap-2">
-        <select id="smokingHabit" class="w-full p-2 border rounded-lg text-sm bg-white">
-          <option value="">التدخين</option><option value="لا يدخن">لا يدخن</option>
-          <option value="مدخن خفيف">مدخن خفيف</option><option value="مدخن">مدخن</option>
-        </select>
-        <select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white">
-          <option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option>
-          <option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option>
-        </select>
+        <select id="smokingHabit" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">التدخين</option><option value="لا يدخن">لا يدخن</option><option value="مدخن خفيف">مدخن خفيف</option><option value="مدخن">مدخن</option></select>
+        <select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option><option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option></select>
       </div>
     </section>
 
     <section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
       <h2 class="font-bold text-indigo-900 mb-2 text-sm">🦷 نوع العمل</h2>
       <select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
-        <option value="">اختر...</option>
-        <option value="تشخيص عام">تشخيص عام</option>
-        <option value="تجميل وتناغم وجه">تجميل وتناغم وجه</option>
-        <option value="حشوات تجميلية">حشوات تجميلية</option>
-        <option value="علاج عصب">علاج عصب</option>
-        <option value="تلبيسات وتركيبات">تلبيسات وتركيبات</option>
-        <option value="جراحة وخلع">جراحة وخلع</option>
-        <option value="تنظيف اللثة">تنظيف اللثة</option>
-        <option value="علاج لثة متقدم">علاج لثة متقدم</option>
-        <option value="زراعة الأسنان">زراعة الأسنان</option>
-        <option value="تقويم الأسنان">تقويم الأسنان</option>
-        <option value="طب أسنان الأطفال">أسنان الأطفال</option>
-        <option value="أخرى">أخرى</option>
+        <option value="">اختر...</option><option value="تشخيص عام">تشخيص عام</option><option value="تجميل وتناغم وجه">تجميل وتناغم وجه</option><option value="حشوات تجميلية">حشوات تجميلية</option><option value="علاج عصب">علاج عصب</option><option value="تلبيسات وتركيبات">تلبيسات وتركيبات</option><option value="جراحة وخلع">جراحة وخلع</option><option value="تنظيف اللثة">تنظيف اللثة</option><option value="علاج لثة متقدم">علاج لثة متقدم</option><option value="زراعة الأسنان">زراعة الأسنان</option><option value="تقويم الأسنان">تقويم الأسنان</option><option value="طب أسنان الأطفال">أسنان الأطفال</option><option value="أخرى">أخرى</option>
       </select>
       <input type="number" id="teethCount" placeholder="عدد الأسنان" class="w-full p-2 border rounded-lg text-sm bg-white mb-2">
       <div class="bg-white p-3 rounded-xl border border-indigo-200">
@@ -191,16 +159,18 @@
 
     <section id="aiAssistantSection" class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden">
       <div class="ai-glow p-3 text-white">
-        <div class="flex items-center justify-between">
-          <h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2>
-          <span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span>
-        </div>
+        <div class="flex items-center justify-between"><h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2><span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span></div>
       </div>
       <div class="bg-white p-3 space-y-3">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[10px] text-emerald-800">
-          💡 <strong>وضع التحليل الشامل:</strong> يقرأ كل الصور + الأشعة + بيانات المريض ويعطي التشخيص الكامل مع Class محدد ودرجة يقين.
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[10px] text-emerald-800">💡 <strong>تحليل شامل:</strong> يقرأ كل الصور + الأشعة + بيانات المريض ويعطي التشخيص الكامل.</div>
+        <button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg">🧠 توليد التشخيص الشامل</button>
+
+        <!-- ═══ 🆕 الأزرار الجديدة ═══ -->
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="runSmartScanner()" id="btnSmartScanner" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📡 الماسح الذكي</button>
+          <button onclick="openDiagnosisReferences()" class="bg-gradient-to-r from-slate-700 to-gray-800 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📚 مراجع التشخيص</button>
         </div>
-        <button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg">🧠 توليد التشخيص الشامل (يشمل الصور)</button>
+
         <div class="grid grid-cols-2 gap-2">
           <button onclick="clearAIResults()" class="bg-gray-100 text-gray-700 p-2 rounded-xl text-[11px] font-bold">مسح</button>
           <button onclick="applyAIToForm()" class="bg-emerald-100 text-emerald-800 p-2 rounded-xl text-[11px] font-bold">تطبيق</button>
@@ -208,7 +178,7 @@
         <div id="aiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-purple-50 text-purple-700 font-bold"></div>
         <div id="aiResults" class="hidden space-y-3"></div>
         <details class="bg-slate-50 rounded-lg border p-2">
-          <summary class="text-[11px] font-bold text-slate-700 cursor-pointer">➕ ملاحظات سريرية إضافية (اختياري)</summary>
+          <summary class="text-[11px] font-bold text-slate-700 cursor-pointer">➕ ملاحظات سريرية إضافية</summary>
           <div class="mt-2 space-y-2">
             <div class="grid grid-cols-2 gap-2 text-[10px]">
               <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_pain"> ألم</label>
@@ -220,7 +190,7 @@
               <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_bruxism"> صرير</label>
               <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_trauma"> رض</label>
             </div>
-            <input type="text" id="aiExtraNotes" placeholder="ملاحظات الطبيب (إن أردت)..." class="w-full p-2 border rounded-lg text-[11px]">
+            <input type="text" id="aiExtraNotes" placeholder="ملاحظات الطبيب..." class="w-full p-2 border rounded-lg text-[11px]">
           </div>
         </details>
       </div>
@@ -228,36 +198,22 @@
 
     <section id="imageAnalysisSection" class="rounded-2xl border-2 border-cyan-300 shadow-lg bg-white overflow-hidden">
       <div class="bg-gradient-to-r from-cyan-600 to-blue-600 p-3 text-white">
-        <h2 class="font-extrabold text-sm">🔬 تحليل الصور والأشعة (رسم تلقائي)</h2>
+        <h2 class="font-extrabold text-sm">🔬 تحليل الصور والأشعة</h2>
         <p class="text-[10px] opacity-90 mt-1">رسم معالم الوجه + السيفالومتري + اللثة + العظم</p>
       </div>
       <div class="p-3 space-y-3">
         <select id="analysisFocus" class="w-full p-2 border rounded-lg text-xs bg-white">
-          <option value="تحليل شامل ومفصل">🔬 تحليل شامل ومفصل</option>
-          <option value="تحليل سيفالومتري">📐 تحليل سيفالومتري (Cephalometric)</option>
-          <option value="تحليل تناسبات الوجه">😁 تحليل تناسبات الوجه (Facial)</option>
-          <option value="تحليل الابتسامة واللثة">✨ تحليل الابتسامة واللثة (Smile)</option>
-          <option value="تحليل الأضراس المطمورة">🦷 تحليل الأضراس المطمورة</option>
-          <option value="تحليل TMJ">🦴 تحليل مفصل الفك (TMJ)</option>
-          <option value="تحليل اللثة">🩸 تحليل اللثة</option>
-          <option value="تحليل العظم">🦴 تحليل العظم</option>
-          <option value="كشف التسوس">🔍 كشف التسوس والحشوات</option>
-          <option value="أشعة بانورامية">🩻 أشعة بانورامية (OPG)</option>
-          <option value="أشعة بريابيكال">🩻 أشعة بريابيكال</option>
-          <option value="تحليل الزراعة">🦷 تقييم الزراعة</option>
-          <option value="تحليل التركيبات">👑 تقييم التركيبات</option>
+          <option value="تحليل شامل ومفصل">🔬 تحليل شامل ومفصل</option><option value="تحليل سيفالومتري">📐 تحليل سيفالومتري</option><option value="تحليل تناسبات الوجه">😁 تحليل تناسبات الوجه</option><option value="تحليل الابتسامة واللثة">✨ تحليل الابتسامة واللثة</option><option value="تحليل الأضراس المطمورة">🦷 تحليل الأضراس المطمورة</option><option value="تحليل TMJ">🦴 تحليل مفصل الفك</option><option value="تحليل اللثة">🩸 تحليل اللثة</option><option value="تحليل العظم">🦴 تحليل العظم</option><option value="كشف التسوس">🔍 كشف التسوس</option><option value="أشعة بانورامية">🩻 أشعة بانورامية</option><option value="أشعة بريابيكال">🩻 أشعة بريابيكال</option>
         </select>
         <button onclick="analyzeImagesWithAI()" id="btnAIImg" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-3 rounded-xl text-xs font-extrabold">🧠 تحليل الصور ورسم النتائج</button>
         <div class="grid grid-cols-2 gap-2">
-          <button onclick="toggleAnnotations()" class="bg-slate-100 text-slate-700 p-2 rounded-xl text-[11px] font-bold">👁️ إظهار/إخفاء الرسم</button>
+          <button onclick="toggleAnnotations()" class="bg-slate-100 text-slate-700 p-2 rounded-xl text-[11px] font-bold">👁️ إظهار الرسم</button>
           <button onclick="exportAnnotatedImage()" class="bg-indigo-100 text-indigo-800 p-2 rounded-xl text-[11px] font-bold">💾 حفظ الصورة</button>
         </div>
         <div id="imgAiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-cyan-50 text-cyan-700 font-bold"></div>
         <div id="annotatedImagesArea" class="hidden space-y-3"></div>
         <div id="imgAiResults" class="hidden space-y-3"></div>
-        <div id="proportionTablesSection" class="hidden">
-          <div id="proportionTables" class="space-y-3"></div>
-        </div>
+        <div id="proportionTablesSection" class="hidden"><div id="proportionTables" class="space-y-3"></div></div>
       </div>
     </section>
 
@@ -269,20 +225,14 @@
         <input type="number" id="payment2" oninput="calculateFinancials()" placeholder="دفعة 2" class="w-full p-2 border rounded-lg text-sm">
         <input type="number" id="payment3" oninput="calculateFinancials()" placeholder="دفعة 3" class="w-full p-2 border rounded-lg text-sm">
       </div>
-      <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center">
-        <span class="text-xs font-bold">المتبقي:</span>
-        <span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span>
-      </div>
+      <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center"><span class="text-xs font-bold">المتبقي:</span><span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span></div>
     </section>
 
     <section id="revenueSection" class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2">
       <h2 class="font-bold text-emerald-900 text-sm">الإيرادات والمصروفات</h2>
       <div class="grid grid-cols-2 gap-2">
         <input type="number" id="revenueAmount" placeholder="الإيراد" class="w-full p-2 border rounded-lg text-sm">
-        <select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm">
-          <option value="">الحالة...</option><option value="مدفوع كامل">مدفوع كامل</option>
-          <option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option>
-        </select>
+        <select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm"><option value="">الحالة...</option><option value="مدفوع كامل">مدفوع كامل</option><option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option></select>
       </div>
       <div id="expenseSection" class="grid grid-cols-2 gap-2">
         <input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="مصروف" class="w-full p-2 border rounded-lg text-sm">
@@ -296,13 +246,10 @@
     </section>
 
     <section class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-3">
-      <div class="flex items-center justify-between">
-        <h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2>
-        <span id="imageCounter" class="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">0</span>
-      </div>
+      <div class="flex items-center justify-between"><h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2><span id="imageCounter" class="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">0</span></div>
       <div class="grid grid-cols-2 gap-2">
         <label class="flex items-center justify-center gap-1.5 bg-emerald-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">📷 صورة سريرية/وجه<input type="file" id="clinicalPhotoInput" accept="image/*" multiple class="hidden"></label>
-        <label class="flex items-center justify-center gap-1.5 bg-indigo-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">🩻 أشعة (OPG/سيفالو)<input type="file" id="xrayInput" accept="image/*" multiple class="hidden"></label>
+        <label class="flex items-center justify-center gap-1.5 bg-indigo-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">🩻 أشعة<input type="file" id="xrayInput" accept="image/*" multiple class="hidden"></label>
       </div>
       <div id="imagePreviewContainer" class="grid grid-cols-3 gap-2"></div>
     </section>
@@ -337,72 +284,60 @@
   <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">© 2026 NAQClinixAI</footer>
 </div>
 
+<!-- ========== النوافذ ========== -->
+
 <div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print">
   <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between">
-      <h3 class="font-bold text-purple-900 text-base">🤖 إعدادات الذكاء الاصطناعي</h3>
-      <button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button>
-    </div>
-    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-800 leading-relaxed">
-      <p class="font-bold mb-1">📌 كيف يعمل؟</p>
-      <p><strong>المحرك المدمج:</strong> يعمل بدون إنترنت.</p>
-      <p class="mt-1"><strong>Gemini Vision:</strong> تحليل حقيقي للصور والأشعة.</p>
-    </div>
-    <div>
-      <label class="text-xs font-bold text-gray-700 block mb-1">🔑 مفتاح Gemini:</label>
-      <input type="password" id="geminiApiKey" placeholder="AIza... أو AQ..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50">
-    </div>
-    <div>
-      <label class="text-xs font-bold text-gray-700 block mb-1">🧠 المحرك:</label>
-      <select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white">
-        <option value="builtin">المحرك المدمج</option>
-        <option value="gemini">Gemini Vision</option>
-        <option value="auto">تلقائي</option>
-      </select>
-    </div>
-    <div class="flex gap-2">
-      <button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button>
-      <button onclick="testAIConnection()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">اختبار</button>
-    </div>
+    <div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">🤖 إعدادات الذكاء الاصطناعي</h3><button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button></div>
+    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-800 leading-relaxed"><p><strong>المحرك المدمج:</strong> يعمل بدون إنترنت.</p><p class="mt-1"><strong>Gemini Vision:</strong> تحليل حقيقي.</p></div>
+    <div><label class="text-xs font-bold text-gray-700 block mb-1">🔑 مفتاح Gemini:</label><input type="password" id="geminiApiKey" placeholder="AIza... أو AQ..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50"></div>
+    <div><label class="text-xs font-bold text-gray-700 block mb-1">🧠 المحرك:</label><select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white"><option value="builtin">المحرك المدمج</option><option value="gemini">Gemini Vision</option><option value="auto">تلقائي</option></select></div>
+    <div class="flex gap-2"><button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button><button onclick="testAIConnection()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">اختبار</button></div>
     <p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p>
   </div>
 </div>
 
 <div id="addUserModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print">
   <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between">
-      <h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم جديد</h3>
-      <button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button>
-    </div>
+    <div class="flex items-center justify-between"><h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم جديد</h3><button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button></div>
     <div class="space-y-2">
-      <label class="text-xs font-bold text-gray-700 block">اسم المستخدم (بالإنجليزية):</label>
-      <input type="text" id="newUsername" placeholder="مثال: drmohammed" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr">
-      <label class="text-xs font-bold text-gray-700 block">كلمة المرور:</label>
-      <input type="text" id="newPassword" placeholder="كلمة مرور قوية" class="w-full p-2.5 border rounded-lg text-sm">
-      <label class="text-xs font-bold text-gray-700 block">الاسم الكامل:</label>
-      <input type="text" id="newFullName" placeholder="د. محمد أحمد" class="w-full p-2.5 border rounded-lg text-sm">
-      <label class="text-xs font-bold text-gray-700 block">الدور:</label>
-      <select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white">
-        <option value="doctor">👨‍⚕️ طبيب</option>
-        <option value="employee">👨‍💼 موظف</option>
-        <option value="admin">👑 مدير</option>
-      </select>
+      <label class="text-xs font-bold text-gray-700 block">اسم المستخدم (بالإنجليزية):</label><input type="text" id="newUsername" placeholder="مثال: drmohammed" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr">
+      <label class="text-xs font-bold text-gray-700 block">كلمة المرور:</label><input type="text" id="newPassword" placeholder="كلمة مرور قوية" class="w-full p-2.5 border rounded-lg text-sm">
+      <label class="text-xs font-bold text-gray-700 block">الاسم الكامل:</label><input type="text" id="newFullName" placeholder="د. محمد أحمد" class="w-full p-2.5 border rounded-lg text-sm">
+      <label class="text-xs font-bold text-gray-700 block">الدور:</label><select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white"><option value="doctor">👨‍⚕️ طبيب</option><option value="employee">👨‍💼 موظف</option><option value="admin">👑 مدير</option></select>
     </div>
-    <div class="flex gap-2 pt-2">
-      <button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button>
-      <button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button>
-    </div>
+    <div class="flex gap-2 pt-2"><button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button><button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div>
     <p id="addUserStatus" class="text-[11px] text-center font-bold hidden"></p>
   </div>
 </div>
 
 <div id="activityModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print">
   <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between">
-      <h3 class="font-bold text-blue-900 text-base">📝 سجل النشاطات</h3>
-      <button onclick="closeActivityLog()" class="text-gray-400 text-xl">✕</button>
-    </div>
+    <div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📝 سجل النشاطات</h3><button onclick="closeActivityLog()" class="text-gray-400 text-xl">✕</button></div>
     <div id="activityList" class="space-y-2 text-xs"></div>
+  </div>
+</div>
+
+<div id="dailyReportModal" class="fixed inset-0 bg-black/70 z-[85] hidden items-center justify-center p-4 no-print">
+  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between"><h3 class="font-bold text-cyan-900 text-base">📊 تقرير اليوم</h3><button onclick="closeDailyReport()" class="text-gray-400 text-xl">✕</button></div>
+    <div id="dailyReportContent" class="space-y-3"></div>
+  </div>
+</div>
+
+<div id="monthlyReportModal" class="fixed inset-0 bg-black/70 z-[85] hidden items-center justify-center p-4 no-print">
+  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">📅 التقرير الشهري الشامل</h3><button onclick="closeMonthlyReport()" class="text-gray-400 text-xl">✕</button></div>
+    <div class="flex gap-2"><input type="month" id="reportMonth" class="flex-1 p-2 border rounded-lg text-sm"><button onclick="generateMonthlyReport()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">عرض</button></div>
+    <div id="monthlyReportContent" class="space-y-3"></div>
+  </div>
+</div>
+
+<!-- 🆕 نافذة المراجع -->
+<div id="refsModal" class="fixed inset-0 bg-black/70 z-[90] hidden items-center justify-center p-4 no-print">
+  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between"><h3 class="font-bold text-slate-900 text-base">📚 مراجع التشخيص</h3><button onclick="closeDiagnosisReferences()" class="text-gray-400 text-xl">✕</button></div>
+    <div id="refsContent" class="space-y-3"></div>
   </div>
 </div>
 
@@ -411,7 +346,7 @@
 </div>
 
 <script>
-/* ================= Firebase ================= */
+/* ========== Firebase ========== */
 const firebaseConfig = {
   apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
   authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
@@ -425,7 +360,7 @@ const db = firebase.firestore();
 let storage = null;
 try { storage = firebase.storage(); } catch (e) { console.warn("Storage:", e); }
 
-/* ================= نظام المستخدمين ================= */
+/* ========== المستخدمون ========== */
 let currentUser = null;
 
 async function login() {
@@ -434,43 +369,37 @@ async function login() {
   const errEl = document.getElementById('loginError');
   const btn = document.getElementById('loginBtn');
   errEl.classList.add('hidden');
-  if (!username || !password) { errEl.textContent = '⚠️ أدخل اسم المستخدم وكلمة المرور'; errEl.classList.remove('hidden'); return; }
-  btn.disabled = true; btn.textContent = '⏳ جاري التحقق...';
+  if (!username || !password) { errEl.textContent = '⚠️ أدخل البيانات'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = '⏳...';
   try {
     let user = null;
-    const docDirect = await db.collection('users').doc(username).get();
-    if (docDirect.exists) { user = docDirect.data(); }
-    else {
-      const snapshot = await db.collection('users').where('username', '==', username).limit(1).get();
-      if (!snapshot.empty) user = snapshot.docs[0].data();
-    }
+    const direct = await db.collection('users').doc(username).get();
+    if (direct.exists) user = direct.data();
+    else { const s = await db.collection('users').where('username', '==', username).limit(1).get(); if (!s.empty) user = s.docs[0].data(); }
     if (!user) { errEl.textContent = '❌ اسم المستخدم غير موجود'; errEl.classList.remove('hidden'); return; }
-    if (user.password !== password) { errEl.textContent = '❌ كلمة المرور غير صحيحة'; errEl.classList.remove('hidden'); return; }
-    if (user.active !== true) { errEl.textContent = '🚫 حسابك موقوف'; errEl.classList.remove('hidden'); return; }
+    if (user.password !== password) { errEl.textContent = '❌ كلمة المرور خطأ'; errEl.classList.remove('hidden'); return; }
+    if (user.active !== true) { errEl.textContent = '🚫 موقوف'; errEl.classList.remove('hidden'); return; }
     currentUser = { username: user.username || username, fullName: user.fullName || username, role: user.role || 'employee', loginTime: new Date().toISOString() };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     try { await db.collection('activity').add({ username: currentUser.username, fullName: currentUser.fullName, role: currentUser.role, action: 'تسجيل دخول', timestamp: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
     document.getElementById('loginOverlay').style.display = 'none';
     applyPermissions(); updateUserBar(); showWelcome();
     if (currentUser.role === 'admin') loadUsersList();
-  } catch (err) { console.error(err); errEl.textContent = '❌ خطأ في الاتصال'; errEl.classList.remove('hidden'); }
+  } catch (err) { errEl.textContent = '❌ خطأ'; errEl.classList.remove('hidden'); }
   finally { btn.disabled = false; btn.textContent = 'دخول النظام'; }
 }
-
 function logout() {
-  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  if (!confirm('تسجيل الخروج؟')) return;
   try { if (currentUser) db.collection('activity').add({ username: currentUser.username, fullName: currentUser.fullName, role: currentUser.role, action: 'تسجيل خروج', timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {}); } catch (e) {}
   localStorage.removeItem('currentUser'); location.reload();
 }
-
 function applyPermissions() {
   if (!currentUser) return;
   const role = currentUser.role;
   const hideElements = (ids) => ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-  if (role === 'employee') { hideElements(['aiAssistantSection', 'imageAnalysisSection', 'proportionTablesSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']); }
-  else if (role === 'doctor') { hideElements(['financialSection', 'revenueSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']); }
+  if (role === 'employee') hideElements(['aiAssistantSection', 'imageAnalysisSection', 'proportionTablesSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']);
+  else if (role === 'doctor') hideElements(['financialSection', 'revenueSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']);
 }
-
 function updateUserBar() {
   if (!currentUser) return;
   const bar = document.getElementById('userBar'); if (!bar) return;
@@ -479,110 +408,68 @@ function updateUserBar() {
   document.getElementById('userBarName').textContent = currentUser.fullName;
   document.getElementById('userBarRole').textContent = roleLabel;
 }
-
-function showWelcome() {
-  if (!currentUser) return;
-  const w = document.getElementById('welcomeBar'); if (!w) return;
-  w.textContent = `👋 مرحباً ${currentUser.fullName}`; w.classList.remove('hidden');
-  setTimeout(() => w.classList.add('hidden'), 4000);
-}
-
+function showWelcome() { if (!currentUser) return; const w = document.getElementById('welcomeBar'); if (!w) return; w.textContent = `👋 مرحباً ${currentUser.fullName}`; w.classList.remove('hidden'); setTimeout(() => w.classList.add('hidden'), 4000); }
 window.addEventListener('load', () => {
-  try {
-    const saved = localStorage.getItem('currentUser');
-    if (saved) { currentUser = JSON.parse(saved); document.getElementById('loginOverlay').style.display = 'none'; applyPermissions(); updateUserBar(); if (currentUser.role === 'admin') loadUsersList(); }
-  } catch (e) {}
+  try { const s = localStorage.getItem('currentUser'); if (s) { currentUser = JSON.parse(s); document.getElementById('loginOverlay').style.display = 'none'; applyPermissions(); updateUserBar(); if (currentUser.role === 'admin') loadUsersList(); } } catch (e) {}
 });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('loginOverlay').classList.contains('hidden')) { const el = document.activeElement; if (el && (el.id === 'loginPassword' || el.id === 'loginUsername')) login(); } });
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !document.getElementById('loginOverlay').classList.contains('hidden')) {
-    const el = document.activeElement;
-    if (el && (el.id === 'loginPassword' || el.id === 'loginUsername')) login();
-  }
-});
-
-/* ================= إدارة المستخدمين ================= */
+/* ========== إدارة المستخدمين ========== */
 async function loadUsersList() {
-  const container = document.getElementById('usersList'); if (!container) return;
-  container.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">جاري التحميل...</p>';
+  const c = document.getElementById('usersList'); if (!c) return;
+  c.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">...</p>';
   try {
     const snap = await db.collection('users').get();
-    if (snap.empty) { container.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">لا يوجد مستخدمون</p>'; return; }
-    let html = '<p class="text-[11px] font-bold text-amber-900 mb-1">👥 المستخدمون الحاليون:</p>';
+    if (snap.empty) { c.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">لا يوجد مستخدمون</p>'; return; }
+    let html = '<p class="text-[11px] font-bold text-amber-900 mb-1">👥 المستخدمون:</p>';
     snap.forEach(doc => {
       const u = doc.data();
-      const roleIcon = u.role === 'admin' ? '👑' : u.role === 'doctor' ? '👨‍⚕️' : '👨‍💼';
-      const roleName = u.role === 'admin' ? 'مدير' : u.role === 'doctor' ? 'طبيب' : 'موظف';
+      const ri = u.role === 'admin' ? '👑' : u.role === 'doctor' ? '👨‍⚕️' : '👨‍💼';
+      const rn = u.role === 'admin' ? 'مدير' : u.role === 'doctor' ? 'طبيب' : 'موظف';
       const isMe = currentUser && currentUser.username === u.username;
-      html += `<div class="bg-white border rounded-lg p-2 flex items-center justify-between">
-        <div class="flex items-center gap-2"><span class="text-lg">${roleIcon}</span><div><p class="text-xs font-bold">${u.fullName || doc.id} ${isMe ? '<span class="text-emerald-600">(أنت)</span>' : ''}</p><p class="text-[10px] text-gray-500">@${u.username || doc.id} — ${roleName}</p></div></div>
-        <div class="flex items-center gap-1"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${u.active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${u.active ? 'نشط' : 'موقوف'}</span>${!isMe ? `<button onclick="toggleUserActive('${doc.id}', ${!u.active})" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">${u.active ? 'إيقاف' : 'تفعيل'}</button><button onclick="deleteUser('${doc.id}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">حذف</button>` : ''}</div>
-      </div>`;
+      html += `<div class="bg-white border rounded-lg p-2 flex items-center justify-between"><div class="flex items-center gap-2"><span class="text-lg">${ri}</span><div><p class="text-xs font-bold">${u.fullName || doc.id} ${isMe ? '<span class="text-emerald-600">(أنت)</span>' : ''}</p><p class="text-[10px] text-gray-500">@${u.username || doc.id} — ${rn}</p></div></div><div class="flex items-center gap-1"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${u.active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${u.active ? 'نشط' : 'موقوف'}</span>${!isMe ? `<button onclick="toggleUserActive('${doc.id}', ${!u.active})" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">${u.active ? 'إيقاف' : 'تفعيل'}</button><button onclick="deleteUser('${doc.id}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">حذف</button>` : ''}</div></div>`;
     });
-    container.innerHTML = html;
-  } catch (e) { container.innerHTML = '<p class="text-center text-xs text-red-500 py-2">فشل التحميل</p>'; }
+    c.innerHTML = html;
+  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-2">فشل</p>'; }
 }
-
 function toggleAdminPanel() { const c = document.getElementById('adminPanelContent'), t = document.getElementById('adminPanelToggle'); if (c.style.display === 'none') { c.style.display = 'block'; t.textContent = 'إخفاء'; } else { c.style.display = 'none'; t.textContent = 'إظهار'; } }
 function openAddUserModal() { document.getElementById('addUserModal').classList.remove('hidden'); document.getElementById('addUserModal').classList.add('flex'); }
 function closeAddUserModal() { document.getElementById('addUserModal').classList.add('hidden'); document.getElementById('addUserModal').classList.remove('flex'); }
-
 async function addNewUser() {
-  const username = document.getElementById('newUsername').value.trim().toLowerCase();
-  const password = document.getElementById('newPassword').value.trim();
-  const fullName = document.getElementById('newFullName').value.trim();
-  const role = document.getElementById('newRole').value;
-  const status = document.getElementById('addUserStatus');
-  if (!username || !password || !fullName) { status.textContent = '⚠️ أكمل جميع الحقول'; status.className = 'text-[11px] text-center font-bold text-amber-600'; status.classList.remove('hidden'); return; }
-  if (!/^[a-z0-9]+$/.test(username)) { status.textContent = '⚠️ أحرف إنجليزية صغيرة وأرقام فقط'; status.className = 'text-[11px] text-center font-bold text-amber-600'; status.classList.remove('hidden'); return; }
-  try {
-    await db.collection('users').doc(username).set({ username, password, fullName, role, active: true, createdAt: Date.now() });
-    status.textContent = '✅ تم إضافة المستخدم'; status.className = 'text-[11px] text-center font-bold text-emerald-600'; status.classList.remove('hidden');
-    setTimeout(() => { closeAddUserModal(); loadUsersList(); }, 1500);
-  } catch (e) { status.textContent = '❌ فشل الإضافة'; status.className = 'text-[11px] text-center font-bold text-red-600'; status.classList.remove('hidden'); }
+  const u = document.getElementById('newUsername').value.trim().toLowerCase();
+  const p = document.getElementById('newPassword').value.trim();
+  const f = document.getElementById('newFullName').value.trim();
+  const r = document.getElementById('newRole').value;
+  const s = document.getElementById('addUserStatus');
+  if (!u || !p || !f) { s.textContent = '⚠️ أكمل الحقول'; s.className = 'text-[11px] text-center font-bold text-amber-600'; s.classList.remove('hidden'); return; }
+  if (!/^[a-z0-9]+$/.test(u)) { s.textContent = '⚠️ أحرف إنجليزية وأرقام فقط'; s.className = 'text-[11px] text-center font-bold text-amber-600'; s.classList.remove('hidden'); return; }
+  try { await db.collection('users').doc(u).set({ username: u, password: p, fullName: f, role: r, active: true, createdAt: Date.now() }); s.textContent = '✅ تم'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; s.classList.remove('hidden'); setTimeout(() => { closeAddUserModal(); loadUsersList(); }, 1500); } catch (e) { s.textContent = '❌ فشل'; s.className = 'text-[11px] text-center font-bold text-red-600'; s.classList.remove('hidden'); }
 }
-
 async function toggleUserActive(docId, active) { if (!confirm(active ? 'تفعيل؟' : 'إيقاف؟')) return; try { await db.collection('users').doc(docId).update({ active }); loadUsersList(); } catch (e) { alert('فشل'); } }
-async function deleteUser(docId) { if (!confirm('حذف المستخدم نهائياً؟')) return; try { await db.collection('users').doc(docId).delete(); loadUsersList(); } catch (e) { alert('فشل'); } }
-
+async function deleteUser(docId) { if (!confirm('حذف نهائي؟')) return; try { await db.collection('users').doc(docId).delete(); loadUsersList(); } catch (e) { alert('فشل'); } }
 async function openActivityLog() {
   const m = document.getElementById('activityModal'); m.classList.remove('hidden'); m.classList.add('flex');
-  const list = document.getElementById('activityList'); list.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">جاري التحميل...</p>';
+  const list = document.getElementById('activityList'); list.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">...</p>';
   try {
     const snap = await db.collection('activity').orderBy('timestamp', 'desc').limit(50).get();
     if (snap.empty) { list.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">لا توجد نشاطات</p>'; return; }
     let html = '';
     snap.forEach(doc => {
       const a = doc.data();
-      const time = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleString('ar-YE') : '-';
-      const actionIcon = a.action && a.action.includes('دخول') ? '🟢' : '🔴';
-      html += `<div class="bg-gray-50 border rounded-lg p-2"><div class="flex justify-between items-center"><span class="font-bold text-gray-800">${actionIcon} ${a.action}</span><span class="text-[10px] text-gray-500">${time}</span></div><p class="text-[10px] text-gray-600 mt-1">👤 ${a.fullName || a.username} (${a.username})</p></div>`;
+      const t = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleString('ar-YE') : '-';
+      const ic = a.action && a.action.includes('دخول') ? '🟢' : '🔴';
+      html += `<div class="bg-gray-50 border rounded-lg p-2"><div class="flex justify-between items-center"><span class="font-bold text-gray-800">${ic} ${a.action}</span><span class="text-[10px] text-gray-500">${t}</span></div><p class="text-[10px] text-gray-600 mt-1">👤 ${a.fullName || a.username} (${a.username})</p></div>`;
     });
     list.innerHTML = html;
-  } catch (e) { list.innerHTML = '<p class="text-center text-xs text-red-500 py-2">فشل التحميل</p>'; }
+  } catch (e) { list.innerHTML = '<p class="text-center text-xs text-red-500 py-2">فشل</p>'; }
 }
 function closeActivityLog() { const m = document.getElementById('activityModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
-/* ================= الشعار ================= */
+/* ========== الشعار ========== */
 let logoUid = 0;
 function defaultLogoSVG() {
   const uid = 'lg' + (++logoUid);
-  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="${uid}bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a1e3f"/><stop offset="100%" stop-color="#0d2a56"/></linearGradient>
-      <radialGradient id="${uid}glow" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#1e5a9c" stop-opacity="0.45"/><stop offset="100%" stop-color="#1e5a9c" stop-opacity="0"/></radialGradient>
-      <linearGradient id="${uid}head" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a8c8e8"/><stop offset="100%" stop-color="#6b90b8"/></linearGradient>
-    </defs>
-    <rect width="100" height="100" rx="22" fill="url(#${uid}bg)"/>
-    <rect width="100" height="100" rx="22" fill="url(#${uid}glow)"/>
-    <g stroke="#3d7fb8" stroke-width="0.35" opacity="0.65">
-      <line x1="42" y1="28" x2="52" y2="26"/><line x1="52" y1="26" x2="60" y2="30"/><line x1="36" y1="37" x2="46" y2="35"/><line x1="46" y1="35" x2="56" y2="37"/><line x1="56" y1="37" x2="64" y2="40"/><line x1="39" y1="45" x2="49" y2="45"/><line x1="49" y1="45" x2="59" y2="47"/><line x1="41" y1="53" x2="53" y2="55"/><line x1="53" y1="55" x2="61" y2="57"/><line x1="45" y1="62" x2="56" y2="64"/>
-    </g>
-    <g fill="#5fb8e8"><circle cx="42" cy="28" r="1.6"/><circle cx="52" cy="26" r="1.4"/><circle cx="60" cy="30" r="1.6"/><circle cx="36" cy="37" r="1.5"/><circle cx="46" cy="35" r="1.7"/><circle cx="56" cy="37" r="1.5"/><circle cx="64" cy="40" r="1.5"/><circle cx="39" cy="45" r="1.4"/><circle cx="49" cy="45" r="1.7"/><circle cx="59" cy="47" r="1.4"/><circle cx="41" cy="53" r="1.4"/><circle cx="53" cy="55" r="1.6"/><circle cx="61" cy="57" r="1.4"/><circle cx="45" cy="62" r="1.4"/><circle cx="56" cy="64" r="1.4"/></g>
-    <path d="M 42,20 C 30,22 24,32 24,42 C 24,48 26,52 26,56 C 26,60 24,63 24,66 C 24,68 26,69 28,70 L 32,70 L 32,76 C 32,80 36,82 42,82" fill="none" stroke="url(#${uid}head)" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M 42,82 C 42,80 44,79 46,79 C 48,79 49,80 49,82 C 49,84 48,86 48,88 C 48,90 47,91 46,91 C 45,91 45,90 45,88 L 45,86 L 45,88 C 45,90 45,91 44,91 C 43,91 42,90 42,88 C 42,86 41,84 42,82 Z" fill="none" stroke="#a8c8e8" stroke-width="1.3"/>
-    <text x="50" y="97" font-family="Cairo, Arial, sans-serif" font-size="5.5" fill="#a8c8e8" text-anchor="middle" letter-spacing="0.3" font-weight="600">Dentofacial</text>
-  </svg>`;
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="${uid}bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a1e3f"/><stop offset="100%" stop-color="#0d2a56"/></linearGradient><radialGradient id="${uid}glow" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#1e5a9c" stop-opacity="0.45"/><stop offset="100%" stop-color="#1e5a9c" stop-opacity="0"/></radialGradient><linearGradient id="${uid}head" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a8c8e8"/><stop offset="100%" stop-color="#6b90b8"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#${uid}bg)"/><rect width="100" height="100" rx="22" fill="url(#${uid}glow)"/><g stroke="#3d7fb8" stroke-width="0.35" opacity="0.65"><line x1="42" y1="28" x2="52" y2="26"/><line x1="52" y1="26" x2="60" y2="30"/><line x1="36" y1="37" x2="46" y2="35"/><line x1="46" y1="35" x2="56" y2="37"/><line x1="56" y1="37" x2="64" y2="40"/><line x1="39" y1="45" x2="49" y2="45"/><line x1="49" y1="45" x2="59" y2="47"/></g><g fill="#5fb8e8"><circle cx="42" cy="28" r="1.6"/><circle cx="52" cy="26" r="1.4"/><circle cx="60" cy="30" r="1.6"/><circle cx="36" cy="37" r="1.5"/><circle cx="46" cy="35" r="1.7"/><circle cx="56" cy="37" r="1.5"/><circle cx="64" cy="40" r="1.5"/><circle cx="39" cy="45" r="1.4"/><circle cx="49" cy="45" r="1.7"/><circle cx="59" cy="47" r="1.4"/></g><path d="M 42,20 C 30,22 24,32 24,42 C 24,48 26,52 26,56 C 26,60 24,63 24,66 C 24,68 26,69 28,70 L 32,70 L 32,76 C 32,80 36,82 42,82" fill="none" stroke="url(#${uid}head)" stroke-width="1.5" stroke-linecap="round"/><path d="M 42,82 C 42,80 44,79 46,79 C 48,79 49,80 49,82 C 49,84 48,86 48,88 C 48,90 47,91 46,91 C 45,91 45,90 45,88 L 45,86 L 45,88 C 45,90 45,91 44,91 C 43,91 42,90 42,88 C 42,86 41,84 42,82 Z" fill="none" stroke="#a8c8e8" stroke-width="1.3"/><text x="50" y="97" font-family="Cairo, Arial, sans-serif" font-size="5.5" fill="#a8c8e8" text-anchor="middle" letter-spacing="0.3" font-weight="600">Dentofacial</text></svg>`;
 }
 function renderLogos() { const c = localStorage.getItem('clinicLogo'); const html = c ? '<img src="'+c+'" alt="شعار">' : defaultLogoSVG(); document.querySelectorAll('.clinic-logo').forEach(el => { el.innerHTML = html; }); }
 document.getElementById('logoInput').addEventListener('change', async function (e) { const file = e.target.files[0]; if (!file) return; try { const d = await compressImage(file, 500, 0.92); localStorage.setItem('clinicLogo', d); renderLogos(); } catch (err) {} e.target.value = ''; });
@@ -607,7 +494,7 @@ function compressImage(file, maxDim, quality) {
   });
 }
 
-/* ================= مخطط الأسنان ================= */
+/* ========== مخطط الأسنان ========== */
 let selectedTeeth = [];
 const TOOTH_SHAPES = {
   central: 'M 3,3 C 7,-1 17,-1 21,3 L 22.5,7 C 22,18 22,26 21.5,33 C 19,39 16.5,41 12,41 C 7.5,41 5,39 2.5,33 C 2,26 2,18 1.5,7 Z',
@@ -616,24 +503,9 @@ const TOOTH_SHAPES = {
   premolar: 'M 3,5 C 6,1 9,2 12,2.5 C 15,2 18,1 21,5 L 22.5,9 C 22,17 21,25 20,30 C 17.5,38 14.5,39.5 12,39.5 C 9.5,39.5 6.5,38 4,30 C 3,25 2,17 1.5,9 Z',
   molar: 'M 1.5,6 C 4,2 7,2.5 9.5,3 C 11,2 13,2 14.5,3 C 17,2.5 20,2 22.5,6 L 24,10 C 23.5,18 22.5,25 21,29 C 18,38 15,39.5 12,39.5 C 9,39.5 6,38 3,29 C 1.5,25 0.5,18 0,10 Z'
 };
-const TOOTH_TYPES = {
-  18:'molar',17:'molar',16:'molar',15:'premolar',14:'premolar',13:'canine',12:'lateral',11:'central',
-  21:'central',22:'lateral',23:'canine',24:'premolar',25:'premolar',26:'molar',27:'molar',28:'molar',
-  48:'molar',47:'molar',46:'molar',45:'premolar',44:'premolar',43:'canine',42:'lateral',41:'central',
-  31:'central',32:'lateral',33:'canine',34:'premolar',35:'premolar',36:'molar',37:'molar',38:'molar'
-};
-const UPPER_POS = [
-  {t:18,x:6,y:16,s:0.80},{t:17,x:30,y:11,s:0.88},{t:16,x:54,y:8,s:0.95},{t:15,x:79,y:12,s:0.82},
-  {t:14,x:103,y:18,s:0.82},{t:13,x:127,y:25,s:0.90},{t:12,x:151,y:32,s:0.82},{t:11,x:176,y:38,s:1.00},
-  {t:21,x:200,y:38,s:1.00},{t:22,x:225,y:32,s:0.82},{t:23,x:249,y:25,s:0.90},{t:24,x:273,y:18,s:0.82},
-  {t:25,x:297,y:12,s:0.82},{t:26,x:322,y:8,s:0.95},{t:27,x:346,y:11,s:0.88},{t:28,x:370,y:16,s:0.80}
-];
-const LOWER_POS = [
-  {t:48,x:6,y:56,s:0.80},{t:47,x:30,y:51,s:0.88},{t:46,x:54,y:48,s:0.95},{t:45,x:79,y:52,s:0.82},
-  {t:44,x:103,y:58,s:0.82},{t:43,x:127,y:65,s:0.90},{t:42,x:151,y:72,s:0.82},{t:41,x:176,y:78,s:1.00},
-  {t:31,x:200,y:78,s:1.00},{t:32,x:225,y:72,s:0.82},{t:33,x:249,y:65,s:0.90},{t:34,x:273,y:58,s:0.82},
-  {t:35,x:297,y:52,s:0.82},{t:36,x:322,y:48,s:0.95},{t:37,x:346,y:51,s:0.88},{t:38,x:370,y:56,s:0.80}
-];
+const TOOTH_TYPES = { 18:'molar',17:'molar',16:'molar',15:'premolar',14:'premolar',13:'canine',12:'lateral',11:'central',21:'central',22:'lateral',23:'canine',24:'premolar',25:'premolar',26:'molar',27:'molar',28:'molar',48:'molar',47:'molar',46:'molar',45:'premolar',44:'premolar',43:'canine',42:'lateral',41:'central',31:'central',32:'lateral',33:'canine',34:'premolar',35:'premolar',36:'molar',37:'molar',38:'molar' };
+const UPPER_POS = [{t:18,x:6,y:16,s:0.80},{t:17,x:30,y:11,s:0.88},{t:16,x:54,y:8,s:0.95},{t:15,x:79,y:12,s:0.82},{t:14,x:103,y:18,s:0.82},{t:13,x:127,y:25,s:0.90},{t:12,x:151,y:32,s:0.82},{t:11,x:176,y:38,s:1.00},{t:21,x:200,y:38,s:1.00},{t:22,x:225,y:32,s:0.82},{t:23,x:249,y:25,s:0.90},{t:24,x:273,y:18,s:0.82},{t:25,x:297,y:12,s:0.82},{t:26,x:322,y:8,s:0.95},{t:27,x:346,y:11,s:0.88},{t:28,x:370,y:16,s:0.80}];
+const LOWER_POS = [{t:48,x:6,y:56,s:0.80},{t:47,x:30,y:51,s:0.88},{t:46,x:54,y:48,s:0.95},{t:45,x:79,y:52,s:0.82},{t:44,x:103,y:58,s:0.82},{t:43,x:127,y:65,s:0.90},{t:42,x:151,y:72,s:0.82},{t:41,x:176,y:78,s:1.00},{t:31,x:200,y:78,s:1.00},{t:32,x:225,y:72,s:0.82},{t:33,x:249,y:65,s:0.90},{t:34,x:273,y:58,s:0.82},{t:35,x:297,y:52,s:0.82},{t:36,x:322,y:48,s:0.95},{t:37,x:346,y:51,s:0.88},{t:38,x:370,y:56,s:0.80}];
 function buildToothSVG(e, isLower) {
   const shape = TOOTH_SHAPES[TOOTH_TYPES[e.t]];
   const flip = isLower ? ' transform="translate(0, 41) scale(1,-1)"' : '';
@@ -649,8 +521,7 @@ function renderDentalChart() {
 function toggleTooth(g) {
   const num = parseInt(g.dataset.tooth, 10);
   const i = selectedTeeth.indexOf(num);
-  if (i > -1) { selectedTeeth.splice(i, 1); g.classList.remove('selected'); }
-  else { selectedTeeth.push(num); g.classList.add('selected'); }
+  if (i > -1) { selectedTeeth.splice(i, 1); g.classList.remove('selected'); } else { selectedTeeth.push(num); g.classList.add('selected'); }
   selectedTeeth.sort((a, b) => a - b);
   document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(' • ') : 'لا يوجد');
 }
@@ -659,11 +530,8 @@ const currentDate = new Date().toLocaleDateString('ar-YE');
 document.getElementById('registrationDateDisplay').value = currentDate;
 function generateFileNumber() { document.getElementById('fileNumber').value = 'DR-' + Date.now().toString().slice(-6); }
 
-/* ================= معرض الصور ================= */
-let clinicImages = [];
-let currentAnnotations = {};
-let mergedImageCache = {};
-
+/* ========== معرض الصور ========== */
+let clinicImages = [], currentAnnotations = {}, mergedImageCache = {};
 function renderGallery() {
   const c = document.getElementById('imagePreviewContainer');
   document.getElementById('imageCounter').textContent = clinicImages.length + ' صورة';
@@ -682,7 +550,7 @@ async function handleImageFiles(files, type) {
 document.getElementById('clinicalPhotoInput').addEventListener('change', e => { handleImageFiles(e.target.files, 'سريرية'); e.target.value = ''; });
 document.getElementById('xrayInput').addEventListener('change', e => { handleImageFiles(e.target.files, 'أشعة'); e.target.value = ''; });
 
-/* ================= الحسابات ================= */
+/* ========== الحسابات ========== */
 function calculateFinancials() {
   const t = parseFloat(document.getElementById('totalAmount').value) || 0;
   const p1 = parseFloat(document.getElementById('payment1').value) || 0;
@@ -703,7 +571,7 @@ function calculateNet() {
 }
 document.getElementById('revenueAmount').addEventListener('input', calculateNet);
 
-/* ================= قاعدة معرفة AI المدمجة ================= */
+/* ========== قاعدة المعرفة AI ========== */
 const AI_KB = {
   toothMeta: { central: { name: 'قاطع مركزي' }, lateral: { name: 'قاطع جانبي' }, canine: { name: 'ناب' }, premolar: { name: 'ضاحك' }, molar: { name: 'ضرس' } },
   treatments: {
@@ -731,13 +599,12 @@ const PROPORTION_DATA = {
   boneValues: { title: '🦴 قيم العظم', desc: 'القياسات الطبيعية', rows: [{ item: 'العظم الإكليلي', ideal: '≥2mm', range: '2-3mm' }, { item: 'ارتفاع العظم', ideal: '≥10mm', range: '10-13mm' }, { item: 'عرض العظم', ideal: '≥6mm', range: '6-8mm' }] },
   toothDimensions: { title: '🦷 أبعاد الأسنان', desc: 'الطول × العرض', rows: [{ item: 'CI', ideal: '10.5×8.5', range: '9-12×7-9' }, { item: 'LI', ideal: '9.0×6.5', range: '8-10×5-7' }, { item: 'C', ideal: '10.0×7.5', range: '9-11×7-8' }] },
   facialValues: { title: '😁 الوجه والابتسامة', desc: 'النسب المثالية', rows: [{ item: 'خط الابتسامة', ideal: 'منحني', range: 'مقعر' }, { item: 'كشف اللثة', ideal: '0-2mm', range: '0-3mm' }, { item: 'الزاوية الأنفية', ideal: '90-100°', range: '85-105°' }] },
-  angles: { title: '📐 زوايا التقويم (سيفالومتري)', desc: 'القيم الطبيعية', rows: [{ item: 'SNA', ideal: '82°', range: '80-84°' }, { item: 'SNB', ideal: '80°', range: '78-82°' }, { item: 'ANB', ideal: '2°', range: '0-4°' }, { item: 'FMA', ideal: '25°', range: '20-30°' }, { item: 'IMPA', ideal: '90°', range: '85-95°' }, { item: 'U1-SN', ideal: '103°', range: '100-107°' }] }
+  angles: { title: '📐 زوايا التقويم', desc: 'القيم الطبيعية', rows: [{ item: 'SNA', ideal: '82°', range: '80-84°' }, { item: 'SNB', ideal: '80°', range: '78-82°' }, { item: 'ANB', ideal: '2°', range: '0-4°' }, { item: 'FMA', ideal: '25°', range: '20-30°' }, { item: 'IMPA', ideal: '90°', range: '85-95°' }, { item: 'U1-SN', ideal: '103°', range: '100-107°' }] }
 };
 
 function renderProportionTables() {
   const container = document.getElementById('proportionTables');
-  let html = '<div class="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl border-2 border-indigo-200 p-3">';
-  html += '<h3 class="font-extrabold text-indigo-900 text-sm mb-3 text-center">📊 جداول التناسبات والقيم المرجعية</h3>';
+  let html = '<div class="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl border-2 border-indigo-200 p-3"><h3 class="font-extrabold text-indigo-900 text-sm mb-3 text-center">📊 جداول التناسبات والقيم المرجعية</h3>';
   Object.values(PROPORTION_DATA).forEach(section => {
     html += '<details class="mb-2 bg-white rounded-lg border border-indigo-100"><summary class="cursor-pointer font-bold text-[11px] text-indigo-800 bg-indigo-50 px-3 py-2">' + section.title + '</summary><div class="p-2"><p class="text-[10px] text-gray-500 mb-2">' + section.desc + '</p><table class="ref-table"><thead><tr><th>القياس</th><th>المثالي</th><th>المدى</th></tr></thead><tbody>' + section.rows.map(r => '<tr><td>' + r.item + '</td><td class="ok">' + r.ideal + '</td><td>' + r.range + '</td></tr>').join('') + '</tbody></table></div></details>';
   });
@@ -746,7 +613,7 @@ function renderProportionTables() {
   document.getElementById('proportionTablesSection').classList.remove('hidden');
 }
 
-/* ================= توليد التشخيص الشامل (مع الصور) ================= */
+/* ========== توليد التشخيص ========== */
 async function generateAIDiagnosis() {
   const work = document.getElementById('workType').value;
   if (!selectedTeeth.length && !work && !clinicImages.length) { alert('حدد الأسنان أو نوع العمل أو ارفع صورة'); return; }
@@ -755,25 +622,14 @@ async function generateAIDiagnosis() {
   const btn = document.getElementById('btnAIDiag');
   btn.disabled = true;
   status.classList.remove('hidden');
-  status.innerHTML = '<span class="ai-typing">🧠 تحليل شامل (بيانات + صور)</span>';
+  status.innerHTML = '<span class="ai-typing">🧠 تحليل شامل</span>';
   results.classList.add('hidden');
-
   const key = getGeminiKey();
   const engine = getAIEngine();
-
-  if (engine === 'builtin' || !key) {
-    setTimeout(() => runBuiltinDiagnosis(), 300);
-  } else {
-    await runGeminiFullDiagnosis();
-  }
+  if (engine === 'builtin' || !key) setTimeout(() => runBuiltinDiagnosis(), 300);
+  else await runGeminiFullDiagnosis();
 }
-
-function getAIEngine() {
-  const mode = document.getElementById('aiEngine') ? document.getElementById('aiEngine').value : 'auto';
-  const hasKey = !!getGeminiKey();
-  if (mode === 'auto') return hasKey ? 'gemini' : 'builtin';
-  return mode;
-}
+function getAIEngine() { const m = document.getElementById('aiEngine') ? document.getElementById('aiEngine').value : 'auto'; const k = !!getGeminiKey(); if (m === 'auto') return k ? 'gemini' : 'builtin'; return m; }
 function getGeminiKey() { return (localStorage.getItem('geminiApiKey') || '').trim(); }
 
 function runBuiltinDiagnosis() {
@@ -785,26 +641,22 @@ function runBuiltinDiagnosis() {
   const hygiene = document.getElementById('oralHygiene').value;
   const extra = document.getElementById('aiExtraNotes').value;
   const symptoms = [];
-  const labels = { pain:'ألم حاد', swelling:'تورم', bleeding:'نزيف لثة', mobility:'حركة', sensitivity:'حساسية', badBreath:'رائحة', bruxism:'صرير', trauma:'رض' };
+  const labels = { pain:'ألم حاد', swelling:'تورم', bleeding:'نزيف', mobility:'حركة', sensitivity:'حساسية', badBreath:'رائحة', bruxism:'صرير', trauma:'رض' };
   Object.keys(labels).forEach(k => { if (document.getElementById('sym_' + k) && document.getElementById('sym_' + k).checked) symptoms.push(labels[k]); });
   const treatment = AI_KB.treatments[work] || AI_KB.treatments['أخرى'];
-  let diag = '🔍 التشخيص (محرك مدمج):\n• نوع العمل: ' + work + '\n';
+  let diag = '🔍 التشخيص:\n• نوع العمل: ' + work + '\n';
   if (selectedTeeth.length) diag += '• الأسنان: ' + selectedTeeth.join(', ') + '\n• التشخيص: ' + treatment.diag + '\n';
   else diag += '• ' + treatment.diag + '\n';
   if (symptoms.length) diag += '• الأعراض: ' + symptoms.join('، ') + '\n';
-  const ageNote = AI_KB.ageModifier(age);
-  if (ageNote) diag += '• ' + ageNote + '\n';
+  const an = AI_KB.ageModifier(age); if (an) diag += '• ' + an + '\n';
   AI_KB.medModifier(allergies, chronic, smoking).forEach(n => { diag += '• ' + n + '\n'; });
   if (hygiene === 'ضعيفة') diag += '• ⚠️ نظافة ضعيفة\n';
   if (extra) diag += '• ملاحظات: ' + extra + '\n';
-  let plan = '🦷 الخطة العلاجية:\n';
-  treatment.plan.forEach((s, i) => { plan += (i + 1) + '. ' + s + '\n'; });
-  let alt = '🔄 البديل:\n';
-  treatment.alt.forEach((a, i) => { alt += (i + 1) + '. ' + a + '\n'; });
+  let plan = '🦷 الخطة:\n'; treatment.plan.forEach((s, i) => { plan += (i + 1) + '. ' + s + '\n'; });
+  let alt = '🔄 البديل:\n'; treatment.alt.forEach((a, i) => { alt += (i + 1) + '. ' + a + '\n'; });
   renderAIResults('محرك مدمج', diag, plan, alt);
 }
 
-/* ══════════ Gemini: دالة موحدة ══════════ */
 async function callGeminiAPI(key, model, body) {
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
   const headers = { 'Content-Type': 'application/json' };
@@ -812,111 +664,64 @@ async function callGeminiAPI(key, model, body) {
   else { return await fetch(url + '?key=' + key, { method: 'POST', headers, body: JSON.stringify(body) }); }
 }
 
-/* ══════════ Gemini التشخيص الشامل (بيانات + صور) ══════════ */
 async function runGeminiFullDiagnosis() {
   const key = getGeminiKey();
   if (!key) { runBuiltinDiagnosis(); return; }
-
   const age = document.getElementById('patientAge').value || 'غير محدد';
   const gender = document.getElementById('patientGender').value || 'غير محدد';
   const allergies = document.getElementById('patientAllergies').value || 'لا يوجد';
   const chronic = document.getElementById('chronicDiseases').value || 'لا يوجد';
-  const smoking = document.getElementById('smokingHabit').value || 'لا يدع';
+  const smoking = document.getElementById('smokingHabit').value || 'لا يدخن';
   const hygiene = document.getElementById('oralHygiene').value || 'غير محددة';
   const complaint = document.getElementById('complaint').value || 'غير مذكورة';
   const extra = document.getElementById('aiExtraNotes').value || '';
   const work = document.getElementById('workType').value || 'تشخيص عام';
   const teethList = selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة';
-
   const symptoms = [];
-  const labels = { pain:'ألم حاد', swelling:'تورم/خراج', bleeding:'نزيف لثة', mobility:'حركة أسنان', sensitivity:'حساسية حرارية', badBreath:'رائحة فم', bruxism:'صرير', trauma:'رض/كسر' };
+  const labels = { pain:'ألم حاد', swelling:'تورم/خراج', bleeding:'نزيف لثة', mobility:'حركة', sensitivity:'حساسية', badBreath:'رائحة', bruxism:'صرير', trauma:'رض' };
   Object.keys(labels).forEach(k => { if (document.getElementById('sym_' + k) && document.getElementById('sym_' + k).checked) symptoms.push(labels[k]); });
-
   const hasImages = clinicImages.length > 0;
-  const imagesInfo = hasImages ? `\n═══════ الصور المرفقة (${clinicImages.length}) ═══════\n${clinicImages.slice(0,6).map((img, i) => `صورة ${i+1}: نوعها "${img.type}"`).join('\n')}` : '\n⚠️ لم تُرفع أي صورة — اعتمد على البيانات المتاحة واذكر ذلك بصراحة.';
+  const imagesInfo = hasImages ? `\nالصور المرفقة (${clinicImages.length}):\n${clinicImages.slice(0,6).map((img, i) => `صورة ${i+1}: ${img.type}`).join('\n')}` : '\n⚠️ لا توجد صور.';
 
-  const prompt = `أنت أستاذ واستشاري طب أسنان وتقويم معتمد (Fellow of Orthodontics)، لديك 25 عاماً خبرة سريرية وأكاديمية.
-
-مهمتك: تقديم تقرير استشاري كامل ومستقل مبني على:
-1. المعايير العلمية الدولية (Angle Classification, Ricketts Analysis, Steiner Analysis, McNamara Analysis, Andrews Six Keys)
-2. قراءة الصور والأشعة المرفقة بشكل مستقل
-3. جميع البيانات المتاحة
+  const prompt = `أنت أستاذ واستشاري طب أسنان وتقويم معتمد بخبرة 25 عاماً.
 
 ${imagesInfo}
 
-═══════ بيانات المريض ═══════
-• العمر: ${age} سنة | الجنس: ${gender}
-• الحساسية: ${allergies} | الأمراض المزمنة: ${chronic}
-• التدخين: ${smoking} | نظافة الفم: ${hygiene}
-• الشكوى: ${complaint}
-• ملاحظات الطبيب: ${extra || 'لا يوجد'}
+بيانات المريض:
+- العمر: ${age} | الجنس: ${gender}
+- الحساسية: ${allergies} | الأمراض: ${chronic}
+- التدخين: ${smoking} | النظافة: ${hygiene}
+- الشكوى: ${complaint}
+- ملاحظات: ${extra || 'لا يوجد'}
+- نوع العمل: ${work}
+- الأسنان (FDI): ${teethList}
+- الأعراض: ${symptoms.length ? symptoms.join('، ') : 'لا يوجد'}
 
-═══════ المعطيات السنية ═══════
-• نوع العمل: ${work}
-• الأسنان المحددة (FDI): ${teethList}
-• الأعراض: ${symptoms.length ? symptoms.join('، ') : 'لا يوجد'}
+قواعد صارمة:
+1. أعطِ Class محدداً (Class I/II/III) مع درجة يقين (مؤكد/محتمل/غير مؤكد).
+2. لا تخترع أرقاماً — اذكر فقط ما رأيته في الصور أو ما أعطاك الطبيب.
+3. اذكر مصدر كل معلومة.
+4. إن نقصت البيانات، اطلبها صراحة.
 
-═══════ قواعدك الصارمة ═══════
-1. **أعطِ Class محدداً** (Class I/II/III أو Angle Classification):
-   - إذا كانت الصورة/الأشعة واضحة، صنّف بثقة.
-   - إذا لم تكن واضحة، قل "الاحتمال الأكبر: Class X، بناءً على..."
-   - اذكر درجة اليقين: (مؤكد / محتمل / غير مؤكد).
+المطلوب:
+1) ملخص تشخيصي صريح + Class + درجة يقين
+2) الأدلة (من أي صورة استنتجت ماذا)
+3) التحليل الهيكلي (SNA, SNB, ANB, FMA, IMPA)
+4) التحليل السني (Class, Overjet, Overbite, ازدحام, خط الوسط)
+5) تحليل الأنسجة الرخوة (خط E, الأنفية الشفوية, كشف اللثة)
+6) المشاكل التشخيصية (مرقمة)
+7) الأهداف العلاجية
+8) 4 خيارات علاج (A أساسي, B بديل, C بديل, D محافظ) مع مميزات/عيوب
+9) خطة مفصلة للخيار الموصى به (مراحل + مدد)
+10) المخاطر والتحذيرات
+11) المتابعة
 
-2. **لا تخترع أرقاماً**: اذكر فقط ما قرأته من الصور فعلاً أو ما أعطاك الطبيب صراحة.
-
-3. **اذكر مصادر كل معلومة**: "بناءً على القياس ANB الظاهر في الأشعة السيفالومترية..."، "بناءً على وضعية الأضراس في الأشعة البانورامية..."، إلخ.
-
-4. **إذا كانت البيانات ناقصة، اطلب ما تحتاجه صراحة.**
-
-═══════ المطلوب بالترتيب ═══════
-
-**1) ملخص تشخيصي صريح (Top-line Diagnosis):**
-سطر واحد: الصفة التشخيصية الرئيسية + Class + درجة اليقين.
-
-**2) الأدلة التشخيصية (Clinical Evidence):**
-قائمة بكل ما لاحظته مع المصدر (من أي صورة استنتجت).
-
-**3) التحليل الهيكلي (Skeletal Analysis):**
-SNA، SNB، ANB، FMA، IMPA، Class الهيكلي، النمط النمائي.
-
-**4) التحليل السني (Dental Analysis):**
-Class السني، Overjet، Overbite، ازدحام، انحراف خط الوسط.
-
-**5) تحليل الأنسجة الرخوة (Soft Tissue Analysis):**
-خط E، الزاوية الأنفية الشفوية، كشف اللثة.
-
-**6) المشاكل التشخيصية (Problem List):**
-قائمة مرقمة بكل المشاكل حسب الأولوية.
-
-**7) الأهداف العلاجية (Treatment Objectives):**
-هيكلياً، سنياً، جمالياً.
-
-**8) خيارات العلاج (Treatment Options):**
-لكل خيار: المميزات - العيوب - المدة - التكلفة النسبية - نسبة النجاح.
-- الخيار A (الأساسي - موصى به)
-- الخيار B (بديل أول)
-- الخيار C (بديل ثاني)
-- الخيار D (المحافظ)
-
-**9) الخطة العلاجية المفصلة:**
-مراحل مرقمة مع مدد زمنية وأدوات.
-
-**10) المخاطر والتحذيرات:**
-عامة وخاصة بالحالة.
-
-**11) المتابعة (Follow-up):**
-مواعيد المتابعة وما يجب فحصه.
-
-اكتب بلغة عربية طبية احترافية دقيقة، بأقسام واضحة. ابدأ مباشرة بالملخص التشخيصي.`;
+اكتب بالعربية الطبية، بأقسام واضحة. ابدأ بالملخص مباشرة.`;
 
   const parts = [{ text: prompt }];
-  for (const img of clinicImages.slice(0, 6)) {
-    parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
-  }
-
+  for (const img of clinicImages.slice(0, 6)) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
   const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
   let lastErr = '';
-
   for (const model of models) {
     try {
       const resp = await callGeminiAPI(key, model, { contents: [{ parts }] });
@@ -930,50 +735,25 @@ Class السني، Overjet، Overbite، ازدحام، انحراف خط الو�
     } catch (err) { lastErr = model + ': ' + err.message; }
   }
   console.warn('Gemini فشل:', lastErr);
-  alert('⚠️ تعذر الاتصال بـ Gemini — سيتم استخدام المحرك المدمج');
   runBuiltinDiagnosis();
 }
 
 function parseGeminiFullReport(text) {
-  // حاول تقسيم التقرير إلى 3 أقسام
   const lines = text.split('\n');
   let current = 'diag';
   const diagLines = [], planLines = [], altLines = [];
-  
   lines.forEach(line => {
-    const trimmed = line.trim();
-    if (/(?:الخطة العلاجية|خيارات العلاج|Treatment Options|المطلوب بالترتيب)/i.test(trimmed) && trimmed.length < 100 && /^[0-9\s\*\-•💊🦷🔄📍📐📊]/i.test(trimmed)) {
-      current = 'plan';
-    }
-    if (/(?:البديل|المخاطر|مخاطر|Follow-up|المتابعة)/i.test(trimmed) && trimmed.length < 100) {
-      current = 'alt';
-    }
-    if (current === 'diag') diagLines.push(line);
-    else if (current === 'plan') planLines.push(line);
-    else altLines.push(line);
+    const t = line.trim();
+    if (/(?:الخطة العلاجية|خيارات العلاج|Treatment Options)/i.test(t) && t.length < 100) current = 'plan';
+    if (/(?:البديل|المخاطر|المتابعة|Follow-up)/i.test(t) && t.length < 100) current = 'alt';
+    if (current === 'diag') diagLines.push(line); else if (current === 'plan') planLines.push(line); else altLines.push(line);
   });
-  
   let diag = diagLines.join('\n').trim();
   let plan = planLines.join('\n').trim();
   let alt = altLines.join('\n').trim();
-  
-  // إذا فشل التقسيم، ضع كل النص في التشخيص
-  if (!plan && !alt) {
-    diag = text;
-    plan = '—';
-    alt = '—';
-  } else if (!alt) {
-    alt = '—';
-  }
-  
+  if (!plan && !alt) { diag = text; plan = '—'; alt = '—'; }
+  else if (!alt) alt = '—';
   return { diag, plan, alt };
-}
-
-function parseGeminiSections(text) {
-  const diagM = text.match(/(?:التشخيص|1\)|1\.)[^\n]*\n([\s\S]*?)(?=(?:الخطة|2\)|2\.|$))/);
-  const planM = text.match(/(?:الخطة العلاجية|2\)|2\.)[^\n]*\n([\s\S]*?)(?=(?:البديل|3\)|3\.|$))/);
-  const altM = text.match(/(?:البديل|3\)|3\.)[^\n]*\n([\s\S]*)$/);
-  return { diag: diagM ? diagM[1].trim() : text, plan: planM ? planM[1].trim() : '', alt: altM ? altM[1].trim() : '' };
 }
 
 function renderAIResults(engineName, diag, plan, alt) {
@@ -984,17 +764,11 @@ function renderAIResults(engineName, diag, plan, alt) {
   status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
   window.__aiResults = { diag, plan, alt, engine: engineName, generatedAt: new Date().toISOString() };
   const box = (title, content, color) => '<div class="ai-result-box bg-' + color + '-50 border border-' + color + '-200 rounded-xl p-3"><p class="font-extrabold text-' + color + '-900 text-xs mb-1.5">' + title + '</p><div class="text-[11px] text-gray-800 whitespace-pre-wrap">' + content + '</div></div>';
-  results.innerHTML = box('🔍 التقرير التشخيصي الشامل', diag, 'blue') + box('🦷 الخطة العلاجية', plan, 'emerald') + box('🔄 البديل والمخاطر والمتابعة', alt, 'amber');
+  results.innerHTML = box('🔍 التقرير التشخيصي', diag, 'blue') + box('🦷 الخطة العلاجية', plan, 'emerald') + box('🔄 البديل والمخاطر', alt, 'amber');
   results.classList.remove('hidden');
   btn.disabled = false;
 }
-
-function clearAIResults() {
-  document.getElementById('aiResults').classList.add('hidden');
-  document.getElementById('aiResults').innerHTML = '';
-  document.getElementById('aiStatus').classList.add('hidden');
-  window.__aiResults = null;
-}
+function clearAIResults() { document.getElementById('aiResults').classList.add('hidden'); document.getElementById('aiResults').innerHTML = ''; document.getElementById('aiStatus').classList.add('hidden'); window.__aiResults = null; }
 function applyAIToForm() {
   if (!window.__aiResults) { alert('لا توجد نتائج'); return; }
   const r = window.__aiResults;
@@ -1004,7 +778,7 @@ function applyAIToForm() {
   alert('✅ تم التطبيق');
 }
 
-/* ================= تحليل الصور (مع رسم) ================= */
+/* ========== تحليل الصور ========== */
 let showAnnotations = true;
 function toggleAnnotations() { showAnnotations = !showAnnotations; document.querySelectorAll('.annotated-canvas').forEach(c => { c.style.display = showAnnotations ? 'block' : 'none'; }); }
 
@@ -1014,23 +788,15 @@ async function analyzeImagesWithAI() {
   const status = document.getElementById('imgAiStatus');
   const results = document.getElementById('imgAiResults');
   const btn = document.getElementById('btnAIImg');
-  btn.disabled = true;
-  status.classList.remove('hidden');
+  btn.disabled = true; status.classList.remove('hidden');
   status.innerHTML = '<span class="ai-typing">🔬 جاري التحليل والرسم</span>';
-  results.classList.add('hidden');
-  mergedImageCache = {};
-
-  const engine = getAIEngine();
-  const key = getGeminiKey();
-
+  results.classList.add('hidden'); mergedImageCache = {};
+  const engine = getAIEngine(); const key = getGeminiKey();
   try {
     if (engine === 'builtin' || !key) { runBuiltinImageAnalysis(focus); drawBuiltinAnnotations(); await renderAnnotatedImages(); renderProportionTables(); }
     else { await runGeminiImageAnalysis(focus, key); }
-  } catch (err) {
-    console.warn('Gemini image analysis failed:', err);
-    status.innerHTML = '⚠️ تم التحويل للمحرك المدمج';
-    runBuiltinImageAnalysis(focus); drawBuiltinAnnotations(); await renderAnnotatedImages(); renderProportionTables();
-  } finally { btn.disabled = false; }
+  } catch (err) { console.warn(err); status.innerHTML = '⚠️ تم التحويل للمحرك المدمج'; runBuiltinImageAnalysis(focus); drawBuiltinAnnotations(); await renderAnnotatedImages(); renderProportionTables(); }
+  finally { btn.disabled = false; }
 }
 
 function runBuiltinImageAnalysis(focus) {
@@ -1039,8 +805,7 @@ function runBuiltinImageAnalysis(focus) {
   const hygiene = document.getElementById('oralHygiene').value;
   const age = parseInt(document.getElementById('patientAge').value) || 30;
   const findings = ['📷 الصور: ' + clinicImages.length, '🔎 التحليل: ' + focus];
-  if (focus.includes('شامل') || focus.includes('اللثة')) { if (hygiene === 'ضعيفة') findings.push('🩸 اللثة: التهاب لثة'); else if (hygiene === 'ممتازة') findings.push('🩸 اللثة: ممتازة'); }
-  if (age > 50) findings.push('🦴 العظم: فقد محتمل');
+  if (hygiene === 'ضعيفة') findings.push('🩸 اللثة: التهاب لثة');
   const recommendations = ['متابعة كل 3-6 أشهر'];
   window.__aiImageResults = { focus, engine: 'محرك مدمج', findings, recommendations, imagesCount: clinicImages.length, generatedAt: new Date().toISOString() };
   results.innerHTML = '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔍 النتائج:</p><div class="text-[11px] whitespace-pre-wrap">' + findings.join('\n') + '</div></div>';
@@ -1054,9 +819,9 @@ function drawBuiltinAnnotations() {
     const teethToMark = selectedTeeth.length ? selectedTeeth : [11, 21];
     teethToMark.slice(0, 6).forEach((t, i) => {
       const xmin = 0.15 + (i * 0.13);
-      anns.boxes.push({ label: 'سن ' + t, xmin: Math.min(xmin, 0.82), ymin: 0.35, xmax: Math.min(xmin + 0.09, 0.92), ymax: 0.55, severity: i % 3 === 0 ? 'شديد' : (i % 2 === 0 ? 'متوسط' : 'خفيف'), tooth: t });
+      anns.boxes.push({ label: 'سن ' + t, xmin: Math.min(xmin, 0.82), ymin: 0.35, xmax: Math.min(xmin + 0.09, 0.92), ymax: 0.55, severity: i % 3 === 0 ? 'شديد' : 'متوسط', tooth: t });
     });
-    anns.gumLine = [{x:0.15,y:0.35},{x:0.35,y:0.33},{x:0.5,y:0.32},{x:0.65,y:0.33},{x:0.85,y:0.35}];
+    anns.gumLine = [{x:0.15,y:0.35},{x:0.5,y:0.32},{x:0.85,y:0.35}];
     anns.boneLine = [{x:0.15,y:0.42},{x:0.5,y:0.40},{x:0.85,y:0.42}];
     currentAnnotations[img.id] = { __full: anns };
   });
@@ -1069,130 +834,63 @@ async function runGeminiImageAnalysis(focus, key) {
   const age = document.getElementById('patientAge').value || '؟';
   const gender = document.getElementById('patientGender').value || '؟';
   const work = document.getElementById('workType').value || 'تشخيص عام';
-  const teethList = selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة';
+  const promptText = `أنت خبير تحليل صور طبية. الصورة: العمر ${age}، الجنس ${gender}، العمل: ${work}. نوع التحليل: ${focus}
 
-  const promptText = `أنت خبير تحليل صور طبية في طب الأسنان والتقويم.
-الصورة المرفقة: العمر ${age}، الجنس ${gender}، نوع العمل: ${work}، الأسنان: ${teethList}.
-نوع التحليل: ${focus}
-
-═══════ المطلوب ═══════
-1) تحليل نصي مفصل بالعربية.
-2) رسم تفصيلي كامل (JSON).
-
-أعد JSON بين \`\`\`json و \`\`\` بهذه البنية:
+أعد JSON بين \`\`\`json و \`\`\`:
 {
-  "boxes": [{"label": "التهاب لثة", "xmin": 0.35, "ymin": 0.45, "xmax": 0.45, "ymax": 0.55, "severity": "متوسط", "tooth": 11}],
-  "landmarks": [
-    {"name": "زاوية العين اليمنى", "x": 0.35, "y": 0.30, "type": "face"},
-    {"name": "طرف الأنف", "x": 0.50, "y": 0.50, "type": "face"},
-    {"name": "الذقن", "x": 0.50, "y": 0.78, "type": "face"}
-  ],
-  "lines": [
-    {"name": "خط E", "x1": 0.45, "y1": 0.50, "x2": 0.52, "y2": 0.72, "color": "#ec4899"}
-  ],
-  "angles": [
-    {"name": "الزاوية الأنفية الشفوية", "p1": {"x":0.45,"y":0.50}, "p2": {"x":0.50,"y":0.62}, "p3": {"x":0.50,"y":0.66}, "value": 105}
-  ],
-  "measurements": [
-    {"name": "ارتفاع الشفة العليا", "x1": 0.50, "y1": 0.50, "x2": 0.50, "y2": 0.62, "value": "22 مم"}
-  ],
+  "boxes": [{"label":"التهاب لثة","xmin":0.35,"ymin":0.45,"xmax":0.45,"ymax":0.55,"severity":"متوسط","tooth":11}],
+  "landmarks": [{"name":"طرف الأنف","x":0.50,"y":0.50,"type":"face"},{"name":"الذقن","x":0.50,"y":0.78,"type":"face"}],
+  "lines": [{"name":"خط E","x1":0.45,"y1":0.50,"x2":0.52,"y2":0.72,"color":"#ec4899"}],
+  "angles": [{"name":"الزاوية الأنفية الشفوية","p1":{"x":0.45,"y":0.50},"p2":{"x":0.50,"y":0.62},"p3":{"x":0.50,"y":0.66},"value":105}],
+  "measurements": [{"name":"ارتفاع الشفة","x1":0.50,"y1":0.50,"x2":0.50,"y2":0.62,"value":"22 مم"}],
   "midline": 0.50,
   "gumLine": [{"x":0.20,"y":0.58},{"x":0.50,"y":0.54},{"x":0.80,"y":0.58}],
   "boneLine": [{"x":0.20,"y":0.68},{"x":0.50,"y":0.65},{"x":0.80,"y":0.68}],
-  "goldenLines": [0.35, 0.42, 0.50, 0.58, 0.65],
-  "cephalometricPoints": [
-    {"name":"S","x":0.50,"y":0.20},
-    {"name":"N","x":0.55,"y":0.35},
-    {"name":"A","x":0.45,"y":0.60},
-    {"name":"B","x":0.48,"y":0.72},
-    {"name":"Me","x":0.50,"y":0.85},
-    {"name":"Go","x":0.28,"y":0.78}
-  ]
+  "goldenLines": [0.35,0.42,0.50,0.58,0.65],
+  "cephalometricPoints": [{"name":"S","x":0.50,"y":0.20},{"name":"N","x":0.55,"y":0.35}]
 }
 
-قواعد:
-- كل الإحداثيات من 0 إلى 1.
-- ضع landmarks لكل معالم الوجه.
-- ضع lines للخطوط المرجعية (خط E، خط الوسط).
-- ضع cephalometricPoints إن كانت سيفالومترية.
-- ضع boxes لكل مشكلة.
-- ضع measurements للقياسات.`;
-
+كل الإحداثيات من 0 إلى 1. اكتب تحليلاً نصياً أولاً، ثم JSON.`;
   const parts = [{ text: promptText }];
-  for (const img of imgsToSend) { parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } }); }
-
+  for (const img of imgsToSend) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
   const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
   let text = ''; let lastErr = '';
-
   for (const model of models) {
     try {
       const resp = await callGeminiAPI(key, model, { contents: [{ parts }] });
-      if (!resp.ok) { lastErr = model + ': كود ' + resp.status; continue; }
+      if (!resp.ok) { lastErr = model + ': ' + resp.status; continue; }
       const data = await resp.json();
       text = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
       if (text) break;
     } catch (err) { lastErr = model + ': ' + err.message; }
   }
-  if (!text) throw new Error('فشلت كل النماذج: ' + lastErr);
-
+  if (!text) throw new Error('فشل: ' + lastErr);
   const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
   let parsed = { boxes: [], landmarks: [], measurements: [], angles: [], lines: [], midline: null, gumLine: [], boneLine: [], goldenLines: [], cephalometricPoints: [] };
-  if (jsonMatch) { try { const p = JSON.parse(jsonMatch[1]); parsed = Object.assign(parsed, p); } catch (e) { console.warn('JSON parse:', e); } }
+  if (jsonMatch) { try { const p = JSON.parse(jsonMatch[1]); parsed = Object.assign(parsed, p); } catch (e) {} }
   const cleanText = text.replace(/```json[\s\S]*?```/g, '').trim();
   imgsToSend.forEach(img => { currentAnnotations[img.id] = { __full: parsed }; });
-
   window.__aiImageResults = { focus, engine: 'Gemini Vision', fullText: cleanText, annotations: parsed.boxes, landmarks: parsed.landmarks, measurements: parsed.measurements, angles: parsed.angles, lines: parsed.lines, midline: parsed.midline, gumLine: parsed.gumLine, boneLine: parsed.boneLine, goldenLines: parsed.goldenLines, cephalometricPoints: parsed.cephalometricPoints, imagesCount: imgsToSend.length, generatedAt: new Date().toISOString() };
-
-  status.innerHTML = '✅ Gemini Vision (رسم كامل)';
-  status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
-
+  status.innerHTML = '✅ Gemini Vision (رسم كامل)'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
   let html = '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 تحليل Gemini:</p><div class="text-[11px] whitespace-pre-wrap">' + cleanText + '</div></div>';
-  if (parsed.boxes && parsed.boxes.length) {
-    html += '<div class="ai-result-box bg-amber-50 border border-amber-200 rounded-xl p-3"><p class="font-extrabold text-amber-900 text-xs mb-1.5">📍 الملاحظات (' + parsed.boxes.length + '):</p><div class="text-[11px] space-y-1">';
-    parsed.boxes.forEach(b => { html += '<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full inline-block" style="background:' + getSeverityColor(b.severity) + '"></span><strong>' + b.label + '</strong>' + (b.tooth ? '<span class="text-gray-500 text-[10px]">سن ' + b.tooth + '</span>' : '') + '</div>'; });
-    html += '</div></div>';
-  }
-  results.innerHTML = html;
-  results.classList.remove('hidden');
-  await renderAnnotatedImages();
-  renderProportionTables();
+  results.innerHTML = html; results.classList.remove('hidden');
+  await renderAnnotatedImages(); renderProportionTables();
 }
 
 function getSeverityColor(sev) { if (!sev) return '#64748b'; if (sev.indexOf('شديد') > -1) return '#dc2626'; if (sev.indexOf('متوسط') > -1) return '#d97706'; return '#059669'; }
 
-/* ══════ دوال الرسم المتقدم ══════ */
 function drawLandmarks(ctx, landmarks, w, h) {
   if (!landmarks || !landmarks.length) return;
   const colors = { face: '#f59e0b', jaw: '#8b5cf6', tooth: '#3b82f6', gum: '#ec4899', bone: '#f97316', default: '#10b981' };
-  landmarks.forEach(lm => {
-    const x = lm.x * w, y = lm.y * h;
-    const color = colors[lm.type] || colors.default;
-    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = '#1e293b'; ctx.font = 'bold 11px Cairo, sans-serif'; ctx.fillText(lm.name, x + 8, y + 4);
-  });
+  landmarks.forEach(lm => { const x = lm.x * w, y = lm.y * h; const color = colors[lm.type] || colors.default; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = '#1e293b'; ctx.font = 'bold 11px Cairo, sans-serif'; ctx.fillText(lm.name, x + 8, y + 4); });
 }
 function drawLines(ctx, lines, w, h) {
   if (!lines || !lines.length) return;
-  lines.forEach(ln => {
-    const x1 = ln.x1 * w, y1 = ln.y1 * h, x2 = ln.x2 * w, y2 = ln.y2 * h;
-    ctx.strokeStyle = ln.color || '#ec4899'; ctx.lineWidth = 2; ctx.setLineDash([8, 5]);
-    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]);
-    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-    ctx.font = 'bold 10px Cairo, sans-serif';
-    const tw = ctx.measureText(ln.name).width + 10;
-    ctx.fillStyle = ln.color || '#ec4899'; ctx.fillRect(mx - tw/2, my - 16, tw, 16);
-    ctx.fillStyle = '#fff'; ctx.fillText(ln.name, mx - tw/2 + 5, my - 4);
-  });
+  lines.forEach(ln => { const x1 = ln.x1 * w, y1 = ln.y1 * h, x2 = ln.x2 * w, y2 = ln.y2 * h; ctx.strokeStyle = ln.color || '#ec4899'; ctx.lineWidth = 2; ctx.setLineDash([8, 5]); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]); });
 }
 function drawCephalometricPoints(ctx, points, w, h) {
   if (!points || !points.length) return;
-  points.forEach(pt => {
-    const x = pt.x * w, y = pt.y * h;
-    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#dc2626'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = '#7c2d12'; ctx.font = 'bold 10px Cairo, sans-serif'; ctx.fillText(pt.name, x + 7, y + 3);
-  });
+  points.forEach(pt => { const x = pt.x * w, y = pt.y * h; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fillStyle = '#dc2626'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = '#7c2d12'; ctx.font = 'bold 10px Cairo, sans-serif'; ctx.fillText(pt.name, x + 7, y + 3); });
 }
 
 async function renderAnnotatedImages() {
@@ -1201,184 +899,121 @@ async function renderAnnotatedImages() {
   area.innerHTML = ''; area.classList.remove('hidden');
   for (let idx = 0; idx < clinicImages.length; idx++) {
     const img = clinicImages[idx];
-    const wrapper = document.createElement('div');
-    wrapper.className = 'bg-white rounded-xl border-2 border-slate-200 overflow-hidden shadow-sm';
-    const header = document.createElement('div');
-    header.className = 'bg-slate-100 px-3 py-2 flex items-center justify-between border-b';
+    const wrapper = document.createElement('div'); wrapper.className = 'bg-white rounded-xl border-2 border-slate-200 overflow-hidden shadow-sm';
+    const header = document.createElement('div'); header.className = 'bg-slate-100 px-3 py-2 flex items-center justify-between border-b';
     header.innerHTML = '<span class="text-[11px] font-bold text-slate-700">🖼️ صورة ' + (idx + 1) + ' — ' + img.type + '</span>';
     wrapper.appendChild(header);
-    const container = document.createElement('div');
-    container.className = 'canvas-container';
-    const baseImg = document.createElement('img');
-    baseImg.src = img.dataUrl; baseImg.style.maxHeight = '420px';
-    const canvas = document.createElement('canvas');
-    canvas.className = 'annotated-canvas';
-    canvas.style.display = showAnnotations ? 'block' : 'none';
+    const container = document.createElement('div'); container.className = 'canvas-container';
+    const baseImg = document.createElement('img'); baseImg.src = img.dataUrl; baseImg.style.maxHeight = '420px';
+    const canvas = document.createElement('canvas'); canvas.className = 'annotated-canvas'; canvas.style.display = showAnnotations ? 'block' : 'none';
     const drawFn = (ctx, w, h) => {
       ctx.clearRect(0, 0, w, h);
       const data = currentAnnotations[img.id];
       if (!data) { drawGrid(ctx, w, h); return; }
-      const annData = data.__full || data;
-      if (annData.midline != null) { const x = annData.midline * w; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2.5; ctx.setLineDash([10, 6]); ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); ctx.setLineDash([]); drawSmallLabel(ctx, 'خط الوسط', x + 5, 15, '#10b981'); }
-      if (annData.goldenLines && annData.goldenLines.length) { ctx.strokeStyle = '#eab308'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); annData.goldenLines.forEach(xRel => { const x = xRel * w; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }); ctx.setLineDash([]); }
-      if (annData.gumLine && annData.gumLine.length > 1) { ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 3.5; ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(annData.gumLine[0].x * w, annData.gumLine[0].y * h); for (let i = 1; i < annData.gumLine.length; i++) { const prev = annData.gumLine[i - 1], cur = annData.gumLine[i]; const mx = (prev.x + cur.x) / 2 * w, my = (prev.y + cur.y) / 2 * h; ctx.quadraticCurveTo(prev.x * w, prev.y * h, mx, my); } const last = annData.gumLine[annData.gumLine.length - 1]; ctx.lineTo(last.x * w, last.y * h); ctx.stroke(); drawSmallLabel(ctx, 'خط اللثة', annData.gumLine[0].x * w + 5, annData.gumLine[0].y * h - 10, '#ec4899'); }
-      if (annData.boneLine && annData.boneLine.length > 1) { ctx.strokeStyle = '#f97316'; ctx.lineWidth = 3.5; ctx.setLineDash([8, 4]); ctx.beginPath(); ctx.moveTo(annData.boneLine[0].x * w, annData.boneLine[0].y * h); annData.boneLine.forEach(p => ctx.lineTo(p.x * w, p.y * h)); ctx.stroke(); ctx.setLineDash([]); drawSmallLabel(ctx, 'مستوى العظم', annData.boneLine[0].x * w + 5, annData.boneLine[0].y * h + 20, '#f97316'); }
-      drawLines(ctx, annData.lines, w, h);
-      drawLandmarks(ctx, annData.landmarks, w, h);
-      drawCephalometricPoints(ctx, annData.cephalometricPoints, w, h);
-      const boxes = annData.boxes || [];
+      const a = data.__full || data;
+      if (a.midline != null) { const x = a.midline * w; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2.5; ctx.setLineDash([10, 6]); ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); ctx.setLineDash([]); }
+      if (a.goldenLines && a.goldenLines.length) { ctx.strokeStyle = '#eab308'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); a.goldenLines.forEach(xR => { const x = xR * w; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }); ctx.setLineDash([]); }
+      if (a.gumLine && a.gumLine.length > 1) { ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(a.gumLine[0].x * w, a.gumLine[0].y * h); a.gumLine.forEach(p => ctx.lineTo(p.x * w, p.y * h)); ctx.stroke(); }
+      if (a.boneLine && a.boneLine.length > 1) { ctx.strokeStyle = '#f97316'; ctx.lineWidth = 3.5; ctx.setLineDash([8, 4]); ctx.beginPath(); ctx.moveTo(a.boneLine[0].x * w, a.boneLine[0].y * h); a.boneLine.forEach(p => ctx.lineTo(p.x * w, p.y * h)); ctx.stroke(); ctx.setLineDash([]); }
+      drawLines(ctx, a.lines, w, h); drawLandmarks(ctx, a.landmarks, w, h); drawCephalometricPoints(ctx, a.cephalometricPoints, w, h);
+      const boxes = a.boxes || [];
       boxes.forEach((b, i) => {
         const x = b.xmin * w, y = b.ymin * h; const rw = (b.xmax - b.xmin) * w, rh = (b.ymax - b.ymin) * h;
-        const color = getSeverityColor(b.severity);
-        ctx.fillStyle = color + '26'; ctx.fillRect(x, y, rw, rh);
-        ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.strokeRect(x, y, rw, rh);
-        drawTopLabel(ctx, (i + 1) + '. ' + b.label + (b.tooth ? ' • سن ' + b.tooth : ''), x, y, color, w);
+        const c = getSeverityColor(b.severity);
+        ctx.fillStyle = c + '26'; ctx.fillRect(x, y, rw, rh); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.strokeRect(x, y, rw, rh);
+        drawTopLabel(ctx, (i + 1) + '. ' + b.label + (b.tooth ? ' • سن ' + b.tooth : ''), x, y, c, w);
       });
-      (annData.measurements || []).forEach(m => {
-        const x1 = m.x1 * w, y1 = m.y1 * h, x2 = m.x2 * w, y2 = m.y2 * h;
-        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-        [[x1,y1],[x2,y2]].forEach(p => { ctx.beginPath(); ctx.arc(p[0], p[1], 5, 0, Math.PI * 2); ctx.fillStyle = '#3b82f6'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); });
-        drawCenterLabel(ctx, m.name + ': ' + m.value, (x1+x2)/2, (y1+y2)/2, '#1d4ed8');
-      });
-      (annData.angles || []).forEach(a => {
-        if (!a.p1 || !a.p2 || !a.p3) return;
-        const x1 = a.p1.x * w, y1 = a.p1.y * h, x2 = a.p2.x * w, y2 = a.p2.y * h, x3 = a.p3.x * w, y3 = a.p3.y * h;
-        ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke();
-        drawCenterLabel(ctx, a.name + ' = ' + a.value + '°', x2 + 40, y2 - 15, '#7c3aed');
-      });
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.5)'; ctx.font = 'bold 11px Cairo, sans-serif';
-      ctx.fillText('NAQClinixAI • ' + new Date().toLocaleDateString('ar-YE'), 10, h - 10);
+      (a.measurements || []).forEach(m => { const x1 = m.x1 * w, y1 = m.y1 * h, x2 = m.x2 * w, y2 = m.y2 * h; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); drawCenterLabel(ctx, m.name + ': ' + m.value, (x1+x2)/2, (y1+y2)/2, '#1d4ed8'); });
+      (a.angles || []).forEach(an => { if (!an.p1 || !an.p2 || !an.p3) return; const x1 = an.p1.x * w, y1 = an.p1.y * h, x2 = an.p2.x * w, y2 = an.p2.y * h, x3 = an.p3.x * w, y3 = an.p3.y * h; ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke(); drawCenterLabel(ctx, an.name + ' = ' + an.value + '°', x2 + 40, y2 - 15, '#7c3aed'); });
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.5)'; ctx.font = 'bold 11px Cairo, sans-serif'; ctx.fillText('NAQClinixAI • ' + new Date().toLocaleDateString('ar-YE'), 10, h - 10);
     };
     const draw = () => { const w = baseImg.clientWidth, h = baseImg.clientHeight; if (w === 0 || h === 0) return; canvas.width = w; canvas.height = h; drawFn(canvas.getContext('2d'), w, h); };
     await new Promise(res => { if (baseImg.complete && baseImg.naturalWidth) { setTimeout(res, 100); } else baseImg.onload = () => setTimeout(res, 200); });
-    setTimeout(draw, 100); setTimeout(draw, 400);
-    window.addEventListener('resize', draw);
-    container.appendChild(baseImg); container.appendChild(canvas);
-    wrapper.appendChild(container); area.appendChild(wrapper);
+    setTimeout(draw, 100); setTimeout(draw, 400); window.addEventListener('resize', draw);
+    container.appendChild(baseImg); container.appendChild(canvas); wrapper.appendChild(container); area.appendChild(wrapper);
     try { await new Promise(res => setTimeout(res, 300)); const merged = mergeImageWithCanvas(baseImg, drawFn); mergedImageCache[img.id] = merged; } catch (e) {}
   }
 }
 
 function mergeImageWithCanvas(imgEl, drawFn) {
-  const naturalW = imgEl.naturalWidth || imgEl.width;
-  const naturalH = imgEl.naturalHeight || imgEl.height;
-  const out = document.createElement('canvas');
-  out.width = naturalW; out.height = naturalH;
-  const ctx = out.getContext('2d');
-  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, naturalW, naturalH);
-  ctx.drawImage(imgEl, 0, 0, naturalW, naturalH);
-  if (drawFn) drawFn(ctx, naturalW, naturalH);
+  const nW = imgEl.naturalWidth || imgEl.width, nH = imgEl.naturalHeight || imgEl.height;
+  const out = document.createElement('canvas'); out.width = nW; out.height = nH;
+  const ctx = out.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, nW, nH); ctx.drawImage(imgEl, 0, 0, nW, nH);
+  if (drawFn) drawFn(ctx, nW, nH);
   return out.toDataURL('image/jpeg', 0.92);
 }
 
-function drawGrid(ctx, w, h) { ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)'; ctx.lineWidth = 0.7; ctx.setLineDash([5, 5]); for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(w * i / 3, 0); ctx.lineTo(w * i / 3, h); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, h * i / 3); ctx.lineTo(w, h * i / 3); ctx.stroke(); } ctx.setLineDash([]); ctx.fillStyle = 'rgba(100, 116, 139, 0.8)'; ctx.font = 'bold 13px Cairo, sans-serif'; ctx.fillText('لم تُكتشف ملاحظات', 12, 25); }
-function drawTopLabel(ctx, text, x, y, color, canvasW) { ctx.font = 'bold 12px Cairo, sans-serif'; const tw = ctx.measureText(text).width + 16, th = 24; const lx = Math.max(2, Math.min(x, canvasW - tw - 2)); const ly = y > th + 6 ? y - th - 6 : y + 6; ctx.fillStyle = color; roundRect(ctx, lx, ly, tw, th, 6); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(text, lx + 8, ly + 16); }
+function drawGrid(ctx, w, h) { ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)'; ctx.lineWidth = 0.7; ctx.setLineDash([5, 5]); for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(w * i / 3, 0); ctx.lineTo(w * i / 3, h); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, h * i / 3); ctx.lineTo(w, h * i / 3); ctx.stroke(); } ctx.setLineDash([]); ctx.fillStyle = 'rgba(100, 116, 139, 0.8)'; ctx.font = 'bold 13px Cairo, sans-serif'; ctx.fillText('لا توجد ملاحظات', 12, 25); }
+function drawTopLabel(ctx, text, x, y, color, cW) { ctx.font = 'bold 12px Cairo, sans-serif'; const tw = ctx.measureText(text).width + 16, th = 24; const lx = Math.max(2, Math.min(x, cW - tw - 2)); const ly = y > th + 6 ? y - th - 6 : y + 6; ctx.fillStyle = color; roundRect(ctx, lx, ly, tw, th, 6); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(text, lx + 8, ly + 16); }
 function drawCenterLabel(ctx, text, mx, my, color) { color = color || '#1e3a8a'; ctx.font = 'bold 12px Cairo, sans-serif'; const tw = ctx.measureText(text).width + 16, th = 22; ctx.fillStyle = color; roundRect(ctx, mx - tw / 2, my - th / 2, tw, th, 6); ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(text, mx, my + 4); ctx.textAlign = 'left'; }
 function drawSmallLabel(ctx, text, x, y, color) { ctx.font = 'bold 11px Cairo, sans-serif'; const tw = ctx.measureText(text).width + 12; ctx.fillStyle = color; roundRect(ctx, x, y - 14, tw, 18, 5); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(text, x + 6, y); }
 function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 
-function exportAnnotatedImage() {
-  const keys = Object.keys(mergedImageCache);
-  if (!keys.length) { alert('لا توجد صور مرسومة'); return; }
-  keys.forEach((id, i) => { const a = document.createElement('a'); a.href = mergedImageCache[id]; a.download = 'annotated_' + (i + 1) + '_' + id + '.jpg'; a.click(); });
-  alert('✅ تم تنزيل ' + keys.length + ' صورة');
-}
+function exportAnnotatedImage() { const k = Object.keys(mergedImageCache); if (!k.length) { alert('لا توجد صور'); return; } k.forEach((id, i) => { const a = document.createElement('a'); a.href = mergedImageCache[id]; a.download = 'annotated_' + (i + 1) + '_' + id + '.jpg'; a.click(); }); alert('✅ تم تنزيل ' + k.length); }
 
-/* ================= PDF ================= */
+/* ========== PDF ========== */
 async function exportToPDF(type) {
   type = type || 'report';
   const name = document.getElementById('patientName').value || '';
   if (!name) { alert('أدخل اسم المريض'); return; }
-  const printArea = document.getElementById('printableArea');
-  printArea.classList.remove('hidden'); printArea.style.position = 'static'; printArea.style.display = 'block';
+  const pA = document.getElementById('printableArea');
+  pA.classList.remove('hidden'); pA.style.position = 'static'; pA.style.display = 'block';
   if (type === 'invoice') buildInvoiceContent(); else buildReportContent();
   await new Promise(res => setTimeout(res, 1200));
-  const fileName = (type === 'invoice' ? 'فاتورة' : 'تقرير') + '_' + name + '_' + Date.now() + '.pdf';
-  const opt = { margin: [8, 8, 8, 8], filename: fileName, image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, allowTaint: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'] } };
-  try { await html2pdf().set(opt).from(printArea).save(); }
-  catch (e) { console.error(e); alert('فشل PDF'); window.print(); }
-  finally { printArea.classList.add('hidden'); printArea.style.position = ''; }
+  const fn = (type === 'invoice' ? 'فاتورة' : 'تقرير') + '_' + name + '_' + Date.now() + '.pdf';
+  const opt = { margin: [8,8,8,8], filename: fn, image: { type:'jpeg', quality:0.95 }, html2canvas: { scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, allowTaint:true }, jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }, pagebreak: { mode:['css','legacy'] } };
+  try { await html2pdf().set(opt).from(pA).save(); } catch (e) { alert('فشل'); window.print(); } finally { pA.classList.add('hidden'); pA.style.position = ''; }
 }
 
 function buildReportContent() {
   const name = document.getElementById('patientName').value;
   const teeth = selectedTeeth.length ? selectedTeeth.join(', ') : 'لا يوجد';
   const userInfo = currentUser ? 'أُنشئ بواسطة: ' + currentUser.fullName : '';
-  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p><strong>المريض:</strong> ' + name + '</p><p><strong>العمر/الجنس:</strong> ' + (document.getElementById('patientAge').value || '-') + ' (' + (document.getElementById('patientGender').value || '-') + ')</p><p class="col-span-2"><strong>السكن:</strong> ' + (document.getElementById('patientAddress').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2"><p><strong>الحساسية/الأمراض:</strong> ' + (document.getElementById('patientAllergies').value || 'لا يوجد') + ' / ' + (document.getElementById('chronicDiseases').value || 'لا يوجد') + '</p><p><strong>نوع العمل:</strong> ' + (document.getElementById('workType').value || '-') + '</p><p><strong>الأسنان:</strong> ' + teeth + '</p><p><strong>الشكوى:</strong> ' + (document.getElementById('complaint').value || '-') + '</p><p><strong>الخطة العلاجية:</strong> ' + (document.getElementById('treatmentPlan').value || '-') + '</p><p><strong>البديل:</strong> ' + (document.getElementById('alternativePlan').value || '-') + '</p>' + (userInfo ? '<p class="text-[10px] text-gray-500 mt-2">' + userInfo + '</p>' : '') + '</div>' + buildAnnotatedImagesHTML() + '<div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب</p><p>د. علي النقيب</p></div>';
+  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p><strong>المريض:</strong> ' + name + '</p><p><strong>العمر/الجنس:</strong> ' + (document.getElementById('patientAge').value || '-') + ' (' + (document.getElementById('patientGender').value || '-') + ')</p><p class="col-span-2"><strong>السكن:</strong> ' + (document.getElementById('patientAddress').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2"><p><strong>الحساسية/الأمراض:</strong> ' + (document.getElementById('patientAllergies').value || 'لا يوجد') + ' / ' + (document.getElementById('chronicDiseases').value || 'لا يوجد') + '</p><p><strong>نوع العمل:</strong> ' + (document.getElementById('workType').value || '-') + '</p><p><strong>الأسنان:</strong> ' + teeth + '</p><p><strong>الشكوى:</strong> ' + (document.getElementById('complaint').value || '-') + '</p><p><strong>الخطة:</strong> ' + (document.getElementById('treatmentPlan').value || '-') + '</p><p><strong>البديل:</strong> ' + (document.getElementById('alternativePlan').value || '-') + '</p>' + (userInfo ? '<p class="text-[10px] text-gray-500 mt-2">' + userInfo + '</p>' : '') + '</div>' + buildAnnotatedImagesHTML() + '<div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب</p><p>د. علي النقيب</p></div>';
 }
 
 function buildInvoiceContent() {
   const name = document.getElementById('patientName').value;
   const total = parseFloat(document.getElementById('totalAmount').value) || 0;
-  const p1 = parseFloat(document.getElementById('payment1').value) || 0;
-  const p2 = parseFloat(document.getElementById('payment2').value) || 0;
-  const p3 = parseFloat(document.getElementById('payment3').value) || 0;
-  const remaining = total - (p1 + p2 + p3);
-  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-green-900 border-b pb-1">سند قبض</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p class="col-span-2"><strong>المريض:</strong> ' + name + '</p><p class="col-span-2"><strong>الحالة:</strong> ' + (document.getElementById('revenueStatus').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2 border-t"><p class="flex justify-between"><span>الإجمالي:</span> <strong>' + total + ' ريال</strong></p><p class="flex justify-between"><span>الدفعة 1:</span><span>' + p1 + ' ريال</span></p><p class="flex justify-between"><span>الدفعة 2:</span><span>' + p2 + ' ريال</span></p><p class="flex justify-between"><span>الدفعة 3:</span><span>' + p3 + ' ريال</span></p><hr><p class="flex justify-between text-sm font-extrabold"><span>المتبقي:</span><span class="text-red-600">' + remaining + ' ريال</span></p></div><div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>ختم العيادة</p><p>د. علي النقيب</p></div>';
+  const p1 = parseFloat(document.getElementById('payment1').value) || 0, p2 = parseFloat(document.getElementById('payment2').value) || 0, p3 = parseFloat(document.getElementById('payment3').value) || 0;
+  const rem = total - (p1 + p2 + p3);
+  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-green-900 border-b pb-1">سند قبض</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p class="col-span-2"><strong>المريض:</strong> ' + name + '</p><p class="col-span-2"><strong>الحالة:</strong> ' + (document.getElementById('revenueStatus').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2 border-t"><p class="flex justify-between"><span>الإجمالي:</span><strong>' + total + ' ريال</strong></p><p class="flex justify-between"><span>الدفعة 1:</span><span>' + p1 + ' ريال</span></p><p class="flex justify-between"><span>الدفعة 2:</span><span>' + p2 + ' ريال</span></p><p class="flex justify-between"><span>الدفعة 3:</span><span>' + p3 + ' ريال</span></p><hr><p class="flex justify-between text-sm font-extrabold"><span>المتبقي:</span><span class="text-red-600">' + rem + ' ريال</span></p></div><div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>ختم العيادة</p><p>د. علي النقيب</p></div>';
 }
 
 function buildAnnotatedImagesHTML() {
   if (!clinicImages.length) return '';
-  const annotated = clinicImages.filter(img => mergedImageCache[img.id]).map((img, i) => '<div style="page-break-inside: avoid; margin-bottom: 10px;"><p style="font-size: 11px; font-weight: bold; color: #1e3a8a; margin-bottom: 4px;">🖼️ صورة ' + (i + 1) + ' — ' + img.type + '</p><img src="' + mergedImageCache[img.id] + '" style="width: 100%; max-width: 700px; border: 1px solid #cbd5e1; border-radius: 6px;" /></div>').join('');
-  const originals = clinicImages.filter(img => !mergedImageCache[img.id]).map(img => '<div style="display:inline-block; margin:3px; text-align: center;"><img src="' + img.dataUrl + '" style="width: 150px; height: 120px; object-fit: cover; border: 1px solid #cbd5e1; border-radius: 6px;" /><p style="font-size: 9px; margin: 2px 0;">' + img.type + '</p></div>').join('');
-  let html = '';
-  if (annotated) html += '<div style="margin-top:15px; padding-top:10px; border-top:1px solid #cbd5e1;"><p style="font-weight:bold; font-size:13px; color:#1e3a8a; margin-bottom:8px;">🔬 الصور مع التحليل:</p>' + annotated + '</div>';
-  if (originals) html += '<div style="margin-top:15px; padding-top:10px; border-top:1px solid #cbd5e1;"><p style="font-weight:bold; font-size:13px; color:#1e3a8a; margin-bottom:8px;">📷 الصور الأصلية:</p>' + originals + '</div>';
-  return html;
+  const ann = clinicImages.filter(img => mergedImageCache[img.id]).map((img, i) => '<div style="page-break-inside:avoid;margin-bottom:10px;"><p style="font-size:11px;font-weight:bold;color:#1e3a8a;margin-bottom:4px;">🖼️ صورة ' + (i+1) + ' — ' + img.type + '</p><img src="' + mergedImageCache[img.id] + '" style="width:100%;max-width:700px;border:1px solid #cbd5e1;border-radius:6px;" /></div>').join('');
+  const orig = clinicImages.filter(img => !mergedImageCache[img.id]).map(img => '<div style="display:inline-block;margin:3px;text-align:center;"><img src="' + img.dataUrl + '" style="width:150px;height:120px;object-fit:cover;border:1px solid #cbd5e1;border-radius:6px;" /><p style="font-size:9px;margin:2px 0;">' + img.type + '</p></div>').join('');
+  let h = '';
+  if (ann) h += '<div style="margin-top:15px;padding-top:10px;border-top:1px solid #cbd5e1;"><p style="font-weight:bold;font-size:13px;color:#1e3a8a;margin-bottom:8px;">🔬 الصور مع التحليل:</p>' + ann + '</div>';
+  if (orig) h += '<div style="margin-top:15px;padding-top:10px;border-top:1px solid #cbd5e1;"><p style="font-weight:bold;font-size:13px;color:#1e3a8a;margin-bottom:8px;">📷 الصور الأصلية:</p>' + orig + '</div>';
+  return h;
 }
 
-function printReport() {
-  const name = document.getElementById('patientName').value;
-  if (!name) { alert('أدخل اسم المريض'); return; }
-  buildReportContent();
-  const printArea = document.getElementById('printableArea');
-  printArea.classList.remove('hidden');
-  setTimeout(() => { window.print(); setTimeout(() => printArea.classList.add('hidden'), 500); }, 300);
-}
+function printReport() { const n = document.getElementById('patientName').value; if (!n) { alert('أدخل الاسم'); return; } buildReportContent(); const pA = document.getElementById('printableArea'); pA.classList.remove('hidden'); setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300); }
+function printInvoice() { const n = document.getElementById('patientName').value; if (!n) { alert('أدخل الاسم'); return; } buildInvoiceContent(); const pA = document.getElementById('printableArea'); pA.classList.remove('hidden'); setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300); }
+function clearForm() { if (!confirm('بدء مريض جديد؟')) return; resetForm(); }
 
-function printInvoice() {
-  const name = document.getElementById('patientName').value;
-  if (!name) { alert('أدخل اسم المريض'); return; }
-  buildInvoiceContent();
-  const printArea = document.getElementById('printableArea');
-  printArea.classList.remove('hidden');
-  setTimeout(() => { window.print(); setTimeout(() => printArea.classList.add('hidden'), 500); }, 300);
-}
-
-function clearForm() { if (!confirm('هل تريد بدء مريض جديد؟ سيتم مسح البيانات الحالية.')) return; resetForm(); }
-
-/* ================= حفظ السجل ================= */
+/* ========== حفظ السجل ========== */
 async function savePatientRecord() {
   const name = document.getElementById('patientName').value.trim();
-  if (!name) { alert('أدخل اسم المريض'); return; }
+  if (!name) { alert('أدخل الاسم'); return; }
   const btn = document.getElementById('saveBtn');
-  const orig = btn.textContent;
-  btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
+  const o = btn.textContent; btn.disabled = true; btn.textContent = '⏳...';
   try {
-    const fileNumber = document.getElementById('fileNumber').value;
-    const imageRecords = [];
+    const fN = document.getElementById('fileNumber').value;
+    const imgRecs = [];
     for (const img of clinicImages) {
-      const mergedData = mergedImageCache[img.id] || img.dataUrl;
-      const rec = { type: img.type, date: img.date, annotations: currentAnnotations[img.id] || null };
-      if (storage) {
-        try {
-          const mRef = storage.ref().child('patients/' + fileNumber + '/' + img.id + '_annotated.jpg');
-          const mSnap = await mRef.putString(mergedData, 'data_url');
-          rec.mergedUrl = await mSnap.ref.getDownloadURL();
-          const oRef = storage.ref().child('patients/' + fileNumber + '/' + img.id + '_original.jpg');
-          const oSnap = await oRef.putString(img.dataUrl, 'data_url');
-          rec.originalUrl = await oSnap.ref.getDownloadURL();
-        } catch (e) { rec.mergedDataUrl = mergedData; rec.originalDataUrl = img.dataUrl; }
-      } else { rec.mergedDataUrl = mergedData; rec.originalDataUrl = img.dataUrl; }
-      imageRecords.push(rec);
+      const md = mergedImageCache[img.id] || img.dataUrl;
+      const r = { type: img.type, date: img.date, annotations: currentAnnotations[img.id] || null };
+      if (storage) { try { const mR = storage.ref().child('patients/' + fN + '/' + img.id + '_a.jpg'); const mS = await mR.putString(md, 'data_url'); r.mergedUrl = await mS.ref.getDownloadURL(); const oR = storage.ref().child('patients/' + fN + '/' + img.id + '_o.jpg'); const oS = await oR.putString(img.dataUrl, 'data_url'); r.originalUrl = await oS.ref.getDownloadURL(); } catch (e) { r.mergedDataUrl = md; r.originalDataUrl = img.dataUrl; } }
+      else { r.mergedDataUrl = md; r.originalDataUrl = img.dataUrl; }
+      imgRecs.push(r);
     }
-    let safeImages = imageRecords;
-    if (JSON.stringify(safeImages).length > 700000) {
-      safeImages = imageRecords.map(r => ({ type: r.type, date: r.date, annotations: r.annotations, mergedUrl: r.mergedUrl || null, originalUrl: r.originalUrl || null }));
-      alert('تم حفظ الروابط فقط لتجاوز الحد');
-    }
-    const record = {
-      fileNumber, fullName: name,
+    let sImg = imgRecs;
+    if (JSON.stringify(sImg).length > 700000) { sImg = imgRecs.map(r => ({ type:r.type, date:r.date, annotations:r.annotations, mergedUrl:r.mergedUrl||null, originalUrl:r.originalUrl||null })); }
+    const rec = {
+      fileNumber: fN, fullName: name,
       gender: document.getElementById('patientGender').value,
       age: document.getElementById('patientAge').value,
       address: document.getElementById('patientAddress').value,
@@ -1394,21 +1029,19 @@ async function savePatientRecord() {
       complaint: document.getElementById('complaint').value,
       treatmentPlan: document.getElementById('treatmentPlan').value,
       alternativePlan: document.getElementById('alternativePlan').value,
-      aiGenerated: !!window.__aiResults,
-      aiDiagnosis: window.__aiResults || null,
-      aiImageAnalysis: window.__aiImageResults || null,
-      images: safeImages,
+      aiGenerated: !!window.__aiResults, aiDiagnosis: window.__aiResults || null, aiImageAnalysis: window.__aiImageResults || null,
+      images: sImg,
       financials: { total: document.getElementById('totalAmount').value, payment1: document.getElementById('payment1').value, payment2: document.getElementById('payment2').value, payment3: document.getElementById('payment3').value, remaining: document.getElementById('remainingDisplay').textContent, status: document.getElementById('revenueStatus').value, expense: document.getElementById('expenseAmount').value, expenseType: document.getElementById('expenseType').value },
+      dateKey: new Date().toISOString().split('T')[0],
       createdBy: currentUser ? currentUser.username : 'unknown',
       createdByName: currentUser ? currentUser.fullName : 'unknown',
       regDate: currentDate,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
-    await db.collection("patients").doc(fileNumber).set(record);
-    alert('✅ تم حفظ البيانات');
-    resetForm();
-  } catch (err) { console.error(err); alert('خطأ في الحفظ: ' + err.message); }
-  finally { btn.disabled = false; btn.textContent = orig; }
+    await db.collection("patients").doc(fN).set(rec);
+    alert('✅ تم الحفظ'); resetForm();
+  } catch (err) { alert('خطأ: ' + err.message); }
+  finally { btn.disabled = false; btn.textContent = o; }
 }
 
 async function loadPatientByFileNumber() {
@@ -1416,7 +1049,7 @@ async function loadPatientByFileNumber() {
   if (!fn) return;
   try {
     const doc = await db.collection("patients").doc(fn.trim()).get();
-    if (!doc.exists) { alert('لا يوجد سجل'); return; }
+    if (!doc.exists) { alert('لا يوجد'); return; }
     const d = doc.data();
     document.getElementById('fileNumber').value = d.fileNumber || fn;
     document.getElementById('patientName').value = d.fullName || '';
@@ -1434,35 +1067,14 @@ async function loadPatientByFileNumber() {
     document.getElementById('complaint').value = d.complaint || '';
     document.getElementById('treatmentPlan').value = d.treatmentPlan || '';
     document.getElementById('alternativePlan').value = d.alternativePlan || '';
-    if (d.financials) {
-      document.getElementById('totalAmount').value = d.financials.total || '';
-      document.getElementById('payment1').value = d.financials.payment1 || '';
-      document.getElementById('payment2').value = d.financials.payment2 || '';
-      document.getElementById('payment3').value = d.financials.payment3 || '';
-      document.getElementById('revenueStatus').value = d.financials.status || '';
-      document.getElementById('expenseAmount').value = d.financials.expense || '';
-      document.getElementById('expenseType').value = d.financials.expenseType || '';
-    }
+    if (d.financials) { document.getElementById('totalAmount').value = d.financials.total || ''; document.getElementById('payment1').value = d.financials.payment1 || ''; document.getElementById('payment2').value = d.financials.payment2 || ''; document.getElementById('payment3').value = d.financials.payment3 || ''; document.getElementById('revenueStatus').value = d.financials.status || ''; document.getElementById('expenseAmount').value = d.financials.expense || ''; document.getElementById('expenseType').value = d.financials.expenseType || ''; }
     selectedTeeth = (d.selectedTeeth || '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
     document.querySelectorAll('.tooth').forEach(g => { const n = parseInt(g.dataset.tooth, 10); if (selectedTeeth.indexOf(n) > -1) g.classList.add('selected'); });
     document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(' • ') : 'لا يوجد');
     calculateFinancials();
     if (d.aiDiagnosis) { window.__aiResults = d.aiDiagnosis; renderAIResults(d.aiDiagnosis.engine || 'محفوظ', d.aiDiagnosis.diag || '', d.aiDiagnosis.plan || '', d.aiDiagnosis.alt || ''); }
-    if (d.images && d.images.length) {
-      clinicImages = []; mergedImageCache = {}; currentAnnotations = {};
-      for (let i = 0; i < d.images.length; i++) {
-        const r = d.images[i];
-        const dataUrl = r.mergedDataUrl || r.originalDataUrl || r.mergedUrl || r.originalUrl;
-        if (!dataUrl) continue;
-        const imgId = 'loaded_' + i;
-        clinicImages.push({ id: imgId, dataUrl, url: r.originalUrl || null, type: r.type, date: r.date });
-        if (r.mergedDataUrl) mergedImageCache[imgId] = r.mergedDataUrl;
-        if (r.annotations) currentAnnotations[imgId] = r.annotations;
-      }
-      renderGallery();
-    }
     alert('✅ تم الاسترجاع');
-  } catch (err) { console.error(err); alert('فشل الاسترجاع'); }
+  } catch (err) { alert('فشل'); }
 }
 
 function resetForm() {
@@ -1479,45 +1091,408 @@ function resetForm() {
   document.getElementById('imgAiStatus').classList.add('hidden');
   document.getElementById('annotatedImagesArea').classList.add('hidden');
   document.getElementById('proportionTablesSection').classList.add('hidden');
-  window.__aiResults = null;
-  window.__aiImageResults = null;
+  window.__aiResults = null; window.__aiImageResults = null;
 }
 
-/* ================= إعدادات AI ================= */
+/* ========== إعدادات AI ========== */
 function openAISettings() { document.getElementById('geminiApiKey').value = getGeminiKey(); document.getElementById('aiEngine').value = localStorage.getItem('aiEngine') || 'auto'; const m = document.getElementById('aiSettingsModal'); m.classList.remove('hidden'); m.classList.add('flex'); }
 function closeAISettings() { const m = document.getElementById('aiSettingsModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 function saveAISettings() {
-  const key = document.getElementById('geminiApiKey').value.trim();
-  const engine = document.getElementById('aiEngine').value;
-  if (key) localStorage.setItem('geminiApiKey', key); else localStorage.removeItem('geminiApiKey');
-  localStorage.setItem('aiEngine', engine);
-  const s = document.getElementById('aiSettingsStatus');
-  s.textContent = '✅ تم الحفظ'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; s.classList.remove('hidden');
-  setTimeout(() => s.classList.add('hidden'), 2500);
-  updateAIEngineBadge();
+  const k = document.getElementById('geminiApiKey').value.trim(), e = document.getElementById('aiEngine').value;
+  if (k) localStorage.setItem('geminiApiKey', k); else localStorage.removeItem('geminiApiKey');
+  localStorage.setItem('aiEngine', e);
+  const s = document.getElementById('aiSettingsStatus'); s.textContent = '✅ تم'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; s.classList.remove('hidden');
+  setTimeout(() => s.classList.add('hidden'), 2500); updateAIEngineBadge();
 }
 async function testAIConnection() {
-  const key = document.getElementById('geminiApiKey').value.trim();
-  const s = document.getElementById('aiSettingsStatus');
-  s.classList.remove('hidden'); s.textContent = '⏳ جاري الاختبار...'; s.className = 'text-[11px] text-center font-bold text-gray-600';
-  if (!key) { s.textContent = '⚠️ أدخل المفتاح'; s.className = 'text-[11px] text-center font-bold text-amber-600'; return; }
-  try {
-    let r;
-    if (key.startsWith('AQ.')) { r = await fetch('https://generativelanguage.googleapis.com/v1beta/models', { headers: { 'x-goog-api-key': key } }); }
-    else { r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + key); }
-    if (r.ok) { s.textContent = '✅ المفتاح صالح'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; }
-    else { const t = await r.text(); s.textContent = '❌ ' + t.substring(0, 80); s.className = 'text-[11px] text-center font-bold text-red-600'; }
-  } catch (e) { s.textContent = '❌ فشل الاتصال'; s.className = 'text-[11px] text-center font-bold text-red-600'; }
+  const k = document.getElementById('geminiApiKey').value.trim();
+  const s = document.getElementById('aiSettingsStatus'); s.classList.remove('hidden'); s.textContent = '⏳...'; s.className = 'text-[11px] text-center font-bold text-gray-600';
+  if (!k) { s.textContent = '⚠️ أدخل المفتاح'; s.className = 'text-[11px] text-center font-bold text-amber-600'; return; }
+  try { let r; if (k.startsWith('AQ.')) { r = await fetch('https://generativelanguage.googleapis.com/v1beta/models', { headers: { 'x-goog-api-key': k } }); } else { r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + k); } if (r.ok) { s.textContent = '✅ صالح'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; } else { s.textContent = '❌ غير صالح'; s.className = 'text-[11px] text-center font-bold text-red-600'; } } catch (e) { s.textContent = '❌ فشل'; s.className = 'text-[11px] text-center font-bold text-red-600'; }
 }
-function updateAIEngineBadge() {
-  const badge = document.getElementById('aiEngineBadge'); if (!badge) return;
-  const mode = document.getElementById('aiEngine') ? document.getElementById('aiEngine').value : (localStorage.getItem('aiEngine') || 'auto');
-  const hasKey = !!getGeminiKey();
-  if (mode === 'gemini' || (mode === 'auto' && hasKey)) { badge.textContent = 'Gemini AI'; }
-  else { badge.textContent = 'محرك مدمج'; }
+function updateAIEngineBadge() { const b = document.getElementById('aiEngineBadge'); if (!b) return; const m = document.getElementById('aiEngine') ? document.getElementById('aiEngine').value : (localStorage.getItem('aiEngine') || 'auto'); const hk = !!getGeminiKey(); if (m === 'gemini' || (m === 'auto' && hk)) b.textContent = 'Gemini AI'; else b.textContent = 'محرك مدمج'; }
+
+/* ═══════════════════════════════════════════════════
+   🆕 الماسح الذكي + مراجع التشخيص + التقارير
+   ═══════════════════════════════════════════════════ */
+
+/* ===== الماسح الذكي ===== */
+async function runSmartScanner() {
+  if (!clinicImages.length) { alert('ارفع صورة أولاً للفحص الذكي'); return; }
+  const key = getGeminiKey();
+  const engine = getAIEngine();
+  const btn = document.getElementById('btnSmartScanner');
+  const status = document.getElementById('aiStatus');
+  const results = document.getElementById('aiResults');
+  btn.disabled = true;
+  status.classList.remove('hidden');
+  status.innerHTML = '<span class="ai-typing">📡 جاري المسح الذكي للصور</span>';
+  results.classList.add('hidden');
+
+  if (engine === 'builtin' || !key) {
+    setTimeout(() => { status.innerHTML = '⚠️ الماسح الذكي يحتاج Gemini'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-amber-50 text-amber-700 font-bold'; btn.disabled = false; }, 800);
+    return;
+  }
+
+  const age = document.getElementById('patientAge').value || '؟';
+  const promptText = `أنت ماسح تشخيصي سني ذكي. مهمتك: فحص الصورة/الصور المرفقة بدقة وتحديد كل ما يلي:
+
+**1) الأسنان الموجودة والمفقودة:**
+استخدم نظام FDI (11-48). حدد:
+- الأسنان الظاهرة بوضوح
+- الأسنان المفقودة إن وُجدت
+- الأسنان المصابة (تسوس، كسر، تصبغ)
+
+**2) المشاكل المكتشفة:**
+لكل مشكلة: السن المصاب + نوع المشكلة + الشدة (خفيف/متوسط/شديد).
+
+**3) النتائج المطلوبة بصيغة JSON صارمة:**
+
+\`\`\`json
+{
+  "detectedTeeth": [11, 12, 21, 22, 36, 46],
+  "affectedTeeth": [
+    {"tooth": 11, "condition": "تسوس", "severity": "متوسط", "location": "سطح حنكي"},
+    {"tooth": 36, "condition": "حشوة قديمة", "severity": "خفيف", "location": "سطح إطباقي"}
+  ],
+  "gumCondition": {"overall": "متوسط", "areas": [{"region": "أمامي علوي", "state": "التهاب حويافي"}]},
+  "boneCondition": {"overall": "جيد", "notes": "لا يوجد فقد عظمي واضح"},
+  "occlusionClass": "Class I / II / III",
+  "overjet": "مم",
+  "overbite": "مم",
+  "midlineDeviation": "مم",
+  "summary": "ملخص سريع للحالة",
+  "recommendations": ["توصية 1", "توصية 2"]
+}
+\`\`\`
+
+**قواعد صارمة:**
+- إذا لم تكن الصورة واضحة لسن معين، لا تدرجه في affectedTeeth.
+- الاستنتاج يجب أن يكون مبنياً على ما تراه فعلاً، لا التخمين.
+- كل سن له رقم FDI صحيح (11-18، 21-28، 31-38، 41-48).
+- إذا كانت الصورة سيفالومترية، أضف في "summary" زوايا ANB إن أمكن قياسها.
+
+اكتب تحليلاً نصياً مفصلاً أولاً، ثم ضع JSON في النهاية.`;
+
+  const parts = [{ text: promptText }];
+  for (const img of clinicImages.slice(0, 6)) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
+
+  const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
+  let text = '', lastErr = '';
+  for (const model of models) {
+    try {
+      const resp = await callGeminiAPI(key, model, { contents: [{ parts }] });
+      if (!resp.ok) { lastErr = model + ': ' + resp.status; continue; }
+      const data = await resp.json();
+      text = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
+      if (text) break;
+    } catch (err) { lastErr = model + ': ' + err.message; }
+  }
+
+  if (!text) {
+    status.innerHTML = '❌ فشل الماسح: ' + lastErr;
+    status.className = 'text-[11px] text-center p-2 rounded-lg bg-red-50 text-red-700 font-bold';
+    btn.disabled = false; return;
+  }
+
+  const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+  let scan = null;
+  if (jsonMatch) { try { scan = JSON.parse(jsonMatch[1]); } catch (e) { console.warn('JSON parse:', e); } }
+  const cleanText = text.replace(/```json[\s\S]*?```/g, '').trim();
+
+  // تطبيق تلقائي على المخطط
+  if (scan && scan.detectedTeeth && scan.detectedTeeth.length) {
+    scan.detectedTeeth.forEach(t => {
+      if (!selectedTeeth.includes(t)) selectedTeeth.push(t);
+      const g = document.querySelector('.tooth[data-tooth="' + t + '"]');
+      if (g) g.classList.add('selected');
+    });
+    selectedTeeth.sort((a, b) => a - b);
+    document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: ' + selectedTeeth.join(' • ');
+  }
+
+  // عرض النتائج
+  status.innerHTML = '✅ الماسح الذكي (كشف ' + (scan && scan.detectedTeeth ? scan.detectedTeeth.length : 0) + ' سن)';
+  status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
+
+  let html = '';
+  if (scan && scan.detectedTeeth && scan.detectedTeeth.length) {
+    html += '<div class="ai-result-box bg-gradient-to-br from-fuchsia-50 to-pink-50 border-2 border-fuchsia-300 rounded-xl p-3"><p class="font-extrabold text-fuchsia-900 text-xs mb-2">📡 نتائج الماسح الذكي:</p><div class="grid grid-cols-2 gap-2 mb-2"><div class="bg-white rounded-lg p-2 text-center"><div class="text-[10px] text-gray-500">أسنان مكتشفة</div><div class="text-lg font-extrabold text-fuchsia-600">' + scan.detectedTeeth.length + '</div></div><div class="bg-white rounded-lg p-2 text-center"><div class="text-[10px] text-gray-500">أسنان مصابة</div><div class="text-lg font-extrabold text-red-600">' + (scan.affectedTeeth ? scan.affectedTeeth.length : 0) + '</div></div></div>';
+    html += '<p class="text-[11px] font-bold text-fuchsia-900 mb-1">🦷 الأسنان المكتشفة (FDI):</p><div class="flex flex-wrap gap-1 mb-2">' + scan.detectedTeeth.map(t => '<span class="bg-fuchsia-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">' + t + '</span>').join('') + '</div>';
+    if (scan.affectedTeeth && scan.affectedTeeth.length) {
+      html += '<p class="text-[11px] font-bold text-fuchsia-900 mb-1">⚠️ الأسنان المصابة:</p><div class="space-y-1">' + scan.affectedTeeth.map(a => { const col = getSeverityColor(a.severity); return '<div class="bg-white rounded-lg p-2 text-[11px] flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background:' + col + '"></span><strong>سن ' + a.tooth + '</strong> — ' + a.condition + (a.location ? ' (' + a.location + ')' : '') + ' <span class="text-[9px] px-1.5 py-0.5 rounded" style="background:' + col + '22;color:' + col + '">' + a.severity + '</span></div>'; }).join('') + '</div>';
+    }
+    if (scan.gumCondition) html += '<p class="text-[11px] mt-2"><strong>🩸 اللثة:</strong> ' + scan.gumCondition.overall + '</p>';
+    if (scan.boneCondition) html += '<p class="text-[11px]"><strong>🦴 العظم:</strong> ' + scan.boneCondition.overall + '</p>';
+    if (scan.summary) html += '<p class="text-[11px] mt-2 bg-white p-2 rounded-lg">' + scan.summary + '</p>';
+    if (scan.recommendations && scan.recommendations.length) html += '<p class="text-[11px] font-bold text-fuchsia-900 mt-2">✅ التوصيات:</p><ul class="text-[11px] space-y-1 mr-4 list-disc">' + scan.recommendations.map(r => '<li>' + r + '</li>').join('') + '</ul>';
+    html += '</div>';
+  }
+  html += '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 التحليل الكامل:</p><div class="text-[11px] whitespace-pre-wrap">' + cleanText + '</div></div>';
+
+  results.innerHTML = html;
+  results.classList.remove('hidden');
+  window.__aiResults = { diag: cleanText, plan: scan && scan.recommendations ? scan.recommendations.join('\n') : '', alt: '', engine: 'Smart Scanner', generatedAt: new Date().toISOString() };
+  btn.disabled = false;
 }
 
-document.addEventListener("DOMContentLoaded", () => { renderLogos(); renderDentalChart(); generateFileNumber(); renderGallery(); updateAIEngineBadge(); });
+/* ===== مراجع التشخيص ===== */
+function openDiagnosisReferences() {
+  const m = document.getElementById('refsModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+  const c = document.getElementById('refsContent');
+  c.innerHTML = `
+    <div class="bg-gradient-to-br from-slate-100 to-gray-100 border-2 border-slate-300 rounded-xl p-3">
+      <p class="font-extrabold text-slate-900 text-sm mb-2">📐 تصنيف Angle للعلاقة الهيكلية</p>
+      <table class="ref-table">
+        <thead><tr><th>الزاوية</th><th>Class I</th><th>Class II</th><th>Class III</th></tr></thead>
+        <tbody>
+          <tr><td>SNA</td><td>82° ± 2°</td><td>≥ 84°</td><td>≤ 80°</td></tr>
+          <tr><td>SNB</td><td>80° ± 2°</td><td>≤ 78°</td><td>≥ 82°</td></tr>
+          <tr><td>ANB</td><td>2° ± 2°</td><td>> 4°</td><td>< 0°</td></tr>
+          <tr><td>الفك السفلي</td><td>متوازن</td><td>متراجع</td><td>متقدم</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-3">
+      <p class="font-extrabold text-blue-900 text-sm mb-2">🦷 تصنيف Angle السني (Angle's Classification)</p>
+      <ul class="text-[11px] space-y-1 mr-4 list-disc">
+        <li><strong>Class I:</strong> الناب العلوي أمام الأخدود الشدقي السفلي بحجم عرض الناب. Overjet 2-3mm.</li>
+        <li><strong>Class II Div 1:</strong> الناب العلوي أمام الأخدود. Overjet > 3mm + بروز أمامي.</li>
+        <li><strong>Class II Div 2:</strong> الناب العلوي أمام الأخدود + القواطع العلوية مائلة للداخل.</li>
+        <li><strong>Class III:</strong> الناب العلوي خلف الأخدود. Overjet سالب / عضة معكوسة.</li>
+      </ul>
+    </div>
+
+    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-xl p-3">
+      <p class="font-extrabold text-emerald-900 text-sm mb-2">📏 القيم السيفالومترية المرجعية</p>
+      <table class="ref-table">
+        <thead><tr><th>القياس</th><th>القيمة الطبيعية</th></tr></thead>
+        <tbody>
+          <tr><td>SNA (زاوية الفك العلوي)</td><td class="ok">82° ± 2°</td></tr>
+          <tr><td>SNB (زاوية الفك السفلي)</td><td class="ok">80° ± 2°</td></tr>
+          <tr><td>ANB (الفرق بين الفكين)</td><td class="ok">2° ± 2°</td></tr>
+          <tr><td>FMA (زاوية الفك السفلي)</td><td class="ok">25° ± 5°</td></tr>
+          <tr><td>IMPA (زاوية القاطع السفلي)</td><td class="ok">90° ± 5°</td></tr>
+          <tr><td>U1-SN (ميل القاطع العلوي)</td><td class="ok">103° ± 4°</td></tr>
+          <tr><td>Overjet (البروز الأمامي)</td><td class="ok">2-3 mm</td></tr>
+          <tr><td>Overbite (العضة العمقية)</td><td class="ok">2-3 mm</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-xl p-3">
+      <p class="font-extrabold text-amber-900 text-sm mb-2">🧠 تحليلات سيفالومترية معتمدة</p>
+      <ul class="text-[11px] space-y-1 mr-4 list-disc">
+        <li><strong>Steiner Analysis:</strong> يعتمد على SNA, SNB, ANB + قياسات القواطع.</li>
+        <li><strong>Ricketts Analysis:</strong> يستخدم النقطة Xi و DC و خط E للأنسجة الرخوة.</li>
+        <li><strong>McNamara Analysis:</strong> يقيس طول الفك الفعلي والموضع النسبي.</li>
+        <li><strong>Downs Analysis:</strong> 10 قياسات سنية وهيكلية.</li>
+        <li><strong>Tweed Analysis:</strong> يركز على FMA و IMPA و FMIA.</li>
+      </ul>
+    </div>
+
+    <div class="bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-300 rounded-xl p-3">
+      <p class="font-extrabold text-red-900 text-sm mb-2">⚠️ قيم اللثة والعظم</p>
+      <table class="ref-table">
+        <thead><tr><th>القياس</th><th>القيمة الطبيعية</th></tr></thead>
+        <tbody>
+          <tr><td>عمق الجيب اللثوي</td><td class="ok">≤ 3 mm</td></tr>
+          <tr><td>عرض اللثة الملتصقة</td><td class="ok">≥ 2 mm</td></tr>
+          <tr><td>سماكة اللثة</td><td class="ok">≥ 1 mm</td></tr>
+          <tr><td>العظم الإكليلي</td><td class="ok">≥ 2 mm</td></tr>
+          <tr><td>ارتفاع العظم للزراعة</td><td class="ok">≥ 10 mm</td></tr>
+          <tr><td>عرض العظم للزراعة</td><td class="ok">≥ 6 mm</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-gradient-to-br from-purple-50 to-fuchsia-50 border-2 border-purple-300 rounded-xl p-3">
+      <p class="font-extrabold text-purple-900 text-sm mb-2">📚 المراجع الأكاديمية الرئيسية</p>
+      <ul class="text-[11px] space-y-1 mr-4 list-disc">
+        <li>Proffit WR, Fields HW - Contemporary Orthodontics (6th Ed).</li>
+        <li>Angle EH - Classification of Malocclusion (1899).</li>
+        <li>Steiner CC - Cephalometrics for You and Me (1953).</li>
+        <li>Ricketts RM - Provocations and Perceptions in Cranio-Facial Analysis.</li>
+        <li>McNamara JA - Components of Class II Malocclusion (1981).</li>
+        <li>Andrews LF - The Six Keys to Normal Occlusion (1972).</li>
+      </ul>
+    </div>
+
+    <button onclick="printReferences()" class="w-full bg-slate-800 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة المراجع</button>
+  `;
+}
+
+function closeDiagnosisReferences() {
+  const m = document.getElementById('refsModal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+}
+
+function printReferences() {
+  const pA = document.getElementById('printableArea');
+  pA.classList.remove('hidden'); pA.style.position = 'static'; pA.style.display = 'block';
+  document.getElementById('printBodyContent').innerHTML = document.getElementById('refsContent').innerHTML;
+  setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300);
+}
+
+/* ===== التقارير (اليوم/الشهر/المصروفات/إغلاق) ===== */
+function getTodayKey() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function getCurrentMonthKey() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+
+async function openDailyReport() {
+  const m = document.getElementById('dailyReportModal'); m.classList.remove('hidden'); m.classList.add('flex');
+  const c = document.getElementById('dailyReportContent'); c.innerHTML = '<p class="text-center text-xs text-gray-500 py-4">...</p>';
+  try {
+    const tk = getTodayKey();
+    const snap = await db.collection('patients').where('dateKey', '==', tk).get();
+    if (snap.empty) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا توجد عمليات اليوم</p>'; return; }
+    let revenue = 0, expenses = 0, count = 0;
+    const users = {}; const list = [];
+    snap.forEach(doc => {
+      const d = doc.data(); count++;
+      const f = d.financials || {};
+      const paid = (parseFloat(f.payment1) || 0) + (parseFloat(f.payment2) || 0) + (parseFloat(f.payment3) || 0);
+      const exp = parseFloat(f.expense) || 0;
+      revenue += paid; expenses += exp;
+      const uid = d.createdBy || 'unknown';
+      if (!users[uid]) users[uid] = { name: d.createdByName || uid, patients: 0, revenue: 0, expenses: 0 };
+      users[uid].patients++; users[uid].revenue += paid; users[uid].expenses += exp;
+      list.push({ fn: d.fileNumber, name: d.fullName, paid, expense: exp, by: d.createdByName || uid });
+    });
+    const net = revenue - expenses;
+    let h = '<div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl border-2 border-cyan-300 p-3"><p class="text-center text-xs text-cyan-700 font-bold mb-2">📅 ' + tk + '</p><div class="grid grid-cols-2 gap-2 mb-3">';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الإيرادات</div><div class="text-lg font-extrabold text-emerald-600">' + revenue + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المصروفات</div><div class="text-lg font-extrabold text-red-600">' + expenses + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الصافي</div><div class="text-lg font-extrabold ' + (net >= 0 ? 'text-cyan-600' : 'text-red-600') + '">' + net + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المرضى</div><div class="text-lg font-extrabold text-purple-600">' + count + '</div></div>';
+    h += '</div></div>';
+    h += '<div class="bg-white rounded-xl border p-3"><p class="font-bold text-xs text-gray-800 mb-2">👥 حسب المستخدم:</p>';
+    Object.keys(users).forEach(uid => { const u = users[uid]; h += '<div class="bg-gray-50 rounded-lg p-2 mb-1 flex justify-between items-center text-xs"><div><p class="font-bold">' + u.name + '</p><p class="text-[10px] text-gray-500">@' + uid + ' — ' + u.patients + ' مريض</p></div><div class="text-right"><p class="text-emerald-600 font-bold">+' + u.revenue + '</p>' + (u.expenses > 0 ? '<p class="text-red-600 text-[10px]">-' + u.expenses + '</p>' : '') + '</div></div>'; });
+    h += '</div>';
+    h += '<details class="bg-white rounded-xl border p-2"><summary class="font-bold text-xs text-gray-800 cursor-pointer">📋 المرضى (' + count + ')</summary><div class="mt-2 space-y-1">';
+    list.forEach((p, i) => { h += '<div class="bg-gray-50 rounded-lg p-2 flex justify-between items-center text-[11px]"><div><p class="font-bold">' + (i+1) + '. ' + p.name + '</p><p class="text-[9px] text-gray-500">' + p.fn + ' • ' + p.by + '</p></div><div class="text-right"><p class="text-emerald-600 font-bold">' + p.paid + '</p>' + (p.expense > 0 ? '<p class="text-red-600 text-[9px]">مصروف: ' + p.expense + '</p>' : '') + '</div></div>'; });
+    h += '</div></details>';
+    c.innerHTML = h;
+  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
+}
+
+function closeDailyReport() { const m = document.getElementById('dailyReportModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+
+async function closeDay() {
+  if (!currentUser || currentUser.role !== 'admin') { alert('فقط المدير'); return; }
+  if (!confirm('إغلاق اليوم وحفظ الملخص؟')) return;
+  try {
+    const tk = getTodayKey();
+    const snap = await db.collection('patients').where('dateKey', '==', tk).get();
+    let revenue = 0, expenses = 0, count = 0;
+    const users = {};
+    snap.forEach(doc => {
+      const d = doc.data(); count++;
+      const f = d.financials || {};
+      const paid = (parseFloat(f.payment1) || 0) + (parseFloat(f.payment2) || 0) + (parseFloat(f.payment3) || 0);
+      const exp = parseFloat(f.expense) || 0;
+      revenue += paid; expenses += exp;
+      const uid = d.createdBy || 'unknown';
+      if (!users[uid]) users[uid] = { name: d.createdByName || uid, patients: 0, revenue: 0, expenses: 0 };
+      users[uid].patients++; users[uid].revenue += paid; users[uid].expenses += exp;
+    });
+    await db.collection('dailyReports').doc(tk).set({ dateKey: tk, revenue, expenses, net: revenue - expenses, patientCount: count, usersBreakdown: users, closedBy: currentUser.username, closedByName: currentUser.fullName, closedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    alert('✅ تم الإغلاق\n\nالإيرادات: ' + revenue + '\nالمصروفات: ' + expenses + '\nالصافي: ' + (revenue - expenses) + '\nالمرضى: ' + count);
+  } catch (e) { alert('فشل: ' + e.message); }
+}
+
+function openMonthlyReport() {
+  const m = document.getElementById('monthlyReportModal'); m.classList.remove('hidden'); m.classList.add('flex');
+  document.getElementById('reportMonth').value = getCurrentMonthKey();
+  document.getElementById('monthlyReportContent').innerHTML = '';
+  generateMonthlyReport();
+}
+function closeMonthlyReport() { const m = document.getElementById('monthlyReportModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+
+async function generateMonthlyReport() {
+  const mk = document.getElementById('reportMonth').value;
+  if (!mk) { alert('اختر الشهر'); return; }
+  const c = document.getElementById('monthlyReportContent');
+  c.innerHTML = '<p class="text-center text-xs text-gray-500 py-4">...</p>';
+  try {
+    const snap = await db.collection('patients').where('dateKey', '>=', mk + '-01').where('dateKey', '<', mk + '-32').get();
+    if (snap.empty) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا توجد بيانات</p>'; return; }
+    let tr = 0, te = 0, tp = 0;
+    const ub = {}; const db2 = {}; const exps = [];
+    snap.forEach(doc => {
+      const d = doc.data(); tp++;
+      const f = d.financials || {};
+      const paid = (parseFloat(f.payment1) || 0) + (parseFloat(f.payment2) || 0) + (parseFloat(f.payment3) || 0);
+      const exp = parseFloat(f.expense) || 0;
+      tr += paid; te += exp;
+      const uid = d.createdBy || 'unknown', un = d.createdByName || uid;
+      if (!ub[uid]) ub[uid] = { name: un, patients: 0, revenue: 0, expenses: 0 };
+      ub[uid].patients++; ub[uid].revenue += paid; ub[uid].expenses += exp;
+      const dk = d.dateKey || 'غير معروف';
+      if (!db2[dk]) db2[dk] = { revenue: 0, expenses: 0, count: 0 };
+      db2[dk].revenue += paid; db2[dk].expenses += exp; db2[dk].count++;
+      if (exp > 0) exps.push({ day: dk, amount: exp, type: f.expenseType || 'غير محدد', by: un });
+    });
+    const net = tr - te;
+    const sd = Object.keys(db2).sort();
+    const ul = Object.values(ub).sort((a, b) => b.revenue - a.revenue);
+    let h = '<div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border-2 border-purple-300 p-3"><p class="text-center text-xs text-purple-700 font-bold mb-2">📅 ' + mk + '</p><div class="grid grid-cols-2 gap-2">';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الإيرادات</div><div class="text-xl font-extrabold text-emerald-600">' + tr + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المصروفات</div><div class="text-xl font-extrabold text-red-600">' + te + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الصافي</div><div class="text-xl font-extrabold ' + (net >= 0 ? 'text-purple-600' : 'text-red-600') + '">' + net + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المرضى</div><div class="text-xl font-extrabold text-indigo-600">' + tp + '</div></div>';
+    h += '</div></div>';
+    h += '<div class="bg-white rounded-xl border p-3"><p class="font-bold text-xs text-gray-800 mb-2">👥 تفصيل حسب المستخدم:</p>';
+    ul.forEach(u => { const un = u.revenue - u.expenses; h += '<div class="bg-gray-50 rounded-lg p-2 mb-1 text-xs"><div class="flex justify-between items-center mb-1"><span class="font-bold">' + u.name + '</span><span class="text-[10px] text-gray-500">' + u.patients + ' مريض</span></div><div class="grid grid-cols-3 gap-1 text-[10px]"><div class="bg-emerald-100 p-1 rounded text-center"><div class="text-emerald-700 font-bold">' + u.revenue + '</div><div class="text-gray-500">إيراد</div></div><div class="bg-red-100 p-1 rounded text-center"><div class="text-red-700 font-bold">' + u.expenses + '</div><div class="text-gray-500">مصروف</div></div><div class="bg-purple-100 p-1 rounded text-center"><div class="text-purple-700 font-bold">' + un + '</div><div class="text-gray-500">صافي</div></div></div></div>'; });
+    h += '</div>';
+    h += '<details class="bg-white rounded-xl border p-2"><summary class="font-bold text-xs text-gray-800 cursor-pointer">📆 تفصيل يومي (' + sd.length + ')</summary><div class="mt-2 space-y-1">';
+    sd.forEach(day => { const d = db2[day]; const dn = d.revenue - d.expenses; h += '<div class="bg-gray-50 rounded-lg p-2 flex justify-between items-center text-[11px]"><div><p class="font-bold">' + day + '</p><p class="text-[9px] text-gray-500">' + d.count + ' مريض</p></div><div class="flex gap-2 text-[10px]"><span class="text-emerald-600 font-bold">+' + d.revenue + '</span>' + (d.expenses > 0 ? '<span class="text-red-600 font-bold">-' + d.expenses + '</span>' : '') + '<span class="text-purple-700 font-bold">= ' + dn + '</span></div></div>'; });
+    h += '</div></details>';
+    if (exps.length > 0) {
+      h += '<details class="bg-white rounded-xl border p-2"><summary class="font-bold text-xs text-orange-800 cursor-pointer">💸 المصروفات (' + exps.length + ')</summary><div class="mt-2 space-y-1">';
+      exps.forEach(e => { h += '<div class="bg-orange-50 rounded-lg p-2 flex justify-between items-center text-[11px]"><div><p class="font-bold">' + e.type + '</p><p class="text-[9px] text-gray-500">' + e.day + ' • ' + e.by + '</p></div><span class="text-red-600 font-bold">' + e.amount + '</span></div>'; });
+      h += '<div class="bg-red-100 rounded-lg p-2 flex justify-between items-center text-xs font-bold"><span>الإجمالي:</span><span class="text-red-700">' + te + ' ريال</span></div></div></details>';
+    }
+    h += '<button onclick="printMonthlyReport(\'' + mk + '\')" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة التقرير الشهري</button>';
+    c.innerHTML = h;
+    window.__monthlyReportData = { mk, tr, te, net, tp, ul, sd, db2, exps };
+  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
+}
+
+function printMonthlyReport(mk) {
+  const data = window.__monthlyReportData;
+  if (!data) { alert('لا توجد بيانات'); return; }
+  const pA = document.getElementById('printableArea');
+  pA.classList.remove('hidden'); pA.style.position = 'static'; pA.style.display = 'block';
+  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-purple-900 border-b pb-1">التقرير الشهري الشامل — ' + mk + '</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>الإيرادات:</strong> <span class="text-emerald-700">' + data.tr + ' ريال</span></p><p><strong>المصروفات:</strong> <span class="text-red-700">' + data.te + ' ريال</span></p><p><strong>الصافي:</strong> <span class="text-purple-700">' + data.net + ' ريال</span></p><p><strong>المرضى:</strong> ' + data.tp + '</p></div><div class="mt-3"><p class="font-bold text-sm text-gray-800 border-b pb-1">👥 تفصيل حسب المستخدم:</p><table class="ref-table mt-2" style="width:100%;border-collapse:collapse;"><thead><tr><th>المستخدم</th><th>المرضى</th><th>الإيرادات</th><th>المصروفات</th><th>الصافي</th></tr></thead><tbody>' + data.ul.map(u => '<tr><td>' + u.name + '</td><td>' + u.patients + '</td><td class="ok">' + u.revenue + '</td><td style="color:#dc2626;font-weight:700;">' + u.expenses + '</td><td style="color:#7c3aed;font-weight:700;">' + (u.revenue - u.expenses) + '</td></tr>').join('') + '<tr style="background:#f1f5f9;font-weight:700;"><td>الإجمالي</td><td>' + data.tp + '</td><td class="ok">' + data.tr + '</td><td style="color:#dc2626;">' + data.te + '</td><td style="color:#7c3aed;">' + data.net + '</td></tr></tbody></table></div><div class="mt-3"><p class="font-bold text-sm text-gray-800 border-b pb-1">📆 تفصيل يومي:</p><table class="ref-table mt-2" style="width:100%;border-collapse:collapse;"><thead><tr><th>التاريخ</th><th>المرضى</th><th>الإيرادات</th><th>المصروفات</th><th>الصافي</th></tr></thead><tbody>' + data.sd.map(day => { const d = data.db2[day]; return '<tr><td>' + day + '</td><td>' + d.count + '</td><td class="ok">' + d.revenue + '</td><td style="color:#dc2626;">' + d.expenses + '</td><td style="color:#7c3aed;">' + (d.revenue - d.expenses) + '</td></tr>'; }).join('') + '</tbody></table></div>' + (data.exps.length > 0 ? '<div class="mt-3"><p class="font-bold text-sm text-red-800 border-b pb-1">💸 تفصيل المصروفات:</p><table class="ref-table mt-2" style="width:100%;border-collapse:collapse;"><thead><tr><th>التاريخ</th><th>النوع</th><th>المسجِّل</th><th>المبلغ</th></tr></thead><tbody>' + data.exps.map(e => '<tr><td>' + e.day + '</td><td>' + e.type + '</td><td>' + e.by + '</td><td style="color:#dc2626;font-weight:700;">' + e.amount + '</td></tr>').join('') + '<tr style="background:#fee2e2;font-weight:700;"><td colspan="3">الإجمالي</td><td style="color:#dc2626;">' + data.te + '</td></tr></tbody></table></div>' : '') + '<div class="mt-8 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع المدير</p><p>د. علي النقيب</p></div>';
+  setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300);
+}
+
+async function openAllExpenses() {
+  const m = document.getElementById('dailyReportModal'); m.classList.remove('hidden'); m.classList.add('flex');
+  const c = document.getElementById('dailyReportContent'); c.innerHTML = '<p class="text-center text-xs text-gray-500 py-4">...</p>';
+  try {
+    const snap = await db.collection('patients').where('dateKey', '>=', getCurrentMonthKey() + '-01').where('dateKey', '<', getCurrentMonthKey() + '-32').get();
+    const exps = []; let total = 0;
+    snap.forEach(doc => { const d = doc.data(); const f = d.financials || {}; const exp = parseFloat(f.expense) || 0; if (exp > 0) { exps.push({ day: d.dateKey, amount: exp, type: f.expenseType || 'غير محدد', by: d.createdByName || d.createdBy }); total += exp; } });
+    if (exps.length === 0) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا توجد مصروفات</p>'; return; }
+    exps.sort((a, b) => b.day.localeCompare(a.day));
+    let h = '<div class="bg-orange-50 border border-orange-200 rounded-xl p-3"><p class="text-center text-xs text-orange-800 font-bold">💸 مصروفات ' + getCurrentMonthKey() + '</p><p class="text-center text-2xl font-extrabold text-red-600 mt-1">' + total + ' <span class="text-xs">ريال</span></p></div><div class="space-y-1 max-h-96 overflow-y-auto">';
+    exps.forEach((e, i) => { h += '<div class="bg-white rounded-lg border p-2 flex justify-between items-center text-xs"><div><p class="font-bold">' + (i+1) + '. ' + e.type + '</p><p class="text-[10px] text-gray-500">' + e.day + ' • ' + e.by + '</p></div><span class="text-red-600 font-bold">' + e.amount + '</span></div>'; });
+    h += '</div>';
+    c.innerHTML = h;
+  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
+}
+
+/* ========== التهيئة ========== */
+document.addEventListener("DOMContentLoaded", () => {
+  renderLogos();
+  renderDentalChart();
+  generateFileNumber();
+  renderGallery();
+  updateAIEngineBadge();
+});
 </script>
 </body>
 </html>
