@@ -943,6 +943,7 @@ function renderProportionTables() {
   document.getElementById('proportionTablesSection').classList.remove('hidden');
 }
 
+/* ================= توليد التشخيص ================= */
 function generateAIDiagnosis() {
   const work = document.getElementById('workType').value;
   if (!selectedTeeth.length && !work) { alert('حدد الأسنان أو نوع العمل'); return; }
@@ -953,12 +954,17 @@ function generateAIDiagnosis() {
   status.classList.remove('hidden');
   status.innerHTML = '<span class="ai-typing">🤖 جاري التحليل</span>';
   results.classList.add('hidden');
-  setTimeout(() => {
-    const engine = getAIEngine();
-    if (engine === 'gemini' && getGeminiKey()) runGeminiDiagnosis();
-    else runBuiltinDiagnosis();
-  }, 600);
+
+  const key = getGeminiKey();
+  const engine = getAIEngine();
+
+  if (engine === 'builtin' || !key) {
+    setTimeout(() => runBuiltinDiagnosis(), 300);
+  } else {
+    runGeminiDiagnosis();
+  }
 }
+
 function getAIEngine() {
   const mode = document.getElementById('aiEngine') ? document.getElementById('aiEngine').value : 'auto';
   const hasKey = !!getGeminiKey();
@@ -995,17 +1001,15 @@ function runBuiltinDiagnosis() {
   renderAIResults('محرك مدمج', diag, plan, alt);
 }
 
-/* ============ Gemini - نسخة تدعم AIzaSy و AQ. ============ */
+/* ============ Gemini API - يدعم AIzaSy و AQ. ============ */
 async function callGeminiAPI(key, model, body) {
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
   const headers = { 'Content-Type': 'application/json' };
 
   if (key.startsWith('AQ.')) {
-    // مفتاح جديد - يستخدم الهيدر
     headers['x-goog-api-key'] = key;
     return await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
   } else {
-    // مفتاح قديم - يستخدم URL
     return await fetch(url + '?key=' + key, { method: 'POST', headers, body: JSON.stringify(body) });
   }
 }
@@ -1016,7 +1020,7 @@ async function runGeminiDiagnosis() {
   const work = document.getElementById('workType').value || 'تشخيص عام';
   const prompt = 'أنت طبيب أسنان استشاري. قدّم تشخيصاً وخطة علاجية وبديلاً بالعربية بنقاط.\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، جنس ' + (document.getElementById('patientGender').value || '؟') + '.\n\nالأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '\nنوع العمل: ' + work + '\nالشكوى: ' + (document.getElementById('complaint').value || 'غير مذكورة') + '\n\nالمطلوب:\n1. التشخيص\n2. الخطة العلاجية\n3. البديل والمخاطر\n\nبدون مقدمات.';
 
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-001'];
   let lastErr = '';
 
   for (const model of models) {
@@ -1024,7 +1028,7 @@ async function runGeminiDiagnosis() {
       const resp = await callGeminiAPI(key, model, { contents: [{ parts: [{ text: prompt }] }] });
       if (!resp.ok) {
         const errText = await resp.text();
-        lastErr = model + ': ' + resp.status + ' - ' + errText.substring(0, 150);
+        lastErr = model + ': كود ' + resp.status;
         continue;
       }
       const data = await resp.json();
@@ -1038,8 +1042,7 @@ async function runGeminiDiagnosis() {
     }
   }
 
-  console.error('Gemini فشل:', lastErr);
-  alert('⚠️ تعذّر الاتصال بـ Gemini\n\n' + lastErr + '\n\nسيتم استخدام المحرك المدمج.');
+  console.warn('Gemini فشل:', lastErr);
   runBuiltinDiagnosis();
 }
 
@@ -1095,13 +1098,21 @@ async function analyzeImagesWithAI() {
   status.innerHTML = '<span class="ai-typing">🔬 جاري التحليل</span>';
   results.classList.add('hidden');
   mergedImageCache = {};
+
   const engine = getAIEngine();
   const key = getGeminiKey();
+
   try {
-    if (engine === 'gemini' && key) await runGeminiImageAnalysis(focus, key);
-    else { runBuiltinImageAnalysis(focus); drawBuiltinAnnotations(); await renderAnnotatedImages(); renderProportionTables(); }
+    if (engine === 'builtin' || !key) {
+      runBuiltinImageAnalysis(focus);
+      drawBuiltinAnnotations();
+      await renderAnnotatedImages();
+      renderProportionTables();
+    } else {
+      await runGeminiImageAnalysis(focus, key);
+    }
   } catch (err) {
-    console.error(err);
+    console.warn('Gemini image analysis failed:', err);
     status.innerHTML = '⚠️ تم التحويل للمحرك المدمج';
     runBuiltinImageAnalysis(focus);
     drawBuiltinAnnotations();
@@ -1168,14 +1179,14 @@ async function runGeminiImageAnalysis(focus, key) {
   const status = document.getElementById('imgAiStatus');
   const results = document.getElementById('imgAiResults');
   const imgsToSend = clinicImages.slice(0, 6);
-  const promptText = 'أنت طبيب أسنان استشاري. حلّل الصور المرفوعة (' + focus + ').\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، أسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '.\n\nاكتب تحليلاً بالعربية، ثم أعِد JSON بين ```json و ``` بهذه البنية:\n{"boxes":[{"label":"التهاب لثة","xmin":0.2,"ymin":0.3,"xmax":0.4,"ymax":0.5,"severity":"متوسط","tooth":11}],"landmarks":[{"name":"قمة اللثة","x":0.35,"y":0.4}],"measurements":[{"name":"عرض القاطع","x1":0.3,"y1":0.4,"x2":0.42,"y2":0.4,"value":"8.5 مم"}],"angles":[{"name":"ANB","p1":{"x":0.3,"y":0.3},"p2":{"x":0.5,"y":0.5},"p3":{"x":0.7,"y":0.3},"value":2}],"midline":0.5,"gumLine":[{"x":0.2,"y":0.35},{"x":0.5,"y":0.33},{"x":0.8,"y":0.35}],"boneLine":[{"x":0.2,"y":0.42},{"x":0.5,"y":0.40},{"x":0.8,"y":0.42}],"goldenLines":[0.35,0.42,0.50,0.58,0.65]}\n\nكل الإحداثيات من 0 إلى 1.';
+  const promptText = 'أنت طبيب أسنان استشاري. حلّل الصور المرفوعة (' + focus + ').\n\nالمريض: عمر ' + (document.getElementById('patientAge').value || '؟') + '، أسنان: ' + (selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة') + '.\n\nاكتب تحليلاً بالعربية، ثم أعِد JSON بين ```json و ``` بهذه البنية:\n{"boxes":[{"label":"التهاب لثة","xmin":0.2,"ymin":0.3,"xmax":0.4,"ymax":0.5,"severity":"متوسط","tooth":11}],"landmarks":[{"name":"قمة اللثة","x":0.35,"y":0.4}],"midline":0.5,"gumLine":[{"x":0.2,"y":0.35},{"x":0.5,"y":0.33},{"x":0.8,"y":0.35}],"boneLine":[{"x":0.2,"y":0.42},{"x":0.5,"y":0.40},{"x":0.8,"y":0.42}],"goldenLines":[0.35,0.42,0.50,0.58,0.65]}\n\nكل الإحداثيات من 0 إلى 1.';
 
   const parts = [{ text: promptText }];
   for (const img of imgsToSend) {
     parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
   }
 
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-001'];
   let text = '';
   let lastErr = '';
 
@@ -1183,8 +1194,7 @@ async function runGeminiImageAnalysis(focus, key) {
     try {
       const resp = await callGeminiAPI(key, model, { contents: [{ parts }] });
       if (!resp.ok) {
-        const errText = await resp.text();
-        lastErr = model + ': ' + resp.status + ' - ' + errText.substring(0, 150);
+        lastErr = model + ': كود ' + resp.status;
         continue;
       }
       const data = await resp.json();
@@ -1683,13 +1693,19 @@ async function testAIConnection() {
       r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + key);
     }
     if (r.ok) { s.textContent = '✅ المفتاح صالح'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; }
-    else { const t = await r.text(); s.textContent = '❌ ' + t.substring(0, 100); s.className = 'text-[11px] text-center font-bold text-red-600'; }
-  } catch (e) { s.textContent = '❌ فشل الاتصال: ' + e.message; s.className = 'text-[11px] text-center font-bold text-red-600'; }
+    else { const t = await r.text(); s.textContent = '❌ ' + t.substring(0, 80); s.className = 'text-[11px] text-center font-bold text-red-600'; }
+  } catch (e) { s.textContent = '❌ فشل الاتصال'; s.className = 'text-[11px] text-center font-bold text-red-600'; }
 }
 function updateAIEngineBadge() {
   const badge = document.getElementById('aiEngineBadge');
-  const engine = getAIEngine();
-  badge.textContent = engine === 'gemini' ? 'Gemini AI' : 'محرك مدمج';
+  if (!badge) return;
+  const mode = document.getElementById('aiEngine') ? document.getElementById('aiEngine').value : (localStorage.getItem('aiEngine') || 'auto');
+  const hasKey = !!getGeminiKey();
+  if (mode === 'gemini' || (mode === 'auto' && hasKey)) {
+    badge.textContent = 'Gemini AI';
+  } else {
+    badge.textContent = 'محرك مدمج';
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
