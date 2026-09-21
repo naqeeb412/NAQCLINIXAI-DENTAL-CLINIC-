@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>العيادة التخصصية لطب وجراحة الفم والأسنان - د. علي النقيب</title>
+<title>العيادة التخصصية - د. علي النقيب</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -18,11 +18,9 @@ body{font-family:'Cairo',sans-serif}
 .dental-arch{width:100%;height:auto;display:block}
 .tooth{cursor:pointer}
 .tooth .crown{fill:url(#toothGrad);stroke:#94a3b8;stroke-width:.9;transition:all .18s ease}
-.tooth .shine{fill:#fff;opacity:.55;pointer-events:none}
 .tooth .num{font-family:'Cairo',sans-serif;font-size:7.5px;font-weight:800;fill:#475569;pointer-events:none;text-anchor:middle}
 .tooth:hover .crown{fill:url(#toothGradHover);stroke:#6366f1}
 .tooth.selected .crown{fill:url(#toothGradSel);stroke:#1e3a8a;stroke-width:1.3}
-.tooth.selected .shine{opacity:.25}
 .tooth.selected .num{fill:#fff}
 .gum{fill:url(#gumGrad);opacity:.9}
 .ai-glow{background:linear-gradient(135deg,#a855f7 0%,#6366f1 50%,#06b6d4 100%);background-size:200% 200%;animation:aiglow 3s ease infinite}
@@ -34,8 +32,6 @@ body{font-family:'Cairo',sans-serif}
 .ref-table{font-size:10px;width:100%;border-collapse:collapse}
 .ref-table th{background:#1e3a8a;color:#fff;padding:4px 6px;font-weight:700}
 .ref-table td{padding:3px 6px;border-bottom:1px solid #e5e7eb}
-.ref-table tr:nth-child(even){background:#f8fafc}
-.ref-table .ok{color:#059669;font-weight:700}
 .pulse-badge{animation:pulseBadge 2s ease infinite}
 @keyframes pulseBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 </style>
@@ -43,22 +39,21 @@ body{font-family:'Cairo',sans-serif}
 <body class="bg-gray-50 text-gray-800 p-2">
 
 <div id="loginOverlay" class="fixed inset-0 bg-blue-950 flex items-center justify-center z-50 p-4">
-<div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4 border border-blue-100">
-<div class="w-24 h-24 mx-auto mb-2 clinic-logo rounded-2xl overflow-hidden shadow-lg shadow-blue-200"></div>
+<div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4">
+<div class="w-24 h-24 mx-auto mb-2 clinic-logo rounded-2xl overflow-hidden shadow-lg"></div>
 <h2 class="text-lg font-bold text-blue-900">تسجيل الدخول</h2>
-<p class="text-xs text-gray-600">أدخل بيانات حسابك</p>
 <div class="text-right space-y-2">
 <label class="text-[11px] font-bold text-gray-700 block">👤 اسم المستخدم</label>
-<input type="text" id="loginUsername" placeholder="مثال: drali" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
+<input type="text" id="loginUsername" placeholder="drali" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50">
 <label class="text-[11px] font-bold text-gray-700 block">🔑 كلمة المرور</label>
-<input type="password" id="loginPassword" placeholder="••••••••" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
+<input type="password" id="loginPassword" placeholder="••••••••" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50">
 </div>
-<button onclick="login()" id="loginBtn" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-blue-700">دخول النظام</button>
+<button onclick="login()" id="loginBtn" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold">دخول</button>
 <p id="loginError" class="text-xs text-red-600 hidden font-semibold"></p>
 </div>
 </div>
 
-<div class="w-full max-w-7xl mx-auto bg-white min-h-screen shadow-lg flex flex-col p-2 md:p-5 rounded-xl border border-gray-100">
+<div class="w-full max-w-7xl mx-auto bg-white min-h-screen shadow-lg flex flex-col p-2 md:p-5 rounded-xl">
 <div id="userBar" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between shadow flex-wrap gap-2">
 <div class="flex items-center gap-2"><span class="text-2xl">👤</span><div><p id="userBarName" class="text-sm font-bold">-</p><p id="userBarRole" class="text-[10px] opacity-90">-</p></div></div>
 <div class="flex items-center gap-2 flex-wrap">
@@ -73,42 +68,25 @@ body{font-family:'Cairo',sans-serif}
 <div id="remindersBar" class="hidden bg-amber-50 border-2 border-amber-300 rounded-xl p-3 mb-3 text-xs"></div>
 <div id="notificationBanner" class="hidden bg-blue-50 border-2 border-blue-300 rounded-xl p-3 mb-3 text-xs flex justify-between items-center gap-2"><span class="text-blue-800 font-bold">🔔 فعّل التنبيهات اللحظية</span><button onclick="requestNotificationPermission()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">تفعيل</button></div>
 
-<header class="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 shadow-xl border border-blue-800">
-<div class="relative p-5 text-center">
-<div class="relative w-24 h-24 mx-auto mb-3"><div class="clinic-logo w-24 h-24 rounded-2xl overflow-hidden ring-2 ring-white/25 shadow-lg bg-white/5"></div><button onclick="document.getElementById('logoInput').click()" class="absolute -bottom-1.5 -left-1.5 w-7 h-7 bg-white text-blue-800 rounded-full text-[11px] shadow-md flex items-center justify-center">✎</button><input type="file" id="logoInput" accept="image/*" class="hidden"></div>
-<h1 class="text-[16px] md:text-xl leading-snug font-extrabold">العيادة التخصصية لطب وجراحة الفم والأسنان</h1>
-<p class="text-[15px] md:text-base font-bold mt-2">د. علي النقيب</p>
+<header class="bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 p-5 text-center shadow-xl">
+<div class="w-24 h-24 mx-auto mb-3 clinic-logo rounded-2xl overflow-hidden"></div>
+<h1 class="text-base md:text-xl font-extrabold">العيادة التخصصية لطب وجراحة الفم والأسنان</h1>
+<p class="text-base font-bold mt-2">د. علي النقيب</p>
 <p class="text-[10px] font-bold text-cyan-300 tracking-[0.25em] mt-0.5">NAQClinixAI</p>
-<div class="mt-3.5 pt-3 border-t border-white/15 text-[11px] text-blue-100 space-y-1"><p>📍 أب - ميتم - سوق الثلوث</p><p dir="ltr">📞 777700412 • 771816548</p></div>
+<div class="mt-3 pt-3 border-t border-white/15 text-[11px] text-blue-100 space-y-1"><p>📍 أب - ميتم - سوق الثلوث</p><p dir="ltr">📞 777700412 • 771816548</p></div>
 <button onclick="openAISettings()" class="mt-3 text-[10px] bg-white/10 text-cyan-200 px-3 py-1 rounded-full border border-white/20">⚙️ إعدادات AI</button>
-</div>
 </header>
 
 <main class="flex-1 no-print grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
 
-<section id="adminPanelSection" class="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-xl border-2 border-amber-300 shadow-sm lg:col-span-1">
-<div class="flex items-center justify-between mb-2"><h2 class="font-bold text-amber-900 text-sm">👑 لوحة المدير</h2><button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">إخفاء</button></div>
+<section id="adminPanelSection" class="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-xl border-2 border-amber-300 lg:col-span-1">
+<div class="flex items-center justify-between mb-2"><h2 class="font-bold text-amber-900 text-sm">👑 لوحة المدير</h2><button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 px-2 py-1 rounded-full font-bold">إخفاء</button></div>
 <div id="adminPanelContent" class="space-y-2">
-<div class="grid grid-cols-2 gap-2">
-<button onclick="openAddUserModal()" class="bg-emerald-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">➕ مستخدم</button>
-<button onclick="openActivityLog()" class="bg-blue-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📝 النشاطات</button>
-</div>
-<div class="grid grid-cols-2 gap-2">
-<button onclick="openDailyReport()" class="bg-cyan-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📊 اليوم</button>
-<button onclick="openWeeklyReport()" class="bg-teal-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 الأسبوع</button>
-</div>
-<div class="grid grid-cols-2 gap-2">
-<button onclick="openMonthlyReport()" class="bg-purple-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 الشهر</button>
-<button onclick="openRevenueChart()" class="bg-indigo-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📈 المخطط</button>
-</div>
-<div class="grid grid-cols-2 gap-2">
-<button onclick="openAllExpenses()" class="bg-orange-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">💸 المصروفات</button>
-<button onclick="closeDay()" class="bg-rose-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">🔒 إغلاق</button>
-</div>
-<div class="grid grid-cols-2 gap-2">
-<button onclick="openPatientsList()" class="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📋 المرضى</button>
-<button onclick="exportPatientsToExcel()" class="bg-gradient-to-r from-green-700 to-emerald-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📄 Excel</button>
-</div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openAddUserModal()" class="bg-emerald-600 text-white p-2.5 rounded-lg text-xs font-bold">➕ مستخدم</button><button onclick="openActivityLog()" class="bg-blue-600 text-white p-2.5 rounded-lg text-xs font-bold">📝 النشاطات</button></div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openDailyReport()" class="bg-cyan-600 text-white p-2.5 rounded-lg text-xs font-bold">📊 اليوم</button><button onclick="openWeeklyReport()" class="bg-teal-600 text-white p-2.5 rounded-lg text-xs font-bold">📅 الأسبوع</button></div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openMonthlyReport()" class="bg-purple-600 text-white p-2.5 rounded-lg text-xs font-bold">📅 الشهر</button><button onclick="openRevenueChart()" class="bg-indigo-600 text-white p-2.5 rounded-lg text-xs font-bold">📈 المخطط</button></div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openAllExpenses()" class="bg-orange-600 text-white p-2.5 rounded-lg text-xs font-bold">💸 المصروفات</button><button onclick="closeDay()" class="bg-rose-600 text-white p-2.5 rounded-lg text-xs font-bold">🔒 إغلاق</button></div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openPatientsList()" class="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-2.5 rounded-lg text-xs font-bold">📋 المرضى</button><button onclick="exportPatientsToExcel()" class="bg-gradient-to-r from-green-700 to-emerald-700 text-white p-2.5 rounded-lg text-xs font-bold">📄 Excel</button></div>
 <div id="usersList" class="space-y-2"></div>
 </div>
 </section>
@@ -117,7 +95,7 @@ body{font-family:'Cairo',sans-serif}
 <h2 class="font-bold text-blue-900 text-sm">👤 المريض</h2>
 <div class="grid grid-cols-2 gap-2">
 <div><label class="text-[10px] text-gray-600 block">رقم الملف:</label><input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
-<div><label class="text-[10px] text-gray-600 block">التاريخ:</label><input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+<div><label class="text-[10px] text-gray-600 block">التاريخ:</label><input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold"></div>
 </div>
 <input type="text" id="patientName" placeholder="الاسم كامل" class="w-full p-2 border rounded-lg text-sm bg-white">
 <div class="grid grid-cols-3 gap-2">
@@ -138,7 +116,7 @@ body{font-family:'Cairo',sans-serif}
 <select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option><option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option></select>
 </div>
 <div class="grid grid-cols-2 gap-2">
-<div><label class="text-[10px] text-blue-800 block font-bold">📅 الزيارة القادمة:</label><input type="date" id="nextVisitDate" class="w-full p-2 border-2 border-blue-300 rounded-lg text-sm bg-white font-bold text-blue-900"></div>
+<div><label class="text-[10px] text-blue-800 block font-bold">📅 الزيارة القادمة:</label><input type="date" id="nextVisitDate" class="w-full p-2 border-2 border-blue-300 rounded-lg text-sm bg-white font-bold"></div>
 <div><label class="text-[10px] text-blue-800 block font-bold">💰 طريقة الدفع:</label><select id="paymentMethod" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">اختر...</option><option value="نقدي">نقدي</option><option value="تحويل بنكي">تحويل بنكي</option><option value="محفظة إلكترونية">محفظة إلكترونية</option></select></div>
 </div>
 </section>
@@ -168,11 +146,8 @@ body{font-family:'Cairo',sans-serif}
 <section id="aiAssistantSection" class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden lg:col-span-1 xl:col-span-2">
 <div class="ai-glow p-3 text-white"><div class="flex items-center justify-between"><h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2><span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span></div></div>
 <div class="bg-white p-3 space-y-3">
-<button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg">🧠 توليد التشخيص</button>
-<div class="grid grid-cols-2 gap-2">
-<button onclick="runSmartScanner()" id="btnSmartScanner" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📡 الماسح</button>
-<button onclick="clearAIResults()" class="bg-gray-100 text-gray-700 p-2.5 rounded-xl text-[11px] font-bold">مسح</button>
-</div>
+<button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold">🧠 توليد التشخيص</button>
+<div class="grid grid-cols-2 gap-2"><button onclick="runSmartScanner()" id="btnSmartScanner" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white p-2.5 rounded-xl text-[11px] font-extrabold">📡 الماسح</button><button onclick="clearAIResults()" class="bg-gray-100 text-gray-700 p-2.5 rounded-xl text-[11px] font-bold">مسح</button></div>
 <div id="aiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-purple-50 text-purple-700 font-bold"></div>
 <div id="aiResults" class="hidden space-y-3"></div>
 <input type="text" id="aiExtraNotes" placeholder="ملاحظات..." class="w-full p-2 border rounded-lg text-[11px]">
@@ -192,23 +167,13 @@ body{font-family:'Cairo',sans-serif}
 
 <section id="revenueSection" class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2 lg:col-span-1">
 <h2 class="font-bold text-emerald-900 text-sm">📊 الإيرادات الإدارية</h2>
-<div class="grid grid-cols-2 gap-2">
-<input type="number" id="revenueAmount" placeholder="الإيراد" class="w-full p-2 border rounded-lg text-sm">
-<select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm"><option value="">الحالة...</option><option value="مدفوع كامل">مدفوع كامل</option><option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option></select>
-</div>
-<div id="expenseSection" class="grid grid-cols-2 gap-2">
-<input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="مصروف" class="w-full p-2 border rounded-lg text-sm">
-<input type="text" id="expenseType" placeholder="نوع المصروف" class="w-full p-2 border rounded-lg text-sm">
-</div>
-<div class="grid grid-cols-3 gap-1 text-center text-[10px]">
-<div class="bg-white p-1.5 rounded border"><div class="text-emerald-700 font-bold" id="totalRevenueDisplay">0</div><div>إيرادات</div></div>
-<div id="netRevenueSection" class="bg-white p-1.5 rounded border"><div class="text-red-700 font-bold" id="totalExpensesDisplay">0</div><div>مصروفات</div></div>
-<div id="netRevenueDisplayWrap" class="bg-white p-1.5 rounded border"><div class="text-cyan-700 font-bold" id="netRevenueDisplay">0</div><div>صافي</div></div>
-</div>
+<div class="grid grid-cols-2 gap-2"><input type="number" id="revenueAmount" placeholder="الإيراد" class="w-full p-2 border rounded-lg text-sm"><select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm"><option value="">الحالة...</option><option value="مدفوع كامل">مدفوع كامل</option><option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option></select></div>
+<div id="expenseSection" class="grid grid-cols-2 gap-2"><input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="مصروف" class="w-full p-2 border rounded-lg text-sm"><input type="text" id="expenseType" placeholder="نوع المصروف" class="w-full p-2 border rounded-lg text-sm"></div>
+<div class="grid grid-cols-3 gap-1 text-center text-[10px]"><div class="bg-white p-1.5 rounded border"><div class="text-emerald-700 font-bold" id="totalRevenueDisplay">0</div><div>إيرادات</div></div><div id="netRevenueSection" class="bg-white p-1.5 rounded border"><div class="text-red-700 font-bold" id="totalExpensesDisplay">0</div><div>مصروفات</div></div><div id="netRevenueDisplayWrap" class="bg-white p-1.5 rounded border"><div class="text-cyan-700 font-bold" id="netRevenueDisplay">0</div><div>صافي</div></div></div>
 </section>
 
 <section class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-3 lg:col-span-1 xl:col-span-2">
-<div class="flex items-center justify-between"><h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2><span id="imageCounter" class="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">0</span></div>
+<div class="flex items-center justify-between"><h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2><span id="imageCounter" class="text-[10px] font-bold bg-amber-200 px-2 py-0.5 rounded-full">0</span></div>
 <div class="grid grid-cols-2 gap-2">
 <label class="flex items-center justify-center gap-1.5 bg-emerald-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">📷 صورة<input type="file" id="clinicalPhotoInput" accept="image/*" multiple class="hidden"></label>
 <label class="flex items-center justify-center gap-1.5 bg-indigo-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">🩻 أشعة<input type="file" id="xrayInput" accept="image/*" multiple class="hidden"></label>
@@ -217,29 +182,25 @@ body{font-family:'Cairo',sans-serif}
 </section>
 
 <div class="space-y-2 pt-2 lg:col-span-1 xl:col-span-3">
-<button id="saveBtn" onclick="savePatientRecord()" class="w-full bg-blue-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">💾 حفظ</button>
+<button id="saveBtn" onclick="savePatientRecord()" class="w-full bg-blue-600 text-white p-3 rounded-xl text-sm font-bold">💾 حفظ</button>
 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
 <button onclick="printReport()" class="bg-gray-700 text-white p-3 rounded-xl text-sm font-bold">🖨️ تقرير</button>
 <button onclick="printInvoice()" class="bg-emerald-700 text-white p-3 rounded-xl text-sm font-bold">🖨️ فاتورة</button>
 <button onclick="loadPatientByFileNumber()" class="bg-slate-700 text-white p-3 rounded-xl text-sm font-bold">🔎 استرجاع</button>
 <button onclick="clearForm()" class="bg-amber-600 text-white p-3 rounded-xl text-sm font-bold">🔄 جديد</button>
 </div>
-<button onclick="sendWhatsAppNow()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">📱 إرسال تذكير واتساب</button>
+<button onclick="sendWhatsAppNow()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white p-3 rounded-xl text-sm font-bold">📱 إرسال تذكير واتساب</button>
 </div>
 </main>
 
 <div id="printableArea" class="hidden p-6 bg-white text-right space-y-4" style="direction:rtl">
-<div class="text-center border-b-2 border-blue-900 pb-3 mb-4">
-<div class="clinic-logo w-16 h-16 mx-auto mb-2"></div>
-<h2 class="font-extrabold text-xl text-blue-900">العيادة التخصصية لطب وجراحة الفم والأسنان</h2>
-<p class="text-sm font-bold text-blue-700 mt-1">د. علي النقيب — NAQClinixAI</p>
-</div>
+<div class="text-center border-b-2 border-blue-900 pb-3 mb-4"><div class="clinic-logo w-16 h-16 mx-auto mb-2"></div><h2 class="font-extrabold text-xl text-blue-900">العيادة التخصصية لطب وجراحة الفم والأسنان</h2><p class="text-sm font-bold text-blue-700 mt-1">د. علي النقيب — NAQClinixAI</p></div>
 <div id="printBodyContent" class="text-sm space-y-3"></div>
 </div>
 <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">© 2026 NAQClinixAI</footer>
 </div>
 
-<div id="patientsListModal" class="fixed inset-0 bg-black/70 z-[88] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📋 قائمة المرضى</h3><button onclick="closePatientsList()" class="text-gray-400 text-xl">✕</button></div><div class="flex gap-2 flex-col md:flex-row"><input type="text" id="patientsSearch" placeholder="🔍 بحث..." class="flex-1 p-2 border rounded-lg text-sm" oninput="renderPatientsList()"><select id="patientsFilter" onchange="renderPatientsList()" class="p-2 border rounded-lg text-sm bg-white"><option value="all">الكل</option><option value="mine">مرضاي فقط</option><option value="debt">عليهم متبقي</option><option value="upcoming">زيارات قادمة</option><option value="today">زيارات اليوم</option></select></div><div id="patientsListContent" class="space-y-2"></div></div></div>
+<div id="patientsListModal" class="fixed inset-0 bg-black/70 z-[88] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📋 قائمة المرضى</h3><button onclick="closePatientsList()" class="text-gray-400 text-xl">✕</button></div><div class="flex gap-2 flex-col md:flex-row"><input type="text" id="patientsSearch" placeholder="🔍 بحث..." class="flex-1 p-2 border rounded-lg text-sm" oninput="renderPatientsList()"><select id="patientsFilter" onchange="renderPatientsList()" class="p-2 border rounded-lg text-sm bg-white"><option value="all">الكل</option><option value="debt">عليهم متبقي</option><option value="upcoming">زيارات قادمة</option><option value="today">زيارات اليوم</option></select></div><div id="patientsListContent" class="space-y-2"></div></div></div>
 
 <div id="imagesArchiveModal" class="fixed inset-0 bg-black/70 z-[89] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-amber-900 text-base">🖼️ أرشيف الصور</h3><button onclick="closeImagesArchive()" class="text-gray-400 text-xl">✕</button></div><div class="flex gap-2 flex-col md:flex-row"><input type="text" id="archiveSearch" placeholder="🔍 بحث..." class="flex-1 p-2 border rounded-lg text-sm" oninput="renderImagesArchive()"><select id="archiveType" onchange="renderImagesArchive()" class="p-2 border rounded-lg text-sm bg-white"><option value="all">الكل</option><option value="سريرية">سريرية</option><option value="أشعة">أشعة</option></select></div><div id="imagesArchiveContent" class="grid grid-cols-3 md:grid-cols-5 gap-2"></div></div></div>
 
@@ -247,9 +208,9 @@ body{font-family:'Cairo',sans-serif}
 
 <div id="revenueChartModal" class="fixed inset-0 bg-black/70 z-[86] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-indigo-900 text-base">📈 مخطط الإيرادات</h3><button onclick="closeRevenueChart()" class="text-gray-400 text-xl">✕</button></div><div class="bg-white rounded-xl p-3" style="height:400px"><canvas id="revenueChartCanvas"></canvas></div></div></div>
 
-<div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">🤖 إعدادات AI</h3><button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button></div><div><label class="text-xs font-bold text-gray-700 block mb-1">🔑 مفتاح Gemini:</label><input type="password" id="geminiApiKey" placeholder="AIza..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50"></div><div><label class="text-xs font-bold text-gray-700 block mb-1">🧠 المحرك:</label><select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white"><option value="builtin">مدمج</option><option value="gemini">Gemini</option><option value="auto">تلقائي</option></select></div><div class="flex gap-2"><button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button><button onclick="testAIConnection()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">اختبار</button></div><p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
+<div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">🤖 إعدادات AI</h3><button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button></div><div><label class="text-xs font-bold block mb-1">🔑 مفتاح Gemini:</label><input type="password" id="geminiApiKey" class="w-full p-2.5 border rounded-lg text-xs bg-gray-50"></div><div><label class="text-xs font-bold block mb-1">🧠 المحرك:</label><select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white"><option value="builtin">مدمج</option><option value="gemini">Gemini</option><option value="auto">تلقائي</option></select></div><div class="flex gap-2"><button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button><button onclick="testAIConnection()" class="flex-1 bg-gray-100 p-2.5 rounded-xl text-sm font-bold">اختبار</button></div><p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
 
-<div id="addUserModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم</h3><button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button></div><div class="space-y-2"><label class="text-xs font-bold text-gray-700 block">اسم المستخدم:</label><input type="text" id="newUsername" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr"><label class="text-xs font-bold text-gray-700 block">كلمة المرور:</label><input type="text" id="newPassword" class="w-full p-2.5 border rounded-lg text-sm"><label class="text-xs font-bold text-gray-700 block">الاسم الكامل:</label><input type="text" id="newFullName" class="w-full p-2.5 border rounded-lg text-sm"><label class="text-xs font-bold text-gray-700 block">الدور:</label><select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white"><option value="doctor">👨‍⚕️ طبيب</option><option value="employee">👨‍💼 موظف</option><option value="admin">👑 مدير</option></select></div><div class="flex gap-2 pt-2"><button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button><button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div><p id="addUserStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
+<div id="addUserModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم</h3><button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button></div><div class="space-y-2"><label class="text-xs font-bold block">اسم المستخدم:</label><input type="text" id="newUsername" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr"><label class="text-xs font-bold block">كلمة المرور:</label><input type="text" id="newPassword" class="w-full p-2.5 border rounded-lg text-sm"><label class="text-xs font-bold block">الاسم الكامل:</label><input type="text" id="newFullName" class="w-full p-2.5 border rounded-lg text-sm"><label class="text-xs font-bold block">الدور:</label><select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white"><option value="doctor">👨‍⚕️ طبيب</option><option value="employee">👨‍💼 موظف</option><option value="admin">👑 مدير</option></select></div><div class="flex gap-2 pt-2"><button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button><button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div><p id="addUserStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
 
 <div id="activityModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📝 سجل النشاطات</h3><button onclick="closeActivityLog()" class="text-gray-400 text-xl">✕</button></div><div id="activityList" class="space-y-2 text-xs"></div></div></div>
 
@@ -261,7 +222,7 @@ body{font-family:'Cairo',sans-serif}
 
 <div id="chatWindowModal" class="fixed inset-0 bg-black/70 z-[96] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full h-[85vh] overflow-hidden flex flex-col"><div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 text-white flex items-center justify-between"><button onclick="closeChatWindow(); openChatList();" class="text-white/80 text-lg">←</button><div class="flex-1 text-center"><p id="chatWithName" class="font-bold text-sm">-</p></div><button onclick="closeChatWindow()" class="text-white/80 text-xl">✕</button></div><div id="chatMessages" class="flex-1 overflow-y-auto p-3 bg-gray-50 space-y-1"></div><div class="p-2 border-t bg-white"><div class="flex gap-2"><input type="text" id="chatInput" placeholder="اكتب..." class="flex-1 p-2.5 border rounded-xl text-sm" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"><button onclick="sendMessage()" id="chatSendBtn" class="bg-blue-600 text-white px-4 rounded-xl font-bold text-sm">إرسال</button></div></div></div></div>
 
-<div id="createGroupModal" class="fixed inset-0 bg-black/70 z-[97] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[85vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-indigo-900 text-base">👥 مجموعة جديدة</h3><button onclick="closeCreateGroupModal()" class="text-gray-400 text-xl">✕</button></div><label class="text-xs font-bold text-gray-700 block">اسم المجموعة:</label><input type="text" id="newGroupName" class="w-full p-2.5 border rounded-lg text-sm"><label class="text-xs font-bold text-gray-700 block">الأعضاء:</label><div id="groupMembersList" class="space-y-1 max-h-60 overflow-y-auto"></div><div class="flex gap-2 pt-2"><button onclick="createGroup()" class="flex-1 bg-indigo-600 text-white p-2.5 rounded-xl text-sm font-bold">إنشاء</button><button onclick="closeCreateGroupModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div><p id="createGroupStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
+<div id="createGroupModal" class="fixed inset-0 bg-black/70 z-[97] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[85vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-indigo-900 text-base">👥 مجموعة جديدة</h3><button onclick="closeCreateGroupModal()" class="text-gray-400 text-xl">✕</button></div><label class="text-xs font-bold block">اسم المجموعة:</label><input type="text" id="newGroupName" class="w-full p-2.5 border rounded-lg text-sm"><label class="text-xs font-bold block">الأعضاء:</label><div id="groupMembersList" class="space-y-1 max-h-60 overflow-y-auto"></div><div class="flex gap-2 pt-2"><button onclick="createGroup()" class="flex-1 bg-indigo-600 text-white p-2.5 rounded-xl text-sm font-bold">إنشاء</button><button onclick="closeCreateGroupModal()" class="flex-1 bg-gray-100 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div><p id="createGroupStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
 
 <div id="lightbox" class="fixed inset-0 bg-black/90 z-[60] hidden items-center justify-center p-4 no-print" onclick="closeLightbox()"><img id="lightboxImg" class="max-w-full max-h-full rounded-xl"></div>
 
@@ -297,7 +258,7 @@ startChatAutoRefresh();
 checkTodayReminders();
 requestNotificationPermissionSilent();
 }catch(err){errEl.textContent='❌ '+err.message;errEl.classList.remove('hidden')}
-finally{btn.disabled=false;btn.textContent='دخول النظام'}
+finally{btn.disabled=false;btn.textContent='دخول'}
 }
 
 function logout(){
@@ -333,12 +294,10 @@ try{const s=localStorage.getItem('currentUser');if(s){currentUser=JSON.parse(s);
 
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('loginOverlay').classList.contains('hidden')){const el=document.activeElement;if(el&&(el.id==='loginPassword'||el.id==='loginUsername'))login()}});
 
-/* التنبيهات */
-async function requestNotificationPermission(){if(!('Notification' in window)){alert('المتصفح لا يدعم');return}try{const p=await Notification.requestPermission();if(p==='granted'){document.getElementById('notificationBanner').classList.add('hidden');try{new Notification('✅ التنبيهات مفعلة',{body:'ستصلك إشعارات الرسائل'})}catch(e){}}}catch(e){}}
+async function requestNotificationPermission(){if(!('Notification' in window)){alert('لا يدعم');return}try{const p=await Notification.requestPermission();if(p==='granted'){document.getElementById('notificationBanner').classList.add('hidden');try{new Notification('✅ مفعل',{body:'ستصلك الإشعارات'})}catch(e){}}}catch(e){}}
 function requestNotificationPermissionSilent(){if(!('Notification' in window))return;if(Notification.permission==='default'){const b=document.getElementById('notificationBanner');if(b)b.classList.remove('hidden')}}
-function showNotification(title,body){if(Notification.permission==='granted'){try{new Notification(title,{body,icon:'https://cdn-icons-png.flaticon.com/512/2966/2966486.png'})}catch(e){}}}
+function showNotification(t,b){if(Notification.permission==='granted'){try{new Notification(t,{body:b})}catch(e){}}}
 
-/* التنبيهات اليومية */
 async function checkTodayReminders(){
 if(!currentUser)return;
 try{
@@ -348,34 +307,17 @@ const bar=document.getElementById('remindersBar');
 if(!bar)return;
 if(snap.empty){bar.classList.add('hidden');return}
 const list=[];snap.forEach(doc=>list.push(doc.data()));
+if(list.length===0){bar.classList.add('hidden');return}
 let html=`<p class="font-bold text-amber-900 mb-2">🔔 الزيارات اليوم (${list.length}):</p><div class="space-y-1">`;
 list.forEach(p=>{html+=`<div class="bg-white rounded-lg p-2 flex justify-between items-center text-[11px] gap-2"><div class="flex-1"><p class="font-bold">${escapeHtml(p.fullName||'-')}</p><p class="text-[9px] text-gray-500">${p.phone||'-'}</p></div><button onclick="sendWhatsAppToPatient('${(p.whatsapp||p.phone||'').replace(/\D/g,'')}','${escapeHtml(p.fullName||'')}')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold">📱 تذكير</button></div>`});
 html+='</div>';bar.innerHTML=html;bar.classList.remove('hidden')
 }catch(e){}
 }
 
-function sendWhatsAppToPatient(phone,name){
-if(!phone){alert('لا يوجد هاتف');return}
-const intlPhone=phone.startsWith('967')?phone:'967'+phone.replace(/^0/,'');
-const msg='مرحباً '+name+' 🌟\n\nنذكّركم بموعد زيارتكم اليوم في عيادة د. علي النقيب\n\n📍 أب - ميتم - سوق الثلوث\n📞 777700412';
-window.open('https://wa.me/'+intlPhone+'?text='+encodeURIComponent(msg),'_blank')
-}
+function sendWhatsAppToPatient(phone,name){if(!phone){alert('لا هاتف');return}const intlPhone=phone.startsWith('967')?phone:'967'+phone.replace(/^0/,'');const msg='مرحباً '+name+' 🌟\n\nنذكّركم بموعد زيارتكم اليوم في عيادة د. علي النقيب\n\n📍 أب - ميتم - سوق الثلوث\n📞 777700412';window.open('https://wa.me/'+intlPhone+'?text='+encodeURIComponent(msg),'_blank')}
 
-function sendWhatsAppNow(){
-const name=document.getElementById('patientName').value.trim();
-const phone=document.getElementById('whatsappPhone').value.trim()||document.getElementById('patientPhone').value.trim();
-const nextVisit=document.getElementById('nextVisitDate').value;
-if(!name||!phone){alert('⚠️ أدخل الاسم والهاتف');return}
-const cleanPhone=phone.replace(/\D/g,'');
-const intlPhone=cleanPhone.startsWith('967')?cleanPhone:'967'+cleanPhone.replace(/^0/,'');
-let msg='مرحباً '+name+' 🌟\n\nنذكّركم بموعد زيارتكم في عيادة د. علي النقيب';
-if(nextVisit){const d=new Date(nextVisit);const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];msg+='\n📅 يوم '+days[d.getDay()]+'\n🗓️ '+nextVisit}
-msg+='\n\n📍 أب - ميتم - سوق الثلوث\n📞 777700412';
-const url='https://wa.me/'+intlPhone+'?text='+encodeURIComponent(msg);
-window.open(url,'_blank')
-}
+function sendWhatsAppNow(){const name=document.getElementById('patientName').value.trim();const phone=document.getElementById('whatsappPhone').value.trim()||document.getElementById('patientPhone').value.trim();const nextVisit=document.getElementById('nextVisitDate').value;if(!name||!phone){alert('⚠️ أدخل الاسم والهاتف');return}const cleanPhone=phone.replace(/\D/g,'');const intlPhone=cleanPhone.startsWith('967')?cleanPhone:'967'+cleanPhone.replace(/^0/,'');let msg='مرحباً '+name+' 🌟\n\nنذكّركم بموعد زيارتكم في عيادة د. علي النقيب';if(nextVisit){const d=new Date(nextVisit);const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];msg+='\n📅 يوم '+days[d.getDay()]+'\n🗓️ '+nextVisit}msg+='\n\n📍 أب - ميتم - سوق الثلوث\n📞 777700412';window.open('https://wa.me/'+intlPhone+'?text='+encodeURIComponent(msg),'_blank')}
 
-/* إدارة المستخدمين */
 async function loadUsersList(){
 const c=document.getElementById('usersList');if(!c)return;
 c.innerHTML='<p class="text-center text-xs text-gray-500 py-2">...</p>';
@@ -383,14 +325,7 @@ try{
 const snap=await db.collection('users').get();
 if(snap.empty){c.innerHTML='<p class="text-center text-xs text-gray-500 py-2">لا يوجد</p>';return}
 let html='<p class="text-[11px] font-bold text-amber-900 mb-1">👥 المستخدمون:</p>';
-snap.forEach(doc=>{
-const u=doc.data();
-const ri=u.role==='admin'?'👑':u.role==='doctor'?'👨‍⚕️':'👨‍💼';
-const rn=u.role==='admin'?'مدير':u.role==='doctor'?'طبيب':'موظف';
-const isMe=currentUser&&currentUser.username===u.username;
-const userActive=u.active!==false;
-html+=`<div class="bg-white border rounded-lg p-2 flex items-center justify-between"><div class="flex items-center gap-2"><span class="text-lg">${ri}</span><div><p class="text-xs font-bold">${u.fullName||doc.id}${isMe?' (أنت)':''}</p><p class="text-[10px] text-gray-500">@${u.username||doc.id} — ${rn}</p></div></div><div class="flex items-center gap-1"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${userActive?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">${userActive?'نشط':'موقوف'}</span>${!isMe?`<button onclick="toggleUserActive('${doc.id}',${!userActive})" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">${userActive?'إيقاف':'تفعيل'}</button><button onclick="deleteUser('${doc.id}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">حذف</button>`:''}</div></div>`
-});
+snap.forEach(doc=>{const u=doc.data();const ri=u.role==='admin'?'👑':u.role==='doctor'?'👨‍⚕️':'👨‍💼';const rn=u.role==='admin'?'مدير':u.role==='doctor'?'طبيب':'موظف';const isMe=currentUser&&currentUser.username===u.username;const userActive=u.active!==false;html+=`<div class="bg-white border rounded-lg p-2 flex items-center justify-between"><div class="flex items-center gap-2"><span class="text-lg">${ri}</span><div><p class="text-xs font-bold">${u.fullName||doc.id}${isMe?' (أنت)':''}</p><p class="text-[10px] text-gray-500">@${u.username||doc.id} — ${rn}</p></div></div><div class="flex items-center gap-1"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${userActive?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">${userActive?'نشط':'موقوف'}</span>${!isMe?`<button onclick="toggleUserActive('${doc.id}',${!userActive})" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">${userActive?'إيقاف':'تفعيل'}</button><button onclick="deleteUser('${doc.id}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">حذف</button>`:''}</div></div>`});
 c.innerHTML=html
 }catch(e){c.innerHTML='<p class="text-center text-xs text-red-500 py-2">فشل</p>'}
 }
@@ -398,32 +333,23 @@ c.innerHTML=html
 function toggleAdminPanel(){const c=document.getElementById('adminPanelContent'),t=document.getElementById('adminPanelToggle');if(c.style.display==='none'){c.style.display='block';t.textContent='إخفاء'}else{c.style.display='none';t.textContent='إظهار'}}
 function openAddUserModal(){document.getElementById('addUserModal').classList.remove('hidden');document.getElementById('addUserModal').classList.add('flex')}
 function closeAddUserModal(){document.getElementById('addUserModal').classList.add('hidden');document.getElementById('addUserModal').classList.remove('flex')}
-async function addNewUser(){
-const u=document.getElementById('newUsername').value.trim().toLowerCase();
-const p=document.getElementById('newPassword').value.trim();
-const f=document.getElementById('newFullName').value.trim();
-const r=document.getElementById('newRole').value;
-const s=document.getElementById('addUserStatus');
-if(!u||!p||!f){s.textContent='⚠️ أكمل';s.className='text-[11px] text-center font-bold text-amber-600';s.classList.remove('hidden');return}
-if(!/^[a-z0-9]+$/.test(u)){s.textContent='⚠️ إنجليزي فقط';s.className='text-[11px] text-center font-bold text-amber-600';s.classList.remove('hidden');return}
-try{await db.collection('users').doc(u).set({username:u,password:p,fullName:f,role:r,active:true,createdAt:Date.now()});s.textContent='✅ تم';s.className='text-[11px] text-center font-bold text-emerald-600';s.classList.remove('hidden');setTimeout(()=>{closeAddUserModal();loadUsersList()},1500)}catch(e){s.textContent='❌ '+e.message;s.className='text-[11px] text-center font-bold text-red-600';s.classList.remove('hidden')}
-}
+async function addNewUser(){const u=document.getElementById('newUsername').value.trim().toLowerCase();const p=document.getElementById('newPassword').value.trim();const f=document.getElementById('newFullName').value.trim();const r=document.getElementById('newRole').value;const s=document.getElementById('addUserStatus');if(!u||!p||!f){s.textContent='⚠️ أكمل';s.className='text-[11px] text-center font-bold text-amber-600';s.classList.remove('hidden');return}if(!/^[a-z0-9]+$/.test(u)){s.textContent='⚠️ إنجليزي فقط';s.className='text-[11px] text-center font-bold text-amber-600';s.classList.remove('hidden');return}try{await db.collection('users').doc(u).set({username:u,password:p,fullName:f,role:r,active:true,createdAt:Date.now()});s.textContent='✅ تم';s.className='text-[11px] text-center font-bold text-emerald-600';s.classList.remove('hidden');setTimeout(()=>{closeAddUserModal();loadUsersList()},1500)}catch(e){s.textContent='❌ '+e.message;s.className='text-[11px] text-center font-bold text-red-600';s.classList.remove('hidden')}}
 async function toggleUserActive(id,a){if(!confirm(a?'تفعيل؟':'إيقاف؟'))return;try{await db.collection('users').doc(id).update({active:a});loadUsersList()}catch(e){alert('فشل')}}
 async function deleteUser(id){if(!confirm('حذف؟'))return;try{await db.collection('users').doc(id).delete();loadUsersList()}catch(e){alert('فشل')}}
 async function openActivityLog(){const m=document.getElementById('activityModal');m.classList.remove('hidden');m.classList.add('flex');const list=document.getElementById('activityList');list.innerHTML='...';try{const snap=await db.collection('activity').orderBy('timestamp','desc').limit(50).get();let html='';snap.forEach(doc=>{const a=doc.data();const t=a.timestamp?new Date(a.timestamp.seconds*1000).toLocaleString('ar-YE'):'-';html+=`<div class="bg-gray-50 border rounded-lg p-2"><div class="flex justify-between"><span class="font-bold">${a.action}</span><span class="text-[10px]">${t}</span></div><p class="text-[10px]">👤 ${a.fullName||a.username}</p></div>`});list.innerHTML=html||'لا يوجد'}catch(e){list.innerHTML='فشل'}}
 function closeActivityLog(){const m=document.getElementById('activityModal');m.classList.add('hidden');m.classList.remove('flex')}
 
-/* قائمة المرضى */
+/* قائمة المرضى — جميع المرضى للجميع مع تمييز من أضاف */
 let allPatientsCache=[];
 async function openPatientsList(){const m=document.getElementById('patientsListModal');m.classList.remove('hidden');m.classList.add('flex');const c=document.getElementById('patientsListContent');c.innerHTML='...';try{const snap=await db.collection('patients').get();allPatientsCache=[];snap.forEach(doc=>allPatientsCache.push({id:doc.id,...doc.data()}));allPatientsCache.sort((a,b)=>{const ta=a.timestamp?a.timestamp.seconds:0;const tb=b.timestamp?b.timestamp.seconds:0;return tb-ta});renderPatientsList()}catch(e){c.innerHTML='فشل: '+e.message}}
 function closePatientsList(){const m=document.getElementById('patientsListModal');m.classList.add('hidden');m.classList.remove('flex')}
+
 function renderPatientsList(){
 const c=document.getElementById('patientsListContent');
 const search=(document.getElementById('patientsSearch').value||'').trim().toLowerCase();
 const filter=document.getElementById('patientsFilter').value;
 const today=new Date().toISOString().split('T')[0];
 let list=allPatientsCache.slice();
-if(currentUser.role!=='admin'&&filter==='mine')list=list.filter(p=>p.createdBy===currentUser.username);
 if(search)list=list.filter(p=>(p.fullName||'').toLowerCase().includes(search)||(p.phone||'').includes(search)||(p.fileNumber||'').toLowerCase().includes(search));
 if(filter==='debt')list=list.filter(p=>{const f=p.financials||{};const t=parseFloat(f.total)||0;const pd=(parseFloat(f.payment1)||0)+(parseFloat(f.payment2)||0)+(parseFloat(f.payment3)||0);return t-pd>0});
 else if(filter==='upcoming')list=list.filter(p=>p.nextVisit&&p.nextVisit>=today);
@@ -438,8 +364,9 @@ const nv=p.nextVisit||'';let vb='';
 if(nv){if(nv===today)vb='<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-2 py-0.5 rounded-full">🔔 اليوم</span>';else if(nv>today){const d=Math.ceil((new Date(nv)-new Date(today))/86400000);vb=`<span class="${d<=3?'bg-orange-100 text-orange-800':'bg-blue-100 text-blue-800'} text-[9px] font-bold px-2 py-0.5 rounded-full">📅 بعد ${d} يوم</span>`}else vb='<span class="bg-red-100 text-red-700 text-[9px] font-bold px-2 py-0.5 rounded-full">⚠️ متأخرة</span>'}
 const rc=rem>0?'text-red-600':rem<0?'text-purple-600':'text-emerald-600';
 const rl=rem>0?rem+' متبقي':rem<0?Math.abs(rem)+' زيادة':'✅ مسدد';
-html+=`<div class="bg-white border rounded-xl p-3 hover:shadow-md transition">
-<div class="flex justify-between items-start mb-2"><div class="flex-1"><p class="font-bold text-sm">${i+1}. ${escapeHtml(p.fullName||'-')}</p><p class="text-[10px] text-gray-500">${p.fileNumber||''} • ${p.phone||'-'}${p.createdByName?' • ✍️ '+p.createdByName:''}</p></div>${vb}</div>
+const isMine=p.createdBy===currentUser.username;
+html+=`<div class="bg-white border ${isMine?'border-emerald-300':'border-gray-200'} rounded-xl p-3 hover:shadow-md transition">
+<div class="flex justify-between items-start mb-2"><div class="flex-1"><p class="font-bold text-sm">${i+1}. ${escapeHtml(p.fullName||'-')}${isMine?' <span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">مرضي</span>':''}</p><p class="text-[10px] text-gray-500">${p.fileNumber||''} • ${p.phone||'-'}</p>${p.createdByName?`<p class="text-[9px] ${isMine?'text-emerald-600 font-bold':'text-blue-500'}">✍️ أضافه: ${p.createdByName}${isMine?' (أنت)':''}</p>`:''}</div>${vb}</div>
 <div class="grid grid-cols-3 gap-1 text-[10px] mb-2"><div class="bg-gray-50 rounded p-1.5 text-center"><div class="text-gray-500">الإجمالي</div><div class="font-bold">${total}</div></div><div class="bg-emerald-50 rounded p-1.5 text-center"><div class="text-emerald-700">المدفوع</div><div class="font-bold text-emerald-700">${paid}</div></div><div class="bg-red-50 rounded p-1.5 text-center"><div class="text-gray-500">الحالة</div><div class="font-bold ${rc}">${rl}</div></div></div>
 ${nv?`<p class="text-[10px] text-blue-700 bg-blue-50 rounded p-1.5 text-center mb-1">📅 الزيارة: <strong>${nv}</strong></p>`:''}
 <button onclick="loadPatientFromList('${p.id}')" class="w-full mt-1 bg-slate-100 text-slate-700 p-1.5 rounded-lg text-[10px] font-bold">📂 فتح</button></div>`
@@ -481,30 +408,17 @@ alert('✅ تم فتح: '+(d.fullName||pid))
 }catch(e){alert('فشل: '+e.message)}
 }
 
-/* الشعار */
 function renderLogos(){const c=localStorage.getItem('clinicLogo');const html=c?'<img src="'+c+'">':'<svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0a1e3f"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="#a8c8e8">🦷</text></svg>';document.querySelectorAll('.clinic-logo').forEach(el=>{el.innerHTML=html})}
-document.getElementById('logoInput').addEventListener('change',async function(e){const file=e.target.files[0];if(!file)return;try{const d=await compressImage(file,500,0.92);localStorage.setItem('clinicLogo',d);renderLogos()}catch(err){}e.target.value=''});
+document.getElementById('logoInput')?.addEventListener('change',async function(e){const file=e.target.files[0];if(!file)return;try{const d=await compressImage(file,500,0.92);localStorage.setItem('clinicLogo',d);renderLogos()}catch(err){}e.target.value=''});
 
-function compressImage(file,maxDim,quality){
-maxDim=maxDim||1200;quality=quality||0.75;
-return new Promise((resolve,reject)=>{
-const reader=new FileReader();
-reader.onload=ev=>{const img=new Image();img.onload=()=>{
-let w=img.width,h=img.height;
-if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim}else if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim}
-const c=document.createElement('canvas');c.width=w;c.height=h;
-const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
-resolve(c.toDataURL('image/jpeg',quality))
-};img.onerror=reject;img.src=ev.target.result};
-reader.onerror=reject;reader.readAsDataURL(file)})
-}
+function compressImage(file,maxDim,quality){maxDim=maxDim||1200;quality=quality||0.75;return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim}else if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim}const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',quality))};img.onerror=reject;img.src=ev.target.result};reader.onerror=reject;reader.readAsDataURL(file)})}
 
-/* مخطط الأسنان */
 let selectedTeeth=[];
 const SHAPES={central:'M 3,3 C 7,-1 17,-1 21,3 L 22.5,7 C 22,18 22,26 21.5,33 C 19,39 16.5,41 12,41 C 7.5,41 5,39 2.5,33 C 2,26 2,18 1.5,7 Z',lateral:'M 5,4 C 8,0.5 16,0.5 19,4 L 21,8 C 20.5,18 20.5,26 20,32 C 17.5,38 15,40 12,40 C 9,40 6.5,38 4,32 C 3.5,26 3.5,18 3,8 Z',canine:'M 4,3 C 8,-0.5 16,-0.5 20,3 L 22,8 C 21,14 19,20 17,25 L 12,42 L 7,25 C 5,20 3,14 2,8 Z',premolar:'M 3,5 C 6,1 9,2 12,2.5 C 15,2 18,1 21,5 L 22.5,9 C 22,17 21,25 20,30 C 17.5,38 14.5,39.5 12,39.5 C 9.5,39.5 6.5,38 4,30 C 3,25 2,17 1.5,9 Z',molar:'M 1.5,6 C 4,2 7,2.5 9.5,3 C 11,2 13,2 14.5,3 C 17,2.5 20,2 22.5,6 L 24,10 C 23.5,18 22.5,25 21,29 C 18,38 15,39.5 12,39.5 C 9,39.5 6,38 3,29 C 1.5,25 0.5,18 0,10 Z'};
 const TYPES={18:'molar',17:'molar',16:'molar',15:'premolar',14:'premolar',13:'canine',12:'lateral',11:'central',21:'central',22:'lateral',23:'canine',24:'premolar',25:'premolar',26:'molar',27:'molar',28:'molar',48:'molar',47:'molar',46:'molar',45:'premolar',44:'premolar',43:'canine',42:'lateral',41:'central',31:'central',32:'lateral',33:'canine',34:'premolar',35:'premolar',36:'molar',37:'molar',38:'molar'};
 const UPPER=[{t:18,x:6,y:16,s:.8},{t:17,x:30,y:11,s:.88},{t:16,x:54,y:8,s:.95},{t:15,x:79,y:12,s:.82},{t:14,x:103,y:18,s:.82},{t:13,x:127,y:25,s:.9},{t:12,x:151,y:32,s:.82},{t:11,x:176,y:38,s:1},{t:21,x:200,y:38,s:1},{t:22,x:225,y:32,s:.82},{t:23,x:249,y:25,s:.9},{t:24,x:273,y:18,s:.82},{t:25,x:297,y:12,s:.82},{t:26,x:322,y:8,s:.95},{t:27,x:346,y:11,s:.88},{t:28,x:370,y:16,s:.8}];
 const LOWER=[{t:48,x:6,y:56,s:.8},{t:47,x:30,y:51,s:.88},{t:46,x:54,y:48,s:.95},{t:45,x:79,y:52,s:.82},{t:44,x:103,y:58,s:.82},{t:43,x:127,y:65,s:.9},{t:42,x:151,y:72,s:.82},{t:41,x:176,y:78,s:1},{t:31,x:200,y:78,s:1},{t:32,x:225,y:72,s:.82},{t:33,x:249,y:65,s:.9},{t:34,x:273,y:58,s:.82},{t:35,x:297,y:52,s:.82},{t:36,x:322,y:48,s:.95},{t:37,x:346,y:51,s:.88},{t:38,x:370,y:56,s:.8}];
+
 function buildTooth(e,isL){const sh=SHAPES[TYPES[e.t]];const f=isL?' transform="translate(0,41) scale(1,-1)"':'';return '<g class="tooth" data-tooth="'+e.t+'" transform="translate('+e.x+','+e.y+') scale('+e.s+')"><path class="crown" d="'+sh+'"'+f+'/><text class="num" x="12" y="24">'+e.t+'</text></g>'}
 function renderDentalChart(){const defs='<defs><linearGradient id="toothGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient><linearGradient id="toothGradHover" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#eef2ff"/><stop offset="100%" stop-color="#c7d2fe"/></linearGradient><linearGradient id="toothGradSel" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient><linearGradient id="gumGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fda4af"/><stop offset="100%" stop-color="#fb7185"/></linearGradient></defs>';
 document.getElementById('upperArchSvg').innerHTML=defs+UPPER.map(e=>buildTooth(e,false)).join('');
@@ -518,8 +432,7 @@ function generateFileNumber(){document.getElementById('fileNumber').value='DR-'+
 function getTodayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function getCurrentMonthKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 
-/* معرض الصور */
-let clinicImages=[],mergedImageCache={},currentAnnotations={};
+let clinicImages=[];
 function renderGallery(){const c=document.getElementById('imagePreviewContainer');document.getElementById('imageCounter').textContent=clinicImages.length+' صورة';if(!clinicImages.length){c.innerHTML='<div class="col-span-3 text-center text-[11px] text-amber-700/60 py-4 border border-dashed border-amber-300 rounded-xl">لا توجد صور</div>';return}c.innerHTML=clinicImages.map((img,i)=>'<div class="relative rounded-xl overflow-hidden border border-amber-200 bg-white shadow-sm"><img src="'+img.dataUrl+'" onclick="openLightbox('+i+')" class="w-full h-24 object-cover cursor-zoom-in"><span class="absolute top-1 right-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold text-white '+(img.type==='أشعة'?'bg-indigo-600':'bg-emerald-600')+'">'+img.type+'</span><button onclick="removeImage('+i+')" class="absolute top-1 left-1 w-5 h-5 bg-red-600 text-white rounded-full text-[10px]">✕</button></div>').join('')}
 function removeImage(i){if(confirm('حذف؟')){clinicImages.splice(i,1);renderGallery()}}
 function openLightbox(i){const img=clinicImages[i];if(!img)return;document.getElementById('lightboxImg').src=img.dataUrl;const lb=document.getElementById('lightbox');lb.classList.remove('hidden');lb.classList.add('flex')}
@@ -528,11 +441,9 @@ async function handleImageFiles(files,type){const list=Array.from(files).slice(0
 document.getElementById('clinicalPhotoInput').addEventListener('change',e=>{handleImageFiles(e.target.files,'سريرية');e.target.value=''});
 document.getElementById('xrayInput').addEventListener('change',e=>{handleImageFiles(e.target.files,'أشعة');e.target.value=''});
 
-/* الحسابات */
 function calculateFinancials(){const t=parseFloat(document.getElementById('totalAmount').value)||0;const p1=parseFloat(document.getElementById('payment1').value)||0;const p2=parseFloat(document.getElementById('payment2').value)||0;const p3=parseFloat(document.getElementById('payment3').value)||0;const rem=t-(p1+p2+p3);document.getElementById('remainingDisplay').textContent=rem+' ريال';const revAmt=document.getElementById('revenueAmount');if(revAmt)revAmt.value=p1+p2+p3;calculateNet();return rem}
 function calculateNet(){const revEl=document.getElementById('revenueAmount');const expEl=document.getElementById('expenseAmount');const r=revEl?(parseFloat(revEl.value)||0):0;const e=expEl?(parseFloat(expEl.value)||0):0;const tr=document.getElementById('totalRevenueDisplay');if(tr)tr.textContent=r;const te=document.getElementById('totalExpensesDisplay');if(te)te.textContent=e;const net=document.getElementById('netRevenueDisplay');if(net)net.textContent=(r-e)}
 
-/* AI */
 function getAIEngine(){const m=document.getElementById('aiEngine')?document.getElementById('aiEngine').value:'auto';const k=!!getGeminiKey();if(m==='auto')return k?'gemini':'builtin';return m}
 function getGeminiKey(){return (localStorage.getItem('geminiApiKey')||'').trim()}
 async function callGeminiAPI(key,model,body){const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent';const headers={'Content-Type':'application/json'};if(key.startsWith('AQ.')){headers['x-goog-api-key']=key;return await fetch(url,{method:'POST',headers,body:JSON.stringify(body)})}return await fetch(url+'?key='+key,{method:'POST',headers,body:JSON.stringify(body)})}
@@ -546,63 +457,19 @@ const key=getGeminiKey();const engine=getAIEngine();
 if(engine==='builtin'||!key){setTimeout(()=>{runBuiltinDiagnosis();btn.disabled=false},300)}
 else{await runGeminiFullDiagnosis()}
 }
-
-function runBuiltinDiagnosis(){
-const work=document.getElementById('workType').value||'تشخيص عام';
-const age=document.getElementById('patientAge').value;
-let diag='🔍 التشخيص:\n• نوع العمل: '+work+'\n';
-if(selectedTeeth.length)diag+='• الأسنان: '+selectedTeeth.join(', ')+'\n';
-if(age)diag+='• العمر: '+age+'\n';
-let plan='🦷 الخطة:\n1. فحص شامل\n2. أشعة\n3. علاج حسب النوع\n4. متابعة';
-renderAIResults('محرك مدمج',diag,plan,'—')
-}
-
-async function runGeminiFullDiagnosis(){
-const key=getGeminiKey();if(!key){runBuiltinDiagnosis();return}
-const age=document.getElementById('patientAge').value||'غير محدد';
-const work=document.getElementById('workType').value||'تشخيص عام';
-const teethList=selectedTeeth.length?selectedTeeth.join(', '):'غير محددة';
-const prompt=`أنت استشاري طب أسنان. المريض: العمر ${age}، العمل ${work}، الأسنان ${teethList}.\n\nأعطِ:\n1) التشخيص\n2) الخطة العلاجية\n3) البديل\n\nبأقسام واضحة.`;
-const parts=[{text:prompt}];
-for(const img of clinicImages.slice(0,6))parts.push({inline_data:{mime_type:'image/jpeg',data:img.dataUrl.split(',')[1]}});
-const models=['gemini-2.5-flash','gemini-2.0-flash'];
-let lastErr='';
-for(const model of models){
-try{
-const resp=await callGeminiAPI(key,model,{contents:[{parts}]});
-if(!resp.ok){lastErr=model+': '+resp.status;continue}
-const data=await resp.json();
-const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-if(!text)continue;
-const sections=parseGeminiFullReport(text);
-renderAIResults('Gemini AI',sections.diag,sections.plan,sections.alt);
-document.getElementById('btnAIDiag').disabled=false;return
-}catch(err){lastErr=model+': '+err.message}
-}
-console.warn(lastErr);runBuiltinDiagnosis();document.getElementById('btnAIDiag').disabled=false
-}
-
+function runBuiltinDiagnosis(){const work=document.getElementById('workType').value||'تشخيص عام';const age=document.getElementById('patientAge').value;let diag='🔍 التشخيص:\n• نوع العمل: '+work+'\n';if(selectedTeeth.length)diag+='• الأسنان: '+selectedTeeth.join(', ')+'\n';if(age)diag+='• العمر: '+age+'\n';let plan='🦷 الخطة:\n1. فحص شامل\n2. أشعة\n3. علاج حسب النوع\n4. متابعة';renderAIResults('محرك مدمج',diag,plan,'—')}
+async function runGeminiFullDiagnosis(){const key=getGeminiKey();if(!key){runBuiltinDiagnosis();return}const age=document.getElementById('patientAge').value||'غير محدد';const work=document.getElementById('workType').value||'تشخيص عام';const teethList=selectedTeeth.length?selectedTeeth.join(', '):'غير محددة';const prompt=`أنت استشاري طب أسنان. المريض: العمر ${age}، العمل ${work}، الأسنان ${teethList}.\n\nأعطِ:\n1) التشخيص\n2) الخطة العلاجية\n3) البديل\n\nبأقسام واضحة.`;const parts=[{text:prompt}];for(const img of clinicImages.slice(0,6))parts.push({inline_data:{mime_type:'image/jpeg',data:img.dataUrl.split(',')[1]}});const models=['gemini-2.5-flash','gemini-2.0-flash'];let lastErr='';for(const model of models){try{const resp=await callGeminiAPI(key,model,{contents:[{parts}]});if(!resp.ok){lastErr=model+': '+resp.status;continue}const data=await resp.json();const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'';if(!text)continue;const sections=parseGeminiFullReport(text);renderAIResults('Gemini AI',sections.diag,sections.plan,sections.alt);document.getElementById('btnAIDiag').disabled=false;return}catch(err){lastErr=model+': '+err.message}}console.warn(lastErr);runBuiltinDiagnosis();document.getElementById('btnAIDiag').disabled=false}
 function parseGeminiFullReport(text){const lines=text.split('\n');let current='diag';const d=[],p=[],a=[];lines.forEach(line=>{const t=line.trim();if(/(?:الخطة|خيارات|Treatment)/i.test(t)&&t.length<100)current='plan';if(/(?:البديل|المخاطر)/i.test(t)&&t.length<100)current='alt';if(current==='diag')d.push(line);else if(current==='plan')p.push(line);else a.push(line)});let diag=d.join('\n').trim(),plan=p.join('\n').trim(),alt=a.join('\n').trim();if(!plan&&!alt){diag=text;plan='—';alt='—'}else if(!alt)alt='—';return{diag,plan,alt}}
-
-function renderAIResults(engineName,diag,plan,alt){
-const status=document.getElementById('aiStatus');const results=document.getElementById('aiResults');
-status.innerHTML='✅ تم عبر <strong>'+engineName+'</strong>';status.className='text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
-window.__aiResults={diag,plan,alt,engine:engineName};
-const box=(title,content,color)=>'<div class="ai-result-box bg-'+color+'-50 border border-'+color+'-200 rounded-xl p-3"><p class="font-extrabold text-'+color+'-900 text-xs mb-1.5">'+title+'</p><div class="text-[11px] whitespace-pre-wrap">'+content+'</div></div>';
-results.innerHTML=box('🔍 التشخيص',diag,'blue')+box('🦷 الخطة',plan,'emerald')+box('🔄 البديل',alt,'amber');
-results.classList.remove('hidden');
-}
+function renderAIResults(engineName,diag,plan,alt){const status=document.getElementById('aiStatus');const results=document.getElementById('aiResults');status.innerHTML='✅ تم عبر <strong>'+engineName+'</strong>';status.className='text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';window.__aiResults={diag,plan,alt,engine:engineName};const box=(title,content,color)=>'<div class="ai-result-box bg-'+color+'-50 border border-'+color+'-200 rounded-xl p-3"><p class="font-extrabold text-'+color+'-900 text-xs mb-1.5">'+title+'</p><div class="text-[11px] whitespace-pre-wrap">'+content+'</div></div>';results.innerHTML=box('🔍 التشخيص',diag,'blue')+box('🦷 الخطة',plan,'emerald')+box('🔄 البديل',alt,'amber');results.classList.remove('hidden')}
 function clearAIResults(){document.getElementById('aiResults').classList.add('hidden');document.getElementById('aiResults').innerHTML='';document.getElementById('aiStatus').classList.add('hidden');window.__aiResults=null}
 function applyAIToForm(){if(!window.__aiResults){alert('لا نتائج');return}const r=window.__aiResults;document.getElementById('complaint').value=r.diag;document.getElementById('treatmentPlan').value=r.plan;document.getElementById('alternativePlan').value=r.alt;alert('✅')}
-async function runSmartScanner(){alert('الماسح الذكي يحتاج مفتاح Gemini')}
-
+async function runSmartScanner(){alert('الماسح يحتاج مفتاح Gemini')}
 function openAISettings(){document.getElementById('geminiApiKey').value=getGeminiKey();document.getElementById('aiEngine').value=localStorage.getItem('aiEngine')||'auto';const m=document.getElementById('aiSettingsModal');m.classList.remove('hidden');m.classList.add('flex')}
 function closeAISettings(){const m=document.getElementById('aiSettingsModal');m.classList.add('hidden');m.classList.remove('flex')}
 function saveAISettings(){const k=document.getElementById('geminiApiKey').value.trim(),e=document.getElementById('aiEngine').value;if(k)localStorage.setItem('geminiApiKey',k);else localStorage.removeItem('geminiApiKey');localStorage.setItem('aiEngine',e);const s=document.getElementById('aiSettingsStatus');s.textContent='✅ تم';s.className='text-[11px] text-center font-bold text-emerald-600';s.classList.remove('hidden');setTimeout(()=>s.classList.add('hidden'),2500);updateAIEngineBadge()}
-async function testAIConnection(){const k=document.getElementById('geminiApiKey').value.trim();const s=document.getElementById('aiSettingsStatus');s.classList.remove('hidden');s.textContent='⏳...';if(!k){s.textContent='⚠️ أدخل المفتاح';s.className='text-[11px] text-center font-bold text-amber-600';return}try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+k);if(r.ok){s.textContent='✅ صالح';s.className='text-[11px] text-center font-bold text-emerald-600'}else{s.textContent='❌ غير صالح';s.className='text-[11px] text-center font-bold text-red-600'}}catch(e){s.textContent='❌ فشل';s.className='text-[11px] text-center font-bold text-red-600'}}
+async function testAIConnection(){const k=document.getElementById('geminiApiKey').value.trim();const s=document.getElementById('aiSettingsStatus');s.classList.remove('hidden');s.textContent='⏳...';if(!k){s.textContent='⚠️ أدخل المفتاح';s.className='text-[11px] text-center font-bold text-amber-600';return}try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+k);if(r.ok){s.textContent='✅ صالح';s.className='text-[11px] text-center font-bold text-emerald-600'}else{s.textContent='❌';s.className='text-[11px] text-center font-bold text-red-600'}}catch(e){s.textContent='❌';s.className='text-[11px] text-center font-bold text-red-600'}}
 function updateAIEngineBadge(){const b=document.getElementById('aiEngineBadge');if(!b)return;const m=document.getElementById('aiEngine')?document.getElementById('aiEngine').value:localStorage.getItem('aiEngine')||'auto';const hk=!!getGeminiKey();if(m==='gemini'||(m==='auto'&&hk))b.textContent='Gemini AI';else b.textContent='محرك مدمج'}
 
-/* حفظ السجل */
 async function savePatientRecord(){
 const name=document.getElementById('patientName').value.trim();
 if(!name){alert('أدخل الاسم');return}
@@ -611,21 +478,7 @@ try{
 const fN=document.getElementById('fileNumber').value;
 const imgRecs=clinicImages.map(img=>({type:img.type,date:img.date,dataUrl:img.dataUrl}));
 const revEl=document.getElementById('revenueAmount');const expEl=document.getElementById('expenseAmount');const expTypeEl=document.getElementById('expenseType');
-const rec={
-fileNumber:fN,fullName:name,
-gender:document.getElementById('patientGender').value,age:document.getElementById('patientAge').value,address:document.getElementById('patientAddress').value,
-phone:document.getElementById('patientPhone').value,whatsapp:document.getElementById('whatsappPhone').value,
-allergies:document.getElementById('patientAllergies').value,chronic:document.getElementById('chronicDiseases').value,
-smoking:document.getElementById('smokingHabit').value,hygiene:document.getElementById('oralHygiene').value,
-workType:document.getElementById('workType').value,teethCount:document.getElementById('teethCount').value,
-selectedTeeth:selectedTeeth.join(', '),
-complaint:document.getElementById('complaint').value,treatmentPlan:document.getElementById('treatmentPlan').value,alternativePlan:document.getElementById('alternativePlan').value,
-nextVisit:document.getElementById('nextVisitDate').value,paymentMethod:document.getElementById('paymentMethod').value,
-aiDiagnosis:window.__aiResults||null,images:imgRecs,
-financials:{total:document.getElementById('totalAmount').value,payment1:document.getElementById('payment1').value,payment2:document.getElementById('payment2').value,payment3:document.getElementById('payment3').value,remaining:document.getElementById('remainingDisplay').textContent,status:document.getElementById('revenueStatus').value,expense:expEl?expEl.value:'',expenseType:expTypeEl?expTypeEl.value:''},
-dateKey:getTodayKey(),createdBy:currentUser?currentUser.username:'unknown',createdByName:currentUser?currentUser.fullName:'unknown',
-regDate:currentDate,timestamp:firebase.firestore.FieldValue.serverTimestamp()
-};
+const rec={fileNumber:fN,fullName:name,gender:document.getElementById('patientGender').value,age:document.getElementById('patientAge').value,address:document.getElementById('patientAddress').value,phone:document.getElementById('patientPhone').value,whatsapp:document.getElementById('whatsappPhone').value,allergies:document.getElementById('patientAllergies').value,chronic:document.getElementById('chronicDiseases').value,smoking:document.getElementById('smokingHabit').value,hygiene:document.getElementById('oralHygiene').value,workType:document.getElementById('workType').value,teethCount:document.getElementById('teethCount').value,selectedTeeth:selectedTeeth.join(', '),complaint:document.getElementById('complaint').value,treatmentPlan:document.getElementById('treatmentPlan').value,alternativePlan:document.getElementById('alternativePlan').value,nextVisit:document.getElementById('nextVisitDate').value,paymentMethod:document.getElementById('paymentMethod').value,aiDiagnosis:window.__aiResults||null,images:imgRecs,financials:{total:document.getElementById('totalAmount').value,payment1:document.getElementById('payment1').value,payment2:document.getElementById('payment2').value,payment3:document.getElementById('payment3').value,remaining:document.getElementById('remainingDisplay').textContent,status:document.getElementById('revenueStatus').value,expense:expEl?expEl.value:'',expenseType:expTypeEl?expTypeEl.value:''},dateKey:getTodayKey(),createdBy:currentUser?currentUser.username:'unknown',createdByName:currentUser?currentUser.fullName:'unknown',regDate:currentDate,timestamp:firebase.firestore.FieldValue.serverTimestamp()};
 await db.collection('patients').doc(fN).set(rec);
 alert('✅ تم الحفظ');resetForm()
 }catch(err){alert('خطأ: '+err.message)}
@@ -640,23 +493,16 @@ generateFileNumber();
 ['patientGender','workType','revenueStatus','smokingHabit','oralHygiene','paymentMethod'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
 selectedTeeth=[];document.querySelectorAll('.tooth.selected').forEach(g=>g.classList.remove('selected'));
 document.getElementById('selectedTeethDisplay').textContent='الأسنان: لا يوجد';
-clinicImages=[];mergedImageCache={};renderGallery();calculateFinancials();clearAIResults();
+clinicImages=[];renderGallery();calculateFinancials();clearAIResults();
 window.__aiResults=null
 }
-
 function clearForm(){if(!confirm('مريض جديد؟'))return;resetForm()}
 
-/* الطباعة */
-function buildReportContent(){
-const name=document.getElementById('patientName').value;
-const teeth=selectedTeeth.length?selectedTeeth.join(', '):'لا يوجد';
-const userInfo=currentUser?'أُنشئ بواسطة: '+currentUser.fullName:'';
-document.getElementById('printBodyContent').innerHTML='<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> '+document.getElementById('fileNumber').value+'</p><p><strong>التاريخ:</strong> '+currentDate+'</p><p><strong>المريض:</strong> '+name+'</p><p><strong>العمر:</strong> '+(document.getElementById('patientAge').value||'-')+'</p></div><div class="text-xs space-y-2 pt-2"><p><strong>نوع العمل:</strong> '+(document.getElementById('workType').value||'-')+'</p><p><strong>الأسنان:</strong> '+teeth+'</p><p><strong>الشكوى:</strong> '+(document.getElementById('complaint').value||'-')+'</p><p><strong>الخطة:</strong> '+(document.getElementById('treatmentPlan').value||'-')+'</p><p><strong>الزيارة القادمة:</strong> '+(document.getElementById('nextVisitDate').value||'-')+'</p>'+(userInfo?'<p class="text-[10px] text-gray-500 mt-2">'+userInfo+'</p>':'')+'</div><div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب</p><p>د. علي النقيب</p></div>'}
+function buildReportContent(){const name=document.getElementById('patientName').value;const teeth=selectedTeeth.length?selectedTeeth.join(', '):'لا يوجد';const userInfo=currentUser?'أُنشئ بواسطة: '+currentUser.fullName:'';document.getElementById('printBodyContent').innerHTML='<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> '+document.getElementById('fileNumber').value+'</p><p><strong>التاريخ:</strong> '+currentDate+'</p><p><strong>المريض:</strong> '+name+'</p><p><strong>العمر:</strong> '+(document.getElementById('patientAge').value||'-')+'</p></div><div class="text-xs space-y-2 pt-2"><p><strong>نوع العمل:</strong> '+(document.getElementById('workType').value||'-')+'</p><p><strong>الأسنان:</strong> '+teeth+'</p><p><strong>الشكوى:</strong> '+(document.getElementById('complaint').value||'-')+'</p><p><strong>الخطة:</strong> '+(document.getElementById('treatmentPlan').value||'-')+'</p><p><strong>الزيارة القادمة:</strong> '+(document.getElementById('nextVisitDate').value||'-')+'</p>'+(userInfo?'<p class="text-[10px] text-gray-500 mt-2">'+userInfo+'</p>':'')+'</div><div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب</p><p>د. علي النقيب</p></div>'}
 function buildInvoiceContent(){const name=document.getElementById('patientName').value;const total=parseFloat(document.getElementById('totalAmount').value)||0;const p1=parseFloat(document.getElementById('payment1').value)||0,p2=parseFloat(document.getElementById('payment2').value)||0,p3=parseFloat(document.getElementById('payment3').value)||0;const rem=total-(p1+p2+p3);document.getElementById('printBodyContent').innerHTML='<h3 class="font-bold text-base text-green-900 border-b pb-1">سند قبض</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> '+document.getElementById('fileNumber').value+'</p><p><strong>التاريخ:</strong> '+currentDate+'</p><p class="col-span-2"><strong>المريض:</strong> '+name+'</p></div><div class="text-xs space-y-2 pt-2 border-t"><p class="flex justify-between"><span>الإجمالي:</span><strong>'+total+' ريال</strong></p><p class="flex justify-between"><span>دفعة 1:</span><span>'+p1+'</span></p><p class="flex justify-between"><span>دفعة 2:</span><span>'+p2+'</span></p><p class="flex justify-between"><span>دفعة 3:</span><span>'+p3+'</span></p><hr><p class="flex justify-between text-sm font-extrabold"><span>المتبقي:</span><span class="text-red-600">'+rem+' ريال</span></p></div><div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>ختم العيادة</p><p>د. علي النقيب</p></div>'}
 function printReport(){const n=document.getElementById('patientName').value;if(!n){alert('أدخل الاسم');return}buildReportContent();const pA=document.getElementById('printableArea');pA.classList.remove('hidden');setTimeout(()=>{window.print();setTimeout(()=>pA.classList.add('hidden'),500)},300)}
 function printInvoice(){const n=document.getElementById('patientName').value;if(!n){alert('أدخل الاسم');return}buildInvoiceContent();const pA=document.getElementById('printableArea');pA.classList.remove('hidden');setTimeout(()=>{window.print();setTimeout(()=>pA.classList.add('hidden'),500)},300)}
 
-/* التقارير */
 async function openDailyReport(){const m=document.getElementById('dailyReportModal');m.classList.remove('hidden');m.classList.add('flex');const c=document.getElementById('dailyReportContent');c.innerHTML='...';try{const tk=getTodayKey();const snap=await db.collection('patients').where('dateKey','==',tk).get();if(snap.empty){c.innerHTML='<p class="text-center text-sm text-gray-500 py-6">📭 لا عمليات اليوم</p>';return}let rev=0,exp=0,cnt=0;snap.forEach(doc=>{const d=doc.data();cnt++;const f=d.financials||{};rev+=(parseFloat(f.payment1)||0)+(parseFloat(f.payment2)||0)+(parseFloat(f.payment3)||0);exp+=parseFloat(f.expense)||0});const net=rev-exp;c.innerHTML='<div class="bg-cyan-50 rounded-xl border-2 border-cyan-300 p-3"><p class="text-center text-xs text-cyan-700 font-bold mb-2">📅 '+tk+'</p><div class="grid grid-cols-2 gap-2"><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">الإيرادات</div><div class="text-lg font-extrabold text-emerald-600">'+rev+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">المصروفات</div><div class="text-lg font-extrabold text-red-600">'+exp+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">الصافي</div><div class="text-lg font-extrabold text-cyan-600">'+net+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">المرضى</div><div class="text-lg font-extrabold text-purple-600">'+cnt+'</div></div></div></div>'}catch(e){c.innerHTML='فشل'}}
 function closeDailyReport(){const m=document.getElementById('dailyReportModal');m.classList.add('hidden');m.classList.remove('flex')}
 
@@ -669,17 +515,15 @@ const diff=now.getDate()-day+(day===0?-6:1);
 const ws=new Date(now);ws.setDate(diff);ws.setHours(0,0,0,0);
 const wsKey=ws.getFullYear()+'-'+String(ws.getMonth()+1).padStart(2,'0')+'-'+String(ws.getDate()).padStart(2,'0');
 const snap=await db.collection('patients').where('dateKey','>=',wsKey).get();
-let rev=0,exp=0,cnt=0;
-const dayMap={};
+let rev=0,exp=0,cnt=0;const dayMap={};
 snap.forEach(doc=>{const d=doc.data();cnt++;const f=d.financials||{};const paid=(parseFloat(f.payment1)||0)+(parseFloat(f.payment2)||0)+(parseFloat(f.payment3)||0);const ex=parseFloat(f.expense)||0;rev+=paid;exp+=ex;const dk=d.dateKey||'?';if(!dayMap[dk])dayMap[dk]={rev:0,exp:0,cnt:0};dayMap[dk].rev+=paid;dayMap[dk].exp+=ex;dayMap[dk].cnt++});
 const net=rev-exp;
 const dayNames=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 let h='<div class="bg-teal-50 rounded-xl border-2 border-teal-300 p-3"><p class="text-center text-xs text-teal-700 font-bold mb-2">📅 من '+wsKey+'</p><div class="grid grid-cols-2 gap-2"><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">الإيرادات</div><div class="text-lg font-extrabold text-emerald-600">'+rev+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">المصروفات</div><div class="text-lg font-extrabold text-red-600">'+exp+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">الصافي</div><div class="text-lg font-extrabold text-teal-600">'+net+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">المرضى</div><div class="text-lg font-extrabold text-purple-600">'+cnt+'</div></div></div></div>';
 h+='<div class="bg-white rounded-xl border p-3 mt-2"><p class="font-bold text-xs mb-2">📆 التفصيل اليومي:</p>';
 Object.keys(dayMap).sort().forEach(dk=>{const d=dayMap[dk];const dt=new Date(dk);const dn=dayNames[dt.getDay()]||'';h+='<div class="bg-gray-50 rounded-lg p-2 mb-1 text-[11px] flex justify-between"><div><p class="font-bold">'+dn+' '+dk+'</p><p class="text-[9px] text-gray-500">'+d.cnt+' مريض</p></div><div class="text-right"><p class="text-emerald-600 font-bold">+'+d.rev+'</p>'+(d.exp>0?'<p class="text-red-600 text-[9px]">-'+d.exp+'</p>':'')+'</div></div>'});
-h+='</div>';
-c.innerHTML=h
-}catch(e){c.innerHTML='فشل: '+e.message}
+h+='</div>';c.innerHTML=h
+}catch(e){c.innerHTML='فشل'}
 }
 function closeWeeklyReport(){const m=document.getElementById('weeklyReportModal');m.classList.add('hidden');m.classList.remove('flex')}
 
@@ -687,11 +531,10 @@ function openMonthlyReport(){const m=document.getElementById('monthlyReportModal
 function closeMonthlyReport(){const m=document.getElementById('monthlyReportModal');m.classList.add('hidden');m.classList.remove('flex')}
 async function generateMonthlyReport(){const mk=document.getElementById('reportMonth').value;if(!mk){alert('اختر');return}const c=document.getElementById('monthlyReportContent');c.innerHTML='...';try{const snap=await db.collection('patients').where('dateKey','>=',mk+'-01').where('dateKey','<',mk+'-32').get();if(snap.empty){c.innerHTML='<p class="text-center text-sm text-gray-500 py-6">📭 لا بيانات</p>';return}let tr=0,te=0,tp=0;snap.forEach(doc=>{const d=doc.data();tp++;const f=d.financials||{};tr+=(parseFloat(f.payment1)||0)+(parseFloat(f.payment2)||0)+(parseFloat(f.payment3)||0);te+=parseFloat(f.expense)||0});const net=tr-te;c.innerHTML='<div class="bg-purple-50 rounded-xl border-2 border-purple-300 p-3"><p class="text-center text-xs text-purple-700 font-bold mb-2">📅 '+mk+'</p><div class="grid grid-cols-2 gap-2"><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">الإيرادات</div><div class="text-xl font-extrabold text-emerald-600">'+tr+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">المصروفات</div><div class="text-xl font-extrabold text-red-600">'+te+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">الصافي</div><div class="text-xl font-extrabold text-purple-600">'+net+'</div></div><div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs">المرضى</div><div class="text-xl font-extrabold text-indigo-600">'+tp+'</div></div></div></div>'}catch(e){c.innerHTML='فشل'}}
 
-async function openAllExpenses(){const m=document.getElementById('dailyReportModal');m.classList.remove('hidden');m.classList.add('flex');const c=document.getElementById('dailyReportContent');c.innerHTML='...';try{const snap=await db.collection('patients').where('dateKey','>=',getCurrentMonthKey()+'-01').get();const exps=[];let total=0;snap.forEach(doc=>{const d=doc.data();const f=d.financials||{};const ex=parseFloat(f.expense)||0;if(ex>0){exps.push({day:d.dateKey,amount:ex,type:f.expenseType||'?',by:d.createdByName||d.createdBy});total+=ex}});if(!exps.length){c.innerHTML='<p class="text-center text-sm text-gray-500 py-6">📭 لا مصروفات</p>';return}exps.sort((a,b)=>b.day.localeCompare(a.day));let h='<div class="bg-orange-50 border border-orange-200 rounded-xl p-3"><p class="text-center text-xs text-orange-800 font-bold">💸 مصروفات '+getCurrentMonthKey()+'</p><p class="text-center text-2xl font-extrabold text-red-600 mt-1">'+total+' ريال</p></div><div class="space-y-1 max-h-96 overflow-y-auto mt-2">';exps.forEach((e,i)=>{h+='<div class="bg-white rounded-lg border p-2 flex justify-between text-xs"><div><p class="font-bold">'+(i+1)+'. '+e.type+'</p><p class="text-[10px] text-gray-500">'+e.day+' • '+e.by+'</p></div><span class="text-red-600 font-bold">'+e.amount+'</span></div>'});h+='</div>';c.innerHTML=h}catch(e){c.innerHTML='فشل'}}
+async function openAllExpenses(){const m=document.getElementById('dailyReportModal');m.classList.remove('hidden');m.classList.add('flex');const c=document.getElementById('dailyReportContent');c.innerHTML='...';try{const snap=await db.collection('patients').where('dateKey','>=',getCurrentMonthKey()+'-01').get();const exps=[];let total=0;snap.forEach(doc=>{const d=doc.data();const f=d.financials||{};const ex=parseFloat(f.expense)||0;if(ex>0){exps.push({day:d.dateKey,amount:ex,type:f.expenseType||'?',by:d.createdByName||d.createdBy});total+=ex}});if(!exps.length){c.innerHTML='<p class="text-center text-sm text-gray-500 py-6">📭 لا مصروفات</p>';return}exps.sort((a,b)=>b.day.localeCompare(a.day));let h='<div class="bg-orange-50 border border-orange-200 rounded-xl p-3"><p class="text-center text-xs text-orange-800 font-bold">💸 مصروفات '+getCurrentMonthKey()+'</p><p class="text-center text-2xl font-extrabold text-red-600 mt-1">'+total+'</p></div><div class="space-y-1 max-h-96 overflow-y-auto mt-2">';exps.forEach((e,i)=>{h+='<div class="bg-white rounded-lg border p-2 flex justify-between text-xs"><div><p class="font-bold">'+(i+1)+'. '+e.type+'</p><p class="text-[10px] text-gray-500">'+e.day+' • '+e.by+'</p></div><span class="text-red-600 font-bold">'+e.amount+'</span></div>'});h+='</div>';c.innerHTML=h}catch(e){c.innerHTML='فشل'}}
 
 async function closeDay(){if(!currentUser||currentUser.role!=='admin'){alert('فقط المدير');return}if(!confirm('إغلاق اليوم؟'))return;try{const tk=getTodayKey();const snap=await db.collection('patients').where('dateKey','==',tk).get();let rev=0,exp=0,cnt=0;snap.forEach(doc=>{const d=doc.data();cnt++;const f=d.financials||{};rev+=(parseFloat(f.payment1)||0)+(parseFloat(f.payment2)||0)+(parseFloat(f.payment3)||0);exp+=parseFloat(f.expense)||0});await db.collection('dailyReports').doc(tk).set({dateKey:tk,revenue:rev,expenses:exp,net:rev-exp,patientCount:cnt,closedBy:currentUser.username,closedAt:firebase.firestore.FieldValue.serverTimestamp()});alert('✅\n\nإيرادات: '+rev+'\nمصروفات: '+exp+'\nصافي: '+(rev-exp)+'\nمرضى: '+cnt)}catch(e){alert('فشل')}}
 
-/* المخطط */
 let revenueChartInstance=null;
 async function openRevenueChart(){
 const m=document.getElementById('revenueChartModal');m.classList.remove('hidden');m.classList.add('flex');
@@ -709,7 +552,6 @@ revenueChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'ا
 }
 function closeRevenueChart(){const m=document.getElementById('revenueChartModal');m.classList.add('hidden');m.classList.remove('flex')}
 
-/* أرشيف الصور */
 async function openImagesArchive(){
 const m=document.getElementById('imagesArchiveModal');m.classList.remove('hidden');m.classList.add('flex');
 const c=document.getElementById('imagesArchiveContent');c.innerHTML='...';
@@ -729,11 +571,10 @@ let list=(window.__allArchiveImages||[]).slice();
 if(search)list=list.filter(img=>(img.patientName||'').toLowerCase().includes(search)||(img.fileNumber||'').toLowerCase().includes(search));
 if(type!=='all')list=list.filter(img=>img.type===type);
 if(!list.length){c.innerHTML='<p class="col-span-5 text-center text-sm text-gray-500 py-6">📭 لا صور</p>';return}
-c.innerHTML=list.map(img=>`<div class="bg-white border rounded-lg overflow-hidden"><img src="${img.dataUrl||img.mergedUrl||''}" class="w-full h-28 object-cover cursor-pointer" onclick="openArchiveLightbox('${img.dataUrl||img.mergedUrl||''}')"><div class="p-1.5"><p class="text-[10px] font-bold truncate">${escapeHtml(img.patientName||'')}</p><p class="text-[8px] text-gray-500">${img.type} • ${img.date||''}</p></div></div>`).join('')
+c.innerHTML=list.map(img=>`<div class="bg-white border rounded-lg overflow-hidden"><img src="${img.dataUrl||''}" class="w-full h-28 object-cover cursor-pointer" onclick="openArchiveLightbox('${img.dataUrl||''}')"><div class="p-1.5"><p class="text-[10px] font-bold truncate">${escapeHtml(img.patientName||'')}</p><p class="text-[8px] text-gray-500">${img.type} • ${img.date||''}</p></div></div>`).join('')
 }
 function openArchiveLightbox(url){document.getElementById('lightboxImg').src=url;const lb=document.getElementById('lightbox');lb.classList.remove('hidden');lb.classList.add('flex')}
 
-/* Excel */
 async function exportPatientsToExcel(){
 try{
 const snap=await db.collection('patients').get();
@@ -749,66 +590,22 @@ alert('✅ تم تصدير '+data.length+' مريض')
 }catch(e){alert('فشل: '+e.message)}
 }
 
-/* ═══════════════════════════════════════════════════════════
-   💬 الدردشة (فردية + جماعية)
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════════ الدردشة ═══════════ */
 let currentChatWith=null,currentChatGroup=null,chatRefreshInterval=null,lastMessageCounts={};
-
 function getChatId(u1,u2){return [u1,u2].sort().join('__')}
 function getGroupId(){return 'grp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)}
-
-function startChatAutoRefresh(){
-if(chatRefreshInterval)return;
-chatRefreshInterval=setInterval(async()=>{
-if(currentChatWith&&!document.getElementById('chatWindowModal').classList.contains('hidden'))await silentReloadMessages();
-if(currentChatGroup&&!document.getElementById('chatWindowModal').classList.contains('hidden'))await silentReloadGroupMessages();
-await updateChatBadge()
-},3000)
-}
+function startChatAutoRefresh(){if(chatRefreshInterval)return;chatRefreshInterval=setInterval(async()=>{if(currentChatWith&&!document.getElementById('chatWindowModal').classList.contains('hidden'))await silentReloadMessages();if(currentChatGroup&&!document.getElementById('chatWindowModal').classList.contains('hidden'))await silentReloadGroupMessages();await updateChatBadge()},3000)}
 function stopChatAutoRefresh(){if(chatRefreshInterval){clearInterval(chatRefreshInterval);chatRefreshInterval=null}}
 
-async function silentReloadMessages(){
-if(!currentChatWith)return;
-const chatId=getChatId(currentUser.username,currentChatWith.username);
-try{
-const snap=await db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp','asc').limit(200).get();
-const c=document.getElementById('chatMessages');
-if(snap.size===c.querySelectorAll(':scope > .flex').length)return;
-let html='';snap.forEach(doc=>{const m=doc.data();const isMe=m.sender===currentUser.username;const time=m.timestamp?new Date(m.timestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'}):'';html+=`<div class="flex ${isMe?'justify-end':'justify-start'} mb-2"><div class="max-w-[75%] ${isMe?'bg-blue-600 text-white rounded-br-sm':'bg-gray-100 text-gray-800 rounded-bl-sm'} rounded-2xl px-3 py-2 shadow-sm">${!isMe?'<p class="text-[9px] font-bold text-blue-700 mb-0.5">'+escapeHtml(m.senderName||m.sender)+'</p>':''}<p class="text-xs whitespace-pre-wrap break-words">${escapeHtml(m.text)}</p><p class="text-[9px] ${isMe?'text-blue-100':'text-gray-500'} mt-1 text-left" dir="ltr">${time}</p></div></div>`});
-c.innerHTML=html;c.scrollTop=c.scrollHeight;await markMessagesAsRead()
-}catch(e){}
-}
+async function silentReloadMessages(){if(!currentChatWith)return;const chatId=getChatId(currentUser.username,currentChatWith.username);try{const snap=await db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp','asc').limit(200).get();const c=document.getElementById('chatMessages');if(snap.size===c.querySelectorAll(':scope > .flex').length)return;let html='';snap.forEach(doc=>{const m=doc.data();const isMe=m.sender===currentUser.username;const time=m.timestamp?new Date(m.timestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'}):'';html+=`<div class="flex ${isMe?'justify-end':'justify-start'} mb-2"><div class="max-w-[75%] ${isMe?'bg-blue-600 text-white rounded-br-sm':'bg-gray-100 text-gray-800 rounded-bl-sm'} rounded-2xl px-3 py-2 shadow-sm">${!isMe?'<p class="text-[9px] font-bold text-blue-700 mb-0.5">'+escapeHtml(m.senderName||m.sender)+'</p>':''}<p class="text-xs whitespace-pre-wrap break-words">${escapeHtml(m.text)}</p><p class="text-[9px] ${isMe?'text-blue-100':'text-gray-500'} mt-1 text-left" dir="ltr">${time}</p></div></div>`});c.innerHTML=html;c.scrollTop=c.scrollHeight;await markMessagesAsRead()}catch(e){}}
 
-async function silentReloadGroupMessages(){
-if(!currentChatGroup)return;
-const gid=currentChatGroup.id;
-try{
-const snap=await db.collection('groups').doc(gid).collection('messages').orderBy('timestamp','asc').limit(200).get();
-const c=document.getElementById('chatMessages');
-if(snap.size===c.querySelectorAll(':scope > .flex').length)return;
-let html='';snap.forEach(doc=>{const m=doc.data();const isMe=m.sender===currentUser.username;const time=m.timestamp?new Date(m.timestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'}):'';html+=`<div class="flex ${isMe?'justify-end':'justify-start'} mb-2"><div class="max-w-[80%] ${isMe?'bg-blue-600 text-white rounded-br-sm':'bg-gray-100 text-gray-800 rounded-bl-sm'} rounded-2xl px-3 py-2 shadow-sm">${!isMe?'<p class="text-[9px] font-bold text-blue-700 mb-0.5">'+escapeHtml(m.senderName||m.sender)+'</p>':''}<p class="text-xs whitespace-pre-wrap break-words">${escapeHtml(m.text)}</p><p class="text-[9px] ${isMe?'text-blue-100':'text-gray-500'} mt-1 text-left" dir="ltr">${time}</p></div></div>`});
-c.innerHTML=html;c.scrollTop=c.scrollHeight;await markGroupMessagesAsRead(gid)
-}catch(e){}
-}
+async function silentReloadGroupMessages(){if(!currentChatGroup)return;const gid=currentChatGroup.id;try{const snap=await db.collection('groups').doc(gid).collection('messages').orderBy('timestamp','asc').limit(200).get();const c=document.getElementById('chatMessages');if(snap.size===c.querySelectorAll(':scope > .flex').length)return;let html='';snap.forEach(doc=>{const m=doc.data();const isMe=m.sender===currentUser.username;const time=m.timestamp?new Date(m.timestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'}):'';html+=`<div class="flex ${isMe?'justify-end':'justify-start'} mb-2"><div class="max-w-[80%] ${isMe?'bg-blue-600 text-white rounded-br-sm':'bg-gray-100 text-gray-800 rounded-bl-sm'} rounded-2xl px-3 py-2 shadow-sm">${!isMe?'<p class="text-[9px] font-bold text-blue-700 mb-0.5">'+escapeHtml(m.senderName||m.sender)+'</p>':''}<p class="text-xs whitespace-pre-wrap break-words">${escapeHtml(m.text)}</p><p class="text-[9px] ${isMe?'text-blue-100':'text-gray-500'} mt-1 text-left" dir="ltr">${time}</p></div></div>`});c.innerHTML=html;c.scrollTop=c.scrollHeight;await markGroupMessagesAsRead(gid)}catch(e){}}
 
 async function openChatList(){const m=document.getElementById('chatListModal');m.classList.remove('hidden');m.classList.add('flex');await loadChatList()}
 function closeChatList(){const m=document.getElementById('chatListModal');m.classList.add('hidden');m.classList.remove('flex')}
-
 async function openChat(username,fullName){currentChatWith={username,fullName};currentChatGroup=null;closeChatList();const m=document.getElementById('chatWindowModal');m.classList.remove('hidden');m.classList.add('flex');document.getElementById('chatWithName').textContent=fullName;document.getElementById('chatInput').placeholder='اكتب...';await loadMessages();await markMessagesAsRead();updateChatBadge()}
 function closeChatWindow(){currentChatWith=null;currentChatGroup=null;const m=document.getElementById('chatWindowModal');m.classList.add('hidden');m.classList.remove('flex');document.getElementById('chatInput').placeholder='اكتب...';updateChatBadge()}
-
-async function loadMessages(){
-if(!currentChatWith)return;
-const chatId=getChatId(currentUser.username,currentChatWith.username);
-const c=document.getElementById('chatMessages');c.innerHTML='...';
-try{
-const snap=await db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp','asc').limit(200).get();
-if(snap.empty){c.innerHTML='<div class="text-center text-xs text-gray-400 py-8">📭 لا رسائل</div>';return}
-let html='';snap.forEach(doc=>{const m=doc.data();const isMe=m.sender===currentUser.username;const time=m.timestamp?new Date(m.timestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'}):'';html+=`<div class="flex ${isMe?'justify-end':'justify-start'} mb-2"><div class="max-w-[75%] ${isMe?'bg-blue-600 text-white rounded-br-sm':'bg-gray-100 text-gray-800 rounded-bl-sm'} rounded-2xl px-3 py-2 shadow-sm">${!isMe?'<p class="text-[9px] font-bold text-blue-700 mb-0.5">'+escapeHtml(m.senderName||m.sender)+'</p>':''}<p class="text-xs whitespace-pre-wrap break-words">${escapeHtml(m.text)}</p><p class="text-[9px] ${isMe?'text-blue-100':'text-gray-500'} mt-1 text-left" dir="ltr">${time}</p></div></div>`});
-c.innerHTML=html;setTimeout(()=>{c.scrollTop=c.scrollHeight},50)
-}catch(e){c.innerHTML='فشل'}
-}
-
+async function loadMessages(){if(!currentChatWith)return;const chatId=getChatId(currentUser.username,currentChatWith.username);const c=document.getElementById('chatMessages');c.innerHTML='...';try{const snap=await db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp','asc').limit(200).get();if(snap.empty){c.innerHTML='<div class="text-center text-xs text-gray-400 py-8">📭 لا رسائل</div>';return}let html='';snap.forEach(doc=>{const m=doc.data();const isMe=m.sender===currentUser.username;const time=m.timestamp?new Date(m.timestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'}):'';html+=`<div class="flex ${isMe?'justify-end':'justify-start'} mb-2"><div class="max-w-[75%] ${isMe?'bg-blue-600 text-white rounded-br-sm':'bg-gray-100 text-gray-800 rounded-bl-sm'} rounded-2xl px-3 py-2 shadow-sm">${!isMe?'<p class="text-[9px] font-bold text-blue-700 mb-0.5">'+escapeHtml(m.senderName||m.sender)+'</p>':''}<p class="text-xs whitespace-pre-wrap break-words">${escapeHtml(m.text)}</p><p class="text-[9px] ${isMe?'text-blue-100':'text-gray-500'} mt-1 text-left" dir="ltr">${time}</p></div></div>`});c.innerHTML=html;setTimeout(()=>{c.scrollTop=c.scrollHeight},50)}catch(e){c.innerHTML='فشل'}}
 async function markMessagesAsRead(){if(!currentChatWith)return;const chatId=getChatId(currentUser.username,currentChatWith.username);try{const snap=await db.collection('chats').doc(chatId).collection('messages').where('sender','==',currentChatWith.username).get();const batch=db.batch();let ch=0;snap.forEach(doc=>{const m=doc.data();if(!m.readBy||!m.readBy.includes(currentUser.username)){const rb=m.readBy||[];rb.push(currentUser.username);batch.update(doc.ref,{readBy:rb});ch++}});if(ch>0)await batch.commit()}catch(e){}}
 
 async function openCreateGroupModal(){try{const snap=await db.collection('users').get();const items=[];snap.forEach(doc=>{const u=doc.data();if(u.username===currentUser.username)return;if(u.active===false)return;const icon=u.role==='admin'?'👑':u.role==='doctor'?'👨‍⚕️':'👨‍💼';items.push(`<label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer"><input type="checkbox" class="group-member-cb" value="${u.username}"><span class="text-lg">${icon}</span><span class="text-xs font-bold">${escapeHtml(u.fullName||u.username)}</span></label>`)});document.getElementById('groupMembersList').innerHTML=items.join('')||'<p class="text-center text-xs">لا يوجد</p>';document.getElementById('newGroupName').value='';const m=document.getElementById('createGroupModal');m.classList.remove('hidden');m.classList.add('flex')}catch(e){alert('فشل')}}
@@ -834,10 +631,7 @@ html+=`<button onclick="closeChatList();openCreateGroupModal()" class="w-full bg
 const groups=await loadUserGroups();
 if(groups.length){
 html+='<p class="text-[10px] font-bold text-indigo-700 px-1 pt-1">👥 مجموعاتي:</p>';
-for(const g of groups){
-const timeStr=g.lastTimestamp?new Date(g.lastTimestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'}):'';
-const last=(g.lastMessage||'لا رسائل').substring(0,40);
-let unread=0;try{const ms=await db.collection('groups').doc(g.id).collection('messages').where('sender','!=',currentUser.username).get();ms.forEach(m=>{const d=m.data();if(!d.readBy||!d.readBy.includes(currentUser.username))unread++})}catch(_){}
+for(const g of groups){const timeStr=g.lastTimestamp?new Date(g.lastTimestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'}):'';const last=(g.lastMessage||'لا رسائل').substring(0,40);let unread=0;try{const ms=await db.collection('groups').doc(g.id).collection('messages').where('sender','!=',currentUser.username).get();ms.forEach(m=>{const d=m.data();if(!d.readBy||!d.readBy.includes(currentUser.username))unread++})}catch(_){}
 html+=`<button onclick="openGroupChat('${g.id}')" class="w-full bg-indigo-50 border border-indigo-200 rounded-lg p-3 flex items-center gap-3 text-right"><div class="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center text-lg flex-shrink-0">👥</div><div class="flex-1 min-w-0"><div class="flex justify-between mb-0.5"><p class="text-xs font-bold truncate">${escapeHtml(g.name)}</p><span class="text-[9px] text-gray-400">${timeStr}</span></div><div class="flex justify-between gap-2"><p class="text-[10px] text-gray-500 truncate flex-1">${escapeHtml(last)}</p>${unread>0?`<span class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">${unread}</span>`:''}</div><p class="text-[9px] text-indigo-500 mt-0.5">${g.members.length} أعضاء</p></div></button>`
 }
 html+='<div class="h-px bg-gray-200 my-2"></div>'
@@ -847,11 +641,7 @@ const allUsers=[];
 usersSnap.forEach(doc=>{const u=doc.data();if(u.username!==currentUser.username&&u.active!==false)allUsers.push({username:u.username||doc.id,fullName:u.fullName||doc.id,role:u.role||'employee'})});
 if(allUsers.length){
 html+='<p class="text-[10px] font-bold text-blue-700 px-1 pt-1">💬 محادثات فردية:</p>';
-for(const t of allUsers){
-const chatId=getChatId(currentUser.username,t.username);
-const chatDoc=await db.collection('chats').doc(chatId).get();
-let lastMsg='ابدأ محادثة',unread=0,timeStr='';
-if(chatDoc.exists){const d=chatDoc.data();lastMsg=d.lastMessage||'لا رسائل';if(d.lastTimestamp)timeStr=new Date(d.lastTimestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'});const ms=await db.collection('chats').doc(chatId).collection('messages').where('sender','==',t.username).get();ms.forEach(m=>{const md=m.data();if(!md.readBy||!md.readBy.includes(currentUser.username))unread++})}
+for(const t of allUsers){const chatId=getChatId(currentUser.username,t.username);const chatDoc=await db.collection('chats').doc(chatId).get();let lastMsg='ابدأ محادثة',unread=0,timeStr='';if(chatDoc.exists){const d=chatDoc.data();lastMsg=d.lastMessage||'لا رسائل';if(d.lastTimestamp)timeStr=new Date(d.lastTimestamp.seconds*1000).toLocaleTimeString('ar-YE',{hour:'2-digit',minute:'2-digit'});const ms=await db.collection('chats').doc(chatId).collection('messages').where('sender','==',t.username).get();ms.forEach(m=>{const md=m.data();if(!md.readBy||!md.readBy.includes(currentUser.username))unread++})}
 const icon=t.role==='admin'?'👑':t.role==='doctor'?'👨‍⚕️':'👨‍💼';
 html+=`<button onclick="openChat('${t.username}','${escapeHtml(t.fullName)}')" class="w-full bg-white border rounded-lg p-3 flex items-center gap-3 text-right"><div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-lg flex-shrink-0">${icon}</div><div class="flex-1 min-w-0"><div class="flex justify-between mb-0.5"><p class="text-xs font-bold truncate">${escapeHtml(t.fullName)}</p><span class="text-[9px] text-gray-400">${timeStr}</span></div><div class="flex justify-between gap-2"><p class="text-[10px] text-gray-500 truncate flex-1">${escapeHtml(lastMsg.length>40?lastMsg.substring(0,40)+'...':lastMsg)}</p>${unread>0?`<span class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">${unread}</span>`:''}</div></div></button>`
 }
@@ -867,17 +657,9 @@ const badge=document.getElementById('chatUnreadBadge');if(!badge||!currentUser)r
 let total=0;
 try{
 const groups=await loadUserGroups();
-for(const g of groups){
-const ms=await db.collection('groups').doc(g.id).collection('messages').where('sender','!=',currentUser.username).get();
-ms.forEach(m=>{const d=m.data();if(!d.readBy||!d.readBy.includes(currentUser.username)){total++;const key='grp_'+g.id+'_'+m.id;if(!lastMessageCounts[key]){lastMessageCounts[key]=1;showNotification('💬 رسالة جديدة في '+g.name,(d.text||'').substring(0,100))}}})
-}
+for(const g of groups){const ms=await db.collection('groups').doc(g.id).collection('messages').where('sender','!=',currentUser.username).get();ms.forEach(m=>{const d=m.data();if(!d.readBy||!d.readBy.includes(currentUser.username)){total++;const key='grp_'+g.id+'_'+m.id;if(!lastMessageCounts[key]){lastMessageCounts[key]=1;showNotification('💬 رسالة جديدة في '+g.name,(d.text||'').substring(0,100))}}})}
 const usersSnap=await db.collection('users').get();
-for(const doc of usersSnap.docs){
-const u=doc.data();if(u.username===currentUser.username)continue;if(u.active===false)continue;
-const chatId=getChatId(currentUser.username,u.username);
-const ms=await db.collection('chats').doc(chatId).collection('messages').where('sender','==',u.username).get();
-ms.forEach(m=>{const md=m.data();if(!md.readBy||!md.readBy.includes(currentUser.username)){total++;const key='chat_'+chatId+'_'+m.id;if(!lastMessageCounts[key]){lastMessageCounts[key]=1;if(!currentChatWith)showNotification('💬 '+escapeHtml(md.senderName||u.fullName),(md.text||'').substring(0,100))}}})
-}
+for(const doc of usersSnap.docs){const u=doc.data();if(u.username===currentUser.username)continue;if(u.active===false)continue;const chatId=getChatId(currentUser.username,u.username);const ms=await db.collection('chats').doc(chatId).collection('messages').where('sender','==',u.username).get();ms.forEach(m=>{const md=m.data();if(!md.readBy||!md.readBy.includes(currentUser.username)){total++;const key='chat_'+chatId+'_'+m.id;if(!lastMessageCounts[key]){lastMessageCounts[key]=1;if(!currentChatWith)showNotification('💬 '+escapeHtml(md.senderName||u.fullName),(md.text||'').substring(0,100))}}})}
 if(total>0){badge.textContent=total>99?'99+':total;badge.classList.remove('hidden')}else badge.classList.add('hidden')
 }catch(e){}
 }
