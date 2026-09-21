@@ -396,9 +396,23 @@ function logout() {
 function applyPermissions() {
   if (!currentUser) return;
   const role = currentUser.role;
-  const hideElements = (ids) => ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-  if (role === 'employee') hideElements(['aiAssistantSection', 'imageAnalysisSection', 'proportionTablesSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']);
-  else if (role === 'doctor') hideElements(['financialSection', 'revenueSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']);
+  const hide = (ids) => ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  
+  if (role === 'employee') {
+    // موظف: يرى كل شيء ما عدا التشخيص والذكاء الاصطناعي وإدارة المستخدمين
+    hide([
+      'aiAssistantSection',
+      'imageAnalysisSection',
+      'proportionTablesSection',
+      'adminPanelSection'
+    ]);
+  } else if (role === 'doctor') {
+    // طبيب: يرى كل شيء ما عدا إدارة المستخدمين
+    hide([
+      'adminPanelSection'
+    ]);
+  }
+  // admin: يرى كل شيء (لا إخفاء)
 }
 function updateUserBar() {
   if (!currentUser) return;
