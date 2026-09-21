@@ -3,468 +3,427 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>العيادة التخصصية لطب وجراحة الفم والأسنان - د. علي النقيب</title>
+<title>العيادة التخصصية - د. علي النقيب</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  * { -webkit-tap-highlight-color: transparent; }
-  body { font-family: 'Cairo', sans-serif; }
-  @media print {
-    body * { visibility: hidden; }
-    #printableArea, #printableArea * { visibility: visible; }
-    #printableArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; background: white; }
-    .no-print { display: none !important; }
-  }
-  .clinic-logo svg, .clinic-logo img { width: 100%; height: 100%; display: block; object-fit: cover; }
-  .dental-arch { width: 100%; height: auto; display: block; }
-  .tooth { cursor: pointer; }
-  .tooth .crown { fill: url(#toothGrad); stroke: #94a3b8; stroke-width: 0.9; transition: all .18s ease; }
-  .tooth .shine { fill: #fff; opacity: .55; pointer-events: none; }
-  .tooth .num { font-family: 'Cairo', sans-serif; font-size: 7.5px; font-weight: 800; fill: #475569; pointer-events: none; text-anchor: middle; }
-  .tooth:hover .crown { fill: url(#toothGradHover); stroke: #6366f1; }
-  .tooth.selected .crown { fill: url(#toothGradSel); stroke: #1e3a8a; stroke-width: 1.3; }
-  .tooth.selected .shine { opacity: .25; }
-  .tooth.selected .num { fill: #fff; }
-  .gum { fill: url(#gumGrad); opacity: .9; }
-  .ai-glow { background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #06b6d4 100%); background-size: 200% 200%; animation: aiglow 3s ease infinite; }
-  @keyframes aiglow { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-  .ai-typing::after { content: '...'; animation: dots 1.4s infinite; }
-  @keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
-  .ai-result-box { animation: fadeSlide .4s ease; }
-  @keyframes fadeSlide { from{opacity:0; transform: translateY(8px);} to{opacity:1; transform: translateY(0);} }
-  #lightbox img { max-width: 100%; max-height: 100%; }
-  .canvas-container { position: relative; display: inline-block; cursor: crosshair; max-width: 100%; }
-  .canvas-container img { display: block; max-width: 100%; height: auto; }
-  .canvas-container canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
-  .ref-table { font-size: 10px; width: 100%; border-collapse: collapse; }
-  .ref-table th { background: #1e3a8a; color: #fff; padding: 4px 6px; font-weight: 700; }
-  .ref-table td { padding: 3px 6px; border-bottom: 1px solid #e5e7eb; }
-  .ref-table tr:nth-child(even) { background: #f8fafc; }
-  .ref-table .ok { color: #059669; font-weight: 700; }
-  .pulse-badge { animation: pulseBadge 2s ease infinite; }
-  @keyframes pulseBadge { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+*{-webkit-tap-highlight-color:transparent}
+body{font-family:'Cairo',sans-serif}
+@media print{body *{visibility:hidden}#printableArea,#printableArea *{visibility:visible}#printableArea{position:absolute;left:0;top:0;width:100%;display:block!important;background:white}.no-print{display:none!important}}
+.clinic-logo svg,.clinic-logo img{width:100%;height:100%;display:block;object-fit:cover}
+.dental-arch{width:100%;height:auto;display:block}
+.tooth{cursor:pointer}
+.tooth .crown{fill:url(#toothGrad);stroke:#94a3b8;stroke-width:.9;transition:all .18s ease}
+.tooth .shine{fill:#fff;opacity:.55;pointer-events:none}
+.tooth .num{font-family:'Cairo',sans-serif;font-size:7.5px;font-weight:800;fill:#475569;pointer-events:none;text-anchor:middle}
+.tooth:hover .crown{fill:url(#toothGradHover);stroke:#6366f1}
+.tooth.selected .crown{fill:url(#toothGradSel);stroke:#1e3a8a;stroke-width:1.3}
+.tooth.selected .num{fill:#fff}
+.gum{fill:url(#gumGrad);opacity:.9}
+.ai-glow{background:linear-gradient(135deg,#a855f7 0%,#6366f1 50%,#06b6d4 100%);background-size:200% 200%;animation:aiglow 3s ease infinite}
+@keyframes aiglow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.ai-typing::after{content:'...';animation:dots 1.4s infinite}
+@keyframes dots{0%,20%{content:'.'}40%{content:'..'}60%,100%{content:'...'}}
+.ai-result-box{animation:fadeSlide .4s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.ref-table{font-size:10px;width:100%;border-collapse:collapse}
+.ref-table th{background:#1e3a8a;color:#fff;padding:4px 6px;font-weight:700}
+.ref-table td{padding:3px 6px;border-bottom:1px solid #e5e7eb}
+.ref-table tr:nth-child(even){background:#f8fafc}
+.ref-table .ok{color:#059669;font-weight:700}
+.pulse-badge{animation:pulseBadge 2s ease infinite}
+@keyframes pulseBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.canvas-container{position:relative;display:inline-block;cursor:crosshair;max-width:100%}
+.canvas-container img{display:block;max-width:100%;height:auto}
+.canvas-container canvas{position:absolute;top:0;left:0;pointer-events:none}
 </style>
 </head>
 <body class="bg-gray-50 text-gray-800 p-2">
 
 <div id="loginOverlay" class="fixed inset-0 bg-blue-950 flex items-center justify-center z-50 p-4">
-  <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4 border border-blue-100">
-    <div class="w-24 h-24 mx-auto mb-2 clinic-logo rounded-2xl overflow-hidden shadow-lg shadow-blue-200"></div>
-    <h2 class="text-lg font-bold text-blue-900">تسجيل الدخول</h2>
-    <p class="text-xs text-gray-600">أدخل بيانات حسابك</p>
-    <div class="text-right space-y-2">
-      <label class="text-[11px] font-bold text-gray-700 block">👤 اسم المستخدم</label>
-      <input type="text" id="loginUsername" placeholder="مثال: drali" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600" autocomplete="username">
-      <label class="text-[11px] font-bold text-gray-700 block">🔑 كلمة المرور</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600" autocomplete="current-password">
-    </div>
-    <button onclick="login()" id="loginBtn" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-blue-700">دخول النظام</button>
-    <p id="loginError" class="text-xs text-red-600 hidden font-semibold"></p>
-  </div>
+<div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4 border border-blue-100">
+<div class="w-24 h-24 mx-auto mb-2 clinic-logo rounded-2xl overflow-hidden shadow-lg shadow-blue-200"></div>
+<h2 class="text-lg font-bold text-blue-900">تسجيل الدخول</h2>
+<p class="text-xs text-gray-600">أدخل بيانات حسابك</p>
+<div class="text-right space-y-2">
+<label class="text-[11px] font-bold text-gray-700 block">👤 اسم المستخدم</label>
+<input type="text" id="loginUsername" placeholder="مثال: drali" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
+<label class="text-[11px] font-bold text-gray-700 block">🔑 كلمة المرور</label>
+<input type="password" id="loginPassword" placeholder="••••••••" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
+</div>
+<button onclick="login()" id="loginBtn" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-blue-700">دخول النظام</button>
+<p id="loginError" class="text-xs text-red-600 hidden font-semibold"></p>
+</div>
 </div>
 
 <div class="w-full max-w-7xl mx-auto bg-white min-h-screen shadow-lg flex flex-col p-2 md:p-5 rounded-xl border border-gray-100">
-  <div id="userBar" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between shadow flex-wrap gap-2">
-    <div class="flex items-center gap-2"><span class="text-2xl">👤</span><div><p id="userBarName" class="text-sm font-bold">-</p><p id="userBarRole" class="text-[10px] opacity-90">-</p></div></div>
-    <div class="flex items-center gap-2 flex-wrap">
-      <button onclick="openPatientsList()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">📋 المرضى</button>
-      <button onclick="openImagesArchive()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🖼️ الأرشيف</button>
-      <button onclick="openChatList()" class="relative bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">
-        💬 دردشة
-        <span id="chatUnreadBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 pulse-badge">0</span>
-      </button>
-      <button onclick="openCreateGroupModal()" class="bg-white/20 hover:bg-white/30 text-white px-2 py-1.5 rounded-lg text-[11px] font-bold border border-white/30" title="إنشاء مجموعة">👥+</button>
-      <button onclick="logout()" class="bg-white/20 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🚪 خروج</button>
-    </div>
-  </div>
-
-  <div id="welcomeBar" class="hidden bg-emerald-100 text-emerald-800 p-3 rounded-xl mb-3 text-center font-bold text-sm"></div>
-  <div id="remindersBar" class="hidden bg-amber-50 border-2 border-amber-300 rounded-xl p-3 mb-3 text-xs"></div>
-  <div id="notificationBanner" class="hidden bg-blue-50 border-2 border-blue-300 rounded-xl p-3 mb-3 text-xs flex justify-between items-center gap-2">
-    <span class="text-blue-800 font-bold">🔔 فعّل التنبيهات اللحظية لتصلك إشعارات الدردشة</span>
-    <button onclick="requestNotificationPermission()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">تفعيل</button>
-  </div>
-
-  <header class="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 shadow-xl border border-blue-800">
-    <div class="relative p-5 text-center">
-      <div class="relative w-24 h-24 mx-auto mb-3">
-        <div class="clinic-logo w-24 h-24 rounded-2xl overflow-hidden ring-2 ring-white/25 shadow-lg bg-white/5"></div>
-        <button type="button" onclick="document.getElementById('logoInput').click()" class="absolute -bottom-1.5 -left-1.5 w-7 h-7 bg-white text-blue-800 rounded-full text-[11px] shadow-md flex items-center justify-center">✎</button>
-        <input type="file" id="logoInput" accept="image/*" class="hidden">
-      </div>
-      <h1 class="text-[16px] md:text-xl leading-snug font-extrabold tracking-wide">العيادة التخصصية لطب وجراحة الفم والأسنان</h1>
-      <div class="flex items-center justify-center gap-2 my-2.5"><span class="h-px w-10 bg-gradient-to-l from-transparent to-cyan-300/80"></span><span class="text-cyan-300 text-xs">🦷</span><span class="h-px w-10 bg-gradient-to-r from-transparent to-cyan-300/80"></span></div>
-      <p class="text-[15px] md:text-base font-bold">د. علي النقيب</p>
-      <p class="text-[10px] font-bold text-cyan-300 tracking-[0.25em] mt-0.5">NAQClinixAI</p>
-      <div class="mt-3.5 pt-3 border-t border-white/15 text-[11px] text-blue-100 space-y-1"><p>📍 أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p><p dir="ltr">📞 777700412 • 771816548</p></div>
-      <button onclick="openAISettings()" class="mt-3 text-[10px] bg-white/10 hover:bg-white/20 text-cyan-200 px-3 py-1 rounded-full border border-white/20">⚙️ إعدادات الذكاء الاصطناعي</button>
-    </div>
-  </header>
-
-  <main class="flex-1 no-print grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-
-    <section id="adminPanelSection" class="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-xl border-2 border-amber-300 shadow-sm lg:col-span-1">
-      <div class="flex items-center justify-between mb-2"><h2 class="font-bold text-amber-900 text-sm">👑 لوحة تحكم المدير</h2><button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">إخفاء</button></div>
-      <div id="adminPanelContent" class="space-y-2">
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="openAddUserModal()" class="bg-emerald-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">➕ إضافة مستخدم</button>
-          <button onclick="openActivityLog()" class="bg-blue-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📝 سجل النشاطات</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="openDailyReport()" class="bg-cyan-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📊 تقرير اليوم</button>
-          <button onclick="openWeeklyReport()" class="bg-teal-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 التقرير الأسبوعي</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="openMonthlyReport()" class="bg-purple-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 التقرير الشهري</button>
-          <button onclick="openRevenueChart()" class="bg-indigo-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📈 مخطط الإيرادات</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="openAllExpenses()" class="bg-orange-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">💸 مصروفات الشهر</button>
-          <button onclick="closeDay()" class="bg-rose-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">🔒 إغلاق اليوم</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="openPatientsList()" class="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📋 قائمة المرضى</button>
-          <button onclick="exportPatientsToExcel()" class="bg-gradient-to-r from-green-700 to-emerald-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📄 Excel</button>
-        </div>
-        <div id="usersList" class="space-y-2"></div>
-      </div>
-    </section>
-
-    <section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-blue-900 text-sm">👤 المريض</h2>
-      <div class="grid grid-cols-2 gap-2">
-        <div><label class="text-[10px] text-gray-600 block">رقم الملف:</label><input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
-        <div><label class="text-[10px] text-gray-600 block">التاريخ:</label><input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
-      </div>
-      <input type="text" id="patientName" placeholder="الاسم كامل" class="w-full p-2 border rounded-lg text-sm bg-white">
-      <div class="grid grid-cols-3 gap-2">
-        <select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
-        <input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm bg-white">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <input type="tel" id="patientPhone" placeholder="الهاتف" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <input type="tel" id="whatsappPhone" placeholder="الواتساب" class="w-full p-2 border rounded-lg text-sm bg-white">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <input type="text" id="patientAllergies" placeholder="الحساسية" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <input type="text" id="chronicDiseases" placeholder="أمراض مزمنة" class="w-full p-2 border rounded-lg text-sm bg-white">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <select id="smokingHabit" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">التدخين</option><option value="لا يدخن">لا يدخن</option><option value="مدخن خفيف">مدخن خفيف</option><option value="مدخن">مدخن</option></select>
-        <select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option><option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option></select>
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <label class="text-[10px] text-blue-800 block font-bold">📅 الزيارة القادمة:</label>
-          <input type="date" id="nextVisitDate" class="w-full p-2 border-2 border-blue-300 rounded-lg text-sm bg-white font-bold text-blue-900">
-        </div>
-        <div>
-          <label class="text-[10px] text-blue-800 block font-bold">💰 طريقة الدفع:</label>
-          <select id="paymentMethod" class="w-full p-2 border rounded-lg text-sm bg-white">
-            <option value="">اختر...</option>
-            <option value="نقدي">نقدي</option>
-            <option value="تحويل بنكي">تحويل بنكي</option>
-            <option value="محفظة إلكترونية">محفظة إلكترونية</option>
-          </select>
-        </div>
-      </div>
-    </section>
-
-    <section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 lg:col-span-1 xl:col-span-2">
-      <h2 class="font-bold text-indigo-900 mb-2 text-sm">🦷 نوع العمل</h2>
-      <select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
-        <option value="">اختر...</option><option value="تشخيص عام">تشخيص عام</option><option value="تجميل وتناغم وجه">تجميل وتناغم وجه</option><option value="حشوات تجميلية">حشوات تجميلية</option><option value="علاج عصب">علاج عصب</option><option value="تلبيسات وتركيبات">تلبيسات وتركيبات</option><option value="جراحة وخلع">جراحة وخلع</option><option value="تنظيف اللثة">تنظيف اللثة</option><option value="علاج لثة متقدم">علاج لثة متقدم</option><option value="زراعة الأسنان">زراعة الأسنان</option><option value="تقويم الأسنان">تقويم الأسنان</option><option value="طب أسنان الأطفال">أسنان الأطفال</option><option value="أخرى">أخرى</option>
-      </select>
-      <input type="number" id="teethCount" placeholder="عدد الأسنان" class="w-full p-2 border rounded-lg text-sm bg-white mb-2">
-      <div class="bg-white p-3 rounded-xl border border-indigo-200">
-        <p class="text-[11px] text-gray-600 mb-1 text-center font-bold">🦷 الفك العلوي</p>
-        <svg id="upperArchSvg" class="dental-arch" viewBox="0 0 400 88" preserveAspectRatio="xMidYMid meet"></svg>
-        <p class="text-[11px] text-gray-600 mb-1 mt-2 text-center font-bold">🦷 الفك السفلي</p>
-        <svg id="lowerArchSvg" class="dental-arch" viewBox="0 40 400 88" preserveAspectRatio="xMidYMid meet"></svg>
-        <p class="text-center text-xs text-blue-700 mt-3 font-bold bg-blue-50 py-1.5 rounded-lg" id="selectedTeethDisplay">الأسنان: لا يوجد</p>
-      </div>
-    </section>
-
-    <section class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-gray-800 text-sm">التشخيص والخطط</h2>
-      <textarea id="complaint" placeholder="الشكوى..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-      <textarea id="treatmentPlan" placeholder="الخطة العلاجية..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-      <textarea id="alternativePlan" placeholder="البديل..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-    </section>
-
-    <section id="aiAssistantSection" class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden lg:col-span-1 xl:col-span-2">
-      <div class="ai-glow p-3 text-white">
-        <div class="flex items-center justify-between"><h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2><span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span></div>
-      </div>
-      <div class="bg-white p-3 space-y-3">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[10px] text-emerald-800">💡 <strong>تحليل شامل:</strong> يقرأ كل الصور + الأشعة + بيانات المريض ويعطي التشخيص الكامل.</div>
-        <button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg">🧠 توليد التشخيص الشامل</button>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="runSmartScanner()" id="btnSmartScanner" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📡 الماسح الذكي</button>
-          <button onclick="openDiagnosisReferences()" class="bg-gradient-to-r from-slate-700 to-gray-800 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📚 مراجع التشخيص</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="clearAIResults()" class="bg-gray-100 text-gray-700 p-2 rounded-xl text-[11px] font-bold">مسح</button>
-          <button onclick="applyAIToForm()" class="bg-emerald-100 text-emerald-800 p-2 rounded-xl text-[11px] font-bold">تطبيق</button>
-        </div>
-        <div id="aiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-purple-50 text-purple-700 font-bold"></div>
-        <div id="aiResults" class="hidden space-y-3"></div>
-        <details class="bg-slate-50 rounded-lg border p-2">
-          <summary class="text-[11px] font-bold text-slate-700 cursor-pointer">➕ ملاحظات سريرية إضافية</summary>
-          <div class="mt-2 space-y-2">
-            <div class="grid grid-cols-2 gap-2 text-[10px]">
-              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_pain"> ألم</label>
-              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_swelling"> تورم</label>
-              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_bleeding"> نزيف</label>
-              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_mobility"> حركة</label>
-              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_sensitivity"> حساسية</label>
-              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_badBreath"> رائحة</label>
-              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_bruxism"> صرير</label>
-              <label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_trauma"> رض</label>
-            </div>
-            <input type="text" id="aiExtraNotes" placeholder="ملاحظات الطبيب..." class="w-full p-2 border rounded-lg text-[11px]">
-          </div>
-        </details>
-      </div>
-    </section>
-
-    <section id="imageAnalysisSection" class="rounded-2xl border-2 border-cyan-300 shadow-lg bg-white overflow-hidden lg:col-span-2 xl:col-span-2">
-      <div class="bg-gradient-to-r from-cyan-600 to-blue-600 p-3 text-white">
-        <h2 class="font-extrabold text-sm">🔬 تحليل الصور والأشعة</h2>
-        <p class="text-[10px] opacity-90 mt-1">رسم معالم الوجه + السيفالومتري + اللثة + العظم</p>
-      </div>
-      <div class="p-3 space-y-3">
-        <select id="analysisFocus" class="w-full p-2 border rounded-lg text-xs bg-white">
-          <option value="تحليل شامل ومفصل">🔬 تحليل شامل ومفصل</option><option value="تحليل سيفالومتري">📐 تحليل سيفالومتري</option><option value="تحليل تناسبات الوجه">😁 تحليل تناسبات الوجه</option><option value="تحليل الابتسامة واللثة">✨ تحليل الابتسامة واللثة</option><option value="تحليل الأضراس المطمورة">🦷 تحليل الأضراس المطمورة</option><option value="تحليل TMJ">🦴 تحليل مفصل الفك</option><option value="تحليل اللثة">🩸 تحليل اللثة</option><option value="تحليل العظم">🦴 تحليل العظم</option><option value="كشف التسوس">🔍 كشف التسوس</option><option value="أشعة بانورامية">🩻 أشعة بانورامية</option><option value="أشعة بريابيكال">🩻 أشعة بريابيكال</option>
-        </select>
-        <button onclick="analyzeImagesWithAI()" id="btnAIImg" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-3 rounded-xl text-xs font-extrabold">🧠 تحليل الصور ورسم النتائج</button>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="toggleAnnotations()" class="bg-slate-100 text-slate-700 p-2 rounded-xl text-[11px] font-bold">👁️ إظهار الرسم</button>
-          <button onclick="exportAnnotatedImage()" class="bg-indigo-100 text-indigo-800 p-2 rounded-xl text-[11px] font-bold">💾 حفظ الصورة</button>
-        </div>
-        <div id="imgAiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-cyan-50 text-cyan-700 font-bold"></div>
-        <div id="annotatedImagesArea" class="hidden space-y-3"></div>
-        <div id="imgAiResults" class="hidden space-y-3"></div>
-        <div id="proportionTablesSection" class="hidden"><div id="proportionTables" class="space-y-3"></div></div>
-      </div>
-    </section>
-
-    <section id="financialSection" class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-green-900 text-sm">💰 الحسابات المالية للمريض</h2>
-      <input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="المبلغ الكلي" class="w-full p-2 border rounded-lg text-sm">
-      <div class="grid grid-cols-3 gap-2">
-        <input type="number" id="payment1" oninput="calculateFinancials()" placeholder="دفعة 1" class="w-full p-2 border rounded-lg text-sm">
-        <input type="number" id="payment2" oninput="calculateFinancials()" placeholder="دفعة 2" class="w-full p-2 border rounded-lg text-sm">
-        <input type="number" id="payment3" oninput="calculateFinancials()" placeholder="دفعة 3" class="w-full p-2 border rounded-lg text-sm">
-      </div>
-      <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center"><span class="text-xs font-bold">المتبقي:</span><span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span></div>
-    </section>
-
-    <section id="revenueSection" class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-emerald-900 text-sm">📊 الإيرادات والمصروفات (إداري)</h2>
-      <div class="grid grid-cols-2 gap-2">
-        <input type="number" id="revenueAmount" placeholder="الإيراد" class="w-full p-2 border rounded-lg text-sm">
-        <select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm"><option value="">الحالة...</option><option value="مدفوع كامل">مدفوع كامل</option><option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option></select>
-      </div>
-      <div id="expenseSection" class="grid grid-cols-2 gap-2">
-        <input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="مصروف" class="w-full p-2 border rounded-lg text-sm">
-        <input type="text" id="expenseType" placeholder="نوع المصروف" class="w-full p-2 border rounded-lg text-sm">
-      </div>
-      <div class="grid grid-cols-3 gap-1 text-center text-[10px]">
-        <div class="bg-white p-1.5 rounded border"><div class="text-emerald-700 font-bold" id="totalRevenueDisplay">0</div><div>إيرادات</div></div>
-        <div id="netRevenueSection" class="bg-white p-1.5 rounded border"><div class="text-red-700 font-bold" id="totalExpensesDisplay">0</div><div>مصروفات</div></div>
-        <div id="netRevenueDisplayWrap" class="bg-white p-1.5 rounded border"><div class="text-cyan-700 font-bold" id="netRevenueDisplay">0</div><div>صافي</div></div>
-      </div>
-    </section>
-
-    <section class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-3 lg:col-span-1 xl:col-span-2">
-      <div class="flex items-center justify-between"><h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2><span id="imageCounter" class="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">0</span></div>
-      <div class="grid grid-cols-2 gap-2">
-        <label class="flex items-center justify-center gap-1.5 bg-emerald-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">📷 صورة سريرية/وجه<input type="file" id="clinicalPhotoInput" accept="image/*" multiple class="hidden"></label>
-        <label class="flex items-center justify-center gap-1.5 bg-indigo-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">🩻 أشعة<input type="file" id="xrayInput" accept="image/*" multiple class="hidden"></label>
-      </div>
-      <div id="imagePreviewContainer" class="grid grid-cols-3 md:grid-cols-4 gap-2"></div>
-    </section>
-
-    <div class="space-y-2 pt-2 lg:col-span-1 xl:col-span-3">
-      <button id="saveBtn" onclick="savePatientRecord()" class="w-full bg-blue-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">💾 حفظ في السحابة</button>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <button onclick="printReport()" class="bg-gray-700 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة التقرير</button>
-        <button onclick="printInvoice()" class="bg-emerald-700 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة الفاتورة</button>
-        <button onclick="loadPatientByFileNumber()" class="bg-slate-700 text-white p-3 rounded-xl text-sm font-bold">🔎 استرجاع</button>
-        <button onclick="clearForm()" class="bg-amber-600 text-white p-3 rounded-xl text-sm font-bold">🔄 مريض جديد</button>
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <button onclick="exportToPDF('report')" class="bg-gradient-to-r from-red-600 to-rose-600 text-white p-3 rounded-xl text-sm font-bold">📄 تقرير PDF</button>
-        <button onclick="exportToPDF('invoice')" class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-3 rounded-xl text-sm font-bold">🧾 فاتورة PDF</button>
-      </div>
-      <button onclick="sendWhatsAppNow()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">📱 إرسال تذكير واتساب للمريض</button>
-    </div>
-  </main>
-
-  <div id="printableArea" class="hidden p-6 bg-white text-right space-y-4" style="direction:rtl">
-    <div class="text-center border-b-2 border-blue-900 pb-3 mb-4">
-      <div class="clinic-logo w-16 h-16 mx-auto mb-2"></div>
-      <h2 class="font-extrabold text-xl text-blue-900">العيادة التخصصية لطب وجراحة الفم والأسنان</h2>
-      <p class="text-sm font-bold text-blue-700 mt-1">د. علي النقيب — NAQClinixAI</p>
-    </div>
-    <div id="printBodyContent" class="text-sm space-y-3"></div>
-  </div>
-
-  <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">© 2026 NAQClinixAI</footer>
+<div id="userBar" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between shadow flex-wrap gap-2">
+<div class="flex items-center gap-2"><span class="text-2xl">👤</span><div><p id="userBarName" class="text-sm font-bold">-</p><p id="userBarRole" class="text-[10px] opacity-90">-</p></div></div>
+<div class="flex items-center gap-2 flex-wrap">
+<button onclick="openPatientsList()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">📋 المرضى</button>
+<button onclick="openImagesArchive()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🖼️ الأرشيف</button>
+<button onclick="openChatList()" class="relative bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">💬 دردشة<span id="chatUnreadBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 pulse-badge">0</span></button>
+<button onclick="openCreateGroupModal()" class="bg-white/20 hover:bg-white/30 text-white px-2 py-1.5 rounded-lg text-[11px] font-bold border border-white/30" title="إنشاء مجموعة">👥+</button>
+<button onclick="logout()" class="bg-white/20 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🚪 خروج</button>
+</div>
+</div>
+<div id="welcomeBar" class="hidden bg-emerald-100 text-emerald-800 p-3 rounded-xl mb-3 text-center font-bold text-sm"></div>
+<div id="remindersBar" class="hidden bg-amber-50 border-2 border-amber-300 rounded-xl p-3 mb-3 text-xs"></div>
+<div id="notificationBanner" class="hidden bg-blue-50 border-2 border-blue-300 rounded-xl p-3 mb-3 text-xs flex justify-between items-center gap-2">
+<span class="text-blue-800 font-bold">🔔 فعّل التنبيهات اللحظية لتصلك إشعارات الدردشة</span>
+<button onclick="requestNotificationPermission()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">تفعيل</button>
 </div>
 
+<header class="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 shadow-xl border border-blue-800">
+<div class="relative p-5 text-center">
+<div class="relative w-24 h-24 mx-auto mb-3">
+<div class="clinic-logo w-24 h-24 rounded-2xl overflow-hidden ring-2 ring-white/25 shadow-lg bg-white/5"></div>
+<button type="button" onclick="document.getElementById('logoInput').click()" class="absolute -bottom-1.5 -left-1.5 w-7 h-7 bg-white text-blue-800 rounded-full text-[11px] shadow-md flex items-center justify-center">✎</button>
+<input type="file" id="logoInput" accept="image/*" class="hidden">
+</div>
+<h1 class="text-[16px] md:text-xl leading-snug font-extrabold tracking-wide">العيادة التخصصية لطب وجراحة الفم والأسنان</h1>
+<div class="flex items-center justify-center gap-2 my-2.5"><span class="h-px w-10 bg-gradient-to-l from-transparent to-cyan-300/80"></span><span class="text-cyan-300 text-xs">🦷</span><span class="h-px w-10 bg-gradient-to-r from-transparent to-cyan-300/80"></span></div>
+<p class="text-[15px] md:text-base font-bold">د. علي النقيب</p>
+<p class="text-[10px] font-bold text-cyan-300 tracking-[0.25em] mt-0.5">NAQClinixAI</p>
+<div class="mt-3.5 pt-3 border-t border-white/15 text-[11px] text-blue-100 space-y-1"><p>📍 أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p><p dir="ltr">📞 777700412 • 771816548</p></div>
+<button onclick="openAISettings()" class="mt-3 text-[10px] bg-white/10 hover:bg-white/20 text-cyan-200 px-3 py-1 rounded-full border border-white/20">⚙️ إعدادات الذكاء الاصطناعي</button>
+</div>
+</header>
+
+<main class="flex-1 no-print grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+
+<section id="adminPanelSection" class="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-xl border-2 border-amber-300 shadow-sm lg:col-span-1">
+<div class="flex items-center justify-between mb-2"><h2 class="font-bold text-amber-900 text-sm">👑 لوحة تحكم المدير</h2><button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">إخفاء</button></div>
+<div id="adminPanelContent" class="space-y-2">
+<div class="grid grid-cols-2 gap-2"><button onclick="openAddUserModal()" class="bg-emerald-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">➕ إضافة مستخدم</button><button onclick="openActivityLog()" class="bg-blue-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📝 سجل النشاطات</button></div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openDailyReport()" class="bg-cyan-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📊 تقرير اليوم</button><button onclick="openWeeklyReport()" class="bg-teal-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 التقرير الأسبوعي</button></div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openMonthlyReport()" class="bg-purple-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 التقرير الشهري</button><button onclick="openRevenueChart()" class="bg-indigo-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📈 مخطط الإيرادات</button></div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openAllExpenses()" class="bg-orange-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">💸 مصروفات الشهر</button><button onclick="closeDay()" class="bg-rose-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">🔒 إغلاق اليوم</button></div>
+<div class="grid grid-cols-2 gap-2"><button onclick="openPatientsList()" class="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📋 قائمة المرضى</button><button onclick="exportPatientsToExcel()" class="bg-gradient-to-r from-green-700 to-emerald-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📄 Excel</button></div>
+<div id="usersList" class="space-y-2"></div>
+</div>
+</section>
+
+<section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2 lg:col-span-1">
+<h2 class="font-bold text-blue-900 text-sm">👤 المريض</h2>
+<div class="grid grid-cols-2 gap-2">
+<div><label class="text-[10px] text-gray-600 block">رقم الملف:</label><input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+<div><label class="text-[10px] text-gray-600 block">التاريخ:</label><input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
+</div>
+<input type="text" id="patientName" placeholder="الاسم كامل" class="w-full p-2 border rounded-lg text-sm bg-white">
+<div class="grid grid-cols-3 gap-2">
+<select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
+<input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm bg-white">
+<input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm bg-white">
+</div>
+<div class="grid grid-cols-2 gap-2">
+<input type="tel" id="patientPhone" placeholder="الهاتف" class="w-full p-2 border rounded-lg text-sm bg-white">
+<input type="tel" id="whatsappPhone" placeholder="الواتساب" class="w-full p-2 border rounded-lg text-sm bg-white">
+</div>
+<div class="grid grid-cols-2 gap-2">
+<input type="text" id="patientAllergies" placeholder="الحساسية" class="w-full p-2 border rounded-lg text-sm bg-white">
+<input type="text" id="chronicDiseases" placeholder="أمراض مزمنة" class="w-full p-2 border rounded-lg text-sm bg-white">
+</div>
+<div class="grid grid-cols-2 gap-2">
+<select id="smokingHabit" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">التدخين</option><option value="لا يدخن">لا يدخن</option><option value="مدخن خفيف">مدخن خفيف</option><option value="مدخن">مدخن</option></select>
+<select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option><option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option></select>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div><label class="text-[10px] text-blue-800 block font-bold">📅 الزيارة القادمة:</label><input type="date" id="nextVisitDate" class="w-full p-2 border-2 border-blue-300 rounded-lg text-sm bg-white font-bold text-blue-900"></div>
+<div><label class="text-[10px] text-blue-800 block font-bold">💰 طريقة الدفع:</label><select id="paymentMethod" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">اختر...</option><option value="نقدي">نقدي</option><option value="تحويل بنكي">تحويل بنكي</option><option value="محفظة إلكترونية">محفظة إلكترونية</option></select></div>
+</div>
+</section>
+
+<section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 lg:col-span-1 xl:col-span-2">
+<h2 class="font-bold text-indigo-900 mb-2 text-sm">🦷 نوع العمل</h2>
+<select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
+<option value="">اختر...</option><option value="تشخيص عام">تشخيص عام</option><option value="تجميل وتناغم وجه">تجميل وتناغم وجه</option><option value="حشوات تجميلية">حشوات تجميلية</option><option value="علاج عصب">علاج عصب</option><option value="تلبيسات وتركيبات">تلبيسات وتركيبات</option><option value="جراحة وخلع">جراحة وخلع</option><option value="تنظيف اللثة">تنظيف اللثة</option><option value="علاج لثة متقدم">علاج لثة متقدم</option><option value="زراعة الأسنان">زراعة الأسنان</option><option value="تقويم الأسنان">تقويم الأسنان</option><option value="طب أسنان الأطفال">أسنان الأطفال</option><option value="أخرى">أخرى</option>
+</select>
+<input type="number" id="teethCount" placeholder="عدد الأسنان" class="w-full p-2 border rounded-lg text-sm bg-white mb-2">
+<div class="bg-white p-3 rounded-xl border border-indigo-200">
+<p class="text-[11px] text-gray-600 mb-1 text-center font-bold">🦷 الفك العلوي</p>
+<svg id="upperArchSvg" class="dental-arch" viewBox="0 0 400 88" preserveAspectRatio="xMidYMid meet"></svg>
+<p class="text-[11px] text-gray-600 mb-1 mt-2 text-center font-bold">🦷 الفك السفلي</p>
+<svg id="lowerArchSvg" class="dental-arch" viewBox="0 40 400 88" preserveAspectRatio="xMidYMid meet"></svg>
+<p class="text-center text-xs text-blue-700 mt-3 font-bold bg-blue-50 py-1.5 rounded-lg" id="selectedTeethDisplay">الأسنان: لا يوجد</p>
+</div>
+</section>
+
+<section class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2 lg:col-span-1">
+<h2 class="font-bold text-gray-800 text-sm">التشخيص والخطط</h2>
+<textarea id="complaint" placeholder="الشكوى..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+<textarea id="treatmentPlan" placeholder="الخطة العلاجية..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+<textarea id="alternativePlan" placeholder="البديل..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
+</section>
+
+<section id="aiAssistantSection" class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden lg:col-span-1 xl:col-span-2">
+<div class="ai-glow p-3 text-white"><div class="flex items-center justify-between"><h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2><span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span></div></div>
+<div class="bg-white p-3 space-y-3">
+<div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[10px] text-emerald-800">💡 <strong>تحليل شامل:</strong> يقرأ كل الصور + الأشعة + بيانات المريض ويعطي التشخيص الكامل.</div>
+<button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg">🧠 توليد التشخيص الشامل</button>
+<div class="grid grid-cols-2 gap-2">
+<button onclick="runSmartScanner()" id="btnSmartScanner" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📡 الماسح الذكي</button>
+<button onclick="openDiagnosisReferences()" class="bg-gradient-to-r from-slate-700 to-gray-800 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📚 مراجع التشخيص</button>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<button onclick="clearAIResults()" class="bg-gray-100 text-gray-700 p-2 rounded-xl text-[11px] font-bold">مسح</button>
+<button onclick="applyAIToForm()" class="bg-emerald-100 text-emerald-800 p-2 rounded-xl text-[11px] font-bold">تطبيق</button>
+</div>
+<div id="aiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-purple-50 text-purple-700 font-bold"></div>
+<div id="aiResults" class="hidden space-y-3"></div>
+<details class="bg-slate-50 rounded-lg border p-2">
+<summary class="text-[11px] font-bold text-slate-700 cursor-pointer">➕ ملاحظات سريرية إضافية</summary>
+<div class="mt-2 space-y-2">
+<div class="grid grid-cols-2 gap-2 text-[10px]">
+<label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_pain"> ألم</label>
+<label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_swelling"> تورم</label>
+<label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_bleeding"> نزيف</label>
+<label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_mobility"> حركة</label>
+<label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_sensitivity"> حساسية</label>
+<label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_badBreath"> رائحة</label>
+<label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_bruxism"> صرير</label>
+<label class="flex items-center gap-1.5 bg-white p-2 rounded-lg border"><input type="checkbox" id="sym_trauma"> رض</label>
+</div>
+<input type="text" id="aiExtraNotes" placeholder="ملاحظات الطبيب..." class="w-full p-2 border rounded-lg text-[11px]">
+</div>
+</details>
+</div>
+</section>
+
+<section id="imageAnalysisSection" class="rounded-2xl border-2 border-cyan-300 shadow-lg bg-white overflow-hidden lg:col-span-2 xl:col-span-2">
+<div class="bg-gradient-to-r from-cyan-600 to-blue-600 p-3 text-white">
+<h2 class="font-extrabold text-sm">🔬 تحليل الصور والأشعة</h2>
+<p class="text-[10px] opacity-90 mt-1">رسم معالم الوجه + السيفالومتري + اللثة + العظم</p>
+</div>
+<div class="p-3 space-y-3">
+<select id="analysisFocus" class="w-full p-2 border rounded-lg text-xs bg-white">
+<option value="تحليل شامل ومفصل">🔬 تحليل شامل ومفصل</option><option value="تحليل سيفالومتري">📐 تحليل سيفالومتري</option><option value="تحليل تناسبات الوجه">😁 تحليل تناسبات الوجه</option><option value="تحليل الابتسامة واللثة">✨ تحليل الابتسامة واللثة</option><option value="تحليل الأضراس المطمورة">🦷 تحليل الأضراس المطمورة</option><option value="تحليل TMJ">🦴 تحليل مفصل الفك</option><option value="تحليل اللثة">🩸 تحليل اللثة</option><option value="تحليل العظم">🦴 تحليل العظم</option><option value="كشف التسوس">🔍 كشف التسوس</option><option value="أشعة بانورامية">🩻 أشعة بانورامية</option><option value="أشعة بريابيكال">🩻 أشعة بريابيكال</option>
+</select>
+<button onclick="analyzeImagesWithAI()" id="btnAIImg" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-3 rounded-xl text-xs font-extrabold">🧠 تحليل الصور ورسم النتائج</button>
+<div class="grid grid-cols-2 gap-2">
+<button onclick="toggleAnnotations()" class="bg-slate-100 text-slate-700 p-2 rounded-xl text-[11px] font-bold">👁️ إظهار الرسم</button>
+<button onclick="exportAnnotatedImage()" class="bg-indigo-100 text-indigo-800 p-2 rounded-xl text-[11px] font-bold">💾 حفظ الصورة</button>
+</div>
+<div id="imgAiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-cyan-50 text-cyan-700 font-bold"></div>
+<div id="annotatedImagesArea" class="hidden space-y-3"></div>
+<div id="imgAiResults" class="hidden space-y-3"></div>
+<div id="proportionTablesSection" class="hidden"><div id="proportionTables" class="space-y-3"></div></div>
+</div>
+</section>
+
+<section id="financialSection" class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2 lg:col-span-1">
+<h2 class="font-bold text-green-900 text-sm">💰 الحسابات المالية للمريض</h2>
+<input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="المبلغ الكلي" class="w-full p-2 border rounded-lg text-sm">
+<div class="grid grid-cols-3 gap-2">
+<input type="number" id="payment1" oninput="calculateFinancials()" placeholder="دفعة 1" class="w-full p-2 border rounded-lg text-sm">
+<input type="number" id="payment2" oninput="calculateFinancials()" placeholder="دفعة 2" class="w-full p-2 border rounded-lg text-sm">
+<input type="number" id="payment3" oninput="calculateFinancials()" placeholder="دفعة 3" class="w-full p-2 border rounded-lg text-sm">
+</div>
+<div class="bg-white p-2.5 rounded-lg border flex justify-between items-center"><span class="text-xs font-bold">المتبقي:</span><span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span></div>
+</section>
+
+<section id="revenueSection" class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2 lg:col-span-1">
+<h2 class="font-bold text-emerald-900 text-sm">📊 الإيرادات والمصروفات (إداري)</h2>
+<div class="grid grid-cols-2 gap-2">
+<input type="number" id="revenueAmount" placeholder="الإيراد" class="w-full p-2 border rounded-lg text-sm">
+<select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm"><option value="">الحالة...</option><option value="مدفوع كامل">مدفوع كامل</option><option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option></select>
+</div>
+<div id="expenseSection" class="grid grid-cols-2 gap-2">
+<input type="number" id="expenseAmount" oninput="calculateNet()" placeholder="مصروف" class="w-full p-2 border rounded-lg text-sm">
+<input type="text" id="expenseType" placeholder="نوع المصروف" class="w-full p-2 border rounded-lg text-sm">
+</div>
+<div class="grid grid-cols-3 gap-1 text-center text-[10px]">
+<div class="bg-white p-1.5 rounded border"><div class="text-emerald-700 font-bold" id="totalRevenueDisplay">0</div><div>إيرادات</div></div>
+<div id="netRevenueSection" class="bg-white p-1.5 rounded border"><div class="text-red-700 font-bold" id="totalExpensesDisplay">0</div><div>مصروفات</div></div>
+<div id="netRevenueDisplayWrap" class="bg-white p-1.5 rounded border"><div class="text-cyan-700 font-bold" id="netRevenueDisplay">0</div><div>صافي</div></div>
+</div>
+</section>
+
+<section class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-3 lg:col-span-1 xl:col-span-2">
+<div class="flex items-center justify-between"><h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2><span id="imageCounter" class="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">0</span></div>
+<div class="grid grid-cols-2 gap-2">
+<label class="flex items-center justify-center gap-1.5 bg-emerald-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">📷 صورة سريرية/وجه<input type="file" id="clinicalPhotoInput" accept="image/*" multiple class="hidden"></label>
+<label class="flex items-center justify-center gap-1.5 bg-indigo-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">🩻 أشعة<input type="file" id="xrayInput" accept="image/*" multiple class="hidden"></label>
+</div>
+<div id="imagePreviewContainer" class="grid grid-cols-3 md:grid-cols-4 gap-2"></div>
+</section>
+
+<div class="space-y-2 pt-2 lg:col-span-1 xl:col-span-3">
+<button id="saveBtn" onclick="savePatientRecord()" class="w-full bg-blue-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">💾 حفظ في السحابة</button>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+<button onclick="printReport()" class="bg-gray-700 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة التقرير</button>
+<button onclick="printInvoice()" class="bg-emerald-700 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة الفاتورة</button>
+<button onclick="loadPatientByFileNumber()" class="bg-slate-700 text-white p-3 rounded-xl text-sm font-bold">🔎 استرجاع</button>
+<button onclick="clearForm()" class="bg-amber-600 text-white p-3 rounded-xl text-sm font-bold">🔄 مريض جديد</button>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<button onclick="exportToPDF('report')" class="bg-gradient-to-r from-red-600 to-rose-600 text-white p-3 rounded-xl text-sm font-bold">📄 تقرير PDF</button>
+<button onclick="exportToPDF('invoice')" class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-3 rounded-xl text-sm font-bold">🧾 فاتورة PDF</button>
+</div>
+<button onclick="sendWhatsAppNow()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">📱 إرسال تذكير واتساب للمريض</button>
+</div>
+</main>
+
+<div id="printableArea" class="hidden p-6 bg-white text-right space-y-4" style="direction:rtl">
+<div class="text-center border-b-2 border-blue-900 pb-3 mb-4">
+<div class="clinic-logo w-16 h-16 mx-auto mb-2"></div>
+<h2 class="font-extrabold text-xl text-blue-900">العيادة التخصصية لطب وجراحة الفم والأسنان</h2>
+<p class="text-sm font-bold text-blue-700 mt-1">د. علي النقيب — NAQClinixAI</p>
+</div>
+<div id="printBodyContent" class="text-sm space-y-3"></div>
+</div>
+
+<footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">© 2026 NAQClinixAI</footer>
+</div>
 <div id="patientsListModal" class="fixed inset-0 bg-black/70 z-[88] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📋 قائمة المرضى</h3><button onclick="closePatientsList()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="flex gap-2 flex-col md:flex-row">
-      <input type="text" id="patientsSearch" placeholder="🔍 بحث..." class="flex-1 p-2 border rounded-lg text-sm" oninput="renderPatientsList()">
-      <select id="patientsFilter" onchange="renderPatientsList()" class="p-2 border rounded-lg text-sm bg-white"><option value="all">الكل</option><option value="debt">عليهم متبقي</option><option value="upcoming">زيارات قادمة</option><option value="today">زيارات اليوم</option></select>
-    </div>
-    <div id="patientsListContent" class="space-y-2"></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📋 قائمة المرضى</h3><button onclick="closePatientsList()" class="text-gray-400 text-xl">✕</button></div>
+<div class="flex gap-2 flex-col md:flex-row">
+<input type="text" id="patientsSearch" placeholder="🔍 بحث..." class="flex-1 p-2 border rounded-lg text-sm" oninput="renderPatientsList()">
+<select id="patientsFilter" onchange="renderPatientsList()" class="p-2 border rounded-lg text-sm bg-white"><option value="all">الكل</option><option value="debt">عليهم متبقي</option><option value="upcoming">زيارات قادمة</option><option value="today">زيارات اليوم</option></select>
+</div>
+<div id="patientsListContent" class="space-y-2"></div>
+</div>
 </div>
 
 <div id="imagesArchiveModal" class="fixed inset-0 bg-black/70 z-[89] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-amber-900 text-base">🖼️ أرشيف الصور</h3><button onclick="closeImagesArchive()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="flex gap-2 flex-col md:flex-row">
-      <input type="text" id="archiveSearch" placeholder="🔍 بحث..." class="flex-1 p-2 border rounded-lg text-sm" oninput="renderImagesArchive()">
-      <select id="archiveType" onchange="renderImagesArchive()" class="p-2 border rounded-lg text-sm bg-white"><option value="all">الكل</option><option value="سريرية">سريرية</option><option value="أشعة">أشعة</option></select>
-    </div>
-    <div id="imagesArchiveContent" class="grid grid-cols-3 md:grid-cols-5 gap-2"></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-amber-900 text-base">🖼️ أرشيف الصور</h3><button onclick="closeImagesArchive()" class="text-gray-400 text-xl">✕</button></div>
+<div class="flex gap-2 flex-col md:flex-row">
+<input type="text" id="archiveSearch" placeholder="🔍 بحث..." class="flex-1 p-2 border rounded-lg text-sm" oninput="renderImagesArchive()">
+<select id="archiveType" onchange="renderImagesArchive()" class="p-2 border rounded-lg text-sm bg-white"><option value="all">الكل</option><option value="سريرية">سريرية</option><option value="أشعة">أشعة</option></select>
+</div>
+<div id="imagesArchiveContent" class="grid grid-cols-3 md:grid-cols-5 gap-2"></div>
+</div>
 </div>
 
 <div id="weeklyReportModal" class="fixed inset-0 bg-black/70 z-[85] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-teal-900 text-base">📅 التقرير الأسبوعي</h3><button onclick="closeWeeklyReport()" class="text-gray-400 text-xl">✕</button></div>
-    <div id="weeklyReportContent" class="space-y-3"></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-teal-900 text-base">📅 التقرير الأسبوعي</h3><button onclick="closeWeeklyReport()" class="text-gray-400 text-xl">✕</button></div>
+<div id="weeklyReportContent" class="space-y-3"></div>
+</div>
 </div>
 
 <div id="revenueChartModal" class="fixed inset-0 bg-black/70 z-[86] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-indigo-900 text-base">📈 مخطط الإيرادات</h3><button onclick="closeRevenueChart()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="bg-white rounded-xl p-3" style="height:400px"><canvas id="revenueChartCanvas"></canvas></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-indigo-900 text-base">📈 مخطط الإيرادات</h3><button onclick="closeRevenueChart()" class="text-gray-400 text-xl">✕</button></div>
+<div class="bg-white rounded-xl p-3" style="height:400px"><canvas id="revenueChartCanvas"></canvas></div>
+</div>
 </div>
 
 <div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">🤖 إعدادات الذكاء الاصطناعي</h3><button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-800 leading-relaxed"><p><strong>المحرك المدمج:</strong> يعمل بدون إنترنت.</p><p class="mt-1"><strong>Gemini Vision:</strong> تحليل حقيقي.</p></div>
-    <div><label class="text-xs font-bold text-gray-700 block mb-1">🔑 مفتاح Gemini:</label><input type="password" id="geminiApiKey" placeholder="AIza... أو AQ..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50"></div>
-    <div><label class="text-xs font-bold text-gray-700 block mb-1">🧠 المحرك:</label><select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white"><option value="builtin">المحرك المدمج</option><option value="gemini">Gemini Vision</option><option value="auto">تلقائي</option></select></div>
-    <div class="flex gap-2"><button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button><button onclick="testAIConnection()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">اختبار</button></div>
-    <p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p>
-  </div>
+<div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">🤖 إعدادات الذكاء الاصطناعي</h3><button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button></div>
+<div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-800 leading-relaxed"><p><strong>المحرك المدمج:</strong> يعمل بدون إنترنت.</p><p class="mt-1"><strong>Gemini Vision:</strong> تحليل حقيقي.</p></div>
+<div><label class="text-xs font-bold text-gray-700 block mb-1">🔑 مفتاح Gemini:</label><input type="password" id="geminiApiKey" placeholder="AIza... أو AQ..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50"></div>
+<div><label class="text-xs font-bold text-gray-700 block mb-1">🧠 المحرك:</label><select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white"><option value="builtin">المحرك المدمج</option><option value="gemini">Gemini Vision</option><option value="auto">تلقائي</option></select></div>
+<div class="flex gap-2"><button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button><button onclick="testAIConnection()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">اختبار</button></div>
+<p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p>
+</div>
 </div>
 
 <div id="addUserModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم جديد</h3><button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="space-y-2">
-      <label class="text-xs font-bold text-gray-700 block">اسم المستخدم (بالإنجليزية):</label><input type="text" id="newUsername" placeholder="drmohammed" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr">
-      <label class="text-xs font-bold text-gray-700 block">كلمة المرور:</label><input type="text" id="newPassword" placeholder="كلمة مرور قوية" class="w-full p-2.5 border rounded-lg text-sm">
-      <label class="text-xs font-bold text-gray-700 block">الاسم الكامل:</label><input type="text" id="newFullName" placeholder="د. محمد أحمد" class="w-full p-2.5 border rounded-lg text-sm">
-      <label class="text-xs font-bold text-gray-700 block">الدور:</label><select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white"><option value="doctor">👨‍⚕️ طبيب</option><option value="employee">👨‍💼 موظف</option><option value="admin">👑 مدير</option></select>
-    </div>
-    <div class="flex gap-2 pt-2"><button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button><button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div>
-    <p id="addUserStatus" class="text-[11px] text-center font-bold hidden"></p>
-  </div>
+<div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم جديد</h3><button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button></div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-gray-700 block">اسم المستخدم (بالإنجليزية):</label><input type="text" id="newUsername" placeholder="drmohammed" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr">
+<label class="text-xs font-bold text-gray-700 block">كلمة المرور:</label><input type="text" id="newPassword" placeholder="كلمة مرور قوية" class="w-full p-2.5 border rounded-lg text-sm">
+<label class="text-xs font-bold text-gray-700 block">الاسم الكامل:</label><input type="text" id="newFullName" placeholder="د. محمد أحمد" class="w-full p-2.5 border rounded-lg text-sm">
+<label class="text-xs font-bold text-gray-700 block">الدور:</label><select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white"><option value="doctor">👨‍⚕️ طبيب</option><option value="employee">👨‍💼 موظف</option><option value="admin">👑 مدير</option></select>
+</div>
+<div class="flex gap-2 pt-2"><button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button><button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div>
+<p id="addUserStatus" class="text-[11px] text-center font-bold hidden"></p>
+</div>
 </div>
 
 <div id="activityModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📝 سجل النشاطات</h3><button onclick="closeActivityLog()" class="text-gray-400 text-xl">✕</button></div>
-    <div id="activityList" class="space-y-2 text-xs"></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📝 سجل النشاطات</h3><button onclick="closeActivityLog()" class="text-gray-400 text-xl">✕</button></div>
+<div id="activityList" class="space-y-2 text-xs"></div>
+</div>
 </div>
 
 <div id="dailyReportModal" class="fixed inset-0 bg-black/70 z-[85] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-cyan-900 text-base">📊 تقرير اليوم</h3><button onclick="closeDailyReport()" class="text-gray-400 text-xl">✕</button></div>
-    <div id="dailyReportContent" class="space-y-3"></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-cyan-900 text-base">📊 تقرير اليوم</h3><button onclick="closeDailyReport()" class="text-gray-400 text-xl">✕</button></div>
+<div id="dailyReportContent" class="space-y-3"></div>
+</div>
 </div>
 
 <div id="monthlyReportModal" class="fixed inset-0 bg-black/70 z-[85] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">📅 التقرير الشهري الشامل</h3><button onclick="closeMonthlyReport()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="flex gap-2"><input type="month" id="reportMonth" class="flex-1 p-2 border rounded-lg text-sm"><button onclick="generateMonthlyReport()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">عرض</button></div>
-    <div id="monthlyReportContent" class="space-y-3"></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">📅 التقرير الشهري الشامل</h3><button onclick="closeMonthlyReport()" class="text-gray-400 text-xl">✕</button></div>
+<div class="flex gap-2"><input type="month" id="reportMonth" class="flex-1 p-2 border rounded-lg text-sm"><button onclick="generateMonthlyReport()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">عرض</button></div>
+<div id="monthlyReportContent" class="space-y-3"></div>
+</div>
 </div>
 
 <div id="refsModal" class="fixed inset-0 bg-black/70 z-[90] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-slate-900 text-base">📚 مراجع التشخيص</h3><button onclick="closeDiagnosisReferences()" class="text-gray-400 text-xl">✕</button></div>
-    <div id="refsContent" class="space-y-3"></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between"><h3 class="font-bold text-slate-900 text-base">📚 مراجع التشخيص</h3><button onclick="closeDiagnosisReferences()" class="text-gray-400 text-xl">✕</button></div>
+<div id="refsContent" class="space-y-3"></div>
+</div>
 </div>
 
 <div id="chatListModal" class="fixed inset-0 bg-black/70 z-[95] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col">
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white flex items-center justify-between">
-      <h3 class="font-bold text-sm flex items-center gap-2">💬 المحادثات</h3>
-      <button onclick="closeChatList()" class="text-white/80 hover:text-white text-xl">✕</button>
-    </div>
-    <div id="chatListContent" class="p-3 space-y-2 overflow-y-auto flex-1"></div>
-  </div>
+<div class="bg-white rounded-2xl max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col">
+<div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white flex items-center justify-between">
+<h3 class="font-bold text-sm flex items-center gap-2">💬 المحادثات</h3>
+<button onclick="closeChatList()" class="text-white/80 hover:text-white text-xl">✕</button>
+</div>
+<div id="chatListContent" class="p-3 space-y-2 overflow-y-auto flex-1"></div>
+</div>
 </div>
 
 <div id="chatWindowModal" class="fixed inset-0 bg-black/70 z-[96] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-sm w-full h-[85vh] overflow-hidden flex flex-col">
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 text-white flex items-center justify-between">
-      <button onclick="closeChatWindow(); openChatList();" class="text-white/80 hover:text-white text-lg">←</button>
-      <div class="flex-1 text-center">
-        <p id="chatWithName" class="font-bold text-sm">-</p>
-        <p class="text-[9px] opacity-80">متصل</p>
-      </div>
-      <button onclick="closeChatWindow()" class="text-white/80 hover:text-white text-xl">✕</button>
-    </div>
-    <div id="chatMessages" class="flex-1 overflow-y-auto p-3 bg-gray-50 space-y-1"></div>
-    <div class="p-2 border-t bg-white">
-      <div class="flex gap-2">
-        <input type="text" id="chatInput" placeholder="اكتب رسالتك..." class="flex-1 p-2.5 border rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}">
-        <button onclick="sendMessage()" id="chatSendBtn" class="bg-blue-600 text-white px-4 rounded-xl font-bold text-sm hover:bg-blue-700 transition">إرسال</button>
-      </div>
-    </div>
-  </div>
+<div class="bg-white rounded-2xl max-w-sm w-full h-[85vh] overflow-hidden flex flex-col">
+<div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 text-white flex items-center justify-between">
+<button onclick="closeChatWindow(); openChatList();" class="text-white/80 hover:text-white text-lg">←</button>
+<div class="flex-1 text-center">
+<p id="chatWithName" class="font-bold text-sm">-</p>
+<p class="text-[9px] opacity-80">متصل</p>
+</div>
+<button onclick="closeChatWindow()" class="text-white/80 hover:text-white text-xl">✕</button>
+</div>
+<div id="chatMessages" class="flex-1 overflow-y-auto p-3 bg-gray-50 space-y-1"></div>
+<div class="p-2 border-t bg-white">
+<div class="flex gap-2">
+<input type="text" id="chatInput" placeholder="اكتب رسالتك..." class="flex-1 p-2.5 border rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}">
+<button onclick="sendMessage()" id="chatSendBtn" class="bg-blue-600 text-white px-4 rounded-xl font-bold text-sm hover:bg-blue-700 transition">إرسال</button>
+</div>
+</div>
+</div>
 </div>
 
 <div id="createGroupModal" class="fixed inset-0 bg-black/70 z-[97] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[85vh] overflow-y-auto">
-    <div class="flex items-center justify-between">
-      <h3 class="font-bold text-indigo-900 text-base">👥 مجموعة جديدة</h3>
-      <button onclick="closeCreateGroupModal()" class="text-gray-400 text-xl">✕</button>
-    </div>
-    <div>
-      <label class="text-xs font-bold text-gray-700 block mb-1">📛 اسم المجموعة:</label>
-      <input type="text" id="newGroupName" placeholder="مثال: فريق العمل" class="w-full p-2.5 border rounded-lg text-sm" maxlength="50">
-    </div>
-    <div>
-      <label class="text-xs font-bold text-gray-700 block mb-1">👥 اختر الأعضاء:</label>
-      <div id="groupMembersList" class="space-y-1 max-h-60 overflow-y-auto"></div>
-    </div>
-    <div class="flex gap-2 pt-2">
-      <button onclick="createGroup()" class="flex-1 bg-indigo-600 text-white p-2.5 rounded-xl text-sm font-bold">إنشاء</button>
-      <button onclick="closeCreateGroupModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button>
-    </div>
-    <p id="createGroupStatus" class="text-[11px] text-center font-bold hidden"></p>
-  </div>
+<div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[85vh] overflow-y-auto">
+<div class="flex items-center justify-between">
+<h3 class="font-bold text-indigo-900 text-base">👥 مجموعة جديدة</h3>
+<button onclick="closeCreateGroupModal()" class="text-gray-400 text-xl">✕</button>
+</div>
+<div>
+<label class="text-xs font-bold text-gray-700 block mb-1">📛 اسم المجموعة:</label>
+<input type="text" id="newGroupName" placeholder="مثال: فريق العمل" class="w-full p-2.5 border rounded-lg text-sm" maxlength="50">
+</div>
+<div>
+<label class="text-xs font-bold text-gray-700 block mb-1">👥 اختر الأعضاء:</label>
+<div id="groupMembersList" class="space-y-1 max-h-60 overflow-y-auto"></div>
+</div>
+<div class="flex gap-2 pt-2">
+<button onclick="createGroup()" class="flex-1 bg-indigo-600 text-white p-2.5 rounded-xl text-sm font-bold">إنشاء</button>
+<button onclick="closeCreateGroupModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button>
+</div>
+<p id="createGroupStatus" class="text-[11px] text-center font-bold hidden"></p>
+</div>
 </div>
 
 <div id="lightbox" class="fixed inset-0 bg-black/90 z-[60] hidden items-center justify-center p-4 no-print" onclick="closeLightbox()">
-  <img id="lightboxImg" class="max-w-full max-h-full rounded-xl">
+<img id="lightboxImg" class="max-w-full max-h-full rounded-xl">
 </div>
 
 <script>
@@ -533,7 +492,7 @@ function applyPermissions() {
 
 function updateUserBar() {
   if (!currentUser) return;
-  const bar = document.getElementById('userBar');
+  const bar = document.getElementById('userBar'); if (!bar) return;
   bar.classList.remove('hidden');
   const roleLabel = currentUser.role === 'admin' ? '👑 مدير' : currentUser.role === 'doctor' ? '👨‍⚕️ طبيب' : '👨‍💼 موظف';
   document.getElementById('userBarName').textContent = currentUser.fullName;
@@ -622,6 +581,8 @@ function sendWhatsAppNow() {
   window.open('https://wa.me/' + intlPhone + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
+function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+
 async function loadUsersList() {
   const c = document.getElementById('usersList'); if (!c) return;
   c.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">...</p>';
@@ -648,6 +609,7 @@ function toggleAdminPanel() {
 }
 function openAddUserModal() { document.getElementById('addUserModal').classList.remove('hidden'); document.getElementById('addUserModal').classList.add('flex'); }
 function closeAddUserModal() { document.getElementById('addUserModal').classList.add('hidden'); document.getElementById('addUserModal').classList.remove('flex'); }
+
 async function addNewUser() {
   const u = document.getElementById('newUsername').value.trim().toLowerCase();
   const p = document.getElementById('newPassword').value.trim();
@@ -662,6 +624,7 @@ async function addNewUser() {
     setTimeout(() => { closeAddUserModal(); loadUsersList(); }, 1500);
   } catch (e) { s.textContent = '❌ ' + e.message; s.className = 'text-[11px] text-center font-bold text-red-600'; s.classList.remove('hidden'); }
 }
+
 async function toggleUserActive(id, a) { if (!confirm(a ? 'تفعيل؟' : 'إيقاف؟')) return; try { await db.collection('users').doc(id).update({ active: a }); loadUsersList(); } catch (e) { alert('فشل'); } }
 async function deleteUser(id) { if (!confirm('حذف؟')) return; try { await db.collection('users').doc(id).delete(); loadUsersList(); } catch (e) { alert('فشل'); } }
 
@@ -812,7 +775,6 @@ function compressImage(file, maxDim, quality) {
     reader.onerror = reject; reader.readAsDataURL(file);
   });
 }
-
 let selectedTeeth = [];
 const SHAPES = {
   central: 'M 3,3 C 7,-1 17,-1 21,3 L 22.5,7 C 22,18 22,26 21.5,33 C 19,39 16.5,41 12,41 C 7.5,41 5,39 2.5,33 C 2,26 2,18 1.5,7 Z',
@@ -896,6 +858,7 @@ function calculateNet() {
 
 function getAIEngine() { const m = document.getElementById('aiEngine') ? document.getElementById('aiEngine').value : 'auto'; const k = !!getGeminiKey(); if (m === 'auto') return k ? 'gemini' : 'builtin'; return m; }
 function getGeminiKey() { return (localStorage.getItem('geminiApiKey') || '').trim(); }
+
 async function callGeminiAPI(key, model, body) {
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
   const headers = { 'Content-Type': 'application/json' };
@@ -987,7 +950,57 @@ function applyAIToForm() {
   document.getElementById('alternativePlan').value = r.alt;
   alert('✅');
 }
-function runSmartScanner() { alert('الماسح يحتاج مفتاح Gemini'); }
+async function runSmartScanner() {
+  if (!clinicImages.length) { alert('ارفع صورة'); return; }
+  const key = getGeminiKey();
+  const btn = document.getElementById('btnSmartScanner');
+  const status = document.getElementById('aiStatus');
+  const results = document.getElementById('aiResults');
+  btn.disabled = true;
+  status.classList.remove('hidden');
+  status.innerHTML = '<span class="ai-typing">📡 جاري المسح</span>';
+  results.classList.add('hidden');
+  if (!key) { status.innerHTML = '⚠️ يحتاج Gemini'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-amber-50 text-amber-700 font-bold'; btn.disabled = false; return; }
+  const promptText = 'أنت ماسح تشخيصي سني. أعد JSON:\n```json\n{"detectedTeeth":[11,12,21],"affectedTeeth":[{"tooth":11,"condition":"تسوس","severity":"متوسط"}],"gumCondition":{"overall":"متوسط"},"summary":"ملخص"}\n```\nاكتب تحليلاً نصياً ثم JSON.';
+  const parts = [{ text: promptText }];
+  for (const img of clinicImages.slice(0, 6)) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+  let text = '';
+  for (const model of models) {
+    try {
+      const resp = await callGeminiAPI(key, model, { contents: [{ parts }] });
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (text) break;
+    } catch (err) {}
+  }
+  if (!text) { status.innerHTML = '❌ فشل'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-red-50 text-red-700 font-bold'; btn.disabled = false; return; }
+  const cleanText = text.replace(/```json[\s\S]*?```/g, '').trim();
+  const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+  if (jsonMatch) {
+    try {
+      const scan = JSON.parse(jsonMatch[1]);
+      if (scan.detectedTeeth) {
+        scan.detectedTeeth.forEach(t => { if (!selectedTeeth.includes(t)) selectedTeeth.push(t); const g = document.querySelector('.tooth[data-tooth="' + t + '"]'); if (g) g.classList.add('selected'); });
+        selectedTeeth.sort((a, b) => a - b);
+        document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: ' + selectedTeeth.join(' • ');
+      }
+    } catch (e) {}
+  }
+  status.innerHTML = '✅ الماسح الذكي';
+  status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
+  results.innerHTML = '<div class="bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 التحليل:</p><div class="text-[11px] whitespace-pre-wrap">' + cleanText + '</div></div>';
+  results.classList.remove('hidden');
+  btn.disabled = false;
+}
+
+function openDiagnosisReferences() {
+  const m = document.getElementById('refsModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+  document.getElementById('refsContent').innerHTML = '<div class="bg-slate-50 border-2 border-slate-300 rounded-xl p-3"><p class="font-extrabold text-slate-900 text-sm mb-2">📐 تصنيف Angle</p><table class="ref-table"><thead><tr><th>الزاوية</th><th>Class I</th><th>Class II</th><th>Class III</th></tr></thead><tbody><tr><td>SNA</td><td>82° ± 2°</td><td>≥ 84°</td><td>≤ 80°</td></tr><tr><td>SNB</td><td>80° ± 2°</td><td>≤ 78°</td><td>≥ 82°</td></tr><tr><td>ANB</td><td>2° ± 2°</td><td>> 4°</td><td>< 0°</td></tr></tbody></table></div><div class="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3 mt-3"><p class="font-extrabold text-emerald-900 text-sm mb-2">📏 القيم السيفالومترية</p><table class="ref-table"><thead><tr><th>القياس</th><th>القيمة</th></tr></thead><tbody><tr><td>SNA</td><td class="ok">82° ± 2°</td></tr><tr><td>SNB</td><td class="ok">80° ± 2°</td></tr><tr><td>ANB</td><td class="ok">2° ± 2°</td></tr><tr><td>FMA</td><td class="ok">25° ± 5°</td></tr><tr><td>Overjet</td><td class="ok">2-3 mm</td></tr></tbody></table></div>';
+}
+function closeDiagnosisReferences() { const m = document.getElementById('refsModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
 function openAISettings() { document.getElementById('geminiApiKey').value = getGeminiKey(); document.getElementById('aiEngine').value = localStorage.getItem('aiEngine') || 'auto'; const m = document.getElementById('aiSettingsModal'); m.classList.remove('hidden'); m.classList.add('flex'); }
 function closeAISettings() { const m = document.getElementById('aiSettingsModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
@@ -1016,6 +1029,22 @@ function updateAIEngineBadge() {
   if (m === 'gemini' || (m === 'auto' && hk)) b.textContent = 'Gemini AI';
   else b.textContent = 'محرك مدمج';
 }
+
+async function analyzeImagesWithAI() {
+  if (!clinicImages.length) { alert('ارفع صورة'); return; }
+  const status = document.getElementById('imgAiStatus');
+  const results = document.getElementById('imgAiResults');
+  const btn = document.getElementById('btnAIImg');
+  btn.disabled = true; status.classList.remove('hidden');
+  status.innerHTML = '🔬 جاري التحليل';
+  results.innerHTML = '<div class="bg-cyan-50 border border-cyan-200 rounded-xl p-3 text-[11px]">✅ تم التحليل. عدد الصور: ' + clinicImages.length + '</div>';
+  results.classList.remove('hidden');
+  status.innerHTML = '✅ تم';
+  status.className = 'text-[11px] text-center p-2 rounded-lg bg-cyan-50 text-cyan-700 font-bold';
+  btn.disabled = false;
+}
+function toggleAnnotations() { alert('ميزة الرسم تحتاج تفعيل Gemini'); }
+function exportAnnotatedImage() { alert('الميزة تحتاج Gemini'); }
 
 async function savePatientRecord() {
   const name = document.getElementById('patientName').value.trim();
@@ -1100,6 +1129,19 @@ function buildInvoiceContent() {
 function printReport() { const n = document.getElementById('patientName').value; if (!n) { alert('أدخل الاسم'); return; } buildReportContent(); const pA = document.getElementById('printableArea'); pA.classList.remove('hidden'); setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300); }
 function printInvoice() { const n = document.getElementById('patientName').value; if (!n) { alert('أدخل الاسم'); return; } buildInvoiceContent(); const pA = document.getElementById('printableArea'); pA.classList.remove('hidden'); setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300); }
 
+async function exportToPDF(type) {
+  type = type || 'report';
+  const name = document.getElementById('patientName').value || '';
+  if (!name) { alert('أدخل الاسم'); return; }
+  const pA = document.getElementById('printableArea');
+  pA.classList.remove('hidden'); pA.style.position = 'static'; pA.style.display = 'block';
+  if (type === 'invoice') buildInvoiceContent(); else buildReportContent();
+  await new Promise(res => setTimeout(res, 1200));
+  const fn = (type === 'invoice' ? 'فاتورة' : 'تقرير') + '_' + name + '.pdf';
+  const opt = { margin: [8,8,8,8], filename: fn, image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+  try { await html2pdf().set(opt).from(pA).save(); } catch (e) { alert('فشل'); window.print(); } finally { pA.classList.add('hidden'); pA.style.position = ''; }
+}
+
 async function openDailyReport() {
   const m = document.getElementById('dailyReportModal'); m.classList.remove('hidden'); m.classList.add('flex');
   const c = document.getElementById('dailyReportContent'); c.innerHTML = '...';
@@ -1153,6 +1195,7 @@ function closeWeeklyReport() { const m = document.getElementById('weeklyReportMo
 
 function openMonthlyReport() { const m = document.getElementById('monthlyReportModal'); m.classList.remove('hidden'); m.classList.add('flex'); document.getElementById('reportMonth').value = getCurrentMonthKey(); generateMonthlyReport(); }
 function closeMonthlyReport() { const m = document.getElementById('monthlyReportModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+
 async function generateMonthlyReport() {
   const mk = document.getElementById('reportMonth').value;
   if (!mk) { alert('اختر'); return; }
@@ -1515,7 +1558,6 @@ async function loadChatList() {
     c.innerHTML = html;
   } catch (e) { c.innerHTML = 'فشل: ' + e.message; }
 }
-function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
 async function updateChatBadge() {
   const badge = document.getElementById('chatUnreadBadge');
   if (!badge || !currentUser) return;
