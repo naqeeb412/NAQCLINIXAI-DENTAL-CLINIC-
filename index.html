@@ -45,6 +45,8 @@
   .ref-table td { padding: 3px 6px; border-bottom: 1px solid #e5e7eb; }
   .ref-table tr:nth-child(even) { background: #f8fafc; }
   .ref-table .ok { color: #059669; font-weight: 700; }
+  .pulse-badge { animation: pulseBadge 2s ease infinite; }
+  @keyframes pulseBadge { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
 </style>
 </head>
 <body class="bg-gray-50 text-gray-800 p-2">
@@ -69,9 +71,10 @@
   <div id="userBar" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between shadow flex-wrap gap-2">
     <div class="flex items-center gap-2"><span class="text-2xl">👤</span><div><p id="userBarName" class="text-sm font-bold">-</p><p id="userBarRole" class="text-[10px] opacity-90">-</p></div></div>
     <div class="flex items-center gap-2 flex-wrap">
+      <button onclick="openPatientsList()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">📋 المرضى</button>
       <button onclick="openChatList()" class="relative bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">
         💬 دردشة
-        <span id="chatUnreadBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">0</span>
+        <span id="chatUnreadBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 pulse-badge">0</span>
       </button>
       <button onclick="openCreateGroupModal()" class="bg-white/20 hover:bg-white/30 text-white px-2 py-1.5 rounded-lg text-[11px] font-bold border border-white/30" title="إنشاء مجموعة">👥+</button>
       <button onclick="logout()" class="bg-white/20 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🚪 خروج</button>
@@ -79,6 +82,8 @@
   </div>
 
   <div id="welcomeBar" class="hidden bg-emerald-100 text-emerald-800 p-3 rounded-xl mb-3 text-center font-bold text-sm"></div>
+
+  <div id="remindersBar" class="hidden bg-amber-50 border-2 border-amber-300 rounded-xl p-3 mb-3 text-xs"></div>
 
   <header class="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 shadow-xl border border-blue-800">
     <div class="relative p-5 text-center">
@@ -98,7 +103,6 @@
 
   <main class="flex-1 no-print grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
 
-    <!-- لوحة المدير -->
     <section id="adminPanelSection" class="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-xl border-2 border-amber-300 shadow-sm lg:col-span-1">
       <div class="flex items-center justify-between mb-2"><h2 class="font-bold text-amber-900 text-sm">👑 لوحة تحكم المدير</h2><button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">إخفاء</button></div>
       <div id="adminPanelContent" class="space-y-2">
@@ -114,11 +118,11 @@
           <button onclick="openMonthlyReport()" class="bg-purple-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 التقرير الشهري</button>
           <button onclick="closeDay()" class="bg-rose-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">🔒 إغلاق اليوم</button>
         </div>
+        <button onclick="openPatientsList()" class="w-full bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📋 قائمة المرضى والحسابات</button>
         <div id="usersList" class="space-y-2"></div>
       </div>
     </section>
 
-    <!-- المريض -->
     <section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2 lg:col-span-1">
       <h2 class="font-bold text-blue-900 text-sm">👤 المريض</h2>
       <div class="grid grid-cols-2 gap-2">
@@ -143,9 +147,23 @@
         <select id="smokingHabit" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">التدخين</option><option value="لا يدخن">لا يدخن</option><option value="مدخن خفيف">مدخن خفيف</option><option value="مدخن">مدخن</option></select>
         <select id="oralHygiene" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">نظافة الفم</option><option value="ممتازة">ممتازة</option><option value="جيدة">جيدة</option><option value="ضعيفة">ضعيفة</option></select>
       </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[10px] text-blue-800 block font-bold">📅 الزيارة القادمة:</label>
+          <input type="date" id="nextVisitDate" class="w-full p-2 border-2 border-blue-300 rounded-lg text-sm bg-white font-bold text-blue-900">
+        </div>
+        <div>
+          <label class="text-[10px] text-blue-800 block font-bold">💰 طريقة الدفع:</label>
+          <select id="paymentMethod" class="w-full p-2 border rounded-lg text-sm bg-white">
+            <option value="">اختر...</option>
+            <option value="نقدي">نقدي</option>
+            <option value="تحويل بنكي">تحويل بنكي</option>
+            <option value="محفظة إلكترونية">محفظة إلكترونية</option>
+          </select>
+        </div>
+      </div>
     </section>
 
-    <!-- نوع العمل + الأسنان (عريض) -->
     <section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 lg:col-span-1 xl:col-span-2">
       <h2 class="font-bold text-indigo-900 mb-2 text-sm">🦷 نوع العمل</h2>
       <select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
@@ -161,7 +179,6 @@
       </div>
     </section>
 
-    <!-- التشخيص -->
     <section class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2 lg:col-span-1">
       <h2 class="font-bold text-gray-800 text-sm">التشخيص والخطط</h2>
       <textarea id="complaint" placeholder="الشكوى..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
@@ -169,7 +186,6 @@
       <textarea id="alternativePlan" placeholder="البديل..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
     </section>
 
-    <!-- المساعد الذكي -->
     <section id="aiAssistantSection" class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden lg:col-span-1 xl:col-span-2">
       <div class="ai-glow p-3 text-white">
         <div class="flex items-center justify-between"><h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2><span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span></div>
@@ -177,12 +193,10 @@
       <div class="bg-white p-3 space-y-3">
         <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[10px] text-emerald-800">💡 <strong>تحليل شامل:</strong> يقرأ كل الصور + الأشعة + بيانات المريض ويعطي التشخيص الكامل.</div>
         <button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg">🧠 توليد التشخيص الشامل</button>
-
         <div class="grid grid-cols-2 gap-2">
           <button onclick="runSmartScanner()" id="btnSmartScanner" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📡 الماسح الذكي</button>
           <button onclick="openDiagnosisReferences()" class="bg-gradient-to-r from-slate-700 to-gray-800 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📚 مراجع التشخيص</button>
         </div>
-
         <div class="grid grid-cols-2 gap-2">
           <button onclick="clearAIResults()" class="bg-gray-100 text-gray-700 p-2 rounded-xl text-[11px] font-bold">مسح</button>
           <button onclick="applyAIToForm()" class="bg-emerald-100 text-emerald-800 p-2 rounded-xl text-[11px] font-bold">تطبيق</button>
@@ -208,7 +222,6 @@
       </div>
     </section>
 
-    <!-- تحليل الصور -->
     <section id="imageAnalysisSection" class="rounded-2xl border-2 border-cyan-300 shadow-lg bg-white overflow-hidden lg:col-span-2 xl:col-span-2">
       <div class="bg-gradient-to-r from-cyan-600 to-blue-600 p-3 text-white">
         <h2 class="font-extrabold text-sm">🔬 تحليل الصور والأشعة</h2>
@@ -230,9 +243,8 @@
       </div>
     </section>
 
-    <!-- المالية -->
     <section id="financialSection" class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-green-900 text-sm">الحسابات المالية</h2>
+      <h2 class="font-bold text-green-900 text-sm">💰 الحسابات المالية للمريض</h2>
       <input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="المبلغ الكلي" class="w-full p-2 border rounded-lg text-sm">
       <div class="grid grid-cols-3 gap-2">
         <input type="number" id="payment1" oninput="calculateFinancials()" placeholder="دفعة 1" class="w-full p-2 border rounded-lg text-sm">
@@ -242,9 +254,8 @@
       <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center"><span class="text-xs font-bold">المتبقي:</span><span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span></div>
     </section>
 
-    <!-- الإيرادات -->
     <section id="revenueSection" class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-emerald-900 text-sm">الإيرادات والمصروفات</h2>
+      <h2 class="font-bold text-emerald-900 text-sm">📊 الإيرادات والمصروفات (إداري)</h2>
       <div class="grid grid-cols-2 gap-2">
         <input type="number" id="revenueAmount" placeholder="الإيراد" class="w-full p-2 border rounded-lg text-sm">
         <select id="revenueStatus" class="w-full p-2 border rounded-lg text-sm"><option value="">الحالة...</option><option value="مدفوع كامل">مدفوع كامل</option><option value="جزئي">جزئي</option><option value="غير مدفوع">غير مدفوع</option></select>
@@ -260,7 +271,6 @@
       </div>
     </section>
 
-    <!-- الصور -->
     <section class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-3 lg:col-span-1 xl:col-span-2">
       <div class="flex items-center justify-between"><h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2><span id="imageCounter" class="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">0</span></div>
       <div class="grid grid-cols-2 gap-2">
@@ -270,7 +280,6 @@
       <div id="imagePreviewContainer" class="grid grid-cols-3 md:grid-cols-4 gap-2"></div>
     </section>
 
-    <!-- أزرار الحفظ والطباعة -->
     <div class="space-y-2 pt-2 lg:col-span-1 xl:col-span-3">
       <button id="saveBtn" onclick="savePatientRecord()" class="w-full bg-blue-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">💾 حفظ في السحابة</button>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -300,6 +309,25 @@
 </div>
 
 <!-- ========== النوافذ ========== -->
+
+<div id="patientsListModal" class="fixed inset-0 bg-black/70 z-[88] hidden items-center justify-center p-4 no-print">
+  <div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold text-blue-900 text-base">📋 قائمة المرضى والحسابات</h3>
+      <button onclick="closePatientsList()" class="text-gray-400 text-xl">✕</button>
+    </div>
+    <div class="flex gap-2 flex-col md:flex-row">
+      <input type="text" id="patientsSearch" placeholder="🔍 بحث بالاسم أو الهاتف أو رقم الملف..." class="flex-1 p-2 border rounded-lg text-sm" oninput="renderPatientsList()">
+      <select id="patientsFilter" onchange="renderPatientsList()" class="p-2 border rounded-lg text-sm bg-white">
+        <option value="all">الكل</option>
+        <option value="debt">عليهم متبقي</option>
+        <option value="upcoming">زيارات قادمة</option>
+        <option value="today">زيارات اليوم</option>
+      </select>
+    </div>
+    <div id="patientsListContent" class="space-y-2"></div>
+  </div>
+</div>
 
 <div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print">
   <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -355,7 +383,6 @@
   </div>
 </div>
 
-<!-- نافذة قائمة المحادثات -->
 <div id="chatListModal" class="fixed inset-0 bg-black/70 z-[95] hidden items-center justify-center p-4 no-print">
   <div class="bg-white rounded-2xl max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col">
     <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white flex items-center justify-between">
@@ -366,7 +393,6 @@
   </div>
 </div>
 
-<!-- نافذة الدردشة -->
 <div id="chatWindowModal" class="fixed inset-0 bg-black/70 z-[96] hidden items-center justify-center p-4 no-print">
   <div class="bg-white rounded-2xl max-w-sm w-full h-[85vh] overflow-hidden flex flex-col">
     <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 text-white flex items-center justify-between">
@@ -380,17 +406,13 @@
     <div id="chatMessages" class="flex-1 overflow-y-auto p-3 bg-gray-50 space-y-1"></div>
     <div class="p-2 border-t bg-white">
       <div class="flex gap-2">
-        <input type="text" id="chatInput" placeholder="اكتب رسالتك..." 
-               class="flex-1 p-2.5 border rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600"
-               onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}">
-        <button onclick="sendMessage()" id="chatSendBtn" 
-                class="bg-blue-600 text-white px-4 rounded-xl font-bold text-sm hover:bg-blue-700 transition">إرسال</button>
+        <input type="text" id="chatInput" placeholder="اكتب رسالتك..." class="flex-1 p-2.5 border rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}">
+        <button onclick="sendMessage()" id="chatSendBtn" class="bg-blue-600 text-white px-4 rounded-xl font-bold text-sm hover:bg-blue-700 transition">إرسال</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- نافذة إنشاء مجموعة -->
 <div id="createGroupModal" class="fixed inset-0 bg-black/70 z-[97] hidden items-center justify-center p-4 no-print">
   <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 max-h-[85vh] overflow-y-auto">
     <div class="flex items-center justify-between">
@@ -450,28 +472,56 @@ async function login() {
     else { const s = await db.collection('users').where('username', '==', username).limit(1).get(); if (!s.empty) user = s.docs[0].data(); }
     if (!user) { errEl.textContent = '❌ اسم المستخدم غير موجود'; errEl.classList.remove('hidden'); return; }
     if (user.password !== password) { errEl.textContent = '❌ كلمة المرور خطأ'; errEl.classList.remove('hidden'); return; }
-    if (user.active !== true) { errEl.textContent = '🚫 موقوف'; errEl.classList.remove('hidden'); return; }
+    if (user.active === false) { errEl.textContent = '🚫 موقوف'; errEl.classList.remove('hidden'); return; }
     currentUser = { username: user.username || username, fullName: user.fullName || username, role: user.role || 'employee', loginTime: new Date().toISOString() };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     try { await db.collection('activity').add({ username: currentUser.username, fullName: currentUser.fullName, role: currentUser.role, action: 'تسجيل دخول', timestamp: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
     document.getElementById('loginOverlay').style.display = 'none';
     applyPermissions(); updateUserBar(); showWelcome();
     if (currentUser.role === 'admin') loadUsersList();
-  } catch (err) { errEl.textContent = '❌ خطأ'; errEl.classList.remove('hidden'); }
+    startChatAutoRefresh();
+    checkTodayReminders();
+  } catch (err) { errEl.textContent = '❌ خطأ: ' + err.message; errEl.classList.remove('hidden'); }
   finally { btn.disabled = false; btn.textContent = 'دخول النظام'; }
 }
+
 function logout() {
   if (!confirm('تسجيل الخروج؟')) return;
+  stopChatAutoRefresh();
   try { if (currentUser) db.collection('activity').add({ username: currentUser.username, fullName: currentUser.fullName, role: currentUser.role, action: 'تسجيل خروج', timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {}); } catch (e) {}
   localStorage.removeItem('currentUser'); location.reload();
 }
+
+/* ═══════════════════════════════════════════════════════════
+   🔐 الصلاحيات — الفصل بين المالية الطبية والمالية الإدارية
+   ═══════════════════════════════════════════════════════════ */
 function applyPermissions() {
   if (!currentUser) return;
   const role = currentUser.role;
   const hideElements = (ids) => ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-  if (role === 'employee') hideElements(['aiAssistantSection', 'imageAnalysisSection', 'proportionTablesSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']);
-  else if (role === 'doctor') hideElements(['financialSection', 'revenueSection', 'adminPanelSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap']);
+
+  // 💼 عناصر المالية الإدارية (تظهر للمدير فقط)
+  const ADMIN_FINANCIAL = ['revenueSection', 'expenseSection', 'netRevenueSection', 'netRevenueDisplayWrap'];
+
+  if (role === 'employee') {
+    // 👨‍💼 الموظف: يرى المرضى + حسابات المريض + الدردشة
+    hideElements([
+      'adminPanelSection',           // لوحة المدير
+      'aiAssistantSection',          // المساعد الذكي
+      'imageAnalysisSection',        // تحليل الصور
+      'proportionTablesSection',     // جداول النسب
+      ...ADMIN_FINANCIAL              // الإيرادات والمصروفات الإدارية
+    ]);
+  } else if (role === 'doctor') {
+    // 👨‍⚕️ الطبيب: يرى المرضى + حسابات المريض + AI (بدون المالية الإدارية)
+    hideElements([
+      'adminPanelSection',           // لوحة المدير
+      ...ADMIN_FINANCIAL              // الإيرادات والمصروفات الإدارية
+    ]);
+  }
+  // 👑 admin → يرى كل شيء (لا إخفاء)
 }
+
 function updateUserBar() {
   if (!currentUser) return;
   const bar = document.getElementById('userBar'); if (!bar) return;
@@ -480,11 +530,48 @@ function updateUserBar() {
   document.getElementById('userBarName').textContent = currentUser.fullName;
   document.getElementById('userBarRole').textContent = roleLabel;
 }
+
 function showWelcome() { if (!currentUser) return; const w = document.getElementById('welcomeBar'); if (!w) return; w.textContent = `👋 مرحباً ${currentUser.fullName}`; w.classList.remove('hidden'); setTimeout(() => w.classList.add('hidden'), 4000); }
+
 window.addEventListener('load', () => {
-  try { const s = localStorage.getItem('currentUser'); if (s) { currentUser = JSON.parse(s); document.getElementById('loginOverlay').style.display = 'none'; applyPermissions(); updateUserBar(); if (currentUser.role === 'admin') loadUsersList(); } } catch (e) {}
+  try {
+    const s = localStorage.getItem('currentUser');
+    if (s) {
+      currentUser = JSON.parse(s);
+      document.getElementById('loginOverlay').style.display = 'none';
+      applyPermissions(); updateUserBar();
+      if (currentUser.role === 'admin') loadUsersList();
+      startChatAutoRefresh();
+      checkTodayReminders();
+    }
+  } catch (e) {}
 });
+
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('loginOverlay').classList.contains('hidden')) { const el = document.activeElement; if (el && (el.id === 'loginPassword' || el.id === 'loginUsername')) login(); } });
+
+/* ========== تنبيهات الزيارات ========== */
+async function checkTodayReminders() {
+  if (!currentUser) return;
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const snap = await db.collection('patients').where('nextVisit', '==', today).get();
+    const bar = document.getElementById('remindersBar');
+    if (!bar) return;
+    if (snap.empty) { bar.classList.add('hidden'); return; }
+    let list = [];
+    snap.forEach(doc => list.push(doc.data()));
+    let html = `<p class="font-bold text-amber-900 mb-2">🔔 الزيارات المقررة اليوم (${list.length}):</p><div class="space-y-1">`;
+    list.forEach(p => {
+      html += `<div class="bg-white rounded-lg p-2 flex justify-between items-center text-[11px]">
+        <div><p class="font-bold">${escapeHtml(p.fullName || '-')}</p><p class="text-[9px] text-gray-500">${p.phone || '-'} • ${p.fileNumber || ''}</p></div>
+        <button onclick="loadPatientFromList('${p.fileNumber}')" class="bg-amber-600 text-white px-2 py-1 rounded text-[10px] font-bold">فتح</button>
+      </div>`;
+    });
+    html += '</div>';
+    bar.innerHTML = html;
+    bar.classList.remove('hidden');
+  } catch (e) { console.warn('reminders:', e); }
+}
 
 /* ========== إدارة المستخدمين ========== */
 async function loadUsersList() {
@@ -499,11 +586,13 @@ async function loadUsersList() {
       const ri = u.role === 'admin' ? '👑' : u.role === 'doctor' ? '👨‍⚕️' : '👨‍💼';
       const rn = u.role === 'admin' ? 'مدير' : u.role === 'doctor' ? 'طبيب' : 'موظف';
       const isMe = currentUser && currentUser.username === u.username;
-      html += `<div class="bg-white border rounded-lg p-2 flex items-center justify-between"><div class="flex items-center gap-2"><span class="text-lg">${ri}</span><div><p class="text-xs font-bold">${u.fullName || doc.id} ${isMe ? '<span class="text-emerald-600">(أنت)</span>' : ''}</p><p class="text-[10px] text-gray-500">@${u.username || doc.id} — ${rn}</p></div></div><div class="flex items-center gap-1"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${u.active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${u.active ? 'نشط' : 'موقوف'}</span>${!isMe ? `<button onclick="toggleUserActive('${doc.id}', ${!u.active})" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">${u.active ? 'إيقاف' : 'تفعيل'}</button><button onclick="deleteUser('${doc.id}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">حذف</button>` : ''}</div></div>`;
+      const userActive = u.active !== false;
+      html += `<div class="bg-white border rounded-lg p-2 flex items-center justify-between"><div class="flex items-center gap-2"><span class="text-lg">${ri}</span><div><p class="text-xs font-bold">${u.fullName || doc.id} ${isMe ? '<span class="text-emerald-600">(أنت)</span>' : ''}</p><p class="text-[10px] text-gray-500">@${u.username || doc.id} — ${rn}</p></div></div><div class="flex items-center gap-1"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${userActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${userActive ? 'نشط' : 'موقوف'}</span>${!isMe ? `<button onclick="toggleUserActive('${doc.id}', ${!userActive})" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">${userActive ? 'إيقاف' : 'تفعيل'}</button><button onclick="deleteUser('${doc.id}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">حذف</button>` : ''}</div></div>`;
     });
     c.innerHTML = html;
   } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-2">فشل</p>'; }
 }
+
 function toggleAdminPanel() { const c = document.getElementById('adminPanelContent'), t = document.getElementById('adminPanelToggle'); if (c.style.display === 'none') { c.style.display = 'block'; t.textContent = 'إخفاء'; } else { c.style.display = 'none'; t.textContent = 'إظهار'; } }
 function openAddUserModal() { document.getElementById('addUserModal').classList.remove('hidden'); document.getElementById('addUserModal').classList.add('flex'); }
 function closeAddUserModal() { document.getElementById('addUserModal').classList.add('hidden'); document.getElementById('addUserModal').classList.remove('flex'); }
@@ -515,10 +604,11 @@ async function addNewUser() {
   const s = document.getElementById('addUserStatus');
   if (!u || !p || !f) { s.textContent = '⚠️ أكمل الحقول'; s.className = 'text-[11px] text-center font-bold text-amber-600'; s.classList.remove('hidden'); return; }
   if (!/^[a-z0-9]+$/.test(u)) { s.textContent = '⚠️ أحرف إنجليزية وأرقام فقط'; s.className = 'text-[11px] text-center font-bold text-amber-600'; s.classList.remove('hidden'); return; }
-  try { await db.collection('users').doc(u).set({ username: u, password: p, fullName: f, role: r, active: true, createdAt: Date.now() }); s.textContent = '✅ تم'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; s.classList.remove('hidden'); setTimeout(() => { closeAddUserModal(); loadUsersList(); }, 1500); } catch (e) { s.textContent = '❌ فشل'; s.className = 'text-[11px] text-center font-bold text-red-600'; s.classList.remove('hidden'); }
+  try { await db.collection('users').doc(u).set({ username: u, password: p, fullName: f, role: r, active: true, createdAt: Date.now() }); s.textContent = '✅ تم'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; s.classList.remove('hidden'); setTimeout(() => { closeAddUserModal(); loadUsersList(); }, 1500); } catch (e) { s.textContent = '❌ فشل: ' + e.message; s.className = 'text-[11px] text-center font-bold text-red-600'; s.classList.remove('hidden'); }
 }
 async function toggleUserActive(docId, active) { if (!confirm(active ? 'تفعيل؟' : 'إيقاف؟')) return; try { await db.collection('users').doc(docId).update({ active }); loadUsersList(); } catch (e) { alert('فشل'); } }
 async function deleteUser(docId) { if (!confirm('حذف نهائي؟')) return; try { await db.collection('users').doc(docId).delete(); loadUsersList(); } catch (e) { alert('فشل'); } }
+
 async function openActivityLog() {
   const m = document.getElementById('activityModal'); m.classList.remove('hidden'); m.classList.add('flex');
   const list = document.getElementById('activityList'); list.innerHTML = '<p class="text-center text-xs text-gray-500 py-2">...</p>';
@@ -536,6 +626,164 @@ async function openActivityLog() {
   } catch (e) { list.innerHTML = '<p class="text-center text-xs text-red-500 py-2">فشل</p>'; }
 }
 function closeActivityLog() { const m = document.getElementById('activityModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+
+/* ========== قائمة المرضى ========== */
+let allPatientsCache = [];
+
+async function openPatientsList() {
+  const m = document.getElementById('patientsListModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+  const c = document.getElementById('patientsListContent');
+  c.innerHTML = '<p class="text-center text-xs text-gray-500 py-4">جاري التحميل...</p>';
+  try {
+    const snap = await db.collection('patients').get();
+    allPatientsCache = [];
+    snap.forEach(doc => allPatientsCache.push({ id: doc.id, ...doc.data() }));
+    allPatientsCache.sort((a, b) => {
+      const ta = a.timestamp ? a.timestamp.seconds : 0;
+      const tb = b.timestamp ? b.timestamp.seconds : 0;
+      return tb - ta;
+    });
+    renderPatientsList();
+  } catch (e) {
+    c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>';
+  }
+}
+function closePatientsList() { const m = document.getElementById('patientsListModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+
+function renderPatientsList() {
+  const c = document.getElementById('patientsListContent');
+  const search = (document.getElementById('patientsSearch').value || '').trim().toLowerCase();
+  const filter = document.getElementById('patientsFilter').value;
+  const today = new Date().toISOString().split('T')[0];
+
+  let list = allPatientsCache.slice();
+
+  if (search) {
+    list = list.filter(p =>
+      (p.fullName || '').toLowerCase().includes(search) ||
+      (p.phone || '').includes(search) ||
+      (p.fileNumber || '').toLowerCase().includes(search)
+    );
+  }
+  if (filter === 'debt') {
+    list = list.filter(p => {
+      const f = p.financials || {};
+      const total = parseFloat(f.total) || 0;
+      const paid = (parseFloat(f.payment1)||0) + (parseFloat(f.payment2)||0) + (parseFloat(f.payment3)||0);
+      return total - paid > 0;
+    });
+  } else if (filter === 'upcoming') {
+    list = list.filter(p => p.nextVisit && p.nextVisit >= today);
+  } else if (filter === 'today') {
+    list = list.filter(p => p.nextVisit === today);
+  }
+
+  if (list.length === 0) {
+    c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا توجد نتائج</p>';
+    return;
+  }
+
+  let totalAll = 0, totalPaid = 0;
+  list.forEach(p => {
+    const f = p.financials || {};
+    totalAll += parseFloat(f.total) || 0;
+    totalPaid += (parseFloat(f.payment1)||0) + (parseFloat(f.payment2)||0) + (parseFloat(f.payment3)||0);
+  });
+  const totalRem = totalAll - totalPaid;
+
+  let html = '';
+  list.forEach((p, i) => {
+    const f = p.financials || {};
+    const total = parseFloat(f.total) || 0;
+    const paid = (parseFloat(f.payment1)||0) + (parseFloat(f.payment2)||0) + (parseFloat(f.payment3)||0);
+    const rem = total - paid;
+    const nextVisit = p.nextVisit || '';
+    let visitBadge = '';
+    if (nextVisit) {
+      if (nextVisit === today) {
+        visitBadge = '<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-2 py-0.5 rounded-full">🔔 اليوم</span>';
+      } else if (nextVisit > today) {
+        const days = Math.ceil((new Date(nextVisit) - new Date(today)) / 86400000);
+        const color = days <= 3 ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800';
+        visitBadge = `<span class="${color} text-[9px] font-bold px-2 py-0.5 rounded-full">📅 بعد ${days} يوم</span>`;
+      } else {
+        visitBadge = '<span class="bg-red-100 text-red-700 text-[9px] font-bold px-2 py-0.5 rounded-full">⚠️ متأخرة</span>';
+      }
+    }
+    const remColor = rem > 0 ? 'text-red-600' : rem < 0 ? 'text-purple-600' : 'text-emerald-600';
+    const remLabel = rem > 0 ? rem + ' متبقي' : rem < 0 ? Math.abs(rem) + ' زيادة' : '✅ مسدد';
+
+    html += `<div class="bg-white border rounded-xl p-3 hover:shadow-md transition">
+      <div class="flex justify-between items-start mb-2">
+        <div class="flex-1">
+          <p class="font-bold text-sm text-gray-800">${i+1}. ${escapeHtml(p.fullName || '-')}</p>
+          <p class="text-[10px] text-gray-500">${p.fileNumber || ''} • ${p.phone || '-'}</p>
+        </div>
+        ${visitBadge}
+      </div>
+      <div class="grid grid-cols-3 gap-1 text-[10px] mb-2">
+        <div class="bg-gray-50 rounded p-1.5 text-center"><div class="text-gray-500">الإجمالي</div><div class="font-bold text-gray-800">${total}</div></div>
+        <div class="bg-emerald-50 rounded p-1.5 text-center"><div class="text-emerald-700">المدفوع</div><div class="font-bold text-emerald-700">${paid}</div></div>
+        <div class="bg-red-50 rounded p-1.5 text-center"><div class="text-gray-500">الحالة</div><div class="font-bold ${remColor}">${remLabel}</div></div>
+      </div>
+      ${nextVisit ? `<p class="text-[10px] text-blue-700 bg-blue-50 rounded p-1.5 text-center mb-1">📅 الزيارة القادمة: <strong>${nextVisit}</strong></p>` : ''}
+      <button onclick="loadPatientFromList('${p.id}')" class="w-full mt-1 bg-slate-100 text-slate-700 p-1.5 rounded-lg text-[10px] font-bold hover:bg-slate-200">📂 فتح ملف المريض</button>
+    </div>`;
+  });
+
+  let header = `<div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-3 grid grid-cols-3 gap-2 text-center text-xs">
+    <div><div class="text-gray-500">عدد المرضى</div><div class="text-lg font-extrabold text-blue-700">${list.length}</div></div>
+    <div><div class="text-gray-500">إجمالي المدفوع</div><div class="text-lg font-extrabold text-emerald-600">${totalPaid}</div></div>
+    <div><div class="text-gray-500">إجمالي المتبقي</div><div class="text-lg font-extrabold text-red-600">${totalRem}</div></div>
+  </div>`;
+
+  c.innerHTML = header + html;
+}
+
+async function loadPatientFromList(patientId) {
+  closePatientsList();
+  try {
+    const doc = await db.collection('patients').doc(patientId).get();
+    if (!doc.exists) { alert('غير موجود'); return; }
+    const d = doc.data();
+    document.getElementById('fileNumber').value = d.fileNumber || patientId;
+    document.getElementById('patientName').value = d.fullName || '';
+    document.getElementById('patientGender').value = d.gender || '';
+    document.getElementById('patientAge').value = d.age || '';
+    document.getElementById('patientAddress').value = d.address || '';
+    document.getElementById('patientPhone').value = d.phone || '';
+    document.getElementById('whatsappPhone').value = d.whatsapp || '';
+    document.getElementById('patientAllergies').value = d.allergies || '';
+    document.getElementById('chronicDiseases').value = d.chronic || '';
+    document.getElementById('smokingHabit').value = d.smoking || '';
+    document.getElementById('oralHygiene').value = d.hygiene || '';
+    document.getElementById('workType').value = d.workType || '';
+    document.getElementById('teethCount').value = d.teethCount || '';
+    document.getElementById('complaint').value = d.complaint || '';
+    document.getElementById('treatmentPlan').value = d.treatmentPlan || '';
+    document.getElementById('alternativePlan').value = d.alternativePlan || '';
+    document.getElementById('nextVisitDate').value = d.nextVisit || '';
+    document.getElementById('paymentMethod').value = d.paymentMethod || '';
+    if (d.financials) {
+      document.getElementById('totalAmount').value = d.financials.total || '';
+      document.getElementById('payment1').value = d.financials.payment1 || '';
+      document.getElementById('payment2').value = d.financials.payment2 || '';
+      document.getElementById('payment3').value = d.financials.payment3 || '';
+      document.getElementById('revenueStatus').value = d.financials.status || '';
+      document.getElementById('expenseAmount').value = d.financials.expense || '';
+      document.getElementById('expenseType').value = d.financials.expenseType || '';
+    }
+    selectedTeeth = (d.selectedTeeth || '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    document.querySelectorAll('.tooth').forEach(g => {
+      const n = parseInt(g.dataset.tooth, 10);
+      if (selectedTeeth.indexOf(n) > -1) g.classList.add('selected');
+    });
+    document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(' • ') : 'لا يوجد');
+    calculateFinancials();
+    alert('✅ تم فتح ملف: ' + (d.fullName || patientId));
+  } catch (e) { alert('فشل: ' + e.message); }
+}
 
 /* ========== الشعار ========== */
 let logoUid = 0;
@@ -578,12 +826,14 @@ const TOOTH_SHAPES = {
 const TOOTH_TYPES = { 18:'molar',17:'molar',16:'molar',15:'premolar',14:'premolar',13:'canine',12:'lateral',11:'central',21:'central',22:'lateral',23:'canine',24:'premolar',25:'premolar',26:'molar',27:'molar',28:'molar',48:'molar',47:'molar',46:'molar',45:'premolar',44:'premolar',43:'canine',42:'lateral',41:'central',31:'central',32:'lateral',33:'canine',34:'premolar',35:'premolar',36:'molar',37:'molar',38:'molar' };
 const UPPER_POS = [{t:18,x:6,y:16,s:0.80},{t:17,x:30,y:11,s:0.88},{t:16,x:54,y:8,s:0.95},{t:15,x:79,y:12,s:0.82},{t:14,x:103,y:18,s:0.82},{t:13,x:127,y:25,s:0.90},{t:12,x:151,y:32,s:0.82},{t:11,x:176,y:38,s:1.00},{t:21,x:200,y:38,s:1.00},{t:22,x:225,y:32,s:0.82},{t:23,x:249,y:25,s:0.90},{t:24,x:273,y:18,s:0.82},{t:25,x:297,y:12,s:0.82},{t:26,x:322,y:8,s:0.95},{t:27,x:346,y:11,s:0.88},{t:28,x:370,y:16,s:0.80}];
 const LOWER_POS = [{t:48,x:6,y:56,s:0.80},{t:47,x:30,y:51,s:0.88},{t:46,x:54,y:48,s:0.95},{t:45,x:79,y:52,s:0.82},{t:44,x:103,y:58,s:0.82},{t:43,x:127,y:65,s:0.90},{t:42,x:151,y:72,s:0.82},{t:41,x:176,y:78,s:1.00},{t:31,x:200,y:78,s:1.00},{t:32,x:225,y:72,s:0.82},{t:33,x:249,y:65,s:0.90},{t:34,x:273,y:58,s:0.82},{t:35,x:297,y:52,s:0.82},{t:36,x:322,y:48,s:0.95},{t:37,x:346,y:51,s:0.88},{t:38,x:370,y:56,s:0.80}];
+
 function buildToothSVG(e, isLower) {
   const shape = TOOTH_SHAPES[TOOTH_TYPES[e.t]];
   const flip = isLower ? ' transform="translate(0, 41) scale(1,-1)"' : '';
   const sx = e.s >= 0.95 ? 12 : 11;
   return '<g class="tooth" data-tooth="'+e.t+'" transform="translate('+e.x+','+e.y+') scale('+e.s+')"><path class="crown" d="'+shape+'"'+flip+'/><ellipse class="shine" cx="'+sx+'" cy="13" rx="3" ry="5"'+(flip ? ' transform="translate(0, 41) scale(1,-1)"' : '')+'/><text class="num" x="12" y="24">'+e.t+'</text></g>';
 }
+
 function renderDentalChart() {
   const defs = '<defs><linearGradient id="toothGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient><linearGradient id="toothGradHover" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#eef2ff"/><stop offset="100%" stop-color="#c7d2fe"/></linearGradient><linearGradient id="toothGradSel" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient><linearGradient id="gumGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fda4af"/><stop offset="100%" stop-color="#fb7185"/></linearGradient></defs>';
   document.getElementById('upperArchSvg').innerHTML = defs + '<path class="gum" d="M 0,4 C 60,-2 140,-2 200,2 C 260,-2 340,-2 400,4 L 400,20 C 320,14 260,16 200,20 C 140,16 80,14 0,20 Z"/>' + UPPER_POS.map(e => buildToothSVG(e, false)).join('');
@@ -630,22 +880,25 @@ function calculateFinancials() {
   const p3 = parseFloat(document.getElementById('payment3').value) || 0;
   const rem = t - (p1 + p2 + p3);
   document.getElementById('remainingDisplay').textContent = rem + ' ريال';
-  document.getElementById('revenueAmount').value = p1 + p2 + p3;
+  const revAmt = document.getElementById('revenueAmount');
+  if (revAmt) revAmt.value = p1 + p2 + p3;
   calculateNet();
   return rem;
 }
 function calculateNet() {
-  const r = parseFloat(document.getElementById('revenueAmount').value) || 0;
-  const e = parseFloat(document.getElementById('expenseAmount').value) || 0;
-  document.getElementById('totalRevenueDisplay').textContent = r;
-  document.getElementById('totalExpensesDisplay').textContent = e;
-  document.getElementById('netRevenueDisplay').textContent = (r - e);
+  const revEl = document.getElementById('revenueAmount');
+  const expEl = document.getElementById('expenseAmount');
+  const r = revEl ? (parseFloat(revEl.value) || 0) : 0;
+  const e = expEl ? (parseFloat(expEl.value) || 0) : 0;
+  const tr = document.getElementById('totalRevenueDisplay'); if (tr) tr.textContent = r;
+  const te = document.getElementById('totalExpensesDisplay'); if (te) te.textContent = e;
+  const net = document.getElementById('netRevenueDisplay'); if (net) net.textContent = (r - e);
 }
-document.getElementById('revenueAmount').addEventListener('input', calculateNet);
+const revAmtEl = document.getElementById('revenueAmount');
+if (revAmtEl) revAmtEl.addEventListener('input', calculateNet);
 
 /* ========== قاعدة المعرفة AI ========== */
 const AI_KB = {
-  toothMeta: { central: { name: 'قاطع مركزي' }, lateral: { name: 'قاطع جانبي' }, canine: { name: 'ناب' }, premolar: { name: 'ضاحك' }, molar: { name: 'ضرس' } },
   treatments: {
     'تجميل وتناغم وجه': { diag: 'عدم تناسق ابتسامة أو تصبغات', plan: ['تصوير DSD', 'تنظيف', 'تبييض', 'فينير إيماكس', 'متابعة'], alt: ['حشوات كومبوزيت', 'تقويم شفاف'] },
     'حشوات تجميلية': { diag: 'تسوس نشط', plan: ['تخدير', 'إزالة التسوس', 'Rubber Dam', 'كومبوزيت طبقات', 'تلميع'], alt: ['GIC', 'Inlay/Onlay'] },
@@ -655,7 +908,7 @@ const AI_KB = {
     'تنظيف اللثة': { diag: 'التهاب لثة', plan: ['تقييم GI', 'موجات فوق صوتية', 'Scaling', 'تلميع', 'كلورهيكسيدين'], alt: ['SRP', 'ليزر'] },
     'علاج لثة متقدم': { diag: 'التهاب دواعم', plan: ['بانورامية', 'قياس الجيوب', 'SRP كامل', 'مضاد حيوي', 'جراحة رفع لثة', 'ترقيع'], alt: ['ليزر', 'قلع', 'زراعة'] },
     'زراعة الأسنان': { diag: 'فقد سن', plan: ['CBCT', 'تخطيط', 'ترقيع', 'زرعة', 'التحام 3-6 أشهر', 'Abutment', 'تاج'], alt: ['جسر', 'طقم'] },
-    'تقويم الأسنان': { diag: 'سوء إطباق — يحتاج تقييم سيفالومتري', plan: ['دراسة', 'تخطيط', 'براكيت', 'أسلاك كل 3-4 أسابيع', 'Retainer'], alt: ['Invisalign', 'جراحة تقويمية'] },
+    'تقويم الأسنان': { diag: 'سوء إطباق', plan: ['دراسة', 'تخطيط', 'براكيت', 'أسلاك كل 3-4 أسابيع', 'Retainer'], alt: ['Invisalign', 'جراحة تقويمية'] },
     'طب أسنان الأطفال': { diag: 'أسنان لبنية', plan: ['Tell-Show-Do', 'حشوات GIC', 'فلورايد', 'Pulpotomy', 'تاج'], alt: ['خلع مبرمج'] },
     'تشخيص عام': { diag: 'تقييم شامل', plan: ['فحص بصري', 'أشعة', 'تقييم اللثة', 'أولويات'], alt: ['متابعة'] },
     'أخرى': { diag: 'تقييم إضافي', plan: ['تقييم', 'أشعة', 'خطة'], alt: ['خيارات'] }
@@ -669,8 +922,6 @@ const PROPORTION_DATA = {
   goldenPercentage: { title: '📊 النسبة الذهبية %', desc: 'توزيع النسب', rows: [{ item: 'CI', ideal: '25%', range: '22.1-25%' }, { item: 'LI', ideal: '15%', range: '15.2-15.5%' }, { item: 'C', ideal: '10%', range: '10-12.7%' }] },
   gingivalValues: { title: '🩸 قيم اللثة', desc: 'القياسات الطبيعية', rows: [{ item: 'عمق الجيب', ideal: '≤3mm', range: '1-3mm' }, { item: 'سماكة اللثة', ideal: '≥1mm', range: '1-2mm' }, { item: 'اللثة المُلتصقة', ideal: '≥2mm', range: '2-4mm' }] },
   boneValues: { title: '🦴 قيم العظم', desc: 'القياسات الطبيعية', rows: [{ item: 'العظم الإكليلي', ideal: '≥2mm', range: '2-3mm' }, { item: 'ارتفاع العظم', ideal: '≥10mm', range: '10-13mm' }, { item: 'عرض العظم', ideal: '≥6mm', range: '6-8mm' }] },
-  toothDimensions: { title: '🦷 أبعاد الأسنان', desc: 'الطول × العرض', rows: [{ item: 'CI', ideal: '10.5×8.5', range: '9-12×7-9' }, { item: 'LI', ideal: '9.0×6.5', range: '8-10×5-7' }, { item: 'C', ideal: '10.0×7.5', range: '9-11×7-8' }] },
-  facialValues: { title: '😁 الوجه والابتسامة', desc: 'النسب المثالية', rows: [{ item: 'خط الابتسامة', ideal: 'منحني', range: 'مقعر' }, { item: 'كشف اللثة', ideal: '0-2mm', range: '0-3mm' }, { item: 'الزاوية الأنفية', ideal: '90-100°', range: '85-105°' }] },
   angles: { title: '📐 زوايا التقويم', desc: 'القيم الطبيعية', rows: [{ item: 'SNA', ideal: '82°', range: '80-84°' }, { item: 'SNB', ideal: '80°', range: '78-82°' }, { item: 'ANB', ideal: '2°', range: '0-4°' }, { item: 'FMA', ideal: '25°', range: '20-30°' }, { item: 'IMPA', ideal: '90°', range: '85-95°' }, { item: 'U1-SN', ideal: '103°', range: '100-107°' }] }
 };
 
@@ -769,26 +1020,25 @@ ${imagesInfo}
 - الأسنان (FDI): ${teethList}
 - الأعراض: ${symptoms.length ? symptoms.join('، ') : 'لا يوجد'}
 
-قواعد صارمة:
-1. أعطِ Class محدداً (Class I/II/III) مع درجة يقين (مؤكد/محتمل/غير مؤكد).
-2. لا تخترع أرقاماً — اذكر فقط ما رأيته في الصور أو ما أعطاك الطبيب.
+قواعد:
+1. أعطِ Class محدداً مع درجة يقين.
+2. لا تخترع أرقاماً.
 3. اذكر مصدر كل معلومة.
-4. إن نقصت البيانات، اطلبها صراحة.
 
 المطلوب:
-1) ملخص تشخيصي صريح + Class + درجة يقين
-2) الأدلة (من أي صورة استنتجت ماذا)
+1) ملخص تشخيصي + Class
+2) الأدلة
 3) التحليل الهيكلي (SNA, SNB, ANB, FMA, IMPA)
-4) التحليل السني (Class, Overjet, Overbite, ازدحام, خط الوسط)
-5) تحليل الأنسجة الرخوة (خط E, الأنفية الشفوية, كشف اللثة)
-6) المشاكل التشخيصية (مرقمة)
-7) الأهداف العلاجية
-8) 4 خيارات علاج (A أساسي, B بديل, C بديل, D محافظ) مع مميزات/عيوب
-9) خطة مفصلة للخيار الموصى به (مراحل + مدد)
-10) المخاطر والتحذيرات
+4) التحليل السني
+5) تحليل الأنسجة الرخوة
+6) المشاكل (مرقمة)
+7) الأهداف
+8) خيارات علاج (A, B, C, D)
+9) خطة مفصلة
+10) المخاطر
 11) المتابعة
 
-اكتب بالعربية الطبية، بأقسام واضحة. ابدأ بالملخص مباشرة.`;
+اكتب بالعربية الطبية بأقسام واضحة.`;
 
   const parts = [{ text: prompt }];
   for (const img of clinicImages.slice(0, 6)) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
@@ -875,11 +1125,9 @@ function runBuiltinImageAnalysis(focus) {
   const status = document.getElementById('imgAiStatus');
   const results = document.getElementById('imgAiResults');
   const hygiene = document.getElementById('oralHygiene').value;
-  const age = parseInt(document.getElementById('patientAge').value) || 30;
   const findings = ['📷 الصور: ' + clinicImages.length, '🔎 التحليل: ' + focus];
   if (hygiene === 'ضعيفة') findings.push('🩸 اللثة: التهاب لثة');
-  const recommendations = ['متابعة كل 3-6 أشهر'];
-  window.__aiImageResults = { focus, engine: 'محرك مدمج', findings, recommendations, imagesCount: clinicImages.length, generatedAt: new Date().toISOString() };
+  window.__aiImageResults = { focus, engine: 'محرك مدمج', findings, imagesCount: clinicImages.length, generatedAt: new Date().toISOString() };
   results.innerHTML = '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔍 النتائج:</p><div class="text-[11px] whitespace-pre-wrap">' + findings.join('\n') + '</div></div>';
   status.innerHTML = '✅ محرك مدمج'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-cyan-50 text-cyan-700 font-bold';
   results.classList.remove('hidden');
@@ -908,21 +1156,23 @@ async function runGeminiImageAnalysis(focus, key) {
   const work = document.getElementById('workType').value || 'تشخيص عام';
   const promptText = `أنت خبير تحليل صور طبية. الصورة: العمر ${age}، الجنس ${gender}، العمل: ${work}. نوع التحليل: ${focus}
 
-أعد JSON بين \`\`\`json و \`\`\`:
+أعد JSON:
+\`\`\`json
 {
   "boxes": [{"label":"التهاب لثة","xmin":0.35,"ymin":0.45,"xmax":0.45,"ymax":0.55,"severity":"متوسط","tooth":11}],
-  "landmarks": [{"name":"طرف الأنف","x":0.50,"y":0.50,"type":"face"},{"name":"الذقن","x":0.50,"y":0.78,"type":"face"}],
+  "landmarks": [{"name":"طرف الأنف","x":0.50,"y":0.50,"type":"face"}],
   "lines": [{"name":"خط E","x1":0.45,"y1":0.50,"x2":0.52,"y2":0.72,"color":"#ec4899"}],
-  "angles": [{"name":"الزاوية الأنفية الشفوية","p1":{"x":0.45,"y":0.50},"p2":{"x":0.50,"y":0.62},"p3":{"x":0.50,"y":0.66},"value":105}],
-  "measurements": [{"name":"ارتفاع الشفة","x1":0.50,"y1":0.50,"x2":0.50,"y2":0.62,"value":"22 مم"}],
+  "angles": [{"name":"الزاوية","p1":{"x":0.45,"y":0.50},"p2":{"x":0.50,"y":0.62},"p3":{"x":0.50,"y":0.66},"value":105}],
+  "measurements": [{"name":"ارتفاع","x1":0.50,"y1":0.50,"x2":0.50,"y2":0.62,"value":"22 مم"}],
   "midline": 0.50,
   "gumLine": [{"x":0.20,"y":0.58},{"x":0.50,"y":0.54},{"x":0.80,"y":0.58}],
   "boneLine": [{"x":0.20,"y":0.68},{"x":0.50,"y":0.65},{"x":0.80,"y":0.68}],
   "goldenLines": [0.35,0.42,0.50,0.58,0.65],
-  "cephalometricPoints": [{"name":"S","x":0.50,"y":0.20},{"name":"N","x":0.55,"y":0.35}]
+  "cephalometricPoints": [{"name":"S","x":0.50,"y":0.20}]
 }
+\`\`\`
 
-كل الإحداثيات من 0 إلى 1. اكتب تحليلاً نصياً أولاً، ثم JSON.`;
+كل الإحداثيات 0-1. اكتب تحليلاً أولاً ثم JSON.`;
   const parts = [{ text: promptText }];
   for (const img of imgsToSend) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
   const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
@@ -942,10 +1192,10 @@ async function runGeminiImageAnalysis(focus, key) {
   if (jsonMatch) { try { const p = JSON.parse(jsonMatch[1]); parsed = Object.assign(parsed, p); } catch (e) {} }
   const cleanText = text.replace(/```json[\s\S]*?```/g, '').trim();
   imgsToSend.forEach(img => { currentAnnotations[img.id] = { __full: parsed }; });
-  window.__aiImageResults = { focus, engine: 'Gemini Vision', fullText: cleanText, annotations: parsed.boxes, landmarks: parsed.landmarks, measurements: parsed.measurements, angles: parsed.angles, lines: parsed.lines, midline: parsed.midline, gumLine: parsed.gumLine, boneLine: parsed.boneLine, goldenLines: parsed.goldenLines, cephalometricPoints: parsed.cephalometricPoints, imagesCount: imgsToSend.length, generatedAt: new Date().toISOString() };
-  status.innerHTML = '✅ Gemini Vision (رسم كامل)'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
-  let html = '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 تحليل Gemini:</p><div class="text-[11px] whitespace-pre-wrap">' + cleanText + '</div></div>';
-  results.innerHTML = html; results.classList.remove('hidden');
+  window.__aiImageResults = { focus, engine: 'Gemini Vision', fullText: cleanText, annotations: parsed.boxes, generatedAt: new Date().toISOString() };
+  status.innerHTML = '✅ Gemini Vision'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
+  results.innerHTML = '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 تحليل Gemini:</p><div class="text-[11px] whitespace-pre-wrap">' + cleanText + '</div></div>';
+  results.classList.remove('hidden');
   await renderAnnotatedImages(); renderProportionTables();
 }
 
@@ -988,22 +1238,16 @@ async function renderAnnotatedImages() {
       if (a.gumLine && a.gumLine.length > 1) { ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(a.gumLine[0].x * w, a.gumLine[0].y * h); a.gumLine.forEach(p => ctx.lineTo(p.x * w, p.y * h)); ctx.stroke(); }
       if (a.boneLine && a.boneLine.length > 1) { ctx.strokeStyle = '#f97316'; ctx.lineWidth = 3.5; ctx.setLineDash([8, 4]); ctx.beginPath(); ctx.moveTo(a.boneLine[0].x * w, a.boneLine[0].y * h); a.boneLine.forEach(p => ctx.lineTo(p.x * w, p.y * h)); ctx.stroke(); ctx.setLineDash([]); }
       drawLines(ctx, a.lines, w, h); drawLandmarks(ctx, a.landmarks, w, h); drawCephalometricPoints(ctx, a.cephalometricPoints, w, h);
-      const boxes = a.boxes || [];
-      boxes.forEach((b, i) => {
-        const x = b.xmin * w, y = b.ymin * h; const rw = (b.xmax - b.xmin) * w, rh = (b.ymax - b.ymin) * h;
-        const c = getSeverityColor(b.severity);
-        ctx.fillStyle = c + '26'; ctx.fillRect(x, y, rw, rh); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.strokeRect(x, y, rw, rh);
-        drawTopLabel(ctx, (i + 1) + '. ' + b.label + (b.tooth ? ' • سن ' + b.tooth : ''), x, y, c, w);
-      });
+      (a.boxes || []).forEach((b, i) => { const x = b.xmin * w, y = b.ymin * h; const rw = (b.xmax - b.xmin) * w, rh = (b.ymax - b.ymin) * h; const c = getSeverityColor(b.severity); ctx.fillStyle = c + '26'; ctx.fillRect(x, y, rw, rh); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.strokeRect(x, y, rw, rh); drawTopLabel(ctx, (i + 1) + '. ' + b.label + (b.tooth ? ' • سن ' + b.tooth : ''), x, y, c, w); });
       (a.measurements || []).forEach(m => { const x1 = m.x1 * w, y1 = m.y1 * h, x2 = m.x2 * w, y2 = m.y2 * h; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); drawCenterLabel(ctx, m.name + ': ' + m.value, (x1+x2)/2, (y1+y2)/2, '#1d4ed8'); });
       (a.angles || []).forEach(an => { if (!an.p1 || !an.p2 || !an.p3) return; const x1 = an.p1.x * w, y1 = an.p1.y * h, x2 = an.p2.x * w, y2 = an.p2.y * h, x3 = an.p3.x * w, y3 = an.p3.y * h; ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke(); drawCenterLabel(ctx, an.name + ' = ' + an.value + '°', x2 + 40, y2 - 15, '#7c3aed'); });
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.5)'; ctx.font = 'bold 11px Cairo, sans-serif'; ctx.fillText('NAQClinixAI • ' + new Date().toLocaleDateString('ar-YE'), 10, h - 10);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.5)'; ctx.font = 'bold 11px Cairo, sans-serif'; ctx.fillText('NAQClinixAI', 10, h - 10);
     };
     const draw = () => { const w = baseImg.clientWidth, h = baseImg.clientHeight; if (w === 0 || h === 0) return; canvas.width = w; canvas.height = h; drawFn(canvas.getContext('2d'), w, h); };
     await new Promise(res => { if (baseImg.complete && baseImg.naturalWidth) { setTimeout(res, 100); } else baseImg.onload = () => setTimeout(res, 200); });
     setTimeout(draw, 100); setTimeout(draw, 400); window.addEventListener('resize', draw);
     container.appendChild(baseImg); container.appendChild(canvas); wrapper.appendChild(container); area.appendChild(wrapper);
-    try { await new Promise(res => setTimeout(res, 300)); const merged = mergeImageWithCanvas(baseImg, drawFn); mergedImageCache[img.id] = merged; } catch (e) {}
+    try { await new Promise(res => setTimeout(res, 300)); mergedImageCache[img.id] = mergeImageWithCanvas(baseImg, drawFn); } catch (e) {}
   }
 }
 
@@ -1018,10 +1262,9 @@ function mergeImageWithCanvas(imgEl, drawFn) {
 function drawGrid(ctx, w, h) { ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)'; ctx.lineWidth = 0.7; ctx.setLineDash([5, 5]); for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(w * i / 3, 0); ctx.lineTo(w * i / 3, h); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, h * i / 3); ctx.lineTo(w, h * i / 3); ctx.stroke(); } ctx.setLineDash([]); ctx.fillStyle = 'rgba(100, 116, 139, 0.8)'; ctx.font = 'bold 13px Cairo, sans-serif'; ctx.fillText('لا توجد ملاحظات', 12, 25); }
 function drawTopLabel(ctx, text, x, y, color, cW) { ctx.font = 'bold 12px Cairo, sans-serif'; const tw = ctx.measureText(text).width + 16, th = 24; const lx = Math.max(2, Math.min(x, cW - tw - 2)); const ly = y > th + 6 ? y - th - 6 : y + 6; ctx.fillStyle = color; roundRect(ctx, lx, ly, tw, th, 6); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(text, lx + 8, ly + 16); }
 function drawCenterLabel(ctx, text, mx, my, color) { color = color || '#1e3a8a'; ctx.font = 'bold 12px Cairo, sans-serif'; const tw = ctx.measureText(text).width + 16, th = 22; ctx.fillStyle = color; roundRect(ctx, mx - tw / 2, my - th / 2, tw, th, 6); ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(text, mx, my + 4); ctx.textAlign = 'left'; }
-function drawSmallLabel(ctx, text, x, y, color) { ctx.font = 'bold 11px Cairo, sans-serif'; const tw = ctx.measureText(text).width + 12; ctx.fillStyle = color; roundRect(ctx, x, y - 14, tw, 18, 5); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(text, x + 6, y); }
 function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 
-function exportAnnotatedImage() { const k = Object.keys(mergedImageCache); if (!k.length) { alert('لا توجد صور'); return; } k.forEach((id, i) => { const a = document.createElement('a'); a.href = mergedImageCache[id]; a.download = 'annotated_' + (i + 1) + '_' + id + '.jpg'; a.click(); }); alert('✅ تم تنزيل ' + k.length); }
+function exportAnnotatedImage() { const k = Object.keys(mergedImageCache); if (!k.length) { alert('لا توجد صور'); return; } k.forEach((id, i) => { const a = document.createElement('a'); a.href = mergedImageCache[id]; a.download = 'annotated_' + (i + 1) + '.jpg'; a.click(); }); alert('✅ تم تنزيل ' + k.length); }
 
 /* ========== PDF ========== */
 async function exportToPDF(type) {
@@ -1041,7 +1284,7 @@ function buildReportContent() {
   const name = document.getElementById('patientName').value;
   const teeth = selectedTeeth.length ? selectedTeeth.join(', ') : 'لا يوجد';
   const userInfo = currentUser ? 'أُنشئ بواسطة: ' + currentUser.fullName : '';
-  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p><strong>المريض:</strong> ' + name + '</p><p><strong>العمر/الجنس:</strong> ' + (document.getElementById('patientAge').value || '-') + ' (' + (document.getElementById('patientGender').value || '-') + ')</p><p class="col-span-2"><strong>السكن:</strong> ' + (document.getElementById('patientAddress').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2"><p><strong>الحساسية/الأمراض:</strong> ' + (document.getElementById('patientAllergies').value || 'لا يوجد') + ' / ' + (document.getElementById('chronicDiseases').value || 'لا يوجد') + '</p><p><strong>نوع العمل:</strong> ' + (document.getElementById('workType').value || '-') + '</p><p><strong>الأسنان:</strong> ' + teeth + '</p><p><strong>الشكوى:</strong> ' + (document.getElementById('complaint').value || '-') + '</p><p><strong>الخطة:</strong> ' + (document.getElementById('treatmentPlan').value || '-') + '</p><p><strong>البديل:</strong> ' + (document.getElementById('alternativePlan').value || '-') + '</p>' + (userInfo ? '<p class="text-[10px] text-gray-500 mt-2">' + userInfo + '</p>' : '') + '</div>' + buildAnnotatedImagesHTML() + '<div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب</p><p>د. علي النقيب</p></div>';
+  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p><strong>المريض:</strong> ' + name + '</p><p><strong>العمر/الجنس:</strong> ' + (document.getElementById('patientAge').value || '-') + ' (' + (document.getElementById('patientGender').value || '-') + ')</p><p class="col-span-2"><strong>السكن:</strong> ' + (document.getElementById('patientAddress').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2"><p><strong>الحساسية/الأمراض:</strong> ' + (document.getElementById('patientAllergies').value || 'لا يوجد') + ' / ' + (document.getElementById('chronicDiseases').value || 'لا يوجد') + '</p><p><strong>نوع العمل:</strong> ' + (document.getElementById('workType').value || '-') + '</p><p><strong>الأسنان:</strong> ' + teeth + '</p><p><strong>الشكوى:</strong> ' + (document.getElementById('complaint').value || '-') + '</p><p><strong>الخطة:</strong> ' + (document.getElementById('treatmentPlan').value || '-') + '</p><p><strong>البديل:</strong> ' + (document.getElementById('alternativePlan').value || '-') + '</p><p><strong>الزيارة القادمة:</strong> ' + (document.getElementById('nextVisitDate').value || '-') + '</p>' + (userInfo ? '<p class="text-[10px] text-gray-500 mt-2">' + userInfo + '</p>' : '') + '</div>' + buildAnnotatedImagesHTML() + '<div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع الطبيب</p><p>د. علي النقيب</p></div>';
 }
 
 function buildInvoiceContent() {
@@ -1049,12 +1292,12 @@ function buildInvoiceContent() {
   const total = parseFloat(document.getElementById('totalAmount').value) || 0;
   const p1 = parseFloat(document.getElementById('payment1').value) || 0, p2 = parseFloat(document.getElementById('payment2').value) || 0, p3 = parseFloat(document.getElementById('payment3').value) || 0;
   const rem = total - (p1 + p2 + p3);
-  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-green-900 border-b pb-1">سند قبض</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p class="col-span-2"><strong>المريض:</strong> ' + name + '</p><p class="col-span-2"><strong>الحالة:</strong> ' + (document.getElementById('revenueStatus').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2 border-t"><p class="flex justify-between"><span>الإجمالي:</span><strong>' + total + ' ريال</strong></p><p class="flex justify-between"><span>الدفعة 1:</span><span>' + p1 + ' ريال</span></p><p class="flex justify-between"><span>الدفعة 2:</span><span>' + p2 + ' ريال</span></p><p class="flex justify-between"><span>الدفعة 3:</span><span>' + p3 + ' ريال</span></p><hr><p class="flex justify-between text-sm font-extrabold"><span>المتبقي:</span><span class="text-red-600">' + rem + ' ريال</span></p></div><div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>ختم العيادة</p><p>د. علي النقيب</p></div>';
+  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-green-900 border-b pb-1">سند قبض</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p class="col-span-2"><strong>المريض:</strong> ' + name + '</p><p class="col-span-2"><strong>الحالة:</strong> ' + (document.getElementById('revenueStatus').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2 border-t"><p class="flex justify-between"><span>الإجمالي:</span><strong>' + total + ' ريال</strong></p><p class="flex justify-between"><span>الدفعة 1:</span><span>' + p1 + ' ريال</span></p><p class="flex justify-between"><span>الدفعة 2:</span><span>' + p2 + ' ريال</span></p><p class="flex justify-between"><span>الدفعة 3:</span><span>' + p3 + ' ريال</span></p><hr><p class="flex justify-between text-sm font-extrabold"><span>المتبقي:</span><span class="text-red-600">' + rem + ' ريال</span></p><p><strong>الزيارة القادمة:</strong> ' + (document.getElementById('nextVisitDate').value || '-') + '</p></div><div class="mt-12 pt-6 border-t flex justify-between text-xs font-bold"><p>ختم العيادة</p><p>د. علي النقيب</p></div>';
 }
 
 function buildAnnotatedImagesHTML() {
   if (!clinicImages.length) return '';
-  const ann = clinicImages.filter(img => mergedImageCache[img.id]).map((img, i) => '<div style="page-break-inside:avoid;margin-bottom:10px;"><p style="font-size:11px;font-weight:bold;color:#1e3a8a;margin-bottom:4px;">🖼️ صورة ' + (i+1) + ' — ' + img.type + '</p><img src="' + mergedImageCache[img.id] + '" style="width:100%;max-width:700px;border:1px solid #cbd5e1;border-radius:6px;" /></div>').join('');
+  const ann = clinicImages.filter(img => mergedImageCache[img.id]).map((img, i) => '<div style="page-break-inside:avoid;margin-bottom:10px;"><p style="font-size:11px;font-weight:bold;color:#1e3a8a;margin-bottom:4px;">🖼️ صورة ' + (i+1) + '</p><img src="' + mergedImageCache[img.id] + '" style="width:100%;max-width:700px;border:1px solid #cbd5e1;border-radius:6px;" /></div>').join('');
   const orig = clinicImages.filter(img => !mergedImageCache[img.id]).map(img => '<div style="display:inline-block;margin:3px;text-align:center;"><img src="' + img.dataUrl + '" style="width:150px;height:120px;object-fit:cover;border:1px solid #cbd5e1;border-radius:6px;" /><p style="font-size:9px;margin:2px 0;">' + img.type + '</p></div>').join('');
   let h = '';
   if (ann) h += '<div style="margin-top:15px;padding-top:10px;border-top:1px solid #cbd5e1;"><p style="font-weight:bold;font-size:13px;color:#1e3a8a;margin-bottom:8px;">🔬 الصور مع التحليل:</p>' + ann + '</div>';
@@ -1084,6 +1327,9 @@ async function savePatientRecord() {
     }
     let sImg = imgRecs;
     if (JSON.stringify(sImg).length > 700000) { sImg = imgRecs.map(r => ({ type:r.type, date:r.date, annotations:r.annotations, mergedUrl:r.mergedUrl||null, originalUrl:r.originalUrl||null })); }
+    const revEl = document.getElementById('revenueAmount');
+    const expEl = document.getElementById('expenseAmount');
+    const expTypeEl = document.getElementById('expenseType');
     const rec = {
       fileNumber: fN, fullName: name,
       gender: document.getElementById('patientGender').value,
@@ -1101,9 +1347,11 @@ async function savePatientRecord() {
       complaint: document.getElementById('complaint').value,
       treatmentPlan: document.getElementById('treatmentPlan').value,
       alternativePlan: document.getElementById('alternativePlan').value,
+      nextVisit: document.getElementById('nextVisitDate').value,
+      paymentMethod: document.getElementById('paymentMethod').value,
       aiGenerated: !!window.__aiResults, aiDiagnosis: window.__aiResults || null, aiImageAnalysis: window.__aiImageResults || null,
       images: sImg,
-      financials: { total: document.getElementById('totalAmount').value, payment1: document.getElementById('payment1').value, payment2: document.getElementById('payment2').value, payment3: document.getElementById('payment3').value, remaining: document.getElementById('remainingDisplay').textContent, status: document.getElementById('revenueStatus').value, expense: document.getElementById('expenseAmount').value, expenseType: document.getElementById('expenseType').value },
+      financials: { total: document.getElementById('totalAmount').value, payment1: document.getElementById('payment1').value, payment2: document.getElementById('payment2').value, payment3: document.getElementById('payment3').value, remaining: document.getElementById('remainingDisplay').textContent, status: document.getElementById('revenueStatus').value, expense: expEl ? expEl.value : '', expenseType: expTypeEl ? expTypeEl.value : '' },
       dateKey: new Date().toISOString().split('T')[0],
       createdBy: currentUser ? currentUser.username : 'unknown',
       createdByName: currentUser ? currentUser.fullName : 'unknown',
@@ -1139,7 +1387,17 @@ async function loadPatientByFileNumber() {
     document.getElementById('complaint').value = d.complaint || '';
     document.getElementById('treatmentPlan').value = d.treatmentPlan || '';
     document.getElementById('alternativePlan').value = d.alternativePlan || '';
-    if (d.financials) { document.getElementById('totalAmount').value = d.financials.total || ''; document.getElementById('payment1').value = d.financials.payment1 || ''; document.getElementById('payment2').value = d.financials.payment2 || ''; document.getElementById('payment3').value = d.financials.payment3 || ''; document.getElementById('revenueStatus').value = d.financials.status || ''; document.getElementById('expenseAmount').value = d.financials.expense || ''; document.getElementById('expenseType').value = d.financials.expenseType || ''; }
+    document.getElementById('nextVisitDate').value = d.nextVisit || '';
+    document.getElementById('paymentMethod').value = d.paymentMethod || '';
+    if (d.financials) {
+      document.getElementById('totalAmount').value = d.financials.total || '';
+      document.getElementById('payment1').value = d.financials.payment1 || '';
+      document.getElementById('payment2').value = d.financials.payment2 || '';
+      document.getElementById('payment3').value = d.financials.payment3 || '';
+      document.getElementById('revenueStatus').value = d.financials.status || '';
+      const expEl = document.getElementById('expenseAmount'); if (expEl) expEl.value = d.financials.expense || '';
+      const expTEl = document.getElementById('expenseType'); if (expTEl) expTEl.value = d.financials.expenseType || '';
+    }
     selectedTeeth = (d.selectedTeeth || '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
     document.querySelectorAll('.tooth').forEach(g => { const n = parseInt(g.dataset.tooth, 10); if (selectedTeeth.indexOf(n) > -1) g.classList.add('selected'); });
     document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(' • ') : 'لا يوجد');
@@ -1151,8 +1409,8 @@ async function loadPatientByFileNumber() {
 
 function resetForm() {
   generateFileNumber();
-  ['patientName','patientAge','patientAddress','patientPhone','whatsappPhone','patientAllergies','chronicDiseases','teethCount','complaint','treatmentPlan','alternativePlan','totalAmount','payment1','payment2','payment3','expenseAmount','expenseType','aiExtraNotes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['patientGender','workType','revenueStatus','smokingHabit','oralHygiene'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['patientName','patientAge','patientAddress','patientPhone','whatsappPhone','patientAllergies','chronicDiseases','teethCount','complaint','treatmentPlan','alternativePlan','totalAmount','payment1','payment2','payment3','expenseAmount','expenseType','aiExtraNotes','nextVisitDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['patientGender','workType','revenueStatus','smokingHabit','oralHygiene','paymentMethod'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['sym_pain','sym_swelling','sym_bleeding','sym_mobility','sym_sensitivity','sym_badBreath','sym_bruxism','sym_trauma'].forEach(id => { const el = document.getElementById(id); if (el) el.checked = false; });
   selectedTeeth = [];
   document.querySelectorAll('.tooth.selected').forEach(g => g.classList.remove('selected'));
@@ -1186,7 +1444,7 @@ function updateAIEngineBadge() { const b = document.getElementById('aiEngineBadg
 
 /* ========== الماسح الذكي ========== */
 async function runSmartScanner() {
-  if (!clinicImages.length) { alert('ارفع صورة أولاً للفحص الذكي'); return; }
+  if (!clinicImages.length) { alert('ارفع صورة أولاً'); return; }
   const key = getGeminiKey();
   const engine = getAIEngine();
   const btn = document.getElementById('btnSmartScanner');
@@ -1194,57 +1452,23 @@ async function runSmartScanner() {
   const results = document.getElementById('aiResults');
   btn.disabled = true;
   status.classList.remove('hidden');
-  status.innerHTML = '<span class="ai-typing">📡 جاري المسح الذكي للصور</span>';
+  status.innerHTML = '<span class="ai-typing">📡 جاري المسح</span>';
   results.classList.add('hidden');
-
-  if (engine === 'builtin' || !key) {
-    setTimeout(() => { status.innerHTML = '⚠️ الماسح الذكي يحتاج Gemini'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-amber-50 text-amber-700 font-bold'; btn.disabled = false; }, 800);
-    return;
-  }
-
-  const age = document.getElementById('patientAge').value || '؟';
-  const promptText = `أنت ماسح تشخيصي سني ذكي. مهمتك: فحص الصورة/الصور المرفقة بدقة وتحديد كل ما يلي:
-
-**1) الأسنان الموجودة والمفقودة:**
-استخدم نظام FDI (11-48). حدد:
-- الأسنان الظاهرة بوضوح
-- الأسنان المفقودة إن وُجدت
-- الأسنان المصابة (تسوس، كسر، تصبغ)
-
-**2) المشاكل المكتشفة:**
-لكل مشكلة: السن المصاب + نوع المشكلة + الشدة (خفيف/متوسط/شديد).
-
-**3) النتائج المطلوبة بصيغة JSON صارمة:**
-
+  if (engine === 'builtin' || !key) { setTimeout(() => { status.innerHTML = '⚠️ يحتاج Gemini'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-amber-50 text-amber-700 font-bold'; btn.disabled = false; }, 800); return; }
+  const promptText = `أنت ماسح تشخيصي سني ذكي. أعد JSON:
 \`\`\`json
 {
-  "detectedTeeth": [11, 12, 21, 22, 36, 46],
-  "affectedTeeth": [
-    {"tooth": 11, "condition": "تسوس", "severity": "متوسط", "location": "سطح حنكي"},
-    {"tooth": 36, "condition": "حشوة قديمة", "severity": "خفيف", "location": "سطح إطباقي"}
-  ],
-  "gumCondition": {"overall": "متوسط", "areas": [{"region": "أمامي علوي", "state": "التهاب حويافي"}]},
-  "boneCondition": {"overall": "جيد", "notes": "لا يوجد فقد عظمي واضح"},
-  "occlusionClass": "Class I / II / III",
-  "overjet": "مم",
-  "overbite": "مم",
-  "midlineDeviation": "مم",
-  "summary": "ملخص سريع للحالة",
-  "recommendations": ["توصية 1", "توصية 2"]
+  "detectedTeeth": [11, 12, 21],
+  "affectedTeeth": [{"tooth": 11, "condition": "تسوس", "severity": "متوسط", "location": "سطح حنكي"}],
+  "gumCondition": {"overall": "متوسط"},
+  "boneCondition": {"overall": "جيد"},
+  "summary": "ملخص",
+  "recommendations": ["توصية"]
 }
 \`\`\`
-
-**قواعد صارمة:**
-- إذا لم تكن الصورة واضحة لسن معين، لا تدرجه في affectedTeeth.
-- الاستنتاج يجب أن يكون مبنياً على ما تراه فعلاً، لا التخمين.
-- كل سن له رقم FDI صحيح (11-18، 21-28، 31-38، 41-48).
-- إذا كانت الصورة سيفالومترية، أضف في "summary" زوايا ANB إن أمكن قياسها.
-
-اكتب تحليلاً نصياً مفصلاً أولاً، ثم ضع JSON في النهاية.`;
-
+اكتب تحليلاً نصياً ثم JSON.`;
   const parts = [{ text: promptText }];
   for (const img of clinicImages.slice(0, 6)) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
-
   const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
   let text = '', lastErr = '';
   for (const model of models) {
@@ -1256,114 +1480,46 @@ async function runSmartScanner() {
       if (text) break;
     } catch (err) { lastErr = model + ': ' + err.message; }
   }
-
-  if (!text) {
-    status.innerHTML = '❌ فشل الماسح: ' + lastErr;
-    status.className = 'text-[11px] text-center p-2 rounded-lg bg-red-50 text-red-700 font-bold';
-    btn.disabled = false; return;
-  }
-
+  if (!text) { status.innerHTML = '❌ فشل: ' + lastErr; status.className = 'text-[11px] text-center p-2 rounded-lg bg-red-50 text-red-700 font-bold'; btn.disabled = false; return; }
   const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
   let scan = null;
-  if (jsonMatch) { try { scan = JSON.parse(jsonMatch[1]); } catch (e) { console.warn('JSON parse:', e); } }
+  if (jsonMatch) { try { scan = JSON.parse(jsonMatch[1]); } catch (e) {} }
   const cleanText = text.replace(/```json[\s\S]*?```/g, '').trim();
-
   if (scan && scan.detectedTeeth && scan.detectedTeeth.length) {
-    scan.detectedTeeth.forEach(t => {
-      if (!selectedTeeth.includes(t)) selectedTeeth.push(t);
-      const g = document.querySelector('.tooth[data-tooth="' + t + '"]');
-      if (g) g.classList.add('selected');
-    });
+    scan.detectedTeeth.forEach(t => { if (!selectedTeeth.includes(t)) selectedTeeth.push(t); const g = document.querySelector('.tooth[data-tooth="' + t + '"]'); if (g) g.classList.add('selected'); });
     selectedTeeth.sort((a, b) => a - b);
     document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: ' + selectedTeeth.join(' • ');
   }
-
-  status.innerHTML = '✅ الماسح الذكي (كشف ' + (scan && scan.detectedTeeth ? scan.detectedTeeth.length : 0) + ' سن)';
-  status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
-
-  let html = '';
-  if (scan && scan.detectedTeeth && scan.detectedTeeth.length) {
-    html += '<div class="ai-result-box bg-gradient-to-br from-fuchsia-50 to-pink-50 border-2 border-fuchsia-300 rounded-xl p-3"><p class="font-extrabold text-fuchsia-900 text-xs mb-2">📡 نتائج الماسح الذكي:</p><div class="grid grid-cols-2 gap-2 mb-2"><div class="bg-white rounded-lg p-2 text-center"><div class="text-[10px] text-gray-500">أسنان مكتشفة</div><div class="text-lg font-extrabold text-fuchsia-600">' + scan.detectedTeeth.length + '</div></div><div class="bg-white rounded-lg p-2 text-center"><div class="text-[10px] text-gray-500">أسنان مصابة</div><div class="text-lg font-extrabold text-red-600">' + (scan.affectedTeeth ? scan.affectedTeeth.length : 0) + '</div></div></div>';
-    html += '<p class="text-[11px] font-bold text-fuchsia-900 mb-1">🦷 الأسنان المكتشفة (FDI):</p><div class="flex flex-wrap gap-1 mb-2">' + scan.detectedTeeth.map(t => '<span class="bg-fuchsia-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">' + t + '</span>').join('') + '</div>';
-    if (scan.affectedTeeth && scan.affectedTeeth.length) {
-      html += '<p class="text-[11px] font-bold text-fuchsia-900 mb-1">⚠️ الأسنان المصابة:</p><div class="space-y-1">' + scan.affectedTeeth.map(a => { const col = getSeverityColor(a.severity); return '<div class="bg-white rounded-lg p-2 text-[11px] flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background:' + col + '"></span><strong>سن ' + a.tooth + '</strong> — ' + a.condition + (a.location ? ' (' + a.location + ')' : '') + ' <span class="text-[9px] px-1.5 py-0.5 rounded" style="background:' + col + '22;color:' + col + '">' + a.severity + '</span></div>'; }).join('') + '</div>';
-    }
-    if (scan.gumCondition) html += '<p class="text-[11px] mt-2"><strong>🩸 اللثة:</strong> ' + scan.gumCondition.overall + '</p>';
-    if (scan.boneCondition) html += '<p class="text-[11px]"><strong>🦴 العظم:</strong> ' + scan.boneCondition.overall + '</p>';
-    if (scan.summary) html += '<p class="text-[11px] mt-2 bg-white p-2 rounded-lg">' + scan.summary + '</p>';
-    if (scan.recommendations && scan.recommendations.length) html += '<p class="text-[11px] font-bold text-fuchsia-900 mt-2">✅ التوصيات:</p><ul class="text-[11px] space-y-1 mr-4 list-disc">' + scan.recommendations.map(r => '<li>' + r + '</li>').join('') + '</ul>';
-    html += '</div>';
-  }
-  html += '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 التحليل الكامل:</p><div class="text-[11px] whitespace-pre-wrap">' + cleanText + '</div></div>';
-
-  results.innerHTML = html;
-  results.classList.remove('hidden');
-  window.__aiResults = { diag: cleanText, plan: scan && scan.recommendations ? scan.recommendations.join('\n') : '', alt: '', engine: 'Smart Scanner', generatedAt: new Date().toISOString() };
+  status.innerHTML = '✅ الماسح الذكي'; status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
+  let html = '<div class="ai-result-box bg-cyan-50 border border-cyan-200 rounded-xl p-3"><p class="font-extrabold text-cyan-900 text-xs mb-1.5">🔬 التحليل:</p><div class="text-[11px] whitespace-pre-wrap">' + cleanText + '</div></div>';
+  results.innerHTML = html; results.classList.remove('hidden');
+  window.__aiResults = { diag: cleanText, plan: '', alt: '', engine: 'Smart Scanner', generatedAt: new Date().toISOString() };
   btn.disabled = false;
 }
 
-/* ========== مراجع التشخيص ========== */
+/* ========== المراجع ========== */
 function openDiagnosisReferences() {
   const m = document.getElementById('refsModal');
   m.classList.remove('hidden'); m.classList.add('flex');
-  const c = document.getElementById('refsContent');
-  c.innerHTML = `
-    <div class="bg-gradient-to-br from-slate-100 to-gray-100 border-2 border-slate-300 rounded-xl p-3">
-      <p class="font-extrabold text-slate-900 text-sm mb-2">📐 تصنيف Angle للعلاقة الهيكلية</p>
-      <table class="ref-table">
-        <thead><tr><th>الزاوية</th><th>Class I</th><th>Class II</th><th>Class III</th></tr></thead>
-        <tbody>
-          <tr><td>SNA</td><td>82° ± 2°</td><td>≥ 84°</td><td>≤ 80°</td></tr>
-          <tr><td>SNB</td><td>80° ± 2°</td><td>≤ 78°</td><td>≥ 82°</td></tr>
-          <tr><td>ANB</td><td>2° ± 2°</td><td>> 4°</td><td>< 0°</td></tr>
-          <tr><td>الفك السفلي</td><td>متوازن</td><td>متراجع</td><td>متقدم</td></tr>
-        </tbody>
-      </table>
+  document.getElementById('refsContent').innerHTML = `
+    <div class="bg-slate-50 border-2 border-slate-300 rounded-xl p-3"><p class="font-extrabold text-slate-900 text-sm mb-2">📐 تصنيف Angle الهيكلي</p>
+      <table class="ref-table"><thead><tr><th>الزاوية</th><th>Class I</th><th>Class II</th><th>Class III</th></tr></thead><tbody>
+        <tr><td>SNA</td><td>82° ± 2°</td><td>≥ 84°</td><td>≤ 80°</td></tr>
+        <tr><td>SNB</td><td>80° ± 2°</td><td>≤ 78°</td><td>≥ 82°</td></tr>
+        <tr><td>ANB</td><td>2° ± 2°</td><td>> 4°</td><td>< 0°</td></tr>
+      </tbody></table>
     </div>
-
-    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-3">
-      <p class="font-extrabold text-blue-900 text-sm mb-2">🦷 تصنيف Angle السني</p>
-      <ul class="text-[11px] space-y-1 mr-4 list-disc">
-        <li><strong>Class I:</strong> الناب العلوي أمام الأخدود الشدقي السفلي بحجم عرض الناب.</li>
-        <li><strong>Class II Div 1:</strong> Overjet > 3mm + بروز أمامي.</li>
-        <li><strong>Class II Div 2:</strong> القواطع العلوية مائلة للداخل.</li>
-        <li><strong>Class III:</strong> Overjet سالب / عضة معكوسة.</li>
-      </ul>
+    <div class="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3"><p class="font-extrabold text-emerald-900 text-sm mb-2">📏 القيم السيفالومترية</p>
+      <table class="ref-table"><thead><tr><th>القياس</th><th>القيمة</th></tr></thead><tbody>
+        <tr><td>SNA</td><td class="ok">82° ± 2°</td></tr>
+        <tr><td>SNB</td><td class="ok">80° ± 2°</td></tr>
+        <tr><td>ANB</td><td class="ok">2° ± 2°</td></tr>
+        <tr><td>FMA</td><td class="ok">25° ± 5°</td></tr>
+        <tr><td>IMPA</td><td class="ok">90° ± 5°</td></tr>
+        <tr><td>Overjet</td><td class="ok">2-3 mm</td></tr>
+      </tbody></table>
     </div>
-
-    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-xl p-3">
-      <p class="font-extrabold text-emerald-900 text-sm mb-2">📏 القيم السيفالومترية</p>
-      <table class="ref-table">
-        <thead><tr><th>القياس</th><th>القيمة الطبيعية</th></tr></thead>
-        <tbody>
-          <tr><td>SNA</td><td class="ok">82° ± 2°</td></tr>
-          <tr><td>SNB</td><td class="ok">80° ± 2°</td></tr>
-          <tr><td>ANB</td><td class="ok">2° ± 2°</td></tr>
-          <tr><td>FMA</td><td class="ok">25° ± 5°</td></tr>
-          <tr><td>IMPA</td><td class="ok">90° ± 5°</td></tr>
-          <tr><td>U1-SN</td><td class="ok">103° ± 4°</td></tr>
-          <tr><td>Overjet</td><td class="ok">2-3 mm</td></tr>
-          <tr><td>Overbite</td><td class="ok">2-3 mm</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-300 rounded-xl p-3">
-      <p class="font-extrabold text-red-900 text-sm mb-2">⚠️ قيم اللثة والعظم</p>
-      <table class="ref-table">
-        <thead><tr><th>القياس</th><th>القيمة الطبيعية</th></tr></thead>
-        <tbody>
-          <tr><td>عمق الجيب اللثوي</td><td class="ok">≤ 3 mm</td></tr>
-          <tr><td>عرض اللثة الملتصقة</td><td class="ok">≥ 2 mm</td></tr>
-          <tr><td>سماكة اللثة</td><td class="ok">≥ 1 mm</td></tr>
-          <tr><td>العظم الإكليلي</td><td class="ok">≥ 2 mm</td></tr>
-          <tr><td>ارتفاع العظم للزراعة</td><td class="ok">≥ 10 mm</td></tr>
-          <tr><td>عرض العظم للزراعة</td><td class="ok">≥ 6 mm</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <button onclick="printReferences()" class="w-full bg-slate-800 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة المراجع</button>
+    <button onclick="printReferences()" class="w-full bg-slate-800 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة</button>
   `;
 }
 function closeDiagnosisReferences() { const m = document.getElementById('refsModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
@@ -1386,43 +1542,6 @@ async function openDailyReport() {
     const snap = await db.collection('patients').where('dateKey', '==', tk).get();
     if (snap.empty) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا توجد عمليات اليوم</p>'; return; }
     let revenue = 0, expenses = 0, count = 0;
-    const users = {}; const list = [];
-    snap.forEach(doc => {
-      const d = doc.data(); count++;
-      const f = d.financials || {};
-      const paid = (parseFloat(f.payment1) || 0) + (parseFloat(f.payment2) || 0) + (parseFloat(f.payment3) || 0);
-      const exp = parseFloat(f.expense) || 0;
-      revenue += paid; expenses += exp;
-      const uid = d.createdBy || 'unknown';
-      if (!users[uid]) users[uid] = { name: d.createdByName || uid, patients: 0, revenue: 0, expenses: 0 };
-      users[uid].patients++; users[uid].revenue += paid; users[uid].expenses += exp;
-      list.push({ fn: d.fileNumber, name: d.fullName, paid, expense: exp, by: d.createdByName || uid });
-    });
-    const net = revenue - expenses;
-    let h = '<div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl border-2 border-cyan-300 p-3"><p class="text-center text-xs text-cyan-700 font-bold mb-2">📅 ' + tk + '</p><div class="grid grid-cols-2 gap-2 mb-3">';
-    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الإيرادات</div><div class="text-lg font-extrabold text-emerald-600">' + revenue + '</div></div>';
-    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المصروفات</div><div class="text-lg font-extrabold text-red-600">' + expenses + '</div></div>';
-    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الصافي</div><div class="text-lg font-extrabold ' + (net >= 0 ? 'text-cyan-600' : 'text-red-600') + '">' + net + '</div></div>';
-    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المرضى</div><div class="text-lg font-extrabold text-purple-600">' + count + '</div></div>';
-    h += '</div></div>';
-    h += '<div class="bg-white rounded-xl border p-3"><p class="font-bold text-xs text-gray-800 mb-2">👥 حسب المستخدم:</p>';
-    Object.keys(users).forEach(uid => { const u = users[uid]; h += '<div class="bg-gray-50 rounded-lg p-2 mb-1 flex justify-between items-center text-xs"><div><p class="font-bold">' + u.name + '</p><p class="text-[10px] text-gray-500">@' + uid + ' — ' + u.patients + ' مريض</p></div><div class="text-right"><p class="text-emerald-600 font-bold">+' + u.revenue + '</p>' + (u.expenses > 0 ? '<p class="text-red-600 text-[10px]">-' + u.expenses + '</p>' : '') + '</div></div>'; });
-    h += '</div>';
-    h += '<details class="bg-white rounded-xl border p-2"><summary class="font-bold text-xs text-gray-800 cursor-pointer">📋 المرضى (' + count + ')</summary><div class="mt-2 space-y-1">';
-    list.forEach((p, i) => { h += '<div class="bg-gray-50 rounded-lg p-2 flex justify-between items-center text-[11px]"><div><p class="font-bold">' + (i+1) + '. ' + p.name + '</p><p class="text-[9px] text-gray-500">' + p.fn + ' • ' + p.by + '</p></div><div class="text-right"><p class="text-emerald-600 font-bold">' + p.paid + '</p>' + (p.expense > 0 ? '<p class="text-red-600 text-[9px]">مصروف: ' + p.expense + '</p>' : '') + '</div></div>'; });
-    h += '</div></details>';
-    c.innerHTML = h;
-  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
-}
-function closeDailyReport() { const m = document.getElementById('dailyReportModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
-
-async function closeDay() {
-  if (!currentUser || currentUser.role !== 'admin') { alert('فقط المدير'); return; }
-  if (!confirm('إغلاق اليوم وحفظ الملخص؟')) return;
-  try {
-    const tk = getTodayKey();
-    const snap = await db.collection('patients').where('dateKey', '==', tk).get();
-    let revenue = 0, expenses = 0, count = 0;
     const users = {};
     snap.forEach(doc => {
       const d = doc.data(); count++;
@@ -1434,8 +1553,37 @@ async function closeDay() {
       if (!users[uid]) users[uid] = { name: d.createdByName || uid, patients: 0, revenue: 0, expenses: 0 };
       users[uid].patients++; users[uid].revenue += paid; users[uid].expenses += exp;
     });
-    await db.collection('dailyReports').doc(tk).set({ dateKey: tk, revenue, expenses, net: revenue - expenses, patientCount: count, usersBreakdown: users, closedBy: currentUser.username, closedByName: currentUser.fullName, closedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    alert('✅ تم الإغلاق\n\nالإيرادات: ' + revenue + '\nالمصروفات: ' + expenses + '\nالصافي: ' + (revenue - expenses) + '\nالمرضى: ' + count);
+    const net = revenue - expenses;
+    let h = '<div class="bg-cyan-50 rounded-xl border-2 border-cyan-300 p-3"><p class="text-center text-xs text-cyan-700 font-bold mb-2">📅 ' + tk + '</p><div class="grid grid-cols-2 gap-2 mb-3">';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الإيرادات</div><div class="text-lg font-extrabold text-emerald-600">' + revenue + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المصروفات</div><div class="text-lg font-extrabold text-red-600">' + expenses + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الصافي</div><div class="text-lg font-extrabold text-cyan-600">' + net + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المرضى</div><div class="text-lg font-extrabold text-purple-600">' + count + '</div></div>';
+    h += '</div></div>';
+    h += '<div class="bg-white rounded-xl border p-3"><p class="font-bold text-xs text-gray-800 mb-2">👥 حسب المستخدم:</p>';
+    Object.keys(users).forEach(uid => { const u = users[uid]; h += '<div class="bg-gray-50 rounded-lg p-2 mb-1 flex justify-between items-center text-xs"><div><p class="font-bold">' + u.name + '</p><p class="text-[10px] text-gray-500">' + u.patients + ' مريض</p></div><div class="text-right"><p class="text-emerald-600 font-bold">+' + u.revenue + '</p></div></div>'; });
+    h += '</div>';
+    c.innerHTML = h;
+  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
+}
+function closeDailyReport() { const m = document.getElementById('dailyReportModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+
+async function closeDay() {
+  if (!currentUser || currentUser.role !== 'admin') { alert('فقط المدير'); return; }
+  if (!confirm('إغلاق اليوم؟')) return;
+  try {
+    const tk = getTodayKey();
+    const snap = await db.collection('patients').where('dateKey', '==', tk).get();
+    let revenue = 0, expenses = 0, count = 0;
+    snap.forEach(doc => {
+      const d = doc.data(); count++;
+      const f = d.financials || {};
+      const paid = (parseFloat(f.payment1) || 0) + (parseFloat(f.payment2) || 0) + (parseFloat(f.payment3) || 0);
+      const exp = parseFloat(f.expense) || 0;
+      revenue += paid; expenses += exp;
+    });
+    await db.collection('dailyReports').doc(tk).set({ dateKey: tk, revenue, expenses, net: revenue - expenses, patientCount: count, closedBy: currentUser.username, closedByName: currentUser.fullName, closedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    alert('✅ تم\n\nالإيرادات: ' + revenue + '\nالمصروفات: ' + expenses + '\nالصافي: ' + (revenue - expenses) + '\nالمرضى: ' + count);
   } catch (e) { alert('فشل: ' + e.message); }
 }
 
@@ -1456,7 +1604,7 @@ async function generateMonthlyReport() {
     const snap = await db.collection('patients').where('dateKey', '>=', mk + '-01').where('dateKey', '<', mk + '-32').get();
     if (snap.empty) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا توجد بيانات</p>'; return; }
     let tr = 0, te = 0, tp = 0;
-    const ub = {}; const db2 = {}; const exps = [];
+    const ub = {};
     snap.forEach(doc => {
       const d = doc.data(); tp++;
       const f = d.financials || {};
@@ -1466,44 +1614,20 @@ async function generateMonthlyReport() {
       const uid = d.createdBy || 'unknown', un = d.createdByName || uid;
       if (!ub[uid]) ub[uid] = { name: un, patients: 0, revenue: 0, expenses: 0 };
       ub[uid].patients++; ub[uid].revenue += paid; ub[uid].expenses += exp;
-      const dk = d.dateKey || 'غير معروف';
-      if (!db2[dk]) db2[dk] = { revenue: 0, expenses: 0, count: 0 };
-      db2[dk].revenue += paid; db2[dk].expenses += exp; db2[dk].count++;
-      if (exp > 0) exps.push({ day: dk, amount: exp, type: f.expenseType || 'غير محدد', by: un });
     });
     const net = tr - te;
-    const sd = Object.keys(db2).sort();
     const ul = Object.values(ub).sort((a, b) => b.revenue - a.revenue);
-    let h = '<div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border-2 border-purple-300 p-3"><p class="text-center text-xs text-purple-700 font-bold mb-2">📅 ' + mk + '</p><div class="grid grid-cols-2 gap-2">';
+    let h = '<div class="bg-purple-50 rounded-xl border-2 border-purple-300 p-3"><p class="text-center text-xs text-purple-700 font-bold mb-2">📅 ' + mk + '</p><div class="grid grid-cols-2 gap-2">';
     h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الإيرادات</div><div class="text-xl font-extrabold text-emerald-600">' + tr + '</div></div>';
     h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المصروفات</div><div class="text-xl font-extrabold text-red-600">' + te + '</div></div>';
-    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الصافي</div><div class="text-xl font-extrabold ' + (net >= 0 ? 'text-purple-600' : 'text-red-600') + '">' + net + '</div></div>';
+    h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">الصافي</div><div class="text-xl font-extrabold text-purple-600">' + net + '</div></div>';
     h += '<div class="bg-white rounded-lg p-3 text-center border"><div class="text-xs text-gray-500">المرضى</div><div class="text-xl font-extrabold text-indigo-600">' + tp + '</div></div>';
     h += '</div></div>';
-    h += '<div class="bg-white rounded-xl border p-3"><p class="font-bold text-xs text-gray-800 mb-2">👥 تفصيل حسب المستخدم:</p>';
-    ul.forEach(u => { const un = u.revenue - u.expenses; h += '<div class="bg-gray-50 rounded-lg p-2 mb-1 text-xs"><div class="flex justify-between items-center mb-1"><span class="font-bold">' + u.name + '</span><span class="text-[10px] text-gray-500">' + u.patients + ' مريض</span></div><div class="grid grid-cols-3 gap-1 text-[10px]"><div class="bg-emerald-100 p-1 rounded text-center"><div class="text-emerald-700 font-bold">' + u.revenue + '</div><div class="text-gray-500">إيراد</div></div><div class="bg-red-100 p-1 rounded text-center"><div class="text-red-700 font-bold">' + u.expenses + '</div><div class="text-gray-500">مصروف</div></div><div class="bg-purple-100 p-1 rounded text-center"><div class="text-purple-700 font-bold">' + un + '</div><div class="text-gray-500">صافي</div></div></div></div>'; });
+    h += '<div class="bg-white rounded-xl border p-3"><p class="font-bold text-xs text-gray-800 mb-2">👥 تفصيل:</p>';
+    ul.forEach(u => { h += '<div class="bg-gray-50 rounded-lg p-2 mb-1 text-xs"><div class="flex justify-between mb-1"><span class="font-bold">' + u.name + '</span><span class="text-[10px]">' + u.patients + ' مريض</span></div><div class="grid grid-cols-3 gap-1 text-[10px]"><div class="bg-emerald-100 p-1 rounded text-center"><div class="text-emerald-700 font-bold">' + u.revenue + '</div><div>إيراد</div></div><div class="bg-red-100 p-1 rounded text-center"><div class="text-red-700 font-bold">' + u.expenses + '</div><div>مصروف</div></div><div class="bg-purple-100 p-1 rounded text-center"><div class="text-purple-700 font-bold">' + (u.revenue - u.expenses) + '</div><div>صافي</div></div></div></div>'; });
     h += '</div>';
-    h += '<details class="bg-white rounded-xl border p-2"><summary class="font-bold text-xs text-gray-800 cursor-pointer">📆 تفصيل يومي (' + sd.length + ')</summary><div class="mt-2 space-y-1">';
-    sd.forEach(day => { const d = db2[day]; const dn = d.revenue - d.expenses; h += '<div class="bg-gray-50 rounded-lg p-2 flex justify-between items-center text-[11px]"><div><p class="font-bold">' + day + '</p><p class="text-[9px] text-gray-500">' + d.count + ' مريض</p></div><div class="flex gap-2 text-[10px]"><span class="text-emerald-600 font-bold">+' + d.revenue + '</span>' + (d.expenses > 0 ? '<span class="text-red-600 font-bold">-' + d.expenses + '</span>' : '') + '<span class="text-purple-700 font-bold">= ' + dn + '</span></div></div>'; });
-    h += '</div></details>';
-    if (exps.length > 0) {
-      h += '<details class="bg-white rounded-xl border p-2"><summary class="font-bold text-xs text-orange-800 cursor-pointer">💸 المصروفات (' + exps.length + ')</summary><div class="mt-2 space-y-1">';
-      exps.forEach(e => { h += '<div class="bg-orange-50 rounded-lg p-2 flex justify-between items-center text-[11px]"><div><p class="font-bold">' + e.type + '</p><p class="text-[9px] text-gray-500">' + e.day + ' • ' + e.by + '</p></div><span class="text-red-600 font-bold">' + e.amount + '</span></div>'; });
-      h += '<div class="bg-red-100 rounded-lg p-2 flex justify-between items-center text-xs font-bold"><span>الإجمالي:</span><span class="text-red-700">' + te + ' ريال</span></div></div></details>';
-    }
-    h += '<button onclick="printMonthlyReport(\'' + mk + '\')" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-sm font-bold">🖨️ طباعة التقرير الشهري</button>';
     c.innerHTML = h;
-    window.__monthlyReportData = { mk, tr, te, net, tp, ul, sd, db2, exps };
   } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
-}
-
-function printMonthlyReport(mk) {
-  const data = window.__monthlyReportData;
-  if (!data) { alert('لا توجد بيانات'); return; }
-  const pA = document.getElementById('printableArea');
-  pA.classList.remove('hidden'); pA.style.position = 'static'; pA.style.display = 'block';
-  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-purple-900 border-b pb-1">التقرير الشهري الشامل — ' + mk + '</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>الإيرادات:</strong> <span class="text-emerald-700">' + data.tr + ' ريال</span></p><p><strong>المصروفات:</strong> <span class="text-red-700">' + data.te + ' ريال</span></p><p><strong>الصافي:</strong> <span class="text-purple-700">' + data.net + ' ريال</span></p><p><strong>المرضى:</strong> ' + data.tp + '</p></div><div class="mt-3"><p class="font-bold text-sm text-gray-800 border-b pb-1">👥 تفصيل حسب المستخدم:</p><table class="ref-table mt-2" style="width:100%;border-collapse:collapse;"><thead><tr><th>المستخدم</th><th>المرضى</th><th>الإيرادات</th><th>المصروفات</th><th>الصافي</th></tr></thead><tbody>' + data.ul.map(u => '<tr><td>' + u.name + '</td><td>' + u.patients + '</td><td class="ok">' + u.revenue + '</td><td style="color:#dc2626;font-weight:700;">' + u.expenses + '</td><td style="color:#7c3aed;font-weight:700;">' + (u.revenue - u.expenses) + '</td></tr>').join('') + '<tr style="background:#f1f5f9;font-weight:700;"><td>الإجمالي</td><td>' + data.tp + '</td><td class="ok">' + data.tr + '</td><td style="color:#dc2626;">' + data.te + '</td><td style="color:#7c3aed;">' + data.net + '</td></tr></tbody></table></div>' + '<div class="mt-8 pt-6 border-t flex justify-between text-xs font-bold"><p>توقيع المدير</p><p>د. علي النقيب</p></div>';
-  setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300);
 }
 
 async function openAllExpenses() {
@@ -1515,7 +1639,7 @@ async function openAllExpenses() {
     snap.forEach(doc => { const d = doc.data(); const f = d.financials || {}; const exp = parseFloat(f.expense) || 0; if (exp > 0) { exps.push({ day: d.dateKey, amount: exp, type: f.expenseType || 'غير محدد', by: d.createdByName || d.createdBy }); total += exp; } });
     if (exps.length === 0) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا توجد مصروفات</p>'; return; }
     exps.sort((a, b) => b.day.localeCompare(a.day));
-    let h = '<div class="bg-orange-50 border border-orange-200 rounded-xl p-3"><p class="text-center text-xs text-orange-800 font-bold">💸 مصروفات ' + getCurrentMonthKey() + '</p><p class="text-center text-2xl font-extrabold text-red-600 mt-1">' + total + ' <span class="text-xs">ريال</span></p></div><div class="space-y-1 max-h-96 overflow-y-auto">';
+    let h = '<div class="bg-orange-50 border border-orange-200 rounded-xl p-3"><p class="text-center text-xs text-orange-800 font-bold">💸 مصروفات ' + getCurrentMonthKey() + '</p><p class="text-center text-2xl font-extrabold text-red-600 mt-1">' + total + ' ريال</p></div><div class="space-y-1 max-h-96 overflow-y-auto mt-2">';
     exps.forEach((e, i) => { h += '<div class="bg-white rounded-lg border p-2 flex justify-between items-center text-xs"><div><p class="font-bold">' + (i+1) + '. ' + e.type + '</p><p class="text-[10px] text-gray-500">' + e.day + ' • ' + e.by + '</p></div><span class="text-red-600 font-bold">' + e.amount + '</span></div>'; });
     h += '</div>';
     c.innerHTML = h;
@@ -1523,25 +1647,82 @@ async function openAllExpenses() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   💬 نظام الدردشة (فردية + جماعية — نصية فقط)
+   💬 الدردشة (فردية + جماعية)
    ═══════════════════════════════════════════════════════════ */
 let chatUnsubscribe = null;
 let currentChatWith = null;
 let currentChatGroup = null;
+let chatRefreshInterval = null;
 
 function getChatId(u1, u2) { return [u1, u2].sort().join('__'); }
 function getGroupId() { return 'grp_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7); }
 
-/* ---------- الدردشة الفردية ---------- */
+function startChatAutoRefresh() {
+  if (chatRefreshInterval) return;
+  chatRefreshInterval = setInterval(async () => {
+    if (currentChatWith && !document.getElementById('chatWindowModal').classList.contains('hidden')) await silentReloadMessages();
+    if (currentChatGroup && !document.getElementById('chatWindowModal').classList.contains('hidden')) await silentReloadGroupMessages();
+    updateChatBadge();
+  }, 3000);
+}
+function stopChatAutoRefresh() { if (chatRefreshInterval) { clearInterval(chatRefreshInterval); chatRefreshInterval = null; } }
+
+async function silentReloadMessages() {
+  if (!currentChatWith) return;
+  const chatId = getChatId(currentUser.username, currentChatWith.username);
+  try {
+    const snap = await db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp', 'asc').limit(200).get();
+    const c = document.getElementById('chatMessages');
+    if (snap.size === c.querySelectorAll(':scope > .flex').length) return;
+    let html = '';
+    snap.forEach(doc => {
+      const m = doc.data();
+      const isMe = m.sender === currentUser.username;
+      const time = m.timestamp ? new Date(m.timestamp.seconds * 1000).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }) : '';
+      html += `<div class="flex ${isMe ? 'justify-end' : 'justify-start'} mb-2">
+        <div class="max-w-[75%] ${isMe ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'} rounded-2xl px-3 py-2 shadow-sm">
+          ${!isMe ? '<p class="text-[9px] font-bold text-blue-700 mb-0.5">' + escapeHtml(m.senderName || m.sender) + '</p>' : ''}
+          <p class="text-xs leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(m.text)}</p>
+          <p class="text-[9px] ${isMe ? 'text-blue-100' : 'text-gray-500'} mt-1 text-left" dir="ltr">${time}</p>
+        </div>
+      </div>`;
+    });
+    c.innerHTML = html; c.scrollTop = c.scrollHeight;
+    await markMessagesAsRead();
+  } catch (e) {}
+}
+
+async function silentReloadGroupMessages() {
+  if (!currentChatGroup) return;
+  const gid = currentChatGroup.id;
+  try {
+    const snap = await db.collection('groups').doc(gid).collection('messages').orderBy('timestamp', 'asc').limit(200).get();
+    const c = document.getElementById('chatMessages');
+    if (snap.size === c.querySelectorAll(':scope > .flex').length) return;
+    let html = '';
+    snap.forEach(doc => {
+      const m = doc.data();
+      const isMe = m.sender === currentUser.username;
+      const time = m.timestamp ? new Date(m.timestamp.seconds * 1000).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }) : '';
+      html += `<div class="flex ${isMe ? 'justify-end' : 'justify-start'} mb-2">
+        <div class="max-w-[80%] ${isMe ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'} rounded-2xl px-3 py-2 shadow-sm">
+          ${!isMe ? '<p class="text-[9px] font-bold text-blue-700 mb-0.5">' + escapeHtml(m.senderName || m.sender) + '</p>' : ''}
+          <p class="text-xs leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(m.text)}</p>
+          <p class="text-[9px] ${isMe ? 'text-blue-100' : 'text-gray-500'} mt-1 text-left" dir="ltr">${time}</p>
+        </div>
+      </div>`;
+    });
+    c.innerHTML = html; c.scrollTop = c.scrollHeight;
+    await markGroupMessagesAsRead(gid);
+  } catch (e) {}
+}
+
 async function openChatList() {
   const m = document.getElementById('chatListModal');
   m.classList.remove('hidden'); m.classList.add('flex');
   await loadChatList();
 }
-function closeChatList() {
-  const m = document.getElementById('chatListModal');
-  m.classList.add('hidden'); m.classList.remove('flex');
-}
+function closeChatList() { const m = document.getElementById('chatListModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
 async function openChat(username, fullName) {
   currentChatWith = { username, fullName };
@@ -1571,12 +1752,8 @@ async function loadMessages() {
   const c = document.getElementById('chatMessages');
   c.innerHTML = '<p class="text-center text-xs text-gray-500 py-4">جاري التحميل...</p>';
   try {
-    const snap = await db.collection('chats').doc(chatId).collection('messages')
-      .orderBy('timestamp', 'asc').limit(200).get();
-    if (snap.empty) {
-      c.innerHTML = '<div class="text-center text-xs text-gray-400 py-8">📭 لا توجد رسائل بعد — ابدأ المحادثة</div>';
-      return;
-    }
+    const snap = await db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp', 'asc').limit(200).get();
+    if (snap.empty) { c.innerHTML = '<div class="text-center text-xs text-gray-400 py-8">📭 لا توجد رسائل بعد</div>'; return; }
     let html = '';
     snap.forEach(doc => {
       const m = doc.data();
@@ -1592,29 +1769,29 @@ async function loadMessages() {
     });
     c.innerHTML = html;
     setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
-  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل التحميل: ' + e.message + '</p>'; }
+  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
 }
 
 async function markMessagesAsRead() {
   if (!currentChatWith) return;
   const chatId = getChatId(currentUser.username, currentChatWith.username);
   try {
-    const snap = await db.collection('chats').doc(chatId).collection('messages')
-      .where('sender', '==', currentChatWith.username).get();
+    const snap = await db.collection('chats').doc(chatId).collection('messages').where('sender', '==', currentChatWith.username).get();
     const batch = db.batch();
+    let changes = 0;
     snap.forEach(doc => {
       const m = doc.data();
       if (!m.readBy || !m.readBy.includes(currentUser.username)) {
         const readBy = m.readBy || [];
         readBy.push(currentUser.username);
         batch.update(doc.ref, { readBy });
+        changes++;
       }
     });
-    await batch.commit();
-  } catch (e) { console.warn('mark read error:', e); }
+    if (changes > 0) await batch.commit();
+  } catch (e) {}
 }
 
-/* ---------- الدردشة الجماعية ---------- */
 async function openCreateGroupModal() {
   try {
     const snap = await db.collection('users').get();
@@ -1622,7 +1799,7 @@ async function openCreateGroupModal() {
     snap.forEach(doc => {
       const u = doc.data();
       if (u.username === currentUser.username) return;
-      if (u.active !== true) return;
+      if (u.active === false) return;
       const icon = u.role === 'admin' ? '👑' : u.role === 'doctor' ? '👨‍⚕️' : '👨‍💼';
       items.push(`<label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-indigo-50">
         <input type="checkbox" class="group-member-cb" value="${u.username}">
@@ -1630,68 +1807,52 @@ async function openCreateGroupModal() {
         <span class="text-xs font-bold">${escapeHtml(u.fullName || u.username)} <span class="text-gray-400 font-normal">@${u.username}</span></span>
       </label>`);
     });
-    document.getElementById('groupMembersList').innerHTML =
-      items.length ? items.join('') : '<p class="text-center text-xs text-gray-500 py-3">لا يوجد مستخدمون آخرون</p>';
+    document.getElementById('groupMembersList').innerHTML = items.length ? items.join('') : '<p class="text-center text-xs text-gray-500 py-3">لا يوجد مستخدمون آخرون</p>';
     document.getElementById('newGroupName').value = '';
     document.getElementById('createGroupStatus').classList.add('hidden');
     const m = document.getElementById('createGroupModal');
     m.classList.remove('hidden'); m.classList.add('flex');
-  } catch (e) { alert('فشل تحميل الأعضاء: ' + e.message); }
+  } catch (e) { alert('فشل: ' + e.message); }
 }
-
-function closeCreateGroupModal() {
-  const m = document.getElementById('createGroupModal');
-  m.classList.add('hidden'); m.classList.remove('flex');
-}
+function closeCreateGroupModal() { const m = document.getElementById('createGroupModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
 async function createGroup() {
   const name = document.getElementById('newGroupName').value.trim();
   if (!name) { showGroupStatus('⚠️ أدخل اسم المجموعة', 'amber'); return; }
   const members = [];
   document.querySelectorAll('.group-member-cb:checked').forEach(cb => members.push(cb.value));
-  if (members.length === 0) { showGroupStatus('⚠️ اختر عضواً على الأقل', 'amber'); return; }
+  if (members.length === 0) { showGroupStatus('⚠️ اختر عضواً', 'amber'); return; }
   const groupId = getGroupId();
   const allMembers = [currentUser.username, ...members];
   try {
     await db.collection('groups').doc(groupId).set({
-      id: groupId, name: name, members: allMembers,
-      creator: currentUser.username, creatorName: currentUser.fullName,
+      id: groupId, name, members: allMembers, creator: currentUser.username, creatorName: currentUser.fullName,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       lastMessage: 'تم إنشاء المجموعة', lastSender: currentUser.username,
       lastTimestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
-    showGroupStatus('✅ تم إنشاء المجموعة', 'emerald');
+    showGroupStatus('✅ تم', 'emerald');
     setTimeout(async () => { closeCreateGroupModal(); await loadChatList(); }, 1000);
   } catch (e) { showGroupStatus('❌ فشل: ' + e.message, 'red'); }
 }
-
-function showGroupStatus(msg, color) {
-  const s = document.getElementById('createGroupStatus');
-  s.textContent = msg;
-  s.className = 'text-[11px] text-center font-bold text-' + color + '-600';
-  s.classList.remove('hidden');
-}
+function showGroupStatus(msg, color) { const s = document.getElementById('createGroupStatus'); s.textContent = msg; s.className = 'text-[11px] text-center font-bold text-' + color + '-600'; s.classList.remove('hidden'); }
 
 async function loadUserGroups() {
   try {
     const snap = await db.collection('groups').where('members', 'array-contains', currentUser.username).get();
     const groups = [];
     snap.forEach(doc => groups.push({ id: doc.id, ...doc.data() }));
-    groups.sort((a, b) => {
-      const ta = a.lastTimestamp ? a.lastTimestamp.seconds : 0;
-      const tb = b.lastTimestamp ? b.lastTimestamp.seconds : 0;
-      return tb - ta;
-    });
+    groups.sort((a, b) => { const ta = a.lastTimestamp ? a.lastTimestamp.seconds : 0; const tb = b.lastTimestamp ? b.lastTimestamp.seconds : 0; return tb - ta; });
     return groups;
-  } catch (e) { console.warn('groups load:', e); return []; }
+  } catch (e) { return []; }
 }
 
 async function openGroupChat(groupId) {
   try {
     const doc = await db.collection('groups').doc(groupId).get();
-    if (!doc.exists) { alert('المجموعة غير موجودة'); return; }
+    if (!doc.exists) { alert('غير موجودة'); return; }
     const g = { id: doc.id, ...doc.data() };
-    if (!g.members.includes(currentUser.username)) { alert('أنت لست عضواً في هذه المجموعة'); return; }
+    if (!g.members.includes(currentUser.username)) { alert('لست عضواً'); return; }
     currentChatGroup = g;
     currentChatWith = null;
     closeChatList();
@@ -1711,12 +1872,8 @@ async function loadGroupMessages() {
   const c = document.getElementById('chatMessages');
   c.innerHTML = '<p class="text-center text-xs text-gray-500 py-4">جاري التحميل...</p>';
   try {
-    const snap = await db.collection('groups').doc(gid).collection('messages')
-      .orderBy('timestamp', 'asc').limit(200).get();
-    if (snap.empty) {
-      c.innerHTML = '<div class="text-center text-xs text-gray-400 py-8">📭 لا توجد رسائل بعد — ابدأ الحديث</div>';
-      return;
-    }
+    const snap = await db.collection('groups').doc(gid).collection('messages').orderBy('timestamp', 'asc').limit(200).get();
+    if (snap.empty) { c.innerHTML = '<div class="text-center text-xs text-gray-400 py-8">📭 لا توجد رسائل بعد</div>'; return; }
     let html = '';
     snap.forEach(doc => {
       const m = doc.data();
@@ -1732,13 +1889,12 @@ async function loadGroupMessages() {
     });
     c.innerHTML = html;
     setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
-  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل التحميل: ' + e.message + '</p>'; }
+  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
 }
 
 async function markGroupMessagesAsRead(groupId) {
   try {
-    const snap = await db.collection('groups').doc(groupId).collection('messages')
-      .where('sender', '!=', currentUser.username).get();
+    const snap = await db.collection('groups').doc(groupId).collection('messages').where('sender', '!=', currentUser.username).get();
     const batch = db.batch();
     let changes = 0;
     snap.forEach(doc => {
@@ -1751,67 +1907,48 @@ async function markGroupMessagesAsRead(groupId) {
       }
     });
     if (changes > 0) await batch.commit();
-  } catch (e) { console.warn('read err:', e); }
+  } catch (e) {}
 }
 
-/* ---------- إرسال الرسائل ---------- */
 async function sendMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text) return;
   if (!currentChatWith && !currentChatGroup) return;
-
   input.value = '';
   input.disabled = true;
   document.getElementById('chatSendBtn').disabled = true;
-
   const msgData = {
-    sender: currentUser.username,
-    senderName: currentUser.fullName,
-    text: text,
+    sender: currentUser.username, senderName: currentUser.fullName, text,
     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     readBy: [currentUser.username]
   };
-
   try {
     if (currentChatGroup) {
       const gid = currentChatGroup.id;
       await db.collection('groups').doc(gid).collection('messages').add(msgData);
-      await db.collection('groups').doc(gid).update({
-        lastMessage: text,
-        lastSender: currentUser.username,
-        lastTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      await db.collection('groups').doc(gid).update({ lastMessage: text, lastSender: currentUser.username, lastTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
       await loadGroupMessages();
     } else {
       const chatId = getChatId(currentUser.username, currentChatWith.username);
       await db.collection('chats').doc(chatId).collection('messages').add(msgData);
       await db.collection('chats').doc(chatId).set({
         participants: [currentUser.username, currentChatWith.username],
-        lastMessage: text,
-        lastSender: currentUser.username,
+        lastMessage: text, lastSender: currentUser.username,
         lastTimestamp: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
       await loadMessages();
     }
-  } catch (e) { alert('فشل الإرسال: ' + e.message); }
-  finally {
-    input.disabled = false;
-    document.getElementById('chatSendBtn').disabled = false;
-    input.focus();
-  }
+  } catch (e) { alert('فشل: ' + e.message); }
+  finally { input.disabled = false; document.getElementById('chatSendBtn').disabled = false; input.focus(); }
 }
 
-/* ---------- قائمة الدردشات الموحّدة ---------- */
 async function loadChatList() {
   const c = document.getElementById('chatListContent');
   c.innerHTML = '<p class="text-center text-xs text-gray-500 py-4">جاري التحميل...</p>';
   try {
     let html = '';
-    html += `<button onclick="closeChatList(); openCreateGroupModal();"
-      class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow hover:opacity-90">
-      👥+ إنشاء مجموعة جديدة
-    </button>
+    html += `<button onclick="closeChatList(); openCreateGroupModal();" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow hover:opacity-90">👥+ إنشاء مجموعة جديدة</button>
     <div class="h-px bg-gray-200 my-2"></div>`;
 
     const groups = await loadUserGroups();
@@ -1821,18 +1958,11 @@ async function loadChatList() {
         const timeStr = g.lastTimestamp ? new Date(g.lastTimestamp.seconds * 1000).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }) : '';
         const last = (g.lastMessage || 'لا رسائل').substring(0, 40);
         let unread = 0;
-        try {
-          const ms = await db.collection('groups').doc(g.id).collection('messages').where('sender', '!=', currentUser.username).get();
-          ms.forEach(m => { const d = m.data(); if (!d.readBy || !d.readBy.includes(currentUser.username)) unread++; });
-        } catch(_) {}
-        html += `<button onclick="openGroupChat('${g.id}')"
-          class="w-full bg-indigo-50 border border-indigo-200 rounded-lg p-3 flex items-center gap-3 hover:bg-indigo-100 transition text-right">
+        try { const ms = await db.collection('groups').doc(g.id).collection('messages').where('sender', '!=', currentUser.username).get(); ms.forEach(m => { const d = m.data(); if (!d.readBy || !d.readBy.includes(currentUser.username)) unread++; }); } catch(_) {}
+        html += `<button onclick="openGroupChat('${g.id}')" class="w-full bg-indigo-50 border border-indigo-200 rounded-lg p-3 flex items-center gap-3 hover:bg-indigo-100 transition text-right">
           <div class="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center text-lg flex-shrink-0">👥</div>
           <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-center mb-0.5">
-              <p class="text-xs font-bold text-gray-800 truncate">${escapeHtml(g.name)}</p>
-              <span class="text-[9px] text-gray-400 flex-shrink-0">${timeStr}</span>
-            </div>
+            <div class="flex justify-between items-center mb-0.5"><p class="text-xs font-bold text-gray-800 truncate">${escapeHtml(g.name)}</p><span class="text-[9px] text-gray-400 flex-shrink-0">${timeStr}</span></div>
             <div class="flex justify-between items-center gap-2">
               <p class="text-[10px] text-gray-500 truncate flex-1">${escapeHtml(last)}</p>
               ${unread > 0 ? `<span class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">${unread}</span>` : ''}
@@ -1848,14 +1978,14 @@ async function loadChatList() {
     const allUsers = [];
     usersSnap.forEach(doc => {
       const u = doc.data();
-      if (u.username !== currentUser.username && u.active === true) {
+      if (u.username !== currentUser.username && u.active !== false) {
         allUsers.push({ username: u.username || doc.id, fullName: u.fullName || doc.id, role: u.role || 'employee' });
       }
     });
-    let targets = currentUser.role === 'admin' ? allUsers : allUsers.filter(u => u.role === 'admin');
+    const targets = allUsers;
 
     if (targets.length > 0) {
-      html += '<p class="text-[10px] font-bold text-blue-700 px-1 pt-1">💬 محادثات فردية:</p>';
+      html += '<p class="text-[10px] font-bold text-blue-700 px-1 pt-1">💬 محادثات فردية (' + targets.length + '):</p>';
       for (const t of targets) {
         const chatId = getChatId(currentUser.username, t.username);
         const chatDoc = await db.collection('chats').doc(chatId).get();
@@ -1868,14 +1998,10 @@ async function loadChatList() {
           ms.forEach(m => { const md = m.data(); if (!md.readBy || !md.readBy.includes(currentUser.username)) unread++; });
         }
         const icon = t.role === 'admin' ? '👑' : t.role === 'doctor' ? '👨‍⚕️' : '👨‍💼';
-        html += `<button onclick="openChat('${t.username}', '${escapeHtml(t.fullName)}')"
-          class="w-full bg-white border rounded-lg p-3 flex items-center gap-3 hover:bg-blue-50 transition text-right">
+        html += `<button onclick="openChat('${t.username}', '${escapeHtml(t.fullName)}')" class="w-full bg-white border rounded-lg p-3 flex items-center gap-3 hover:bg-blue-50 transition text-right">
           <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-lg flex-shrink-0">${icon}</div>
           <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-center mb-0.5">
-              <p class="text-xs font-bold text-gray-800 truncate">${escapeHtml(t.fullName)}</p>
-              <span class="text-[9px] text-gray-400 flex-shrink-0">${timeStr}</span>
-            </div>
+            <div class="flex justify-between items-center mb-0.5"><p class="text-xs font-bold text-gray-800 truncate">${escapeHtml(t.fullName)}</p><span class="text-[9px] text-gray-400 flex-shrink-0">${timeStr}</span></div>
             <div class="flex justify-between items-center gap-2">
               <p class="text-[10px] text-gray-500 truncate flex-1">${escapeHtml(lastMsg.length > 40 ? lastMsg.substring(0, 40) + '...' : lastMsg)}</p>
               ${unread > 0 ? `<span class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">${unread}</span>` : ''}
@@ -1886,20 +2012,12 @@ async function loadChatList() {
     } else if (groups.length === 0) {
       html += '<p class="text-center text-xs text-gray-500 py-4">لا يوجد مستخدمون متاحون</p>';
     }
-
     c.innerHTML = html;
-  } catch (e) {
-    c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل التحميل: ' + e.message + '</p>';
-  }
+  } catch (e) { c.innerHTML = '<p class="text-center text-xs text-red-500 py-4">فشل: ' + e.message + '</p>'; }
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text || '';
-  return div.innerHTML;
-}
+function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
 
-/* ---------- شارة عدم القراءة ---------- */
 async function updateChatBadge() {
   const badge = document.getElementById('chatUnreadBadge');
   if (!badge || !currentUser) return;
@@ -1914,17 +2032,15 @@ async function updateChatBadge() {
     for (const doc of usersSnap.docs) {
       const u = doc.data();
       if (u.username === currentUser.username) continue;
-      if (currentUser.role !== 'admin' && u.role !== 'admin') continue;
+      if (u.active === false) continue;
       const chatId = getChatId(currentUser.username, u.username);
       const ms = await db.collection('chats').doc(chatId).collection('messages').where('sender', '==', u.username).get();
       ms.forEach(m => { const md = m.data(); if (!md.readBy || !md.readBy.includes(currentUser.username)) total++; });
     }
     if (total > 0) { badge.textContent = total > 99 ? '99+' : total; badge.classList.remove('hidden'); }
     else badge.classList.add('hidden');
-  } catch (e) { console.warn('badge:', e); }
+  } catch (e) {}
 }
-
-setInterval(() => { if (currentUser) updateChatBadge(); }, 30000);
 
 /* ========== التهيئة ========== */
 document.addEventListener("DOMContentLoaded", () => {
