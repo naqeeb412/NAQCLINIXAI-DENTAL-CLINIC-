@@ -62,11 +62,8 @@ body{font-family:'Cairo',sans-serif}
 <div class="flex items-center gap-2"><span class="text-2xl">👤</span><div><p id="userBarName" class="text-sm font-bold">-</p><p id="userBarRole" class="text-[10px] opacity-90">-</p></div></div>
 <div class="flex items-center gap-2 flex-wrap">
 <button onclick="openPatientsList()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">📋 المرضى</button>
-<!-- ⬇️ جديد: زر المعمل ⬇️ -->
 <button onclick="openLabSystem()" class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30 shadow-lg">🧪 المعمل</button>
-<!-- ⬇️ جديد: زر التحليل ⬇️ -->
 <button onclick="openAnalyzerSystem()" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30 shadow-lg">🔬 التحليل</button>
-<!-- ⬆️ جديد ⬆️ -->
 <button onclick="openImagesArchive()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🖼️ الأرشيف</button>
 <button onclick="openChatList()" class="relative bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">💬 دردشة<span id="chatUnreadBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 pulse-badge">0</span></button>
 <button onclick="openCreateGroupModal()" class="bg-white/20 hover:bg-white/30 text-white px-2 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">👥+</button>
@@ -155,7 +152,7 @@ body{font-family:'Cairo',sans-serif}
 </section>
 
 <section id="aiAssistantSection" class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden lg:col-span-1 xl:col-span-2">
-<div class="ai-glow p-3 text-white"><div class="flex items-center justify-between"><h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2><span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span></div></div>
+<div class="ai-glow p-3 text-white"><div class="flex items-center justify-between"><h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2><span id="aiEngineBadge" class="text-[9px] bg-white/25 text-white px-2 py-0.5 rounded-full font-bold">محرك مدمج</span></div></div>
 <div class="bg-white p-3 space-y-3">
 <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[10px] text-emerald-800">💡 <strong>تحليل شامل:</strong> يقرأ كل الصور + الأشعة + بيانات المريض ويعطي التشخيص الكامل.</div>
 <button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg">🧠 توليد التشخيص الشامل</button>
@@ -240,7 +237,7 @@ body{font-family:'Cairo',sans-serif}
 
 <div id="revenueChartModal" class="fixed inset-0 bg-black/70 z-[86] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between"><h3 class="font-bold text-indigo-900 text-base">📈 مخطط الإيرادات</h3><button onclick="closeRevenueChart()" class="text-gray-400 text-xl">✕</button></div><div class="bg-white rounded-xl p-3" style="height:400px"><canvas id="revenueChartCanvas"></canvas></div></div></div>
 
-<div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4"><div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">🤖 إعدادات AI</h3><button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button></div><div><label class="text-xs font-bold block mb-1">🔑 مفتاح Gemini:</label><input type="password" id="geminiApiKey" class="w-full p-2.5 border rounded-lg text-xs bg-gray-50"></div><div><label class="text-xs font-bold block mb-1">🧠 المحرك:</label><select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white"><option value="builtin">مدمج</option><option value="gemini">Gemini</option><option value="auto">تلقائي</option></select></div><div class="flex gap-2"><button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button><button onclick="testAIConnection()" class="flex-1 bg-gray-100 p-2.5 rounded-xl text-sm font-bold">اختبار</button></div><p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
+<div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4"><div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">🤖 إعدادات AI</h3><button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button></div><div><label class="text-xs font-bold block mb-1">🔑 مفتاح Gemini:</label><input type="password" id="geminiApiKey" class="w-full p-2.5 border rounded-lg text-xs bg-gray-50" placeholder="AIza... أو AQ..."></div><div><label class="text-xs font-bold block mb-1">🧠 المحرك:</label><select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white"><option value="builtin">مدمج</option><option value="gemini">Gemini</option><option value="auto">تلقائي</option></select></div><div class="flex gap-2"><button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button><button onclick="testAIConnection()" class="flex-1 bg-gray-100 p-2.5 rounded-xl text-sm font-bold">اختبار</button></div><p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
 
 <div id="addUserModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print"><div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3"><div class="flex items-center justify-between"><h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم</h3><button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button></div><div class="space-y-2"><label class="text-xs font-bold block">اسم المستخدم:</label><input type="text" id="newUsername" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr"><label class="text-xs font-bold block">كلمة المرور:</label><input type="text" id="newPassword" class="w-full p-2.5 border rounded-lg text-sm"><label class="text-xs font-bold block">الاسم الكامل:</label><input type="text" id="newFullName" class="w-full p-2.5 border rounded-lg text-sm"><label class="text-xs font-bold block">الدور:</label><select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white"><option value="doctor">👨‍⚕️ طبيب</option><option value="employee">👨‍💼 موظف</option><option value="admin">👑 مدير</option></select></div><div class="flex gap-2 pt-2"><button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button><button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div><p id="addUserStatus" class="text-[11px] text-center font-bold hidden"></p></div></div>
 
@@ -597,10 +594,35 @@ const te = document.getElementById('totalExpensesDisplay'); if (te) te.textConte
 const net = document.getElementById('netRevenueDisplay'); if (net) net.textContent = (r - e);
 }
 
-function getGeminiKey() { return (localStorage.getItem('geminiApiKey') || '').trim(); }
+// ═══════════════════════════════════════════════════════════════
+// 🆕 دالة جلب المفتاح
+// ═══════════════════════════════════════════════════════════════
+function getGeminiKey() {
+  const key = (localStorage.getItem('geminiApiKey') || '').trim();
+  console.log('[AI] getGeminiKey:', key ? 'موجود (' + key.substring(0,6) + '...)' : 'فارغ');
+  return key;
+}
 
 // ═══════════════════════════════════════════════════════════════
-// توليد التشخيص — يستخدم Gemini إذا كان المفتاح موجوداً
+// 🆕 تحديث شارة الذكاء الاصطناعي
+// ═══════════════════════════════════════════════════════════════
+function updateAIEngineBadge() {
+  const badge = document.getElementById('aiEngineBadge');
+  if (!badge) return;
+  const key = getGeminiKey();
+  const engine = localStorage.getItem('aiEngine') || 'auto';
+  
+  if (key && engine !== 'builtin') {
+    badge.textContent = '✨ Gemini AI مفعّل';
+    badge.className = 'text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold shadow';
+  } else {
+    badge.textContent = 'محرك مدمج';
+    badge.className = 'text-[9px] bg-white/25 text-white px-2 py-0.5 rounded-full font-bold';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 🆕 توليد التشخيص — Gemini حقيقي مع دعم Auth Keys
 // ═══════════════════════════════════════════════════════════════
 async function generateAIDiagnosis() {
   const work = document.getElementById('workType').value;
@@ -621,142 +643,155 @@ async function generateAIDiagnosis() {
   
   btn.disabled = true;
   status.classList.remove('hidden');
-  status.innerHTML = '<span class="ai-typing">🧠 جاري التحليل</span>';
   results.classList.add('hidden');
   
   const key = getGeminiKey();
+  const engine = localStorage.getItem('aiEngine') || 'auto';
   
-  // إذا لم يوجد مفتاح → استخدم المحرك المدمج
-  if (!key) {
+  console.log('[AI] Engine:', engine, '| Key:', key ? key.substring(0,6) + '...' : 'none');
+  
+  const useGemini = key && (engine === 'gemini' || engine === 'auto');
+  
+  // ═══ المحرك المدمج ═══
+  if (!useGemini) {
+    status.innerHTML = engine === 'builtin' ? 'ℹ️ المحرك مدمج (اختر Gemini من الإعدادات)' : '⚠️ لا يوجد مفتاح Gemini';
+    status.className = 'text-[11px] text-center p-2 rounded-lg bg-amber-50 text-amber-700 font-bold';
+    
     setTimeout(() => {
       const diag = '🔍 التشخيص المبدئي:\n• نوع العمل: ' + (work || 'تشخيص عام') + '\n' +
         (selectedTeeth.length ? '• الأسنان: ' + selectedTeeth.join(', ') + '\n' : '') +
         (age ? '• العمر: ' + age + '\n' : '');
       const plan = '🦷 الخطة المقترحة:\n1. فحص شامل\n2. أشعة بانورامية\n3. علاج\n4. متابعة';
-      renderAIResults('محرك مدمج (بدون مفتاح)', diag, plan, '—');
+      renderAIResults('محرك مدمج', diag, plan, '—');
       btn.disabled = false;
     }, 500);
     return;
   }
   
-  // ═══ استخدام Gemini الحقيقي ═══
+  // ═══ Gemini الحقيقي ═══
+  status.innerHTML = '<span class="ai-typing">🧠 جاري التحليل بـ Gemini</span>';
+  status.className = 'text-[11px] text-center p-2 rounded-lg bg-purple-50 text-purple-700 font-bold';
+  
   try {
-    // بناء النص
     let prompt = 'أنت استشاري طب أسنان متخصص. حلّل بيانات المريض التالية وأعطِ تشخيصاً دقيقاً وخطة علاجية.\n\n';
     prompt += '📋 بيانات المريض:\n';
     if (age) prompt += '- العمر: ' + age + '\n';
     if (gender) prompt += '- الجنس: ' + gender + '\n';
     if (allergies) prompt += '- الحساسية: ' + allergies + '\n';
     if (chronic) prompt += '- أمراض مزمنة: ' + chronic + '\n';
-    if (work) prompt += '- نوع العمل المطلوب: ' + work + '\n';
-    if (selectedTeeth.length) prompt += '- الأسنان المعنية: ' + selectedTeeth.join(', ') + '\n';
+    if (work) prompt += '- نوع العمل: ' + work + '\n';
+    if (selectedTeeth.length) prompt += '- الأسنان: ' + selectedTeeth.join(', ') + '\n';
     if (complaint) prompt += '- الشكوى: ' + complaint + '\n';
-    if (clinicImages.length) prompt += '- عدد الصور المرفقة: ' + clinicImages.length + '\n';
+    if (clinicImages.length) prompt += '- عدد الصور: ' + clinicImages.length + '\n';
     
     prompt += '\nأعطِ الإجابة بالتنسيق التالي بالضبط:\n\n';
-    prompt += '## التشخيص:\n[اكتب التشخيص هنا مع التفاصيل]\n\n';
-    prompt += '## الخطة العلاجية:\n[اكتب الخطوات المرقمة هنا]\n\n';
-    prompt += '## البدائل والمخاطر:\n[اكتب البدائل والمخاطر هنا]';
+    prompt += '## التشخيص\n[التشخيص التفصيلي]\n\n';
+    prompt += '## الخطة العلاجية\n[الخطوات المرقمة]\n\n';
+    prompt += '## البدائل والمخاطر\n[البدائل والمحاذير]';
     
-    // بناء الأجزاء (نص + صور)
     const parts = [{ text: prompt }];
-    
-    // إضافة الصور (أول 3 صور فقط لتقليل الحجم)
     for (let i = 0; i < Math.min(clinicImages.length, 3); i++) {
-      const img = clinicImages[i];
       try {
-        const base64 = img.dataUrl.split(',')[1];
         parts.push({
           inline_data: {
             mime_type: 'image/jpeg',
-            data: base64
+            data: clinicImages[i].dataUrl.split(',')[1]
           }
         });
-      } catch(e) { console.error('Image error:', e); }
+      } catch(e) {}
     }
     
-    // استدعاء Gemini
-    const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     let response = null;
+    let lastError = null;
     
     for (const model of models) {
       try {
-        const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key;
-        const resp = await fetch(url, {
+        const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
+        const headers = { 'Content-Type': 'application/json' };
+        let finalUrl = url;
+        
+        // Auth Keys (تبدأ بـ AQ.) → header مختلف
+        if (key.startsWith('AQ.')) {
+          headers['x-goog-api-key'] = key;
+          console.log('[AI] AUTH KEY mode - ' + model);
+        } else {
+          finalUrl = url + '?key=' + key;
+          console.log('[AI] STANDARD KEY mode - ' + model);
+        }
+        
+        const resp = await fetch(finalUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headers,
           body: JSON.stringify({
             contents: [{ parts: parts }],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 2048
-            }
+            generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
           })
         });
         
-        if (resp.ok) {
-          const data = await resp.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            response = text;
-            break;
-          }
-        } else {
-          const err = await resp.json();
-          console.error('Gemini error:', err);
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          lastError = new Error(errData.error?.message || 'HTTP ' + resp.status);
+          console.error('[AI] ' + model + ' failed:', lastError.message);
+          continue;
         }
-      } catch(e) {
-        console.error('Model ' + model + ' failed:', e);
+        
+        const data = await resp.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          response = text;
+          console.log('[AI] ✅ Success with ' + model);
+          break;
+        }
+      } catch (e) {
+        lastError = e;
+        console.error('[AI] ' + model + ' error:', e.message);
       }
     }
     
-    if (!response) {
-      throw new Error('فشل الاتصال بـ Gemini — تحقق من المفتاح');
-    }
+    if (!response) throw lastError || new Error('جميع النماذج فشلت');
     
-    // تحليل الاستجابة
-    const sections = parseGeminiResponse(response);
-    renderAIResults('✨ Gemini AI', sections.diag, sections.plan, sections.alt);
+    const diagMatch = response.match(/##\s*التشخيص\s*\n([\s\S]*?)(?=##|$)/);
+    const planMatch = response.match(/##\s*الخطة[^\n]*\n([\s\S]*?)(?=##|$)/);
+    const altMatch = response.match(/##\s*البدائل[^\n]*\n([\s\S]*?)(?=##|$)/);
+    
+    const diag = diagMatch ? diagMatch[1].trim() : response;
+    const plan = planMatch ? planMatch[1].trim() : '—';
+    const alt = altMatch ? altMatch[1].trim() : '—';
+    
+    renderAIResults('✨ Gemini AI', diag, plan, alt);
+    updateAIEngineBadge();
     
   } catch (err) {
-    console.error(err);
-    status.innerHTML = '❌ ' + err.message;
+    console.error('[AI] Final Error:', err);
+    status.innerHTML = '❌ فشل Gemini';
     status.className = 'text-[11px] text-center p-2 rounded-lg bg-red-50 text-red-700 font-bold';
     
-    // fallback إلى المحرك المدمج
-    setTimeout(() => {
-      const diag = '🔍 التشخيص المبدئي:\n• نوع العمل: ' + (work || 'تشخيص عام') + '\n';
-      const plan = '🦷 الخطة:\n1. فحص شامل\n2. أشعة\n3. علاج';
-      renderAIResults('محرك مدمج (Gemini فشل)', diag, plan, '—');
-    }, 1500);
+    const msg = err.message || '';
+    let helpText = '';
+    if (msg.includes('403') || msg.includes('PERMISSION') || msg.includes('not valid') || msg.includes('API_KEY')) {
+      helpText = 'المفتاح غير صالح أو غير مفعّل.\n1. تأكد أنه منسوخ كاملاً\n2. مقيد على Gemini API only\n3. Generative Language API مفعّل في Google Cloud';
+    } else if (msg.includes('429')) {
+      helpText = 'تجاوزت الحد المجاني (15 طلب/دقيقة).\nانتظر دقيقة ثم حاول.';
+    } else if (msg.includes('404')) {
+      helpText = 'النموذج غير متاح — أنشئ مفتاحاً جديداً من AI Studio.';
+    } else if (msg.includes('Failed to fetch') || msg.includes('network')) {
+      helpText = 'فشل الاتصال — تحقق من الإنترنت.';
+    } else {
+      helpText = 'تحقق من صحة المفتاح.';
+    }
+    
+    results.innerHTML = 
+      '<div style="background:#fef2f2;border:2px solid #fecaca;border-radius:12px;padding:16px">' +
+        '<p style="font-weight:bold;color:#991b1b;margin-bottom:8px;font-size:13px">❌ لم يتم الاتصال بـ Gemini</p>' +
+        '<p style="font-size:11px;color:#7f1d1d;direction:ltr;text-align:right;background:#fff;padding:8px;border-radius:6px;margin-bottom:8px;word-break:break-all">' + escapeHtml(msg) + '</p>' +
+        '<p style="font-size:11px;color:#7f1d1d;white-space:pre-line;line-height:1.6;background:#fff;padding:8px;border-radius:6px">' + escapeHtml(helpText) + '</p>' +
+        '<button onclick="openAISettings()" style="margin-top:10px;background:#991b1b;color:#fff;padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer">⚙️ فتح الإعدادات</button>' +
+      '</div>';
+    results.classList.remove('hidden');
   } finally {
     btn.disabled = false;
   }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// تحليل استجابة Gemini
-// ═══════════════════════════════════════════════════════════════
-function parseGeminiResponse(text) {
-  let diag = '', plan = '', alt = '';
-  
-  // محاولة تحليل الأقسام
-  const diagMatch = text.match(/##\s*التشخيص:?\s*\n([\s\S]*?)(?=##|$)/);
-  const planMatch = text.match(/##\s*الخطة[^:]*:?\s*\n([\s\S]*?)(?=##|$)/);
-  const altMatch = text.match(/##\s*البدائل[^:]*:?\s*\n([\s\S]*?)(?=##|$)/);
-  
-  if (diagMatch) diag = diagMatch[1].trim();
-  if (planMatch) plan = planMatch[1].trim();
-  if (altMatch) alt = altMatch[1].trim();
-  
-  // إذا فشل التحليل → استخدم النص كاملاً
-  if (!diag && !plan) {
-    diag = text;
-    plan = '—';
-    alt = '—';
-  }
-  
-  return { diag, plan, alt: alt || '—' };
 }
 
 function renderAIResults(engineName, diag, plan, alt) {
@@ -776,8 +811,81 @@ function openDiagnosisReferences() { const m = document.getElementById('refsModa
 function closeDiagnosisReferences() { const m = document.getElementById('refsModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 function openAISettings() { document.getElementById('geminiApiKey').value = getGeminiKey(); document.getElementById('aiEngine').value = localStorage.getItem('aiEngine') || 'auto'; const m = document.getElementById('aiSettingsModal'); m.classList.remove('hidden'); m.classList.add('flex'); }
 function closeAISettings() { const m = document.getElementById('aiSettingsModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
-function saveAISettings() { const k = document.getElementById('geminiApiKey').value.trim(); if (k) localStorage.setItem('geminiApiKey', k); else localStorage.removeItem('geminiApiKey'); const s = document.getElementById('aiSettingsStatus'); s.textContent = '✅ تم'; s.classList.remove('hidden'); setTimeout(() => s.classList.add('hidden'), 2000); }
-async function testAIConnection() { const k = document.getElementById('geminiApiKey').value.trim(); const s = document.getElementById('aiSettingsStatus'); s.classList.remove('hidden'); s.textContent = '⏳...'; if (!k) { s.textContent = '⚠️ أدخل المفتاح'; return; } try { const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + k); s.textContent = r.ok ? '✅' : '❌'; } catch (e) { s.textContent = '❌'; } }
+
+// ═══════════════════════════════════════════════════════════════
+// 🆕 حفظ الإعدادات مع تحديث الشارة فوراً
+// ═══════════════════════════════════════════════════════════════
+function saveAISettings() {
+  const k = document.getElementById('geminiApiKey').value.trim();
+  const eng = document.getElementById('aiEngine').value;
+  
+  if (k) localStorage.setItem('geminiApiKey', k);
+  else localStorage.removeItem('geminiApiKey');
+  
+  localStorage.setItem('aiEngine', eng);
+  
+  updateAIEngineBadge();
+  
+  const s = document.getElementById('aiSettingsStatus');
+  s.textContent = '✅ تم الحفظ والتفعيل — المحرك: ' + (eng === 'gemini' ? 'Gemini' : eng === 'builtin' ? 'مدمج' : 'تلقائي');
+  s.className = 'text-[11px] text-center font-bold text-emerald-600 block';
+  s.classList.remove('hidden');
+  setTimeout(() => s.classList.add('hidden'), 2500);
+  
+  console.log('[AI Settings] Saved. Engine:', eng, '| Key:', k ? k.substring(0,6) + '...' : 'none');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 🆕 اختبار الاتصال — يدعم Standard + Auth Keys
+// ═══════════════════════════════════════════════════════════════
+async function testAIConnection() {
+  const k = document.getElementById('geminiApiKey').value.trim();
+  const s = document.getElementById('aiSettingsStatus');
+  s.classList.remove('hidden');
+  s.textContent = '⏳ جاري الاختبار...';
+  s.className = 'text-[11px] text-center font-bold text-blue-600';
+  
+  if (!k) {
+    s.textContent = '⚠️ أدخل المفتاح أولاً';
+    s.className = 'text-[11px] text-center font-bold text-amber-600';
+    return;
+  }
+  
+  try {
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    const headers = { 'Content-Type': 'application/json' };
+    let finalUrl = url;
+    
+    if (k.startsWith('AQ.')) {
+      headers['x-goog-api-key'] = k;
+      console.log('[Test] AUTH KEY mode');
+    } else {
+      finalUrl = url + '?key=' + k;
+      console.log('[Test] STANDARD KEY mode');
+    }
+    
+    const resp = await fetch(finalUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ contents: [{ parts: [{ text: 'قل: مرحبا' }] }] })
+    });
+    
+    if (resp.ok) {
+      const data = await resp.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      s.textContent = '✅ المفتاح يعمل! الرد: ' + (text || 'نجح');
+      s.className = 'text-[11px] text-center font-bold text-emerald-600';
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      s.textContent = '❌ خطأ: ' + (err.error?.message || 'HTTP ' + resp.status);
+      s.className = 'text-[11px] text-center font-bold text-red-600';
+      console.error('[Test] Failed:', err);
+    }
+  } catch (e) {
+    s.textContent = '❌ فشل الاتصال: ' + e.message;
+    s.className = 'text-[11px] text-center font-bold text-red-600';
+  }
+}
 
 async function savePatientRecord() {
 const name = document.getElementById('patientName').value.trim();
@@ -882,21 +990,16 @@ function escapeHtml(text) { const div = document.createElement('div'); div.textC
 async function updateChatBadge() { const badge = document.getElementById('chatUnreadBadge'); if (!badge || !currentUser) return; let total = 0; try { const groups = await loadUserGroups(); for (const g of groups) { const ms = await db.collection('groups').doc(g.id).collection('messages').where('sender', '!=', currentUser.username).get(); ms.forEach(m => { const d = m.data(); if (!d.readBy || !d.readBy.includes(currentUser.username)) total++; }); } const usersSnap = await db.collection('users').get(); for (const doc of usersSnap.docs) { const u = doc.data(); if (u.username === currentUser.username) continue; if (u.active === false) continue; const chatId = getChatId(currentUser.username, u.username); const ms = await db.collection('chats').doc(chatId).collection('messages').where('sender', '==', u.username).get(); ms.forEach(m => { const md = m.data(); if (!md.readBy || !md.readBy.includes(currentUser.username)) total++; }); } if (total > 0) { badge.textContent = total > 99 ? '99+' : total; badge.classList.remove('hidden'); } else badge.classList.add('hidden'); } catch (e) {} }
 
 // ═══════════════════════════════════════════════════════════════
-// ⬇️ جديد: فتح نظام المعمل والتحليل ⬇️
+// فتح نظام المعمل والتحليل
 // ═══════════════════════════════════════════════════════════════
-
-// فتح نظام المعمل — يعمل داخل iframe وخارجه
 function openLabSystem() {
-  // إذا كنا داخل النظام الموحد (index.html) → التبديل للتبويب
   if (window.parent && typeof window.parent.switchTab === 'function') {
     window.parent.switchTab('lab');
   } else {
-    // مستقل → فتح نفس الصفحة
     window.location.href = 'Lab.html';
   }
 }
 
-// فتح نظام التحليل — يعمل داخل iframe وخارجه
 function openAnalyzerSystem() {
   if (window.parent && typeof window.parent.switchTab === 'function') {
     window.parent.switchTab('analyzer');
@@ -905,7 +1008,17 @@ function openAnalyzerSystem() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => { renderLogos(); renderDentalChart(); generateFileNumber(); renderGallery(); });
+// ═══════════════════════════════════════════════════════════════
+// 🆕 التشغيل الأولي — مع تحديث الشارة
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener("DOMContentLoaded", () => {
+  renderLogos();
+  renderDentalChart();
+  generateFileNumber();
+  renderGallery();
+  updateAIEngineBadge();
+  setInterval(updateAIEngineBadge, 3000);
+});
 </script>
 </body>
 </html>
