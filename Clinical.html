@@ -599,22 +599,164 @@ const net = document.getElementById('netRevenueDisplay'); if (net) net.textConte
 
 function getGeminiKey() { return (localStorage.getItem('geminiApiKey') || '').trim(); }
 
+// ═══════════════════════════════════════════════════════════════
+// توليد التشخيص — يستخدم Gemini إذا كان المفتاح موجوداً
+// ═══════════════════════════════════════════════════════════════
 async function generateAIDiagnosis() {
-const work = document.getElementById('workType').value;
-if (!selectedTeeth.length && !work && !clinicImages.length) { alert('حدد البيانات'); return; }
-const status = document.getElementById('aiStatus');
-const results = document.getElementById('aiResults');
-const btn = document.getElementById('btnAIDiag');
-btn.disabled = true; status.classList.remove('hidden'); status.innerHTML = '🧠 تحليل'; results.classList.add('hidden');
-setTimeout(() => {
-const age = document.getElementById('patientAge').value;
-let diag = '🔍 التشخيص:\n• نوع العمل: ' + (work || 'تشخيص عام') + '\n';
-if (selectedTeeth.length) diag += '• الأسنان: ' + selectedTeeth.join(', ') + '\n';
-if (age) diag += '• العمر: ' + age + '\n';
-let plan = '🦷 الخطة:\n1. فحص شامل\n2. أشعة\n3. علاج\n4. متابعة';
-renderAIResults('محرك مدمج', diag, plan, '—');
-btn.disabled = false;
-}, 500);
+  const work = document.getElementById('workType').value;
+  const age = document.getElementById('patientAge').value;
+  const gender = document.getElementById('patientGender').value;
+  const allergies = document.getElementById('patientAllergies').value;
+  const chronic = document.getElementById('chronicDiseases').value;
+  const complaint = document.getElementById('complaint').value;
+  
+  if (!selectedTeeth.length && !work && !clinicImages.length && !complaint) {
+    alert('⚠️ أدخل بيانات المريض على الأقل (نوع العمل، الأسنان، أو الشكوى)');
+    return;
+  }
+  
+  const status = document.getElementById('aiStatus');
+  const results = document.getElementById('aiResults');
+  const btn = document.getElementById('btnAIDiag');
+  
+  btn.disabled = true;
+  status.classList.remove('hidden');
+  status.innerHTML = '<span class="ai-typing">🧠 جاري التحليل</span>';
+  results.classList.add('hidden');
+  
+  const key = getGeminiKey();
+  
+  // إذا لم يوجد مفتاح → استخدم المحرك المدمج
+  if (!key) {
+    setTimeout(() => {
+      const diag = '🔍 التشخيص المبدئي:\n• نوع العمل: ' + (work || 'تشخيص عام') + '\n' +
+        (selectedTeeth.length ? '• الأسنان: ' + selectedTeeth.join(', ') + '\n' : '') +
+        (age ? '• العمر: ' + age + '\n' : '');
+      const plan = '🦷 الخطة المقترحة:\n1. فحص شامل\n2. أشعة بانورامية\n3. علاج\n4. متابعة';
+      renderAIResults('محرك مدمج (بدون مفتاح)', diag, plan, '—');
+      btn.disabled = false;
+    }, 500);
+    return;
+  }
+  
+  // ═══ استخدام Gemini الحقيقي ═══
+  try {
+    // بناء النص
+    let prompt = 'أنت استشاري طب أسنان متخصص. حلّل بيانات المريض التالية وأعطِ تشخيصاً دقيقاً وخطة علاجية.\n\n';
+    prompt += '📋 بيانات المريض:\n';
+    if (age) prompt += '- العمر: ' + age + '\n';
+    if (gender) prompt += '- الجنس: ' + gender + '\n';
+    if (allergies) prompt += '- الحساسية: ' + allergies + '\n';
+    if (chronic) prompt += '- أمراض مزمنة: ' + chronic + '\n';
+    if (work) prompt += '- نوع العمل المطلوب: ' + work + '\n';
+    if (selectedTeeth.length) prompt += '- الأسنان المعنية: ' + selectedTeeth.join(', ') + '\n';
+    if (complaint) prompt += '- الشكوى: ' + complaint + '\n';
+    if (clinicImages.length) prompt += '- عدد الصور المرفقة: ' + clinicImages.length + '\n';
+    
+    prompt += '\nأعطِ الإجابة بالتنسيق التالي بالضبط:\n\n';
+    prompt += '## التشخيص:\n[اكتب التشخيص هنا مع التفاصيل]\n\n';
+    prompt += '## الخطة العلاجية:\n[اكتب الخطوات المرقمة هنا]\n\n';
+    prompt += '## البدائل والمخاطر:\n[اكتب البدائل والمخاطر هنا]';
+    
+    // بناء الأجزاء (نص + صور)
+    const parts = [{ text: prompt }];
+    
+    // إضافة الصور (أول 3 صور فقط لتقليل الحجم)
+    for (let i = 0; i < Math.min(clinicImages.length, 3); i++) {
+      const img = clinicImages[i];
+      try {
+        const base64 = img.dataUrl.split(',')[1];
+        parts.push({
+          inline_data: {
+            mime_type: 'image/jpeg',
+            data: base64
+          }
+        });
+      } catch(e) { console.error('Image error:', e); }
+    }
+    
+    // استدعاء Gemini
+    const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    let response = null;
+    
+    for (const model of models) {
+      try {
+        const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: parts }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 2048
+            }
+          })
+        });
+        
+        if (resp.ok) {
+          const data = await resp.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            response = text;
+            break;
+          }
+        } else {
+          const err = await resp.json();
+          console.error('Gemini error:', err);
+        }
+      } catch(e) {
+        console.error('Model ' + model + ' failed:', e);
+      }
+    }
+    
+    if (!response) {
+      throw new Error('فشل الاتصال بـ Gemini — تحقق من المفتاح');
+    }
+    
+    // تحليل الاستجابة
+    const sections = parseGeminiResponse(response);
+    renderAIResults('✨ Gemini AI', sections.diag, sections.plan, sections.alt);
+    
+  } catch (err) {
+    console.error(err);
+    status.innerHTML = '❌ ' + err.message;
+    status.className = 'text-[11px] text-center p-2 rounded-lg bg-red-50 text-red-700 font-bold';
+    
+    // fallback إلى المحرك المدمج
+    setTimeout(() => {
+      const diag = '🔍 التشخيص المبدئي:\n• نوع العمل: ' + (work || 'تشخيص عام') + '\n';
+      const plan = '🦷 الخطة:\n1. فحص شامل\n2. أشعة\n3. علاج';
+      renderAIResults('محرك مدمج (Gemini فشل)', diag, plan, '—');
+    }, 1500);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// تحليل استجابة Gemini
+// ═══════════════════════════════════════════════════════════════
+function parseGeminiResponse(text) {
+  let diag = '', plan = '', alt = '';
+  
+  // محاولة تحليل الأقسام
+  const diagMatch = text.match(/##\s*التشخيص:?\s*\n([\s\S]*?)(?=##|$)/);
+  const planMatch = text.match(/##\s*الخطة[^:]*:?\s*\n([\s\S]*?)(?=##|$)/);
+  const altMatch = text.match(/##\s*البدائل[^:]*:?\s*\n([\s\S]*?)(?=##|$)/);
+  
+  if (diagMatch) diag = diagMatch[1].trim();
+  if (planMatch) plan = planMatch[1].trim();
+  if (altMatch) alt = altMatch[1].trim();
+  
+  // إذا فشل التحليل → استخدم النص كاملاً
+  if (!diag && !plan) {
+    diag = text;
+    plan = '—';
+    alt = '—';
+  }
+  
+  return { diag, plan, alt: alt || '—' };
 }
 
 function renderAIResults(engineName, diag, plan, alt) {
