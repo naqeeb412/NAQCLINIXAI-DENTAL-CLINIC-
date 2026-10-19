@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧪 معمل الأسنان - NAQClinixAI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Cairo', sans-serif; }
+@media print {
+  body * { visibility: hidden; }
+  #printableArea, #printableArea * { visibility: visible; }
+  #printableArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; background: white; }
+  .no-print { display: none !important; }
+}
+.tooth-card { cursor: pointer; transition: all .15s ease; }
+.tooth-card:hover { transform: translateY(-2px); }
+.tooth-card.selected { background: #3b82f6 !important; color: white !important; border-color: #1e40af !important; box-shadow: 0 4px 12px rgba(59,130,246,.4); }
+.tooth-card.missing { background: #fecaca !important; color: #991b1b !important; border-color: #ef4444 !important; text-decoration: line-through; }
+.tooth-card.missing.selected { background: #dc2626 !important; color: white !important; }
+.work-card { cursor: pointer; transition: all .2s ease; }
+.work-card:hover { transform: translateY(-2px); border-color: #6366f1 !important; }
+.work-card.selected { background: #4f46e5 !important; color: white !important; border-color: #4338ca !important; }
+.pulse-badge { animation: pulseBadge 2s ease infinite; }
+@keyframes pulseBadge { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.toast-slide { animation: slideIn .35s ease-out; }
+@keyframes slideIn { from{transform:translateX(-100%); opacity:0;} to{transform:translateX(0); opacity:1;} }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800 p-2">
+
+<!-- شاشة الدخول -->
+<div id="loginOverlay" class="fixed inset-0 bg-purple-950 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4 border border-purple-100">
+    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg">🧪</div>
+    <h2 class="text-lg font-bold text-purple-900">نظام المعمل</h2>
+    <p class="text-xs text-gray-600">سجّل الدخول للوصول إلى حساب المعمل</p>
+    <div class="text-right space-y-2">
+      <label class="text-[11px] font-bold text-gray-700 block">👤 اسم المستخدم</label>
+      <input type="text" id="loginUsername" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-600" autocomplete="username">
+      <label class="text-[11px] font-bold text-gray-700 block">🔑 كلمة المرور</label>
+      <input type="password" id="loginPassword" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-600" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button onclick="doLogin()" id="loginBtn" class="w-full bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-purple-700">دخول</button>
+    <p id="loginError" class="text-xs text-red-600 hidden font-semibold"></p>
+    <p class="text-[10px] text-gray-400">💡 يُفضل الدخول من نظام العيادة أولاً</p>
+  </div>
+</div>
+
+<!-- التطبيق -->
+<div id="appContainer" class="w-full max-w-7xl mx-auto bg-white min-h-screen shadow-lg flex flex-col p-2 md:p-5 rounded-xl border border-gray-100 hidden">
+
+  <div id="userBar" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between shadow flex-wrap gap-2">
+    <div class="flex items-center gap-2">
+      <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl">🧪</div>
+      <div>
+        <p id="userBarName" class="text-sm font-bold">-</p>
+        <p id="userBarRole" class="text-[10px] opacity-90">-</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <button onclick="backToClinic()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🏥 العيادة</button>
+      <button onclick="logout()" class="bg-white/20 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🚪 خروج</button>
+    </div>
+  </div>
+
+  <div id="remindersBar" class="hidden bg-amber-50 border-2 border-amber-300 rounded-xl p-3 mb-3 text-xs"></div>
+
+  <header class="relative overflow-hidden bg-gradient-to-br from-purple-950 via-purple-900 to-pink-900 text-white rounded-2xl mb-4 shadow-xl border border-purple-800">
+    <div class="relative p-5 text-center">
+      <div class="w-20 h-20 mx-auto mb-2 bg-white/10 rounded-2xl flex items-center justify-center text-4xl ring-2 ring-white/25">🧪</div>
+      <h1 class="text-lg md:text-xl font-extrabold">معمل الأسنان التخصصي</h1>
+      <p class="text-[10px] font-bold text-pink-300 tracking-[0.25em] mt-1">NAQClinixAI LAB</p>
+      <p class="text-[11px] text-purple-100 mt-2">🏥 تابع للعيادة التخصصية لطب وجراحة الفم والأسنان - د. علي النقيب</p>
+    </div>
+  </header>
+
+  <div class="flex gap-2 mb-4 flex-wrap border-b-2 border-gray-200 pb-1">
+    <button id="tabAccounts" onclick="switchTab('accounts')" class="tab-btn active px-3 py-2 rounded-t-lg text-xs font-bold text-purple-700 border-b-2 border-purple-600 bg-purple-50">📋 الحسابات</button>
+    <button id="tabReminders" onclick="switchTab('reminders')" class="tab-btn relative px-3 py-2 rounded-t-lg text-xs font-bold text-gray-600">🔔 التذكيرات
+      <span id="reminderBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1 pulse-badge">0</span>
+    </button>
+    <button id="tabStatement" onclick="switchTab('statement')" class="tab-btn px-3 py-2 rounded-t-lg text-xs font-bold text-gray-600">📊 كشف حساب</button>
+    <button id="tabPatients" onclick="switchTab('patients')" class="tab-btn px-3 py-2 rounded-t-lg text-xs font-bold text-gray-600">👥 مرضى العيادة</button>
+  </div>
+
+  <!-- تبويب الحسابات -->
+  <div id="contentAccounts" class="tab-content flex-1">
+    <h2 class="font-bold text-purple-900 mb-3 text-sm">➕ إضافة حساب معمل جديد</h2>
+
+    <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mb-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+      <div>
+        <label class="text-[10px] font-bold text-blue-800 block mb-1">🔗 اختيار مريض من العيادة (اختياري):</label>
+        <select id="patientSelect" onchange="onPatientSelected()" class="w-full p-2 border rounded-lg text-sm bg-white">
+          <option value="">— أو أدخل يدوياً —</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-blue-800 block mb-1">👤 اسم الحساب / العيادة:</label>
+        <input type="text" id="accountName" placeholder="عيادة د. أحمد" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-blue-800 block mb-1">👨‍⚕️ اسم الطبيب:</label>
+        <input type="text" id="doctorName" placeholder="د. ..." class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-blue-800 block mb-1">🧑 المريض:</label>
+        <input type="text" id="patientName" placeholder="اسم المريض" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-blue-800 block mb-1">📱 الهاتف:</label>
+        <input type="tel" id="patientPhone" placeholder="07xxxxxxxx" class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-blue-800 block mb-1">📝 ملاحظات:</label>
+        <input type="text" id="notes" placeholder="تفاصيل إضافية..." class="w-full p-2 border rounded-lg text-sm bg-white">
+      </div>
+    </div>
+
+    <div class="bg-green-50 p-3 rounded-xl border border-green-100 mb-3">
+      <h3 class="font-bold text-green-900 mb-2 text-xs">💰 الحساب المالي</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div>
+          <label class="text-[10px] text-gray-600 block">المبلغ الإجمالي</label>
+          <input type="number" id="totalAmount" oninput="calcRemaining()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white">
+        </div>
+        <div>
+          <label class="text-[10px] text-gray-600 block">المدفوع</label>
+          <input type="number" id="paidAmount" oninput="calcRemaining()" placeholder="0" class="w-full p-2 border rounded-lg text-sm bg-white">
+        </div>
+        <div>
+          <label class="text-[10px] text-gray-600 block">المتبقي (تلقائي)</label>
+          <input type="text" id="remainingAmount" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-red-600">
+        </div>
+        <div>
+          <label class="text-[10px] text-gray-600 block">تاريخ الإرسال</label>
+          <input type="date" id="sendDate" class="w-full p-2 border rounded-lg text-sm bg-white">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <div>
+          <label class="text-[10px] text-gray-600 block">📅 الاستلام المتوقع</label>
+          <input type="date" id="receiveDate" class="w-full p-2 border rounded-lg text-sm bg-white">
+        </div>
+        <div>
+          <label class="text-[10px] text-gray-600 block">💳 طريقة الدفع</label>
+          <select id="paymentMethod" class="w-full p-2 border rounded-lg text-sm bg-white">
+            <option value="">اختر...</option>
+            <option value="نقدي">نقدي</option>
+            <option value="تحويل بنكي">تحويل بنكي</option>
+            <option value="محفظة إلكترونية">محفظة إلكترونية</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 mb-3">
+      <h3 class="font-bold text-indigo-900 mb-2 text-xs">🎨 أنواع العمل المطلوبة</h3>
+      <div id="workTypesGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-2"></div>
+      <div class="flex gap-2 mt-2">
+        <input type="text" id="customWorkInput" placeholder="نوع عمل آخر..." class="flex-1 p-2 border rounded-lg text-sm bg-white">
+        <button onclick="addCustomWork()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-bold">➕ إضافة</button>
+      </div>
+      <p id="selectedWorksInfo" class="text-xs text-indigo-700 mt-2 font-bold bg-white py-1.5 px-2 rounded-lg">لم يتم اختيار أي نوع عمل</p>
+    </div>
+
+    <div class="bg-purple-50 p-3 rounded-xl border border-purple-100 mb-3">
+      <h3 class="font-bold text-purple-900 mb-2 text-xs">🦷 تحديد الأسنان (FDI) — اضغط على السن</h3>
+      <p class="text-[10px] text-gray-600 mb-1 text-center font-bold">الفك العلوي</p>
+      <div id="upperTeeth" class="flex justify-center flex-wrap gap-1 mb-2"></div>
+      <p class="text-[10px] text-gray-600 mb-1 text-center font-bold">الفك السفلي</p>
+      <div id="lowerTeeth" class="flex justify-center flex-wrap gap-1 mb-2"></div>
+      <div class="flex gap-2 justify-center mt-2 flex-wrap">
+        <button onclick="clearTeeth()" class="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[11px] font-bold">🗑️ مسح</button>
+        <button onclick="selectAllTeeth()" class="bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg text-[11px] font-bold">✅ الكل</button>
+        <button onclick="toggleMissingMode()" id="missingModeBtn" class="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[11px] font-bold">🚫 وضع مفقود</button>
+      </div>
+      <p id="selectedTeethInfo" class="text-xs text-purple-700 mt-2 font-bold bg-white py-1.5 px-2 rounded-lg text-center">لم يتم تحديد أي سن</p>
+    </div>
+
+    <button onclick="saveLabAccount()" id="saveBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg mb-3">💾 حفظ في السحابة</button>
+
+    <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+      <h2 class="font-bold text-purple-900 text-sm">📋 الحسابات المسجلة</h2>
+      <button onclick="exportAccountsExcel()" class="bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">📄 تصدير Excel</button>
+    </div>
+    <div id="accountsList" class="space-y-2"></div>
+  </div>
+
+  <!-- تبويب التذكيرات -->
+  <div id="contentReminders" class="tab-content flex-1 hidden">
+    <div class="bg-amber-50 border-2 border-amber-300 rounded-xl p-3 mb-3">
+      <h2 class="font-bold text-amber-900 mb-2 text-sm">🔔 تنبيهات الاستلام</h2>
+      <p id="reminderSummary" class="text-xs text-gray-700 mb-2"></p>
+      <div id="reminderList" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- تبويب كشف الحساب -->
+  <div id="contentStatement" class="tab-content flex-1 hidden">
+    <h2 class="font-bold text-purple-900 text-sm mb-3">📊 كشف حساب</h2>
+    <div class="bg-gray-50 p-3 rounded-xl border mb-3 grid grid-cols-1 md:grid-cols-4 gap-2">
+      <select id="stmtType" onchange="renderStatement()" class="p-2 border rounded-lg text-sm bg-white">
+        <option value="month">شهري</option>
+        <option value="range">فترة مخصصة</option>
+        <option value="account">حساب معين</option>
+      </select>
+      <input type="month" id="stmtMonth" onchange="renderStatement()" class="p-2 border rounded-lg text-sm bg-white">
+      <input type="date" id="stmtFrom" onchange="renderStatement()" class="p-2 border rounded-lg text-sm bg-white hidden">
+      <input type="date" id="stmtTo" onchange="renderStatement()" class="p-2 border rounded-lg text-sm bg-white hidden">
+      <select id="stmtAccount" onchange="renderStatement()" class="p-2 border rounded-lg text-sm bg-white hidden"></select>
+    </div>
+    <div class="flex gap-2 mb-3 flex-wrap">
+      <button onclick="exportStatementExcel()" class="bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">📄 تصدير Excel</button>
+      <button onclick="printStatement()" class="bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">🖨️ طباعة الكشف</button>
+    </div>
+    <div id="statementCards" class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3"></div>
+    <div id="statementList" class="space-y-1"></div>
+  </div>
+
+  <!-- تبويب مرضى العيادة -->
+  <div id="contentPatients" class="tab-content flex-1 hidden">
+    <h2 class="font-bold text-purple-900 text-sm mb-3">👥 مرضى العيادة (من Firebase)</h2>
+    <input type="text" id="patientSearch" placeholder="🔍 بحث بالاسم أو رقم الملف..." oninput="renderPatientsFromClinic()" class="w-full p-2 border rounded-lg text-sm mb-2 bg-white">
+    <div id="clinicPatientsList" class="space-y-1"></div>
+  </div>
+
+  <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">© 2026 NAQClinixAI Lab — نظام المعمل</footer>
+</div>
+
+<!-- منطقة الطباعة -->
+<div id="printableArea" class="hidden p-6 bg-white text-right space-y-4" style="direction:rtl">
+  <div class="text-center border-b-2 border-purple-900 pb-3 mb-4">
+    <div class="w-16 h-16 mx-auto mb-2 bg-purple-900 rounded-xl flex items-center justify-center text-3xl text-white">🧪</div>
+    <h2 class="font-extrabold text-xl text-purple-900">معمل الأسنان التخصصي</h2>
+    <p class="text-sm font-bold text-purple-700 mt-1">تابع للعيادة التخصصية لطب وجراحة الفم والأسنان - د. علي النقيب</p>
+  </div>
+  <div id="printBodyContent" class="text-sm space-y-3"></div>
+</div>
+
+<div id="toastContainer" class="fixed top-4 left-4 z-[9999] space-y-2 max-w-xs no-print"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// Firebase
+// ═══════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
+  authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
+  projectId: "naqclinixai-dental-clinic",
+  storageBucket: "naqclinixai-dental-clinic.firebasestorage.app",
+  messagingSenderId: "796796158387",
+  appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ═══════════════════════════════════════════════════════════════
+// المتغيرات
+// ═══════════════════════════════════════════════════════════════
+let currentUser = null;
+let labAccounts = [];
+let clinicPatients = [];
+let editId = null;
+let selectedWorks = [];
+let selectedTeeth = [];
+let missingTeeth = [];
+let missingMode = false;
+let customWorks = JSON.parse(localStorage.getItem('lab_custom_works') || '[]');
+
+const DEFAULT_WORK_TYPES = [
+  { name:'خزف', icon:'🦷', desc:'خزف بأنواعه' },
+  { name:'زيركون', icon:'💎', desc:'زركونيا' },
+  { name:'إيماكس', icon:'✨', desc:'E-max' },
+  { name:'تقويم متحرك', icon:'😁', desc:'Removable' },
+  { name:'تقويم مؤقت', icon:'🦷', desc:'Temporary' },
+  { name:'أخرى', icon:'🔧', desc:'أعمال أخرى' }
+];
+
+const UPPER_TEETH = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const LOWER_TEETH = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+
+// ═══════════════════════════════════════════════════════════════
+// الجلسة
+// ═══════════════════════════════════════════════════════════════
+function initSession() {
+  const params = new URLSearchParams(window.location.search);
+  const urlUser = params.get('user');
+  const urlName = params.get('name');
+  const urlRole = params.get('role');
+
+  if (urlUser) {
+    currentUser = { username: urlUser, fullName: urlName || urlUser, role: urlRole || 'employee' };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    startApp();
+    return;
+  }
+
+  const saved = localStorage.getItem('currentUser');
+  if (saved) {
+    try {
+      currentUser = JSON.parse(saved);
+      startApp();
+      return;
+    } catch(e) {}
+  }
+
+  document.getElementById('loginOverlay').classList.remove('hidden');
+}
+
+async function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  errEl.classList.add('hidden');
+  if (!username || !password) { errEl.textContent='⚠️ أدخل البيانات'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = '⏳...';
+  try {
+    let user = null;
+    const direct = await db.collection('users').doc(username).get();
+    if (direct.exists) user = direct.data();
+    else {
+      const s = await db.collection('users').where('username','==',username).limit(1).get();
+      if (!s.empty) user = s.docs[0].data();
+    }
+    if (!user) { errEl.textContent='❌ غير موجود'; errEl.classList.remove('hidden'); return; }
+    if (user.password !== password) { errEl.textContent='❌ كلمة المرور خطأ'; errEl.classList.remove('hidden'); return; }
+    if (user.active === false) { errEl.textContent='🚫 موقوف'; errEl.classList.remove('hidden'); return; }
+    currentUser = { username: user.username||username, fullName: user.fullName||username, role: user.role||'employee' };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    startApp();
+  } catch(err) { errEl.textContent='❌ '+err.message; errEl.classList.remove('hidden'); }
+  finally { btn.disabled=false; btn.textContent='دخول'; }
+}
+
+function logout() {
+  if (!confirm('تسجيل الخروج؟')) return;
+  localStorage.removeItem('currentUser');
+  location.href = 'pro.html';
+}
+
+function backToClinic() {
+  window.location.href = 'pro.html';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// بدء التطبيق
+// ═══════════════════════════════════════════════════════════════
+async function startApp() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('appContainer').classList.remove('hidden');
+  document.getElementById('userBarName').textContent = currentUser.fullName;
+  document.getElementById('userBarRole').textContent = currentUser.role === 'admin' ? '👑 مدير' : currentUser.role === 'doctor' ? '👨‍⚕️ طبيب' : '👨‍💼 موظف';
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('sendDate').value = today;
+  document.getElementById('stmtMonth').value = today.slice(0,7);
+
+  buildWorkTypes();
+  buildTeeth();
+  await loadClinicPatients();
+  await loadLabAccounts();
+  checkReminders();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// التبويبات
+// ═══════════════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(el => {
+    el.classList.remove('active','text-purple-700','border-b-2','border-purple-600','bg-purple-50');
+    el.classList.add('text-gray-600');
+  });
+  document.getElementById('content' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+  const btn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  btn.classList.add('active','text-purple-700','border-b-2','border-purple-600','bg-purple-50');
+  btn.classList.remove('text-gray-600');
+
+  if (tab === 'reminders') checkReminders();
+  if (tab === 'statement') renderStatement();
+  if (tab === 'patients') renderPatientsFromClinic();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// أنواع العمل
+// ═══════════════════════════════════════════════════════════════
+function buildWorkTypes() {
+  const grid = document.getElementById('workTypesGrid');
+  grid.innerHTML = '';
+  const all = [...DEFAULT_WORK_TYPES, ...customWorks.map(w => ({ name: w, icon: '⚙️', desc: 'مخصص' }))];
+  all.forEach(w => {
+    const div = document.createElement('div');
+    div.className = 'work-card bg-white border-2 border-gray-200 rounded-xl p-2 text-center text-xs font-bold text-gray-700 ' + (selectedWorks.includes(w.name) ? 'selected' : '');
+    div.innerHTML = `<div class="text-xl mb-1">${w.icon}</div><div>${escapeHtml(w.name)}</div><div class="text-[9px] opacity-70 font-normal">${w.desc}</div>`;
+    div.onclick = () => toggleWork(w.name);
+    div.dataset.work = w.name;
+    grid.appendChild(div);
+  });
+  updateSelectedWorksInfo();
+}
+
+function toggleWork(name) {
+  const i = selectedWorks.indexOf(name);
+  if (i > -1) selectedWorks.splice(i, 1);
+  else selectedWorks.push(name);
+  document.querySelectorAll('.work-card').forEach(c => {
+    c.classList.toggle('selected', selectedWorks.includes(c.dataset.work));
+  });
+  updateSelectedWorksInfo();
+}
+
+function addCustomWork() {
+  const input = document.getElementById('customWorkInput');
+  const name = input.value.trim();
+  if (!name) return;
+  if (!customWorks.includes(name)) {
+    customWorks.push(name);
+    localStorage.setItem('lab_custom_works', JSON.stringify(customWorks));
+  }
+  if (!selectedWorks.includes(name)) selectedWorks.push(name);
+  input.value = '';
+  buildWorkTypes();
+}
+
+function updateSelectedWorksInfo() {
+  const el = document.getElementById('selectedWorksInfo');
+  if (selectedWorks.length === 0) el.textContent = 'لم يتم اختيار أي نوع عمل';
+  else el.innerHTML = '✅ المحدد: <strong>' + selectedWorks.map(escapeHtml).join(' • ') + '</strong>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// الأسنان
+// ═══════════════════════════════════════════════════════════════
+function buildTeeth() {
+  buildTeethRow('upperTeeth', UPPER_TEETH);
+  buildTeethRow('lowerTeeth', LOWER_TEETH);
+}
+
+function buildTeethRow(containerId, teeth) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  teeth.forEach((t, i) => {
+    if (i === 8) {
+      const divider = document.createElement('div');
+      divider.className = 'w-3';
+      c.appendChild(divider);
+    }
+    const el = document.createElement('div');
+    el.className = 'tooth-card w-8 h-10 md:w-9 md:h-11 bg-white border-2 border-gray-300 rounded-md flex items-center justify-center text-[10px] font-bold text-gray-600';
+    if (selectedTeeth.includes(t)) el.classList.add('selected');
+    if (missingTeeth.includes(t)) el.classList.add('missing');
+    el.textContent = t;
+    el.dataset.tooth = t;
+    el.onclick = () => toggleTooth(t);
+    c.appendChild(el);
+  });
+}
+
+function toggleTooth(t) {
+  if (missingMode) {
+    const i = missingTeeth.indexOf(t);
+    if (i > -1) missingTeeth.splice(i, 1);
+    else {
+      missingTeeth.push(t);
+      const j = selectedTeeth.indexOf(t);
+      if (j > -1) selectedTeeth.splice(j, 1);
+    }
+  } else {
+    if (missingTeeth.includes(t)) { showToast('⚠️ هذا السن محدد كمفقود','overdue'); return; }
+    const i = selectedTeeth.indexOf(t);
+    if (i > -1) selectedTeeth.splice(i, 1);
+    else selectedTeeth.push(t);
+  }
+  refreshTeethView();
+}
+
+function refreshTeethView() {
+  document.querySelectorAll('.tooth-card').forEach(el => {
+    const t = parseInt(el.dataset.tooth);
+    el.classList.toggle('selected', selectedTeeth.includes(t));
+    el.classList.toggle('missing', missingTeeth.includes(t));
+  });
+  const info = document.getElementById('selectedTeethInfo');
+  let txt = '';
+  if (selectedTeeth.length > 0) txt += '✅ الأسنان: <strong>' + selectedTeeth.sort((a,b)=>a-b).join(' • ') + '</strong>';
+  else txt = 'لم يتم تحديد أي سن';
+  if (missingTeeth.length > 0) txt += `<br><span class="text-red-600">🚫 مفقود: ${missingTeeth.sort((a,b)=>a-b).join(' • ')}</span>`;
+  info.innerHTML = txt;
+}
+
+function clearTeeth() { selectedTeeth = []; missingTeeth = []; refreshTeethView(); }
+function selectAllTeeth() { selectedTeeth = [...UPPER_TEETH, ...LOWER_TEETH].filter(t => !missingTeeth.includes(t)); refreshTeethView(); }
+function toggleMissingMode() {
+  missingMode = !missingMode;
+  const btn = document.getElementById('missingModeBtn');
+  if (missingMode) { btn.classList.remove('bg-gray-200','text-gray-700'); btn.classList.add('bg-red-600','text-white'); btn.textContent = '🚫 وضع مفقود نشط'; }
+  else { btn.classList.add('bg-gray-200','text-gray-700'); btn.classList.remove('bg-red-600','text-white'); btn.textContent = '🚫 وضع مفقود'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// المالية
+// ═══════════════════════════════════════════════════════════════
+function calcRemaining() {
+  const t = parseFloat(document.getElementById('totalAmount').value) || 0;
+  const p = parseFloat(document.getElementById('paidAmount').value) || 0;
+  document.getElementById('remainingAmount').value = (t - p).toFixed(2);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// مرضى العيادة
+// ═══════════════════════════════════════════════════════════════
+async function loadClinicPatients() {
+  try {
+    const snap = await db.collection('patients').get();
+    clinicPatients = [];
+    snap.forEach(doc => clinicPatients.push({ id: doc.id, ...doc.data() }));
+    clinicPatients.sort((a,b) => (b.timestamp?.seconds||0) - (a.timestamp?.seconds||0));
+    renderPatientSelect();
+  } catch(e) { console.error(e); }
+}
+
+function renderPatientSelect() {
+  const sel = document.getElementById('patientSelect');
+  sel.innerHTML = '<option value="">— أو أدخل يدوياً —</option>';
+  clinicPatients.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = (p.fullName || 'بدون اسم') + ' — ' + (p.fileNumber || p.id);
+    sel.appendChild(opt);
+  });
+}
+
+function onPatientSelected() {
+  const pid = document.getElementById('patientSelect').value;
+  if (!pid) return;
+  const p = clinicPatients.find(x => x.id === pid);
+  if (!p) return;
+  document.getElementById('patientName').value = p.fullName || '';
+  document.getElementById('patientPhone').value = p.phone || p.whatsapp || '';
+  document.getElementById('doctorName').value = document.getElementById('doctorName').value || 'د. علي النقيب';
+  if (!document.getElementById('accountName').value) {
+    document.getElementById('accountName').value = p.fullName ? 'معمل - ' + p.fullName : '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// تحميل الحسابات
+// ═══════════════════════════════════════════════════════════════
+async function loadLabAccounts() {
+  try {
+    const snap = await db.collection('lab_accounts').orderBy('createdAt','desc').get();
+    labAccounts = [];
+    snap.forEach(doc => labAccounts.push({ id: doc.id, ...doc.data() }));
+    renderAccounts();
+    updateReminderBadge();
+  } catch(e) {
+    try {
+      const snap = await db.collection('lab_accounts').get();
+      labAccounts = [];
+      snap.forEach(doc => labAccounts.push({ id: doc.id, ...doc.data() }));
+      labAccounts.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+      renderAccounts();
+      updateReminderBadge();
+    } catch(e2) { console.error(e2); }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// حفظ
+// ═══════════════════════════════════════════════════════════════
+async function saveLabAccount() {
+  const name = document.getElementById('accountName').value.trim();
+  const total = parseFloat(document.getElementById('totalAmount').value);
+  const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
+
+  if (!name) { alert('⚠️ أدخل اسم الحساب / العيادة'); return; }
+  if (isNaN(total) || total < 0) { alert('⚠️ أدخل المبلغ الإجمالي'); return; }
+  if (selectedWorks.length === 0) { alert('⚠️ اختر نوع عمل واحد على الأقل'); return; }
+
+  const btn = document.getElementById('saveBtn');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
+
+  try {
+    const remaining = total - paid;
+    const data = {
+      accountName: name,
+      doctorName: document.getElementById('doctorName').value.trim(),
+      patientName: document.getElementById('patientName').value.trim(),
+      patientPhone: document.getElementById('patientPhone').value.trim(),
+      clinicPatientId: document.getElementById('patientSelect').value || null,
+      notes: document.getElementById('notes').value.trim(),
+      totalAmount: total,
+      paidAmount: paid,
+      remainingAmount: remaining,
+      sendDate: document.getElementById('sendDate').value,
+      receiveDate: document.getElementById('receiveDate').value,
+      paymentMethod: document.getElementById('paymentMethod').value,
+      works: [...selectedWorks],
+      teeth: [...selectedTeeth].sort((a,b)=>a-b),
+      missing: [...missingTeeth].sort((a,b)=>a-b),
+      received: false,
+      createdBy: currentUser.username,
+      createdByName: currentUser.fullName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      dateKey: new Date().toISOString().slice(0,10),
+      monthKey: new Date().toISOString().slice(0,7)
+    };
+
+    if (editId) {
+      await db.collection('lab_accounts').doc(editId).update(data);
+      showToast('✅ تم التحديث', 'ok');
+      editId = null;
+      btn.textContent = '💾 حفظ في السحابة';
+    } else {
+      await db.collection('lab_accounts').add(data);
+      showToast('✅ تم الحفظ', 'ok');
+    }
+
+    resetForm();
+    await loadLabAccounts();
+    checkReminders();
+  } catch(e) {
+    alert('❌ خطأ: ' + e.message);
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+function resetForm() {
+  ['accountName','doctorName','patientName','patientPhone','notes','totalAmount','paidAmount','remainingAmount','receiveDate'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('patientSelect').value = '';
+  document.getElementById('paymentMethod').value = '';
+  document.getElementById('sendDate').value = new Date().toISOString().split('T')[0];
+  selectedWorks = [];
+  selectedTeeth = [];
+  missingTeeth = [];
+  editId = null;
+  buildWorkTypes();
+  refreshTeethView();
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = false;
+  btn.textContent = '💾 حفظ في السحابة';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// عرض الحسابات
+// ═══════════════════════════════════════════════════════════════
+function renderAccounts() {
+  const c = document.getElementById('accountsList');
+  if (labAccounts.length === 0) {
+    c.innerHTML = '<p class="text-center text-sm text-gray-500 py-8 bg-gray-50 rounded-xl">📭 لا توجد حسابات مسجلة بعد</p>';
+    return;
+  }
+  let html = '';
+  labAccounts.forEach(a => {
+    const st = getReminderStatus(a);
+    const remClass = a.remainingAmount > 0 ? 'text-red-600' : a.remainingAmount < 0 ? 'text-purple-600' : 'text-emerald-600';
+    const worksHtml = (a.works||[]).map(w => `<span class="bg-indigo-100 text-indigo-800 text-[9px] font-bold px-2 py-0.5 rounded-full">${escapeHtml(w)}</span>`).join(' ');
+    const teethHtml = (a.teeth||[]).length > 0
+      ? (a.teeth||[]).slice(0,12).map(t => `<span class="${(a.missing||[]).includes(t) ? 'bg-red-100 text-red-700 line-through' : 'bg-purple-100 text-purple-800'} text-[9px] font-bold px-1.5 py-0.5 rounded">${t}</span>`).join(' ')
+      : '<span class="text-gray-400 text-[10px]">—</span>';
+
+    const rowBg = st.code === 'overdue' ? 'bg-red-50 border-red-300' : st.code === 'today' ? 'bg-amber-50 border-amber-300' : st.code === 'soon' ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-200';
+    const receiveBtn = (!a.received && a.receiveDate) ? `<button onclick="markReceived('${a.id}')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-bold">✅ استلمت</button>` : '';
+
+    html += `
+      <div class="border-2 rounded-xl p-3 ${rowBg} shadow-sm">
+        <div class="flex justify-between items-start mb-2 gap-2 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-sm">${escapeHtml(a.accountName)}</p>
+            <p class="text-[10px] text-gray-500">${a.patientName ? '🧑 ' + escapeHtml(a.patientName) : ''} ${a.patientPhone ? ' • 📱 ' + a.patientPhone : ''}</p>
+            ${a.createdByName ? `<p class="text-[9px] text-purple-600">✍️ أضافه: ${escapeHtml(a.createdByName)}</p>` : ''}
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${st.cls}">${st.label}</span>
+        </div>
+        <div class="flex flex-wrap gap-1 mb-2">${worksHtml}</div>
+        ${(a.teeth||[]).length > 0 ? `<div class="flex flex-wrap gap-1 mb-2">${teethHtml}</div>` : ''}
+        <div class="grid grid-cols-4 gap-1 text-center text-[10px] mb-2">
+          <div class="bg-gray-50 rounded p-1"><div class="text-gray-500">إجمالي</div><div class="font-bold">${(a.totalAmount||0).toFixed(0)}</div></div>
+          <div class="bg-emerald-50 rounded p-1"><div class="text-emerald-700">مدفوع</div><div class="font-bold text-emerald-700">${(a.paidAmount||0).toFixed(0)}</div></div>
+          <div class="bg-red-50 rounded p-1"><div class="text-gray-500">متبقي</div><div class="font-bold ${remClass}">${(a.remainingAmount||0).toFixed(0)}</div></div>
+          <div class="bg-blue-50 rounded p-1"><div class="text-blue-700">الاستلام</div><div class="font-bold text-blue-700 text-[9px]">${a.receiveDate ? a.receiveDate.slice(5) : '—'}</div></div>
+        </div>
+        <div class="flex gap-1 flex-wrap">
+          ${receiveBtn}
+          <button onclick="printInvoice('${a.id}')" class="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] font-bold">🧾 فاتورة</button>
+          <button onclick="editAccount('${a.id}')" class="bg-amber-600 text-white px-2 py-1 rounded text-[10px] font-bold">✏️</button>
+          <button onclick="deleteAccount('${a.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">🗑️</button>
+        </div>
+      </div>
+    `;
+  });
+  c.innerHTML = html;
+}
+
+async function editAccount(id) {
+  const a = labAccounts.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('accountName').value = a.accountName || '';
+  document.getElementById('doctorName').value = a.doctorName || '';
+  document.getElementById('patientName').value = a.patientName || '';
+  document.getElementById('patientPhone').value = a.patientPhone || '';
+  document.getElementById('notes').value = a.notes || '';
+  document.getElementById('totalAmount').value = a.totalAmount || '';
+  document.getElementById('paidAmount').value = a.paidAmount || '';
+  document.getElementById('remainingAmount').value = (a.remainingAmount || 0).toFixed(2);
+  document.getElementById('sendDate').value = a.sendDate || '';
+  document.getElementById('receiveDate').value = a.receiveDate || '';
+  document.getElementById('paymentMethod').value = a.paymentMethod || '';
+  selectedWorks = [...(a.works||[])];
+  selectedTeeth = [...(a.teeth||[])];
+  missingTeeth = [...(a.missing||[])];
+  editId = id;
+  buildWorkTypes();
+  refreshTeethView();
+  document.getElementById('saveBtn').textContent = '💾 حفظ التعديلات';
+  switchTab('accounts');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+async function deleteAccount(id) {
+  if (!confirm('حذف هذا الحساب نهائياً؟')) return;
+  try {
+    await db.collection('lab_accounts').doc(id).delete();
+    await loadLabAccounts();
+    checkReminders();
+  } catch(e) { alert('فشل الحذف: ' + e.message); }
+}
+
+async function markReceived(id) {
+  try {
+    await db.collection('lab_accounts').doc(id).update({
+      received: true,
+      receivedAt: new Date().toISOString().slice(0,10),
+      receivedBy: currentUser.username,
+      receivedByName: currentUser.fullName
+    });
+    await loadLabAccounts();
+    checkReminders();
+    showToast('✅ تم تسجيل الاستلام', 'ok');
+  } catch(e) { alert('فشل: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// التذكيرات
+// ═══════════════════════════════════════════════════════════════
+function getReminderStatus(a) {
+  if (!a.receiveDate) return { code:'none', label:'— بدون موعد', cls:'bg-gray-100 text-gray-600', days:null };
+  if (a.received) return { code:'received', label:'✅ تم الاستلام', cls:'bg-gray-200 text-gray-600', days:null };
+  const today = new Date().toISOString().slice(0,10);
+  const diff = Math.round((new Date(a.receiveDate) - new Date(today)) / 86400000);
+  if (diff < 0) return { code:'overdue', label:`⚠️ متأخر ${Math.abs(diff)} يوم`, cls:'bg-red-100 text-red-700', days:diff };
+  if (diff === 0) return { code:'today', label:'🔔 اليوم', cls:'bg-amber-100 text-amber-800', days:0 };
+  if (diff <= 3) return { code:'soon', label:`⏰ بعد ${diff} يوم`, cls:'bg-yellow-100 text-yellow-800', days:diff };
+  return { code:'ok', label:`📅 بعد ${diff} يوم`, cls:'bg-emerald-100 text-emerald-700', days:diff };
+}
+
+function checkReminders() {
+  const pending = labAccounts.filter(a => {
+    if (!a.receiveDate || a.received) return false;
+    return ['overdue','today','soon'].includes(getReminderStatus(a).code);
+  });
+  const badge = document.getElementById('reminderBadge');
+  if (pending.length > 0) { badge.textContent = pending.length; badge.classList.remove('hidden'); }
+  else badge.classList.add('hidden');
+
+  const list = document.getElementById('reminderList');
+  const summary = document.getElementById('reminderSummary');
+  if (!list) return;
+
+  if (pending.length === 0) {
+    summary.textContent = '✅ لا توجد تذكيرات نشطة';
+    list.innerHTML = '<p class="text-center text-sm text-gray-500 py-4">كل شيء تحت السيطرة</p>';
+    return;
+  }
+  summary.innerHTML = `<strong class="text-red-600">${pending.filter(x=>getReminderStatus(x).code==='overdue').length}</strong> متأخر • <strong class="text-amber-600">${pending.filter(x=>getReminderStatus(x).code==='today').length}</strong> اليوم • <strong class="text-yellow-700">${pending.filter(x=>getReminderStatus(x).code==='soon').length}</strong> خلال 3 أيام`;
+
+  pending.sort((a,b) => a.receiveDate.localeCompare(b.receiveDate));
+  list.innerHTML = pending.map(a => {
+    const st = getReminderStatus(a);
+    return `
+      <div class="bg-white rounded-lg border-2 ${st.code==='overdue'?'border-red-300':'border-amber-200'} p-2 flex justify-between items-center gap-2 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-xs">${escapeHtml(a.accountName)}</p>
+          <p class="text-[10px] text-gray-500">${a.patientName ? escapeHtml(a.patientName) + ' • ' : ''}📅 ${a.receiveDate}</p>
+        </div>
+        <span class="text-[10px] font-bold px-2 py-1 rounded-full ${st.cls}">${st.label}</span>
+        <button onclick="markReceived('${a.id}')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-bold">✅</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateReminderBadge() { checkReminders(); }
+
+// ═══════════════════════════════════════════════════════════════
+// مرضى العيادة (عرض)
+// ═══════════════════════════════════════════════════════════════
+function renderPatientsFromClinic() {
+  const search = (document.getElementById('patientSearch').value || '').toLowerCase().trim();
+  const c = document.getElementById('clinicPatientsList');
+  let list = clinicPatients.slice();
+  if (search) list = list.filter(p => (p.fullName||'').toLowerCase().includes(search) || (p.fileNumber||'').toLowerCase().includes(search) || (p.phone||'').includes(search));
+
+  if (list.length === 0) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-8">📭 لا نتائج</p>'; return; }
+
+  c.innerHTML = list.map(p => {
+    const f = p.financials || {};
+    const total = parseFloat(f.total) || 0;
+    const paid = (parseFloat(f.payment1)||0)+(parseFloat(f.payment2)||0)+(parseFloat(f.payment3)||0);
+    return `
+      <div class="bg-white border rounded-lg p-2 flex justify-between items-center gap-2 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-xs">${escapeHtml(p.fullName||'—')}</p>
+          <p class="text-[10px] text-gray-500">${p.fileNumber||''} • ${p.phone||'—'} ${p.workType ? '• ' + p.workType : ''}</p>
+        </div>
+        <div class="text-[10px] text-center">
+          <div class="text-gray-500">متبقي</div>
+          <div class="font-bold text-red-600">${(total-paid).toFixed(0)}</div>
+        </div>
+        <button onclick="usePatient('${p.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-[10px] font-bold">+ للمعمل</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function usePatient(pid) {
+  const p = clinicPatients.find(x => x.id === pid);
+  if (!p) return;
+  document.getElementById('patientSelect').value = pid;
+  onPatientSelected();
+  switchTab('accounts');
+  showToast('✅ تم اختيار المريض', 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// كشف الحساب
+// ═══════════════════════════════════════════════════════════════
+function renderStatement() {
+  const type = document.getElementById('stmtType').value;
+  const monthEl = document.getElementById('stmtMonth');
+  const fromEl = document.getElementById('stmtFrom');
+  const toEl = document.getElementById('stmtTo');
+  const accEl = document.getElementById('stmtAccount');
+
+  monthEl.classList.toggle('hidden', type !== 'month');
+  fromEl.classList.toggle('hidden', type !== 'range');
+  toEl.classList.toggle('hidden', type !== 'range');
+  accEl.classList.toggle('hidden', type !== 'account');
+
+  if (type === 'account') {
+    const uniqueAccs = [...new Set(labAccounts.map(a => a.accountName))].sort();
+    accEl.innerHTML = uniqueAccs.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+  }
+
+  let filtered = [];
+  let label = '';
+  if (type === 'month') {
+    const m = monthEl.value;
+    if (!m) return;
+    filtered = labAccounts.filter(a => (a.sendDate || '').startsWith(m));
+    label = 'شهر ' + m;
+  } else if (type === 'range') {
+    const f = fromEl.value, t = toEl.value;
+    if (!f || !t) return;
+    filtered = labAccounts.filter(a => { const d = a.sendDate || ''; return d >= f && d <= t; });
+    label = `من ${f} إلى ${t}`;
+  } else {
+    const acc = accEl.value;
+    if (!acc) return;
+    filtered = labAccounts.filter(a => a.accountName === acc);
+    label = 'حساب: ' + acc;
+  }
+
+  const sumTotal = filtered.reduce((s,a) => s + (a.totalAmount||0), 0);
+  const sumPaid = filtered.reduce((s,a) => s + (a.paidAmount||0), 0);
+  const sumRem = filtered.reduce((s,a) => s + (a.remainingAmount||0), 0);
+
+  document.getElementById('statementCards').innerHTML = `
+    <div class="bg-purple-100 border-2 border-purple-300 rounded-xl p-2 text-center"><div class="text-[10px] text-purple-700">عدد</div><div class="text-xl font-extrabold text-purple-900">${filtered.length}</div></div>
+    <div class="bg-blue-100 border-2 border-blue-300 rounded-xl p-2 text-center"><div class="text-[10px] text-blue-700">إجمالي</div><div class="text-xl font-extrabold text-blue-900">${sumTotal.toFixed(0)}</div></div>
+    <div class="bg-emerald-100 border-2 border-emerald-300 rounded-xl p-2 text-center"><div class="text-[10px] text-emerald-700">مدفوع</div><div class="text-xl font-extrabold text-emerald-900">${sumPaid.toFixed(0)}</div></div>
+    <div class="bg-red-100 border-2 border-red-300 rounded-xl p-2 text-center"><div class="text-[10px] text-red-700">متبقي</div><div class="text-xl font-extrabold text-red-900">${sumRem.toFixed(0)}</div></div>
+  `;
+
+  document.getElementById('statementList').innerHTML = filtered.length === 0
+    ? '<p class="text-center text-sm text-gray-500 py-8">📭 لا سجلات</p>'
+    : filtered.map((a, i) => {
+        const st = getReminderStatus(a);
+        return `
+          <div class="bg-white border rounded-lg p-2 flex justify-between items-center gap-2 flex-wrap text-[11px]">
+            <span class="text-gray-500 w-6">${i+1}</span>
+            <div class="flex-1 min-w-0"><strong>${escapeHtml(a.accountName)}</strong><br><span class="text-[9px] text-gray-500">${a.sendDate || ''} ${a.patientName ? ' • ' + escapeHtml(a.patientName) : ''}</span></div>
+            <span class="text-blue-700">${(a.totalAmount||0).toFixed(0)}</span>
+            <span class="text-emerald-700">${(a.paidAmount||0).toFixed(0)}</span>
+            <span class="text-red-700 font-bold">${(a.remainingAmount||0).toFixed(0)}</span>
+            <span class="text-[9px] px-2 py-0.5 rounded-full ${st.cls}">${st.label}</span>
+          </div>
+        `;
+      }).join('');
+
+  window._lastStatement = { filtered, label, sumTotal, sumPaid, sumRem };
+}
+
+function exportStatementExcel() {
+  const st = window._lastStatement;
+  if (!st || st.filtered.length === 0) { alert('لا بيانات'); return; }
+  const data = st.filtered.map(a => ({
+    'اسم الحساب': a.accountName || '',
+    'المريض': a.patientName || '',
+    'الإجمالي': a.totalAmount || 0,
+    'المدفوع': a.paidAmount || 0,
+    'المتبقي': a.remainingAmount || 0,
+    'أنواع العمل': (a.works||[]).join(' / '),
+    'الأسنان': (a.teeth||[]).join(' '),
+    'تاريخ الإرسال': a.sendDate || '',
+    'الاستلام': a.receiveDate || '',
+    'الحالة': getReminderStatus(a).label
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'كشف حساب');
+  XLSX.writeFile(wb, 'lab_statement_' + new Date().toISOString().slice(0,10) + '.xlsx');
+}
+
+function printStatement() {
+  const st = window._lastStatement;
+  if (!st || st.filtered.length === 0) { alert('لا بيانات'); return; }
+  const rows = st.filtered.map((a,i) => `
+    <tr>
+      <td style="border:1px solid #cbd5e0;padding:6px;text-align:center;">${i+1}</td>
+      <td style="border:1px solid #cbd5e0;padding:6px;">${escapeHtml(a.accountName)}</td>
+      <td style="border:1px solid #cbd5e0;padding:6px;">${escapeHtml(a.patientName||'—')}</td>
+      <td style="border:1px solid #cbd5e0;padding:6px;text-align:center;">${(a.totalAmount||0).toFixed(0)}</td>
+      <td style="border:1px solid #cbd5e0;padding:6px;text-align:center;">${(a.paidAmount||0).toFixed(0)}</td>
+      <td style="border:1px solid #cbd5e0;padding:6px;text-align:center;">${(a.remainingAmount||0).toFixed(0)}</td>
+      <td style="border:1px solid #cbd5e0;padding:6px;font-size:10px;">${(a.works||[]).join(' • ')}</td>
+    </tr>
+  `).join('');
+  document.getElementById('printBodyContent').innerHTML = `
+    <h3 class="font-bold text-lg text-purple-900 mb-2">كشف حساب — ${escapeHtml(st.label)}</h3>
+    <p class="text-xs text-gray-500 mb-2">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-YE')}</p>
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:#7c3aed;color:white;"><th style="padding:6px;">#</th><th style="padding:6px;">الحساب</th><th style="padding:6px;">المريض</th><th style="padding:6px;">إجمالي</th><th style="padding:6px;">مدفوع</th><th style="padding:6px;">متبقي</th><th style="padding:6px;">أنواع العمل</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="mt-3 text-sm font-bold" style="text-align:left;">
+      الإجمالي: ${st.sumTotal.toFixed(0)} | المدفوع: ${st.sumPaid.toFixed(0)} | المتبقي: ${st.sumRem.toFixed(0)}
+    </div>
+  `;
+  document.getElementById('printableArea').classList.remove('hidden');
+  setTimeout(() => { window.print(); setTimeout(() => document.getElementById('printableArea').classList.add('hidden'), 500); }, 300);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// فاتورة
+// ═══════════════════════════════════════════════════════════════
+function printInvoice(id) {
+  const a = labAccounts.find(x => x.id === id);
+  if (!a) return;
+  const works = (a.works||[]).map(w => `<span style="background:#e0e7ff;color:#4338ca;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;margin:2px;display:inline-block;">${escapeHtml(w)}</span>`).join('');
+  const teeth = (a.teeth||[]).length > 0 ? a.teeth.join(' • ') : '—';
+  const missing = (a.missing||[]).length > 0 ? a.missing.join(' • ') : '—';
+
+  document.getElementById('printBodyContent').innerHTML = `
+    <h3 class="font-bold text-lg text-purple-900 text-center mb-3">فاتورة حساب معمل</h3>
+    <p class="text-center text-xs text-gray-500 mb-3">رقم الفاتورة: #${a.id.slice(-6)}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f7fafc;padding:10px;border-radius:8px;font-size:11px;margin-bottom:10px;">
+      <div><strong>الحساب:</strong> ${escapeHtml(a.accountName)}</div>
+      <div><strong>الطبيب:</strong> ${escapeHtml(a.doctorName||'—')}</div>
+      <div><strong>المريض:</strong> ${escapeHtml(a.patientName||'—')}</div>
+      <div><strong>الهاتف:</strong> ${escapeHtml(a.patientPhone||'—')}</div>
+      <div><strong>تاريخ الإرسال:</strong> ${a.sendDate||'—'}</div>
+      <div><strong>الاستلام المتوقع:</strong> ${a.receiveDate||'—'}</div>
+    </div>
+    <div style="background:#f7fafc;padding:10px;border-radius:8px;font-size:11px;margin-bottom:10px;">
+      <p style="margin-bottom:6px;"><strong>أنواع العمل:</strong></p>
+      <div>${works || '—'}</div>
+      <p style="margin:8px 0 4px;"><strong>الأسنان:</strong> ${teeth}</p>
+      ${(a.missing||[]).length>0 ? `<p style="margin:4px 0;color:#c53030;"><strong>أسنان مفقودة:</strong> ${missing}</p>` : ''}
+      ${a.notes ? `<p style="margin:8px 0 4px;"><strong>ملاحظات:</strong> ${escapeHtml(a.notes)}</p>` : ''}
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <tr><td style="padding:6px;border:1px solid #cbd5e0;">المبلغ الإجمالي</td><td style="padding:6px;border:1px solid #cbd5e0;text-align:left;font-weight:bold;">${(a.totalAmount||0).toFixed(0)} ريال</td></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e0;">المدفوع</td><td style="padding:6px;border:1px solid #cbd5e0;text-align:left;font-weight:bold;color:#059669;">${(a.paidAmount||0).toFixed(0)} ريال</td></tr>
+      <tr style="background:#7c3aed;color:white;"><td style="padding:8px;border:1px solid #6b21a8;">المتبقي</td><td style="padding:8px;border:1px solid #6b21a8;text-align:left;font-weight:bold;font-size:14px;">${(a.remainingAmount||0).toFixed(0)} ريال</td></tr>
+    </table>
+    <div style="margin-top:30px;padding-top:15px;border-top:1px dashed #cbd5e0;display:flex;justify-content:space-around;font-size:11px;">
+      <div style="text-align:center;"><div style="border-top:1px solid #4a5568;padding-top:4px;margin-top:30px;width:120px;">توقيع العميل</div></div>
+      <div style="text-align:center;"><div style="border-top:1px solid #4a5568;padding-top:4px;margin-top:30px;width:120px;">توقيع المعمل</div></div>
+    </div>
+    <p style="text-align:center;font-size:10px;color:#a0aec0;margin-top:15px;">شكراً لتعاملكم معنا — هذه الفاتورة صادرة إلكترونياً</p>
+  `;
+  document.getElementById('printableArea').classList.remove('hidden');
+  setTimeout(() => { window.print(); setTimeout(() => document.getElementById('printableArea').classList.add('hidden'), 500); }, 300);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// تصدير Excel
+// ═══════════════════════════════════════════════════════════════
+function exportAccountsExcel() {
+  if (labAccounts.length === 0) { alert('لا بيانات'); return; }
+  const data = labAccounts.map(a => ({
+    'اسم الحساب': a.accountName || '',
+    'الطبيب': a.doctorName || '',
+    'المريض': a.patientName || '',
+    'الهاتف': a.patientPhone || '',
+    'الإجمالي': a.totalAmount || 0,
+    'المدفوع': a.paidAmount || 0,
+    'المتبقي': a.remainingAmount || 0,
+    'أنواع العمل': (a.works||[]).join(' / '),
+    'الأسنان': (a.teeth||[]).join(' '),
+    'أسنان مفقودة': (a.missing||[]).join(' '),
+    'تاريخ الإرسال': a.sendDate || '',
+    'الاستلام المتوقع': a.receiveDate || '',
+    'الحالة': getReminderStatus(a).label,
+    'أضيف بواسطة': a.createdByName || '',
+    'ملاحظات': a.notes || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'حسابات المعمل');
+  XLSX.writeFile(wb, 'lab_accounts_' + new Date().toISOString().slice(0,10) + '.xlsx');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Toast & Utilities
+// ═══════════════════════════════════════════════════════════════
+function showToast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const bg = type === 'overdue' ? 'bg-red-600' : type === 'ok' ? 'bg-emerald-600' : 'bg-purple-600';
+  t.className = `${bg} text-white px-3 py-2 rounded-lg shadow-lg text-xs font-bold toast-slide`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(), 300); }, 3000);
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// التشغيل
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initSession();
+});
+</script>
+</body>
+</html>
