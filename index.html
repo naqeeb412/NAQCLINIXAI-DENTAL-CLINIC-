@@ -51,6 +51,7 @@ html,body{height:100%;overflow:hidden;background:#0b1220;color:#e8eef7}
       <button class="tab-btn active" data-tab="clinic" onclick="switchTab('clinic')">🏥 العيادة</button>
       <button class="tab-btn" data-tab="lab" onclick="switchTab('lab')">🧪 المعمل</button>
       <button class="tab-btn" data-tab="analyzer" onclick="switchTab('analyzer')">🔬 التحليل</button>
+      <button class="tab-btn" data-tab="dentbook" onclick="switchTab('dentbook')">💬 Dentbook</button>
     </div>
 
     <div class="user-info" id="userInfo" style="display:none">
@@ -81,7 +82,8 @@ html,body{height:100%;overflow:hidden;background:#0b1220;color:#e8eef7}
 const SYSTEMS = {
   clinic: { file: 'Clinical.html', name: 'العيادة' },
   lab: { file: 'Lab.html', name: 'المعمل' },
-  analyzer: { file: 'Analyzer.html', name: 'التحليل التلقائي' }
+  analyzer: { file: 'Analyzer.html', name: 'التحليل التلقائي' },
+  dentbook: { file: 'Dentbook.html', name: 'Dentbook' }
 };
 
 let currentTab = 'clinic';
