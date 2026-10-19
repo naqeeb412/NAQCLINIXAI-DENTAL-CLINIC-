@@ -62,6 +62,11 @@ body{font-family:'Cairo',sans-serif}
 <div class="flex items-center gap-2"><span class="text-2xl">👤</span><div><p id="userBarName" class="text-sm font-bold">-</p><p id="userBarRole" class="text-[10px] opacity-90">-</p></div></div>
 <div class="flex items-center gap-2 flex-wrap">
 <button onclick="openPatientsList()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">📋 المرضى</button>
+<!-- ⬇️ جديد: زر المعمل ⬇️ -->
+<button onclick="openLabSystem()" class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30 shadow-lg">🧪 المعمل</button>
+<!-- ⬇️ جديد: زر التحليل ⬇️ -->
+<button onclick="openAnalyzerSystem()" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30 shadow-lg">🔬 التحليل</button>
+<!-- ⬆️ جديد ⬆️ -->
 <button onclick="openImagesArchive()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🖼️ الأرشيف</button>
 <button onclick="openChatList()" class="relative bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">💬 دردشة<span id="chatUnreadBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 pulse-badge">0</span></button>
 <button onclick="openCreateGroupModal()" class="bg-white/20 hover:bg-white/30 text-white px-2 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">👥+</button>
@@ -168,7 +173,6 @@ body{font-family:'Cairo',sans-serif}
 </div>
 </section>
 
-<!-- ⭐ قسم الحسابات المالية للمريض — يظهر للجميع ⭐ -->
 <section id="financialSection" class="bg-green-50 p-3 rounded-xl border-2 border-green-300 space-y-2 lg:col-span-1 shadow-sm">
 <h2 class="font-bold text-green-900 text-sm">💰 الحسابات المالية للمريض</h2>
 <input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="المبلغ الكلي" class="w-full p-2 border rounded-lg text-sm bg-white">
@@ -297,28 +301,19 @@ try { if (currentUser) db.collection('activity').add({ username: currentUser.use
 localStorage.removeItem('currentUser'); location.reload();
 }
 
-/* ✅ الصلاحيات — financialSection يظهر للجميع */
 function applyPermissions() {
 if (!currentUser) return;
 const role = currentUser.role;
-
-// أولاً: إظهار كل الأقسام الأساسية
 const showAll = ['financialSection','imageAnalysisSection','revenueSection','expenseSection','netRevenueSection','netRevenueDisplayWrap','adminPanelSection','aiAssistantSection'];
 showAll.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
-
-// ثانياً: إخفاء ما لا يحتاجه الدور
 const hideElements = (ids) => ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 const ADMIN_ONLY = ['adminPanelSection'];
 const ADMIN_FINANCIAL = ['revenueSection','expenseSection','netRevenueSection','netRevenueDisplayWrap'];
-
 if (role === 'employee') {
-// الموظف: يرى حسابات المريض + الصور | لا يرى AI ولا لوحة المدير ولا المالية الإدارية
 hideElements([...ADMIN_ONLY, 'aiAssistantSection', ...ADMIN_FINANCIAL]);
 } else if (role === 'doctor') {
-// الطبيب: يرى حسابات المريض + AI + الصور | لا يرى لوحة المدير ولا المالية الإدارية
 hideElements([...ADMIN_ONLY, ...ADMIN_FINANCIAL]);
 }
-// admin → يرى كل شيء
 }
 
 function updateUserBar() {
@@ -743,6 +738,30 @@ async function sendMessage() { const input = document.getElementById('chatInput'
 async function loadChatList() { const c = document.getElementById('chatListContent'); c.innerHTML = '...'; try { let html = ''; html += '<button onclick="closeChatList();openCreateGroupModal()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-xl font-bold text-xs">👥+ مجموعة جديدة</button><div class="h-px bg-gray-200 my-2"></div>'; const groups = await loadUserGroups(); if (groups.length) { html += '<p class="text-[10px] font-bold text-indigo-700 px-1 pt-1">👥 مجموعاتي:</p>'; for (const g of groups) { const timeStr = g.lastTimestamp ? new Date(g.lastTimestamp.seconds * 1000).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }) : ''; const last = (g.lastMessage || 'لا رسائل').substring(0, 40); let unread = 0; try { const ms = await db.collection('groups').doc(g.id).collection('messages').where('sender', '!=', currentUser.username).get(); ms.forEach(m => { const d = m.data(); if (!d.readBy || !d.readBy.includes(currentUser.username)) unread++; }); } catch (_) {} html += '<button onclick="openGroupChat(\'' + g.id + '\')" class="w-full bg-indigo-50 border border-indigo-200 rounded-lg p-3 flex items-center gap-3 text-right"><div class="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center text-lg flex-shrink-0">👥</div><div class="flex-1 min-w-0"><div class="flex justify-between mb-0.5"><p class="text-xs font-bold truncate">' + escapeHtml(g.name) + '</p><span class="text-[9px] text-gray-400">' + timeStr + '</span></div><div class="flex justify-between gap-2"><p class="text-[10px] text-gray-500 truncate flex-1">' + escapeHtml(last) + '</p>' + (unread > 0 ? '<span class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">' + unread + '</span>' : '') + '</div><p class="text-[9px] text-indigo-500 mt-0.5">' + g.members.length + ' أعضاء</p></div></button>'; } html += '<div class="h-px bg-gray-200 my-2"></div>'; } const usersSnap = await db.collection('users').get(); const allUsers = []; usersSnap.forEach(doc => { const u = doc.data(); if (u.username !== currentUser.username && u.active !== false) allUsers.push({ username: u.username || doc.id, fullName: u.fullName || doc.id, role: u.role || 'employee' }); }); if (allUsers.length) { html += '<p class="text-[10px] font-bold text-blue-700 px-1 pt-1">💬 محادثات فردية:</p>'; for (const t of allUsers) { const chatId = getChatId(currentUser.username, t.username); const chatDoc = await db.collection('chats').doc(chatId).get(); let lastMsg = 'ابدأ محادثة', unread = 0, timeStr = ''; if (chatDoc.exists) { const d = chatDoc.data(); lastMsg = d.lastMessage || 'لا رسائل'; if (d.lastTimestamp) timeStr = new Date(d.lastTimestamp.seconds * 1000).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }); const ms = await db.collection('chats').doc(chatId).collection('messages').where('sender', '==', t.username).get(); ms.forEach(m => { const md = m.data(); if (!md.readBy || !md.readBy.includes(currentUser.username)) unread++; }); } const icon = t.role === 'admin' ? '👑' : t.role === 'doctor' ? '👨‍⚕️' : '👨‍💼'; html += '<button onclick="openChat(\'' + t.username + '\',\'' + escapeHtml(t.fullName) + '\')" class="w-full bg-white border rounded-lg p-3 flex items-center gap-3 text-right"><div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-lg flex-shrink-0">' + icon + '</div><div class="flex-1 min-w-0"><div class="flex justify-between mb-0.5"><p class="text-xs font-bold truncate">' + escapeHtml(t.fullName) + '</p><span class="text-[9px] text-gray-400">' + timeStr + '</span></div><div class="flex justify-between gap-2"><p class="text-[10px] text-gray-500 truncate flex-1">' + escapeHtml(lastMsg.length > 40 ? lastMsg.substring(0, 40) + '...' : lastMsg) + '</p>' + (unread > 0 ? '<span class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">' + unread + '</span>' : '') + '</div></div></button>'; } } c.innerHTML = html; } catch (e) { c.innerHTML = 'فشل'; } }
 function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
 async function updateChatBadge() { const badge = document.getElementById('chatUnreadBadge'); if (!badge || !currentUser) return; let total = 0; try { const groups = await loadUserGroups(); for (const g of groups) { const ms = await db.collection('groups').doc(g.id).collection('messages').where('sender', '!=', currentUser.username).get(); ms.forEach(m => { const d = m.data(); if (!d.readBy || !d.readBy.includes(currentUser.username)) total++; }); } const usersSnap = await db.collection('users').get(); for (const doc of usersSnap.docs) { const u = doc.data(); if (u.username === currentUser.username) continue; if (u.active === false) continue; const chatId = getChatId(currentUser.username, u.username); const ms = await db.collection('chats').doc(chatId).collection('messages').where('sender', '==', u.username).get(); ms.forEach(m => { const md = m.data(); if (!md.readBy || !md.readBy.includes(currentUser.username)) total++; }); } if (total > 0) { badge.textContent = total > 99 ? '99+' : total; badge.classList.remove('hidden'); } else badge.classList.add('hidden'); } catch (e) {} }
+
+// ═══════════════════════════════════════════════════════════════
+// ⬇️ جديد: فتح نظام المعمل والتحليل ⬇️
+// ═══════════════════════════════════════════════════════════════
+
+// فتح نظام المعمل — يعمل داخل iframe وخارجه
+function openLabSystem() {
+  // إذا كنا داخل النظام الموحد (index.html) → التبديل للتبويب
+  if (window.parent && typeof window.parent.switchTab === 'function') {
+    window.parent.switchTab('lab');
+  } else {
+    // مستقل → فتح نفس الصفحة
+    window.location.href = 'Lab.html';
+  }
+}
+
+// فتح نظام التحليل — يعمل داخل iframe وخارجه
+function openAnalyzerSystem() {
+  if (window.parent && typeof window.parent.switchTab === 'function') {
+    window.parent.switchTab('analyzer');
+  } else {
+    window.location.href = 'Analyzer.html';
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => { renderLogos(); renderDentalChart(); generateFileNumber(); renderGallery(); });
 </script>
