@@ -22,25 +22,58 @@
 </div>
 
 <div class="max-w-4xl mx-auto">
+  <!-- الهيدر -->
   <div class="bg-gradient-to-r from-blue-900 to-teal-600 text-white rounded-2xl p-5 mb-4 flex justify-between items-center">
     <div>
-      <h1 class="text-xl font-extrabold">🧪 نظام المعمل</h1>
+      <h1 class="text-xl font-extrabold">🧪 إدارة المعمل</h1>
       <p class="text-xs opacity-80 mt-1" id="userLabel">...</p>
     </div>
     <a href="clinical.html" class="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-xs font-bold">← رجوع للعيادة</a>
   </div>
 
+  <!-- إضافة طلب جديد -->
   <div class="bg-white rounded-2xl shadow p-5 mb-4">
-    <h2 class="font-bold text-blue-900 mb-3">➕ إضافة طلب معمل جديد</h2>
-    <div class="space-y-2">
-      <input type="text" id="labPatient" placeholder="اسم المريض *" class="w-full p-2 border rounded-lg text-sm">
-      <input type="text" id="labWork" placeholder="نوع العمل (تركيبة، تقويم...)" class="w-full p-2 border rounded-lg text-sm">
-      <input type="date" id="labDate" class="w-full p-2 border rounded-lg text-sm">
-      <textarea id="labNotes" placeholder="ملاحظات" rows="2" class="w-full p-2 border rounded-lg text-sm"></textarea>
-      <button onclick="saveLab()" class="bg-emerald-600 text-white w-full p-2 rounded-lg font-bold">💾 حفظ الطلب</button>
+    <h2 class="font-bold text-blue-900 mb-3">➕ طلب معمل جديد</h2>
+    <div class="grid md:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs font-bold text-gray-600 block mb-1">اسم المريض *</label>
+        <input type="text" id="labPatient" placeholder="اسم المريض" class="w-full p-2 border rounded-lg text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-600 block mb-1">اسم القطعة</label>
+        <input type="text" id="labItem" placeholder="مثال: تاج خزفي، جسر..." class="w-full p-2 border rounded-lg text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-600 block mb-1">العدد</label>
+        <input type="number" id="labQuantity" placeholder="0" class="w-full p-2 border rounded-lg text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-600 block mb-1">تاريخ الإرسال</label>
+        <input type="date" id="labSendDate" class="w-full p-2 border rounded-lg text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-600 block mb-1">تاريخ التسليم المتوقع</label>
+        <input type="date" id="labDeliveryDate" class="w-full p-2 border rounded-lg text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-600 block mb-1">المبلغ الكلي</label>
+        <input type="number" id="labTotal" placeholder="0" class="w-full p-2 border rounded-lg text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-600 block mb-1">المبلغ المدفوع</label>
+        <input type="number" id="labPaid" placeholder="0" class="w-full p-2 border rounded-lg text-sm">
+      </div>
+      <div class="md:col-span-2">
+        <label class="text-xs font-bold text-gray-600 block mb-1">ملاحظات</label>
+        <textarea id="labNotes" rows="2" class="w-full p-2 border rounded-lg text-sm" placeholder="ملاحظات إضافية..."></textarea>
+      </div>
+      <div class="md:col-span-2">
+        <button onclick="saveLab()" class="bg-emerald-600 text-white w-full p-2 rounded-lg font-bold">💾 حفظ الطلب</button>
+      </div>
     </div>
   </div>
 
+  <!-- قائمة الطلبات -->
   <div class="bg-white rounded-2xl shadow p-5">
     <h2 class="font-bold text-blue-900 mb-3">📋 طلبات المعمل</h2>
     <div id="labList" class="space-y-2">
@@ -50,6 +83,7 @@
 </div>
 
 <script>
+// ✅ مشروع العيادة
 const firebaseConfig = {
   apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
   authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
@@ -76,28 +110,47 @@ auth.onAuthStateChanged((user) => {
   loadLab();
 });
 
+// ✅ حفظ طلب جديد
 async function saveLab() {
   const patient = document.getElementById('labPatient').value.trim();
   if (!patient) return alert('اسم المريض مطلوب');
 
+  const total = parseFloat(document.getElementById('labTotal').value) || 0;
+  const paid = parseFloat(document.getElementById('labPaid').value) || 0;
+  const remaining = total - paid;
+
   try {
     await db.collection('lab').add({
       patient: patient,
-      work: document.getElementById('labWork').value,
-      date: document.getElementById('labDate').value,
-      notes: document.getElementById('labNotes').value,
+      item: document.getElementById('labItem').value.trim(),
+      quantity: parseInt(document.getElementById('labQuantity').value) || 0,
+      sendDate: document.getElementById('labSendDate').value || null,
+      deliveryDate: document.getElementById('labDeliveryDate').value || null,
+      total: total,
+      paid: paid,
+      remaining: remaining,
+      notes: document.getElementById('labNotes').value.trim(),
       createdAt: new Date(),
       createdBy: currentUser.uid
     });
+
+    // تفريغ الحقول
     document.getElementById('labPatient').value = '';
-    document.getElementById('labWork').value = '';
+    document.getElementById('labItem').value = '';
+    document.getElementById('labQuantity').value = '';
+    document.getElementById('labSendDate').value = '';
+    document.getElementById('labDeliveryDate').value = '';
+    document.getElementById('labTotal').value = '';
+    document.getElementById('labPaid').value = '';
     document.getElementById('labNotes').value = '';
+
     loadLab();
   } catch (e) {
     alert('خطأ: ' + e.message);
   }
 }
 
+// ✅ تحميل قائمة الطلبات
 async function loadLab() {
   try {
     const snap = await db.collection('lab').orderBy('createdAt', 'desc').limit(100).get();
@@ -112,11 +165,24 @@ async function loadLab() {
     snap.forEach(doc => {
       const d = doc.data();
       const div = document.createElement('div');
-      div.className = 'p-3 border rounded-lg';
+      div.className = 'p-3 border rounded-lg bg-white mb-2';
       div.innerHTML = `
-        <div class="font-bold text-sm text-blue-900">${d.patient || 'بدون اسم'}</div>
-        <div class="text-xs text-gray-600 mt-1">${d.work || 'غير محدد'} • ${d.date || ''}</div>
-        ${d.notes ? `<div class="text-xs text-gray-500 mt-1">${d.notes}</div>` : ''}
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="font-bold text-blue-900">${d.patient || 'بدون اسم'}</div>
+            <div class="text-xs text-gray-600 mt-1">${d.item || 'غير محدد'} ${d.quantity ? '(العدد: ' + d.quantity + ')' : ''}</div>
+            <div class="text-xs text-gray-500 mt-1">
+              📅 إرسال: ${d.sendDate || '—'} | تسليم: ${d.deliveryDate || '—'}
+            </div>
+            ${d.notes ? `<div class="text-xs text-gray-500 mt-1">📝 ${d.notes}</div>` : ''}
+          </div>
+          <div class="text-left">
+            <div class="text-sm font-bold text-emerald-600">${d.total || 0} ريال</div>
+            <div class="text-xs text-gray-500">مدفوع: ${d.paid || 0}</div>
+            <div class="text-xs text-red-500 font-bold">متبقي: ${d.remaining || 0} ريال</div>
+            <button onclick="deleteLab('${doc.id}')" class="text-red-500 text-xs font-bold mt-1">🗑️ حذف</button>
+          </div>
+        </div>
       `;
       list.appendChild(div);
     });
@@ -124,6 +190,15 @@ async function loadLab() {
     console.error(e);
     document.getElementById('labList').innerHTML = '<div class="text-red-600 text-center py-4 text-sm">خطأ: ' + e.message + '</div>';
   }
+}
+
+// ✅ حذف طلب
+async function deleteLab(id) {
+  if (!confirm('حذف هذا الطلب؟')) return;
+  try {
+    await db.collection('lab').doc(id).delete();
+    loadLab();
+  } catch (e) { alert('خطأ: ' + e.message); }
 }
 </script>
 </body>
