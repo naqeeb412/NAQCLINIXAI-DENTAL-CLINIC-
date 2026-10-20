@@ -44,7 +44,7 @@
       <div class="flex-1 h-px bg-gray-300"></div>
     </div>
 
-    <button onclick="doGoogleLogin()"
+    <button onclick="doGoogleLogin()" id="googleBtn"
       class="w-full bg-white border-2 border-gray-300 text-gray-700 p-3 rounded-xl font-bold hover:bg-gray-50 flex items-center justify-center gap-2">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       دخول بجوجل
@@ -64,7 +64,6 @@
 </div>
 
 <script>
-// ✅ مشروع العيادة — naqclinixai-dental-clinic
 const firebaseConfig = {
   apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
   authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
@@ -76,6 +75,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// ✅ استخدم Redirect على الهاتف (أكثر موثوقية)
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// التحقق من نتيجة Redirect عند العودة
+auth.getRedirectResult().then((result) => {
+  if (result.user) {
+    window.location.href = 'clinical.html';
+  }
+}).catch((error) => {
+  console.error("Redirect error:", error);
+});
 
 async function doLogin() {
   const email = document.getElementById('email').value.trim();
@@ -99,7 +110,7 @@ async function doLogin() {
         authProvider: 'email'
       });
     }
-    window.location.href = 'dentbook.html';
+    window.location.href = 'clinical.html';
   } catch (e) {
     showMsg('❌ ' + translateErr(e.code), 'error');
     btn.disabled = false; btn.textContent = '🔓 دخول';
@@ -108,26 +119,42 @@ async function doLogin() {
 
 async function doGoogleLogin() {
   const provider = new firebase.auth.GoogleAuthProvider();
+  const btn = document.getElementById('googleBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ جاري التحويل...';
+
   try {
-    const cred = await auth.signInWithPopup(provider);
-    const userRef = db.collection('users').doc(cred.user.uid);
-    const doc = await userRef.get();
-    if (!doc.exists) {
-      await userRef.set({
-        uid: cred.user.uid,
-        email: cred.user.email,
-        name: cred.user.displayName || '',
-        avatar: cred.user.photoURL || '',
-        role: 'doctor',
-        active: true,
-        verified: true,
-        createdAt: new Date(),
-        authProvider: 'google'
-      });
+    if (isMobile) {
+      // ✅ على الهاتف: استخدم Redirect
+      await auth.signInWithRedirect(provider);
+    } else {
+      // على الكمبيوتر: Popup مقبول
+      const cred = await auth.signInWithPopup(provider);
+      await handleGoogleUser(cred.user);
+      window.location.href = 'clinical.html';
     }
-    window.location.href = 'dentbook.html';
   } catch (e) {
     showMsg('❌ ' + translateErr(e.code), 'error');
+    btn.disabled = false;
+    btn.textContent = 'دخول بجوجل';
+  }
+}
+
+async function handleGoogleUser(user) {
+  const userRef = db.collection('users').doc(user.uid);
+  const doc = await userRef.get();
+  if (!doc.exists) {
+    await userRef.set({
+      uid: user.uid,
+      email: user.email,
+      name: user.displayName || '',
+      avatar: user.photoURL || '',
+      role: 'doctor',
+      active: true,
+      verified: true,
+      createdAt: new Date(),
+      authProvider: 'google'
+    });
   }
 }
 
@@ -163,8 +190,9 @@ function showMsg(text, type) {
     (type==='error' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700');
 }
 
+// التحويل التلقائي إن كان مسجل دخول
 auth.onAuthStateChanged(u => {
-  if (u) window.location.href = 'dentbook.html';
+  if (u) window.location.href = 'clinical.html';
 });
 </script>
 </body>
