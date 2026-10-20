@@ -64,6 +64,7 @@
 </div>
 
 <script>
+// ✅ مشروع العيادة
 const firebaseConfig = {
   apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
   authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
@@ -76,17 +77,40 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ✅ استخدم Redirect على الهاتف (أكثر موثوقية)
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-// التحقق من نتيجة Redirect عند العودة
-auth.getRedirectResult().then((result) => {
-  if (result.user) {
-    window.location.href = 'clinical.html';
+// ✅ دالة إصلاح الدور تلقائياً
+async function fixOwnerRole(user) {
+  if (!user) return;
+  try {
+    const userRef = db.collection('users').doc(user.uid);
+    const doc = await userRef.get();
+    // إذا كان الإيميل هو إيميل المالك، نجبر الدور ليكون owner
+    if (user.email === 'naqclinixai@gmail.com') {
+      await userRef.set({
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || 'د. علي النقيب',
+        role: 'owner',
+        active: true,
+        verified: true,
+        createdAt: doc.exists ? doc.data().createdAt : new Date()
+      }, { merge: true });
+    } else if (!doc.exists) {
+      // مستخدم جديد عادي
+      await userRef.set({
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || user.email.split('@')[0],
+        role: 'doctor',
+        active: true,
+        verified: true,
+        createdAt: new Date(),
+        authProvider: 'email'
+      });
+    }
+  } catch (e) {
+    console.error("خطأ في إصلاح الدور:", e);
   }
-}).catch((error) => {
-  console.error("Redirect error:", error);
-});
+}
 
 async function doLogin() {
   const email = document.getElementById('email').value.trim();
@@ -96,20 +120,7 @@ async function doLogin() {
   btn.disabled = true; btn.textContent = '⏳...';
   try {
     const cred = await auth.signInWithEmailAndPassword(email, password);
-    const userRef = db.collection('users').doc(cred.user.uid);
-    const doc = await userRef.get();
-    if (!doc.exists) {
-      await userRef.set({
-        uid: cred.user.uid,
-        email: cred.user.email,
-        name: cred.user.displayName || email.split('@')[0],
-        role: 'owner',
-        active: true,
-        verified: true,
-        createdAt: new Date(),
-        authProvider: 'email'
-      });
-    }
+    await fixOwnerRole(cred.user);
     window.location.href = 'clinical.html';
   } catch (e) {
     showMsg('❌ ' + translateErr(e.code), 'error');
@@ -124,39 +135,35 @@ async function doGoogleLogin() {
   btn.textContent = '⏳ جاري التحويل...';
 
   try {
-    if (isMobile) {
-      // ✅ على الهاتف: استخدم Redirect
-      await auth.signInWithRedirect(provider);
-    } else {
-      // على الكمبيوتر: Popup مقبول
-      const cred = await auth.signInWithPopup(provider);
-      await handleGoogleUser(cred.user);
-      window.location.href = 'clinical.html';
-    }
+    const cred = await auth.signInWithPopup(provider);
+    await fixOwnerRole(cred.user);
+    window.location.href = 'clinical.html';
   } catch (e) {
-    showMsg('❌ ' + translateErr(e.code), 'error');
+    // في حال كان المتصفح هاتفاً، جرب Redirect
+    if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/popup-blocked') {
+      try {
+        await auth.signInWithRedirect(provider);
+        return;
+      } catch (err) {
+        showMsg('❌ ' + translateErr(err.code), 'error');
+      }
+    } else {
+      showMsg('❌ ' + translateErr(e.code), 'error');
+    }
     btn.disabled = false;
     btn.textContent = 'دخول بجوجل';
   }
 }
 
-async function handleGoogleUser(user) {
-  const userRef = db.collection('users').doc(user.uid);
-  const doc = await userRef.get();
-  if (!doc.exists) {
-    await userRef.set({
-      uid: user.uid,
-      email: user.email,
-      name: user.displayName || '',
-      avatar: user.photoURL || '',
-      role: 'doctor',
-      active: true,
-      verified: true,
-      createdAt: new Date(),
-      authProvider: 'google'
-    });
+// ✅ استقبال نتيجة Redirect (على الهاتف)
+auth.getRedirectResult().then(async (result) => {
+  if (result.user) {
+    await fixOwnerRole(result.user);
+    window.location.href = 'clinical.html';
   }
-}
+}).catch((error) => {
+  console.error("Redirect error:", error);
+});
 
 async function resetPassword(ev) {
   ev.preventDefault();
@@ -190,9 +197,13 @@ function showMsg(text, type) {
     (type==='error' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700');
 }
 
-// التحويل التلقائي إن كان مسجل دخول
+// ✅ التحويل التلقائي إن كان مسجل دخول
 auth.onAuthStateChanged(u => {
-  if (u) window.location.href = 'clinical.html';
+  if (u) {
+    fixOwnerRole(u).then(() => {
+      window.location.href = 'clinical.html';
+    });
+  }
 });
 </script>
 </body>
