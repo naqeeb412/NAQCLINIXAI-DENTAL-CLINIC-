@@ -75,7 +75,6 @@ async function fixOwner() {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      // إنشاء وثيقة جديدة
       await userRef.set({
         username: username,
         uid: uid,
@@ -96,7 +95,6 @@ async function fixOwner() {
         clinicId: 'CLN-MAIN-001'
       }));
     } else {
-      // تحديث وثيقة موجودة
       await userRef.update({ uid: uid, authEmail: email, linkedAt: new Date() });
       const userData = userDoc.data();
       localStorage.setItem('currentUser', JSON.stringify({
