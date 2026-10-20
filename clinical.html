@@ -3,307 +3,251 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>العيادة التخصصية لطب وجراحة وتقويم الفم والأسنان - د. علي النقيب</title>
+<title>العيادة — NAQClinixAI</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-* { -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Cairo', sans-serif; }
-@media print {
-  body * { visibility: hidden; }
-  #printableArea, #printableArea * { visibility: visible; }
-  #printableArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; background: white; }
-  .no-print { display: none !important; }
-}
-.clinic-logo svg, .clinic-logo img { width: 100%; height: 100%; display: block; object-fit: cover; }
-.dental-arch { width: 100%; height: auto; display: block; }
-.tooth { cursor: pointer; }
-.tooth .crown { fill: url(#toothGrad); stroke: #94a3b8; stroke-width: 0.9; transition: all .18s ease; }
-.tooth .num { font-family: 'Cairo', sans-serif; font-size: 7.5px; font-weight: 800; fill: #475569; pointer-events: none; text-anchor: middle; }
-.tooth:hover .crown { fill: url(#toothGradHover); stroke: #6366f1; }
-.tooth.selected .crown { fill: url(#toothGradSel); stroke: #1e3a8a; stroke-width: 1.3; }
-.tooth.selected .num { fill: #fff; }
-.ai-glow { background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #06b6d4 100%); background-size: 200% 200%; animation: aiglow 3s ease infinite; }
-@keyframes aiglow { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-.ai-typing::after { content: '...'; animation: dots 1.4s infinite; }
-@keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
-.pulse-badge { animation: pulseBadge 2s ease infinite; }
-@keyframes pulseBadge { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
-.ref-table { font-size: 10px; width: 100%; border-collapse: collapse; }
-.ref-table th { background: #1e3a8a; color: #fff; padding: 4px 6px; font-weight: 700; }
-.ref-table td { padding: 3px 6px; border-bottom: 1px solid #e5e7eb; }
+  body { font-family: 'Cairo', sans-serif; background: #f0f2f5; }
+  .sidebar { transition: transform 0.3s; }
+  .sidebar.hidden { transform: translateX(100%); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .tooth { cursor: pointer; transition: all 0.2s; }
+  .tooth.selected { background: #3b82f6 !important; color: white; }
+  .tooth:hover { background: #dbeafe; }
 </style>
 </head>
-<body class="bg-gray-50 text-gray-800 p-2">
+<body class="min-h-screen">
 
-<div id="loginOverlay" class="fixed inset-0 bg-blue-950 flex items-center justify-center z-50 p-4">
-  <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4 border border-blue-100">
-    <div class="w-24 h-24 mx-auto mb-2 clinic-logo rounded-2xl overflow-hidden shadow-lg shadow-blue-200"></div>
-    <h2 class="text-lg font-bold text-blue-900">تسجيل الدخول</h2>
-    <p class="text-xs text-gray-600">أدخل بيانات حسابك</p>
-    <div class="text-right space-y-2">
-      <label class="text-[11px] font-bold text-gray-700 block">👤 اسم المستخدم</label>
-      <input type="text" id="loginUsername" placeholder="مثال: drali" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
-      <label class="text-[11px] font-bold text-gray-700 block">🔑 كلمة المرور</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" class="w-full p-2.5 border rounded-xl text-sm text-center bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
+<!-- شاشة التحميل -->
+<div id="loadingScreen" class="fixed inset-0 bg-gradient-to-br from-blue-900 to-teal-600 flex items-center justify-center z-50">
+  <div class="text-white text-center">
+    <div class="text-6xl mb-4">🦷</div>
+    <div class="text-xl font-bold">جاري التحميل...</div>
+    <div class="text-sm mt-2 opacity-70">NAQClinixAI</div>
+  </div>
+</div>
+
+<!-- الهيدر -->
+<header class="bg-gradient-to-r from-blue-900 to-teal-600 text-white p-4 shadow-lg sticky top-0 z-40">
+  <div class="max-w-7xl mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <button onclick="toggleSidebar()" class="text-2xl">☰</button>
+      <div>
+        <h1 class="text-lg font-extrabold">🦷 NAQClinixAI</h1>
+        <p class="text-xs opacity-80" id="clinicName">العيادة التخصصية</p>
+      </div>
     </div>
-    <button onclick="login()" id="loginBtn" class="w-full bg-blue-600 text-white p-2.5 rounded-xl text-sm font-bold shadow hover:bg-blue-700">دخول النظام</button>
-    <p id="loginError" class="text-xs text-red-600 hidden font-semibold"></p>
+    <div class="flex items-center gap-3">
+      <div class="text-left">
+        <div class="text-sm font-bold" id="userName">...</div>
+        <div class="text-xs opacity-80" id="userRole">...</div>
+      </div>
+      <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">👤</div>
+    </div>
   </div>
-</div>
+</header>
 
-<div class="w-full max-w-7xl mx-auto bg-white min-h-screen shadow-lg flex flex-col p-2 md:p-5 rounded-xl border border-gray-100">
-  <div id="userBar" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between shadow flex-wrap gap-2">
-    <div class="flex items-center gap-2"><span class="text-2xl">👤</span><div><p id="userBarName" class="text-sm font-bold">-</p><p id="userBarRole" class="text-[10px] opacity-90">-</p></div></div>
-    <div class="flex items-center gap-2 flex-wrap">
-      <button onclick="openPatientsList()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">📋 المرضى</button>
-      <button onclick="openDentbook()" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30 shadow-lg">💬 Dentbook</button>
-      <button onclick="openLabSystem()" class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30 shadow-lg">🧪 المعمل</button>
-      <button onclick="openAnalyzerSystem()" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30 shadow-lg">🔬 التحليل</button>
-      <button onclick="openImagesArchive()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🖼️ الأرشيف</button>
-      <button onclick="logout()" class="bg-white/20 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold border border-white/30">🚪 خروج</button>
+<!-- القائمة الجانبية -->
+<aside id="sidebar" class="sidebar hidden fixed top-0 right-0 w-72 h-full bg-white shadow-2xl z-50 overflow-y-auto">
+  <div class="p-4 bg-gradient-to-r from-blue-900 to-teal-600 text-white">
+    <div class="flex justify-between items-center mb-3">
+      <span class="font-bold">القائمة</span>
+      <button onclick="toggleSidebar()" class="text-2xl">✕</button>
+    </div>
+    <div class="text-xs opacity-80">NAQClinixAI</div>
+  </div>
+  <nav class="p-2">
+    <button onclick="switchTab('dashboard')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3 font-bold"><span class="text-xl">📊</span> لوحة التحكم</button>
+    <button onclick="switchTab('patients')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">📋</span> المرضى</button>
+    <button onclick="switchTab('lab')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">🧪</span> المعمل</button>
+    <button onclick="switchTab('analysis')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">🔬</span> التحليل</button>
+    <button onclick="switchTab('archive')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">🖼️</span> الأرشيف</button>
+    <button onclick="switchTab('chat')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">💬</span> دردشة</button>
+    <a href="dentbook.html" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">📖</span> DentBook</a>
+    <hr class="my-2">
+    <button onclick="switchTab('admin')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">👑</span> لوحة المدير</button>
+    <button onclick="switchTab('expenses')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">💸</span> المصروفات</button>
+    <button onclick="switchTab('aiSettings')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">⚙️</span> إعدادات AI</button>
+    <hr class="my-2">
+    <button onclick="logout()" class="w-full text-right p-3 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-3"><span class="text-xl">🚪</span> خروج</button>
+  </nav>
+</aside>
+<div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden"></div>
+
+<!-- المحتوى الرئيسي -->
+<main class="max-w-7xl mx-auto p-4">
+
+  <!-- لوحة التحكم -->
+  <div id="tab-dashboard" class="tab-content active">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      <div class="bg-white rounded-xl p-4 shadow"><div class="text-2xl mb-1">📋</div><div class="text-2xl font-bold text-blue-900" id="statPatients">0</div><div class="text-xs text-gray-500">مريض</div></div>
+      <div class="bg-white rounded-xl p-4 shadow"><div class="text-2xl mb-1">📅</div><div class="text-2xl font-bold text-emerald-600" id="statVisits">0</div><div class="text-xs text-gray-500">زيارة</div></div>
+      <div class="bg-white rounded-xl p-4 shadow"><div class="text-2xl mb-1">💰</div><div class="text-2xl font-bold text-teal-600" id="statIncome">0</div><div class="text-xs text-gray-500">إيراد</div></div>
+      <div class="bg-white rounded-xl p-4 shadow"><div class="text-2xl mb-1">💸</div><div class="text-2xl font-bold text-red-600" id="statExpenses">0</div><div class="text-xs text-gray-500">مصروف</div></div>
+    </div>
+    <div class="bg-white rounded-xl p-4 shadow mb-4">
+      <h2 class="font-bold text-blue-900 mb-3">📊 النشاطات الأخيرة</h2>
+      <div id="activityList" class="space-y-2 text-sm"><div class="text-gray-400 text-center py-4">جاري التحميل...</div></div>
     </div>
   </div>
 
-  <div id="welcomeBar" class="hidden bg-emerald-100 text-emerald-800 p-3 rounded-xl mb-3 text-center font-bold text-sm"></div>
-  <div id="remindersBar" class="hidden bg-amber-50 border-2 border-amber-300 rounded-xl p-3 mb-3 text-xs"></div>
-
-  <!-- الهيدر الأصلي -->
-  <header class="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-800 text-white rounded-2xl mb-4 shadow-xl border border-blue-800">
-    <div class="relative p-5 text-center">
-      <div class="relative w-24 h-24 mx-auto mb-3">
-        <div class="clinic-logo w-24 h-24 rounded-2xl overflow-hidden ring-2 ring-white/25 shadow-lg bg-white/5"></div>
-        <button type="button" onclick="document.getElementById('logoInput').click()" class="absolute -bottom-1.5 -left-1.5 w-7 h-7 bg-white text-blue-800 rounded-full text-[11px] shadow-md flex items-center justify-center">✎</button>
-        <input type="file" id="logoInput" accept="image/*" class="hidden">
+  <!-- المرضى -->
+  <div id="tab-patients" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow mb-4">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-bold text-blue-900">📋 المرضى</h2>
+        <button onclick="openAddPatient()" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold">➕ مريض جديد</button>
       </div>
-      <h1 class="text-[16px] md:text-xl leading-snug font-extrabold tracking-wide">العيادة التخصصية لطب وجراحة وتقويم الفم والأسنان</h1>
-      <div class="flex items-center justify-center gap-2 my-2.5"><span class="h-px w-10 bg-gradient-to-l from-transparent to-cyan-300/80"></span><span class="text-cyan-300 text-xs">🦷</span><span class="h-px w-10 bg-gradient-to-r from-transparent to-cyan-300/80"></span></div>
-      <p class="text-[15px] md:text-base font-bold">د. علي النقيب</p>
-      <p class="text-[10px] font-bold text-cyan-300 tracking-[0.25em] mt-0.5">NAQClinixAI</p>
-      <div class="mt-3.5 pt-3 border-t border-white/15 text-[11px] text-blue-100 space-y-1">
-        <p>📍 أب - ميتم - سوق الثلوث - جوار الزبيدي للألمنيوم</p>
-        <p dir="ltr">📞 777700412 • 771816548</p>
-      </div>
-      <button onclick="openAISettings()" class="mt-3 text-[10px] bg-white/10 hover:bg-white/20 text-cyan-200 px-3 py-1 rounded-full border border-white/20">⚙️ إعدادات AI</button>
+      <input type="text" id="patientSearch" placeholder="🔍 بحث..." class="w-full p-2 border rounded-lg mb-3 text-sm" oninput="filterPatients()">
+      <div id="patientsList" class="space-y-2"><div class="text-gray-400 text-center py-4">جاري التحميل...</div></div>
     </div>
-  </header>
+  </div>
 
-  <main class="flex-1 no-print grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-
-    <section id="adminPanelSection" class="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-xl border-2 border-amber-300 shadow-sm lg:col-span-1">
-      <div class="flex items-center justify-between mb-2"><h2 class="font-bold text-amber-900 text-sm">👑 لوحة المدير</h2><button onclick="toggleAdminPanel()" id="adminPanelToggle" class="text-[10px] bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">إخفاء</button></div>
-      <div id="adminPanelContent" class="space-y-2">
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="openAddUserModal()" class="bg-emerald-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">➕ مستخدم</button>
-          <button onclick="openActivityLog()" class="bg-blue-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📝 النشاطات</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="openDailyReport()" class="bg-cyan-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📊 اليوم</button>
-          <button onclick="openMonthlyReport()" class="bg-purple-600 text-white p-2.5 rounded-lg text-xs font-bold shadow">📅 الشهر</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="openPatientsList()" class="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📋 المرضى</button>
-          <button onclick="exportPatientsToExcel()" class="bg-gradient-to-r from-green-700 to-emerald-700 text-white p-2.5 rounded-lg text-xs font-bold shadow">📄 Excel</button>
-        </div>
-        <div id="usersList" class="space-y-2"></div>
-      </div>
-    </section>
-
-    <section class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-blue-900 text-sm">👤 المريض</h2>
-      <div class="grid grid-cols-2 gap-2">
-        <div><label class="text-[10px] text-gray-600 block">رقم الملف:</label><input type="text" id="fileNumber" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
-        <div><label class="text-[10px] text-gray-600 block">التاريخ:</label><input type="text" id="registrationDateDisplay" readonly class="w-full p-2 border rounded-lg text-sm bg-gray-100 font-bold text-blue-900"></div>
-      </div>
-      <input type="text" id="patientName" placeholder="الاسم كامل" class="w-full p-2 border rounded-lg text-sm bg-white">
-      <div class="grid grid-cols-3 gap-2">
-        <select id="patientGender" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
-        <input type="number" id="patientAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <input type="text" id="patientAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm bg-white">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <input type="tel" id="patientPhone" placeholder="الهاتف" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <input type="tel" id="whatsappPhone" placeholder="الواتساب" class="w-full p-2 border rounded-lg text-sm bg-white">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <input type="text" id="patientAllergies" placeholder="الحساسية" class="w-full p-2 border rounded-lg text-sm bg-white">
-        <input type="text" id="chronicDiseases" placeholder="أمراض مزمنة" class="w-full p-2 border rounded-lg text-sm bg-white">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <div><label class="text-[10px] text-blue-800 block font-bold">📅 الزيارة القادمة:</label><input type="date" id="nextVisitDate" class="w-full p-2 border-2 border-blue-300 rounded-lg text-sm bg-white font-bold text-blue-900"></div>
-        <div><label class="text-[10px] text-blue-800 block font-bold">💰 طريقة الدفع:</label><select id="paymentMethod" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="">اختر...</option><option value="نقدي">نقدي</option><option value="تحويل بنكي">تحويل بنكي</option><option value="محفظة إلكترونية">محفظة إلكترونية</option></select></div>
-      </div>
-    </section>
-
-    <section class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 lg:col-span-1 xl:col-span-2">
-      <h2 class="font-bold text-indigo-900 mb-2 text-sm">🦷 نوع العمل</h2>
-      <select id="workType" class="w-full p-2 mb-2 border rounded-lg text-sm bg-white">
-        <option value="">اختر...</option><option value="تشخيص عام">تشخيص عام</option><option value="تجميل وتناغم وجه">تجميل وتناغم وجه</option><option value="حشوات تجميلية">حشوات تجميلية</option><option value="علاج عصب">علاج عصب</option><option value="تلبيسات وتركيبات">تلبيسات وتركيبات</option><option value="جراحة وخلع">جراحة وخلع</option><option value="تنظيف اللثة">تنظيف اللثة</option><option value="زراعة الأسنان">زراعة الأسنان</option><option value="تقويم الأسنان">تقويم الأسنان</option><option value="أخرى">أخرى</option>
-      </select>
-      <div class="bg-white p-3 rounded-xl border border-indigo-200">
-        <p class="text-[11px] text-gray-600 mb-1 text-center font-bold">🦷 الفك العلوي</p>
-        <svg id="upperArchSvg" class="dental-arch" viewBox="0 0 400 88" preserveAspectRatio="xMidYMid meet"></svg>
-        <p class="text-[11px] text-gray-600 mb-1 mt-2 text-center font-bold">🦷 الفك السفلي</p>
-        <svg id="lowerArchSvg" class="dental-arch" viewBox="0 40 400 88" preserveAspectRatio="xMidYMid meet"></svg>
-        <p class="text-center text-xs text-blue-700 mt-3 font-bold bg-blue-50 py-1.5 rounded-lg" id="selectedTeethDisplay">الأسنان: لا يوجد</p>
-      </div>
-    </section>
-
-    <section class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-gray-800 text-sm">التشخيص والخطط</h2>
-      <textarea id="complaint" placeholder="الشكوى..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-      <textarea id="treatmentPlan" placeholder="الخطة العلاجية..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-      <textarea id="alternativePlan" placeholder="البديل..." class="w-full p-2 border rounded-lg text-sm bg-white h-14"></textarea>
-    </section>
-
-    <section id="aiAssistantSection" class="rounded-2xl border-2 border-purple-300 shadow-lg overflow-hidden lg:col-span-1 xl:col-span-2">
-      <div class="ai-glow p-3 text-white">
-        <div class="flex items-center justify-between"><h2 class="font-extrabold text-sm">🤖 المساعد الذكي</h2><span id="aiEngineBadge" class="text-[9px] bg-white/25 px-2 py-0.5 rounded-full font-bold">محرك مدمج</span></div>
-      </div>
-      <div class="bg-white p-3 space-y-3">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[10px] text-emerald-800">💡 <strong>تحليل شامل:</strong> يقرأ كل الصور + الأشعة + بيانات المريض ويعطي التشخيص الكامل.</div>
-        <button onclick="generateAIDiagnosis()" id="btnAIDiag" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-xl text-xs font-extrabold shadow-lg">🧠 توليد التشخيص الشامل</button>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="runSmartScanner()" id="btnSmartScanner" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📡 الماسح الذكي</button>
-          <button onclick="openDiagnosisReferences()" class="bg-gradient-to-r from-slate-700 to-gray-800 text-white p-2.5 rounded-xl text-[11px] font-extrabold shadow">📚 مراجع التشخيص</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="clearAIResults()" class="bg-gray-100 text-gray-700 p-2 rounded-xl text-[11px] font-bold">مسح</button>
-          <button onclick="applyAIToForm()" class="bg-emerald-100 text-emerald-800 p-2 rounded-xl text-[11px] font-bold">تطبيق</button>
-        </div>
-        <div id="aiStatus" class="hidden text-[11px] text-center p-2 rounded-lg bg-purple-50 text-purple-700 font-bold"></div>
-        <div id="aiResults" class="hidden space-y-3"></div>
-        <input type="text" id="aiExtraNotes" placeholder="ملاحظات الطبيب..." class="w-full p-2 border rounded-lg text-[11px]">
-      </div>
-    </section>
-
-    <section id="financialSection" class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2 lg:col-span-1">
-      <h2 class="font-bold text-green-900 text-sm">💰 الحسابات المالية للمريض</h2>
-      <input type="number" id="totalAmount" oninput="calculateFinancials()" placeholder="المبلغ الكلي" class="w-full p-2 border rounded-lg text-sm">
-      <div class="grid grid-cols-3 gap-2">
-        <input type="number" id="payment1" oninput="calculateFinancials()" placeholder="دفعة 1" class="w-full p-2 border rounded-lg text-sm">
-        <input type="number" id="payment2" oninput="calculateFinancials()" placeholder="دفعة 2" class="w-full p-2 border rounded-lg text-sm">
-        <input type="number" id="payment3" oninput="calculateFinancials()" placeholder="دفعة 3" class="w-full p-2 border rounded-lg text-sm">
-      </div>
-      <div class="bg-white p-2.5 rounded-lg border flex justify-between items-center"><span class="text-xs font-bold">المتبقي:</span><span id="remainingDisplay" class="text-sm font-bold text-red-600">0 ريال</span></div>
-    </section>
-
-    <section class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-3 lg:col-span-1 xl:col-span-2">
-      <div class="flex items-center justify-between"><h2 class="font-bold text-amber-900 text-sm">📸 صور المريض</h2><span id="imageCounter" class="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">0</span></div>
-      <div class="grid grid-cols-2 gap-2">
-        <label class="flex items-center justify-center gap-1.5 bg-emerald-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">📷 صورة<input type="file" id="clinicalPhotoInput" accept="image/*" multiple class="hidden"></label>
-        <label class="flex items-center justify-center gap-1.5 bg-indigo-600 text-white p-2.5 rounded-xl text-xs font-bold cursor-pointer">🩻 أشعة<input type="file" id="xrayInput" accept="image/*" multiple class="hidden"></label>
-      </div>
-      <div id="imagePreviewContainer" class="grid grid-cols-3 md:grid-cols-4 gap-2"></div>
-    </section>
-
-    <div class="space-y-2 pt-2 lg:col-span-1 xl:col-span-3">
-      <button id="saveBtn" onclick="savePatientRecord()" class="w-full bg-blue-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">💾 حفظ في السحابة</button>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <button onclick="printReport()" class="bg-gray-700 text-white p-3 rounded-xl text-sm font-bold">🖨️ تقرير</button>
-        <button onclick="printInvoice()" class="bg-emerald-700 text-white p-3 rounded-xl text-sm font-bold">🖨️ فاتورة</button>
-        <button onclick="loadPatientByFileNumber()" class="bg-slate-700 text-white p-3 rounded-xl text-sm font-bold">🔎 استرجاع</button>
-        <button onclick="clearForm()" class="bg-amber-600 text-white p-3 rounded-xl text-sm font-bold">🔄 جديد</button>
-      </div>
-      <button onclick="sendWhatsAppNow()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white p-3 rounded-xl text-sm font-bold shadow-lg">📱 إرسال تذكير واتساب</button>
+  <!-- المعمل -->
+  <div id="tab-lab" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <h2 class="font-bold text-blue-900 mb-3">🧪 المعمل</h2>
+      <p class="text-sm text-gray-500 mb-3">إدارة طلبات المعمل</p>
+      <button onclick="openAddLab()" class="bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-bold mb-3">➕ طلب جديد</button>
+      <div id="labList" class="space-y-2"><div class="text-gray-400 text-center py-4">لا توجد طلبات</div></div>
     </div>
-  </main>
+  </div>
 
-  <div id="printableArea" class="hidden p-6 bg-white text-right space-y-4" style="direction:rtl">
-    <div class="text-center border-b-2 border-blue-900 pb-3 mb-4">
-      <div class="clinic-logo w-16 h-16 mx-auto mb-2"></div>
-      <h2 class="font-extrabold text-xl text-blue-900">العيادة التخصصية لطب وجراحة وتقويم الفم والأسنان</h2>
-      <p class="text-sm font-bold text-blue-700 mt-1">د. علي النقيب — NAQClinixAI</p>
+  <!-- التحليل -->
+  <div id="tab-analysis" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <h2 class="font-bold text-blue-900 mb-3">🔬 التحليل الذكي (Gemini AI)</h2>
+      <textarea id="aiInput" rows="5" placeholder="اكتب الحالة الطبية..." class="w-full p-3 border rounded-lg text-sm mb-2"></textarea>
+      <button onclick="runAI()" id="aiBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-bold w-full">🧠 تحليل بالذكاء الاصطناعي</button>
+      <div id="aiOutput" class="bg-blue-50 p-3 rounded-lg text-sm min-h-[100px] mt-3 hidden"></div>
     </div>
-    <div id="printBodyContent" class="text-sm space-y-3"></div>
   </div>
 
-  <footer class="text-center p-3 text-xs text-gray-400 border-t mt-4 no-print">© 2026 NAQClinixAI</footer>
-</div>
-
-<div id="patientsListModal" class="fixed inset-0 bg-black/70 z-[88] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📋 قائمة المرضى</h3><button onclick="closePatientsList()" class="text-gray-400 text-xl">✕</button></div>
-    <input type="text" id="patientsSearch" placeholder="🔍 بحث..." class="w-full p-2 border rounded-lg text-sm" oninput="renderPatientsList()">
-    <div id="patientsListContent" class="space-y-2"></div>
+  <!-- الأرشيف -->
+  <div id="tab-archive" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <h2 class="font-bold text-blue-900 mb-3">🖼️ الأرشيف</h2>
+      <p class="text-gray-400 text-center py-4">قريباً — رفع صور المرضى والأشعة</p>
+    </div>
   </div>
-</div>
 
-<div id="imagesArchiveModal" class="fixed inset-0 bg-black/70 z-[89] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-amber-900 text-base">🖼️ أرشيف الصور</h3><button onclick="closeImagesArchive()" class="text-gray-400 text-xl">✕</button></div>
-    <div id="imagesArchiveContent" class="grid grid-cols-3 md:grid-cols-5 gap-2"></div>
+  <!-- الدردشة -->
+  <div id="tab-chat" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <h2 class="font-bold text-blue-900 mb-3">💬 الدردشة</h2>
+      <div id="chatMessages" class="h-96 overflow-y-auto border rounded-lg p-3 mb-3 space-y-2"></div>
+      <div class="flex gap-2">
+        <input type="text" id="chatInput" placeholder="اكتب رسالة..." class="flex-1 p-2 border rounded-lg text-sm" onkeydown="if(event.key==='Enter')sendChat()">
+        <button onclick="sendChat()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">إرسال</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="revenueChartModal" class="fixed inset-0 bg-black/70 z-[86] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-3xl w-full p-5 space-y-3">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-indigo-900 text-base">📈 مخطط الإيرادات</h3><button onclick="closeRevenueChart()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="bg-white rounded-xl p-3" style="height:400px"><canvas id="revenueChartCanvas"></canvas></div>
+  <!-- لوحة المدير -->
+  <div id="tab-admin" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <h2 class="font-bold text-blue-900 mb-3">👑 لوحة المدير</h2>
+      <div class="grid md:grid-cols-2 gap-3">
+        <button onclick="switchTab('users')" class="p-4 border-2 rounded-lg hover:bg-blue-50 text-right"><div class="text-2xl mb-1">➕</div><div class="font-bold">المستخدمون</div><div class="text-xs text-gray-500">إدارة</div></button>
+        <button onclick="switchTab('activity')" class="p-4 border-2 rounded-lg hover:bg-blue-50 text-right"><div class="text-2xl mb-1">📝</div><div class="font-bold">النشاطات</div><div class="text-xs text-gray-500">سجل كامل</div></button>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="aiSettingsModal" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">🤖 إعدادات AI</h3><button onclick="closeAISettings()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-[11px] text-blue-800 leading-relaxed"><p><strong>المحرك المدمج:</strong> يعمل بدون إنترنت.</p><p class="mt-1"><strong>Gemini Vision:</strong> تحليل حقيقي.</p></div>
-    <div><label class="text-xs font-bold text-gray-700 block mb-1">🔑 مفتاح Gemini:</label><input type="password" id="geminiApiKey" placeholder="AIza... أو AQ..." class="w-full p-2.5 border rounded-lg text-xs bg-gray-50"></div>
-    <div><label class="text-xs font-bold text-gray-700 block mb-1">🧠 المحرك:</label><select id="aiEngine" class="w-full p-2.5 border rounded-lg text-xs bg-white"><option value="auto">تلقائي (Gemini إذا وُجد المفتاح)</option><option value="gemini">Gemini Vision</option><option value="builtin">المحرك المدمج فقط</option></select></div>
-    <div class="flex gap-2"><button onclick="saveAISettings()" class="flex-1 bg-purple-600 text-white p-2.5 rounded-xl text-sm font-bold">حفظ</button><button onclick="testAIConnection()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">اختبار</button></div>
-    <p id="aiSettingsStatus" class="text-[11px] text-center font-bold hidden"></p>
+  <!-- المصروفات -->
+  <div id="tab-expenses" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <h2 class="font-bold text-blue-900 mb-3">💸 المصروفات</h2>
+      <button onclick="openAddExpense()" class="bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-bold mb-3">➕ مصروف</button>
+      <div id="expensesList" class="space-y-2"><div class="text-gray-400 text-center py-4">لا توجد مصروفات</div></div>
+    </div>
   </div>
-</div>
 
-<div id="addUserModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-emerald-900 text-base">➕ إضافة مستخدم</h3><button onclick="closeAddUserModal()" class="text-gray-400 text-xl">✕</button></div>
+  <!-- إعدادات AI -->
+  <div id="tab-aiSettings" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <h2 class="font-bold text-blue-900 mb-3">⚙️ إعدادات AI</h2>
+      <label class="text-sm font-bold block mb-1">🔑 مفتاح Gemini</label>
+      <input type="password" id="geminiKey" class="w-full p-2 border rounded-lg text-sm mb-2" dir="ltr">
+      <button onclick="saveGeminiKey()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">💾 حفظ</button>
+    </div>
+  </div>
+
+  <div id="tab-users" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <button onclick="switchTab('admin')" class="text-sm text-blue-600 mb-3">← رجوع</button>
+      <h2 class="font-bold text-blue-900 mb-3">👥 المستخدمون</h2>
+      <div id="usersList" class="space-y-2"><div class="text-gray-400 text-center py-4">جاري التحميل...</div></div>
+    </div>
+  </div>
+
+  <div id="tab-activity" class="tab-content">
+    <div class="bg-white rounded-xl p-4 shadow">
+      <button onclick="switchTab('admin')" class="text-sm text-blue-600 mb-3">← رجوع</button>
+      <h2 class="font-bold text-blue-900 mb-3">📝 النشاطات</h2>
+      <div id="allActivityList" class="space-y-2"><div class="text-gray-400 text-center py-4">جاري التحميل...</div></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- نافذة إضافة مريض -->
+<div id="addPatientModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-white rounded-xl p-4 w-full max-w-md my-4">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="font-bold text-blue-900">➕ مريض جديد</h3>
+      <button onclick="closeAddPatient()" class="text-2xl">✕</button>
+    </div>
     <div class="space-y-2">
-      <label class="text-xs font-bold text-gray-700 block">اسم المستخدم:</label><input type="text" id="newUsername" placeholder="drmohammed" class="w-full p-2.5 border rounded-lg text-sm" dir="ltr">
-      <label class="text-xs font-bold text-gray-700 block">كلمة المرور:</label><input type="text" id="newPassword" placeholder="كلمة مرور" class="w-full p-2.5 border rounded-lg text-sm">
-      <label class="text-xs font-bold text-gray-700 block">الاسم الكامل:</label><input type="text" id="newFullName" placeholder="د. محمد أحمد" class="w-full p-2.5 border rounded-lg text-sm">
-      <label class="text-xs font-bold text-gray-700 block">الدور:</label><select id="newRole" class="w-full p-2.5 border rounded-lg text-sm bg-white"><option value="doctor">👨‍⚕️ طبيب</option><option value="employee">👨‍💼 موظف</option><option value="admin">👑 مدير</option></select>
+      <input type="text" id="pName" placeholder="الاسم *" class="w-full p-2 border rounded-lg text-sm">
+      <input type="tel" id="pPhone" placeholder="الهاتف" class="w-full p-2 border rounded-lg text-sm">
+      <input type="text" id="pAddress" placeholder="السكن" class="w-full p-2 border rounded-lg text-sm">
+      <select id="pGender" class="w-full p-2 border rounded-lg text-sm">
+        <option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option>
+      </select>
+      <input type="number" id="pAge" placeholder="العمر" class="w-full p-2 border rounded-lg text-sm">
+      <textarea id="pComplaint" placeholder="الشكوى" rows="2" class="w-full p-2 border rounded-lg text-sm"></textarea>
+      <button onclick="savePatient()" class="bg-emerald-600 text-white w-full p-2 rounded-lg font-bold">💾 حفظ</button>
     </div>
-    <div class="flex gap-2 pt-2"><button onclick="addNewUser()" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-xl text-sm font-bold">إضافة</button><button onclick="closeAddUserModal()" class="flex-1 bg-gray-100 text-gray-700 p-2.5 rounded-xl text-sm font-bold">إلغاء</button></div>
-    <p id="addUserStatus" class="text-[11px] text-center font-bold hidden"></p>
   </div>
 </div>
 
-<div id="activityModal" class="fixed inset-0 bg-black/70 z-[80] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-blue-900 text-base">📝 سجل النشاطات</h3><button onclick="closeActivityLog()" class="text-gray-400 text-xl">✕</button></div>
-    <div id="activityList" class="space-y-2 text-xs"></div>
+<!-- نافذة إضافة معمل -->
+<div id="addLabModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-xl p-4 w-full max-w-md">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="font-bold text-blue-900">🧪 طلب معمل</h3>
+      <button onclick="closeAddLab()" class="text-2xl">✕</button>
+    </div>
+    <div class="space-y-2">
+      <input type="text" id="labPatient" placeholder="اسم المريض" class="w-full p-2 border rounded-lg text-sm">
+      <input type="text" id="labWork" placeholder="نوع العمل" class="w-full p-2 border rounded-lg text-sm">
+      <input type="date" id="labDate" class="w-full p-2 border rounded-lg text-sm">
+      <textarea id="labNotes" placeholder="ملاحظات" rows="2" class="w-full p-2 border rounded-lg text-sm"></textarea>
+      <button onclick="saveLab()" class="bg-purple-600 text-white w-full p-2 rounded-lg font-bold">💾 حفظ</button>
+    </div>
   </div>
 </div>
 
-<div id="dailyReportModal" class="fixed inset-0 bg-black/70 z-[85] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-cyan-900 text-base">📊 تقرير اليوم</h3><button onclick="closeDailyReport()" class="text-gray-400 text-xl">✕</button></div>
-    <div id="dailyReportContent" class="space-y-3"></div>
+<!-- نافذة إضافة مصروف -->
+<div id="addExpenseModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-xl p-4 w-full max-w-md">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="font-bold text-blue-900">💸 مصروف جديد</h3>
+      <button onclick="closeAddExpense()" class="text-2xl">✕</button>
+    </div>
+    <div class="space-y-2">
+      <input type="text" id="expDesc" placeholder="الوصف" class="w-full p-2 border rounded-lg text-sm">
+      <input type="number" id="expAmount" placeholder="المبلغ" class="w-full p-2 border rounded-lg text-sm">
+      <input type="date" id="expDate" class="w-full p-2 border rounded-lg text-sm">
+      <button onclick="saveExpense()" class="bg-red-600 text-white w-full p-2 rounded-lg font-bold">💾 حفظ</button>
+    </div>
   </div>
 </div>
-
-<div id="monthlyReportModal" class="fixed inset-0 bg-black/70 z-[85] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-purple-900 text-base">📅 التقرير الشهري</h3><button onclick="closeMonthlyReport()" class="text-gray-400 text-xl">✕</button></div>
-    <div class="flex gap-2"><input type="month" id="reportMonth" class="flex-1 p-2 border rounded-lg text-sm"><button onclick="generateMonthlyReport()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">عرض</button></div>
-    <div id="monthlyReportContent" class="space-y-3"></div>
-  </div>
-</div>
-
-<div id="refsModal" class="fixed inset-0 bg-black/70 z-[90] hidden items-center justify-center p-4 no-print">
-  <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between"><h3 class="font-bold text-slate-900 text-base">📚 مراجع التشخيص</h3><button onclick="closeDiagnosisReferences()" class="text-gray-400 text-xl">✕</button></div>
-    <div id="refsContent" class="space-y-3"></div>
-  </div>
-</div>
-
-<div id="lightbox" class="fixed inset-0 bg-black/90 z-[60] hidden items-center justify-center p-4 no-print" onclick="closeLightbox()"><img id="lightboxImg" class="max-w-full max-h-full rounded-xl"></div>
 
 <script>
 const firebaseConfig = {
@@ -315,547 +259,273 @@ const firebaseConfig = {
   appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
 };
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.firestore();
-let storage = null;
-try { storage = firebase.storage(); } catch (e) {}
 
 let currentUser = null;
+let currentUserData = null;
+let geminiApiKey = "";
+let allPatients = [];
 
-async function login() {
-  const username = document.getElementById('loginUsername').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value;
-  const errEl = document.getElementById('loginError');
-  const btn = document.getElementById('loginBtn');
-  errEl.classList.add('hidden');
-  if (!username || !password) { errEl.textContent = '⚠️ أدخل البيانات'; errEl.classList.remove('hidden'); return; }
+auth.onAuthStateChanged(async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUser = user;
+  try {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if (userDoc.exists) currentUserData = userDoc.data();
+    else {
+      currentUserData = { name: user.displayName || user.email.split('@')[0], email: user.email, role: 'doctor' };
+      await db.collection('users').doc(user.uid).set({ ...currentUserData, uid: user.uid, createdAt: new Date() });
+    }
+  } catch (e) { currentUserData = { name: user.email, role: 'doctor' }; }
+
+  document.getElementById('userName').textContent = currentUserData.name || user.email;
+  document.getElementById('userRole').textContent = currentUserData.role === 'owner' ? '👑 المالك' : '👨‍⚕️ ' + (currentUserData.role || 'طبيب');
+  document.getElementById('loadingScreen').style.display = 'none';
+
+  loadDashboard();
+  loadPatients();
+  loadGeminiKey();
+});
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('hidden');
+  document.getElementById('overlay').classList.toggle('hidden');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab)?.classList.add('active');
+  document.getElementById('sidebar').classList.add('hidden');
+  document.getElementById('overlay').classList.add('hidden');
+  if (tab === 'admin') loadAdmin();
+  if (tab === 'activity') loadAllActivity();
+  if (tab === 'users') loadUsers();
+  if (tab === 'expenses') loadExpenses();
+  if (tab === 'lab') loadLab();
+}
+
+async function logout() {
+  if (confirm('تسجيل الخروج؟')) { await auth.signOut(); window.location.href = 'login.html'; }
+}
+
+async function loadDashboard() {
+  try {
+    const ps = await db.collection('patients').get();
+    document.getElementById('statPatients').textContent = ps.size;
+    const as = await db.collection('activity').orderBy('timestamp', 'desc').limit(5).get();
+    const list = document.getElementById('activityList');
+    if (as.empty) list.innerHTML = '<div class="text-gray-400 text-center py-4">لا توجد نشاطات</div>';
+    else {
+      list.innerHTML = '';
+      as.forEach(doc => {
+        const d = doc.data();
+        const div = document.createElement('div');
+        div.className = 'p-2 bg-gray-50 rounded-lg';
+        div.textContent = `${d.username || 'مستخدم'}: ${d.action || ''}`;
+        list.appendChild(div);
+      });
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function loadPatients() {
+  try {
+    const snap = await db.collection('patients').orderBy('createdAt', 'desc').limit(200).get();
+    allPatients = [];
+    snap.forEach(doc => allPatients.push({ id: doc.id, ...doc.data() }));
+    filterPatients();
+  } catch (e) { console.error(e); }
+}
+
+function filterPatients() {
+  const term = (document.getElementById('patientSearch')?.value || '').toLowerCase();
+  const list = document.getElementById('patientsList');
+  const filtered = allPatients.filter(p => !term || (p.name || '').toLowerCase().includes(term) || (p.phone || '').includes(term));
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="text-gray-400 text-center py-4">لا يوجد مرضى</div>';
+    return;
+  }
+  list.innerHTML = '';
+  filtered.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'p-3 border rounded-lg hover:bg-gray-50 cursor-pointer';
+    div.innerHTML = `<div class="font-bold text-sm">${p.name || 'بدون اسم'}</div><div class="text-xs text-gray-500">${p.phone || ''} • ${p.gender || ''} • ${p.age || ''}</div>`;
+    list.appendChild(div);
+  });
+}
+
+function openAddPatient() {
+  document.getElementById('addPatientModal').classList.remove('hidden');
+  document.getElementById('addPatientModal').classList.add('flex');
+}
+function closeAddPatient() {
+  document.getElementById('addPatientModal').classList.add('hidden');
+  document.getElementById('addPatientModal').classList.remove('flex');
+}
+async function savePatient() {
+  const name = document.getElementById('pName').value.trim();
+  if (!name) return alert('الاسم مطلوب');
+  try {
+    await db.collection('patients').add({
+      name, phone: document.getElementById('pPhone').value,
+      address: document.getElementById('pAddress').value,
+      gender: document.getElementById('pGender').value,
+      age: document.getElementById('pAge').value,
+      complaint: document.getElementById('pComplaint').value,
+      clinicId: currentUserData.clinicId || 'CLN-MAIN-001',
+      createdAt: new Date(), createdBy: currentUser.uid
+    });
+    closeAddPatient();
+    loadPatients(); loadDashboard();
+  } catch (e) { alert('خطأ: ' + e.message); }
+}
+
+async function runAI() {
+  const input = document.getElementById('aiInput').value.trim();
+  if (!input) return alert('اكتب الحالة أولاً');
+  if (!geminiApiKey) return alert('أضف مفتاح Gemini من الإعدادات');
+  const btn = document.getElementById('aiBtn');
   btn.disabled = true; btn.textContent = '⏳...';
   try {
-    let user = null;
-    const direct = await db.collection('users').doc(username).get();
-    if (direct.exists) user = direct.data();
-    else { const s = await db.collection('users').where('username', '==', username).limit(1).get(); if (!s.empty) user = s.docs[0].data(); }
-    if (!user) { errEl.textContent = '❌ غير موجود'; errEl.classList.remove('hidden'); return; }
-    if (user.password !== password) { errEl.textContent = '❌ كلمة المرور خطأ'; errEl.classList.remove('hidden'); return; }
-    if (user.active === false) { errEl.textContent = '🚫 موقوف'; errEl.classList.remove('hidden'); return; }
-    currentUser = { username: user.username || username, fullName: user.fullName || username, role: user.role || 'employee' };
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    try { await db.collection('activity').add({ username: currentUser.username, fullName: currentUser.fullName, role: currentUser.role, action: 'تسجيل دخول', timestamp: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
-    document.getElementById('loginOverlay').style.display = 'none';
-    applyPermissions(); updateUserBar(); showWelcome();
-    if (currentUser.role === 'admin') loadUsersList();
-  } catch (err) { errEl.textContent = '❌ ' + err.message; errEl.classList.remove('hidden'); }
-  finally { btn.disabled = false; btn.textContent = 'دخول النظام'; }
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: `أنت مساعد طبي لطبيب أسنان. حلل: ${input}` }] }] })
+    });
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || JSON.stringify(data);
+    const out = document.getElementById('aiOutput');
+    out.textContent = text; out.classList.remove('hidden');
+  } catch (e) { alert('خطأ: ' + e.message); }
+  btn.disabled = false; btn.textContent = '🧠 تحليل';
 }
 
-function logout() {
-  if (!confirm('تسجيل الخروج؟')) return;
-  try { if (currentUser) db.collection('activity').add({ username: currentUser.username, fullName: currentUser.fullName, role: currentUser.role, action: 'تسجيل خروج', timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {}); } catch (e) {}
-  localStorage.removeItem('currentUser'); location.reload();
+function loadGeminiKey() {
+  geminiApiKey = localStorage.getItem('gemini_key') || '';
+  document.getElementById('geminiKey').value = geminiApiKey;
+}
+function saveGeminiKey() {
+  geminiApiKey = document.getElementById('geminiKey').value.trim();
+  localStorage.setItem('gemini_key', geminiApiKey);
+  alert('✅ تم الحفظ');
 }
 
-function applyPermissions() {
-  if (!currentUser) return;
-  const role = currentUser.role;
-  const hideElements = (ids) => ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-  if (role === 'employee') hideElements(['adminPanelSection', 'aiAssistantSection']);
-  else if (role === 'doctor') hideElements(['adminPanelSection']);
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const list = document.getElementById('chatMessages');
+  const msg = document.createElement('div');
+  msg.className = 'p-2 bg-blue-100 rounded-lg text-sm';
+  msg.textContent = text;
+  list.appendChild(msg);
+  input.value = ''; list.scrollTop = list.scrollHeight;
 }
 
-function updateUserBar() {
-  if (!currentUser) return;
-  const bar = document.getElementById('userBar');
-  bar.classList.remove('hidden');
-  const roleLabel = currentUser.role === 'admin' ? '👑 مدير' : currentUser.role === 'doctor' ? '👨‍⚕️ طبيب' : '👨‍💼 موظف';
-  document.getElementById('userBarName').textContent = currentUser.fullName;
-  document.getElementById('userBarRole').textContent = roleLabel;
-}
-
-function showWelcome() {
-  if (!currentUser) return;
-  const w = document.getElementById('welcomeBar');
-  w.textContent = `👋 مرحباً ${currentUser.fullName}`;
-  w.classList.remove('hidden');
-  setTimeout(() => w.classList.add('hidden'), 4000);
-}
-
-window.addEventListener('load', () => {
-  try {
-    const s = localStorage.getItem('currentUser');
-    if (s) {
-      currentUser = JSON.parse(s);
-      document.getElementById('loginOverlay').style.display = 'none';
-      applyPermissions(); updateUserBar();
-      if (currentUser.role === 'admin') loadUsersList();
-    }
-  } catch (e) {}
-});
-
-function sendWhatsAppNow() {
-  const name = document.getElementById('patientName').value.trim();
-  const phone = document.getElementById('whatsappPhone').value.trim() || document.getElementById('patientPhone').value.trim();
-  if (!name || !phone) { alert('⚠️ أدخل الاسم والهاتف'); return; }
-  const clean = phone.replace(/\D/g, '');
-  const intlPhone = clean.startsWith('967') ? clean : '967' + clean.replace(/^0/, '');
-  const msg = 'مرحباً ' + name + '\n\nنذكّركم بموعد زيارتكم في العيادة التخصصية لطب وجراحة وتقويم الفم والأسنان\n\n📍 أب - ميتم - سوق الثلوث\n📞 777700412';
-  window.open('https://wa.me/' + intlPhone + '?text=' + encodeURIComponent(msg), '_blank');
-}
-
-async function loadUsersList() {
-  const c = document.getElementById('usersList'); if (!c) return;
+async function loadUsers() {
   try {
     const snap = await db.collection('users').get();
-    let html = '<p class="text-[11px] font-bold text-amber-900 mb-1">👥 المستخدمون:</p>';
+    const list = document.getElementById('usersList');
+    list.innerHTML = '';
     snap.forEach(doc => {
-      const u = doc.data();
-      const ri = u.role === 'admin' ? '👑' : u.role === 'doctor' ? '👨‍⚕️' : '👨‍💼';
-      html += `<div class="bg-white border rounded-lg p-2"><p class="text-xs font-bold">${ri} ${u.fullName || doc.id}</p><p class="text-[10px] text-gray-500">@${u.username || doc.id}</p></div>`;
+      const d = doc.data();
+      const div = document.createElement('div');
+      div.className = 'p-3 border rounded-lg';
+      div.innerHTML = `<div class="font-bold text-sm">${d.name || d.email}</div><div class="text-xs text-gray-500">${d.role || ''}</div>`;
+      list.appendChild(div);
     });
-    c.innerHTML = html;
-  } catch (e) { c.innerHTML = 'فشل'; }
+  } catch (e) { console.error(e); }
 }
 
-function toggleAdminPanel() { const c = document.getElementById('adminPanelContent'), t = document.getElementById('adminPanelToggle'); if (c.style.display === 'none') { c.style.display = 'block'; t.textContent = 'إخفاء'; } else { c.style.display = 'none'; t.textContent = 'إظهار'; } }
-function openAddUserModal() { document.getElementById('addUserModal').classList.remove('hidden'); document.getElementById('addUserModal').classList.add('flex'); }
-function closeAddUserModal() { document.getElementById('addUserModal').classList.add('hidden'); document.getElementById('addUserModal').classList.remove('flex'); }
-
-async function addNewUser() {
-  const u = document.getElementById('newUsername').value.trim().toLowerCase();
-  const p = document.getElementById('newPassword').value.trim();
-  const f = document.getElementById('newFullName').value.trim();
-  const r = document.getElementById('newRole').value;
-  const s = document.getElementById('addUserStatus');
-  if (!u || !p || !f) { s.textContent = '⚠️ أكمل'; s.classList.remove('hidden'); return; }
-  try {
-    await db.collection('users').doc(u).set({ username: u, password: p, fullName: f, role: r, active: true, createdAt: Date.now() });
-    s.textContent = '✅ تم'; s.className = 'text-[11px] text-center font-bold text-emerald-600'; s.classList.remove('hidden');
-    setTimeout(() => { closeAddUserModal(); loadUsersList(); }, 1500);
-  } catch (e) { s.textContent = '❌ ' + e.message; s.classList.remove('hidden'); }
-}
-
-async function openActivityLog() {
-  const m = document.getElementById('activityModal'); m.classList.remove('hidden'); m.classList.add('flex');
-  const list = document.getElementById('activityList'); list.innerHTML = '...';
+async function loadAllActivity() {
   try {
     const snap = await db.collection('activity').orderBy('timestamp', 'desc').limit(50).get();
-    let html = '';
-    snap.forEach(doc => { const a = doc.data(); const t = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleString('ar-YE') : '-'; html += `<div class="bg-gray-50 border rounded-lg p-2"><p class="font-bold">${a.action}</p><p class="text-[10px]">👤 ${a.fullName || a.username} • ${t}</p></div>`; });
-    list.innerHTML = html || 'لا يوجد';
-  } catch (e) { list.innerHTML = 'فشل'; }
+    const list = document.getElementById('allActivityList');
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const div = document.createElement('div');
+      div.className = 'p-2 border-b text-sm';
+      div.textContent = `${d.username || ''}: ${d.action || ''}`;
+      list.appendChild(div);
+    });
+  } catch (e) { console.error(e); }
 }
-function closeActivityLog() { document.getElementById('activityModal').classList.add('hidden'); document.getElementById('activityModal').classList.remove('flex'); }
 
-let allPatientsCache = [];
-async function openPatientsList() {
-  const m = document.getElementById('patientsListModal'); m.classList.remove('hidden'); m.classList.add('flex');
-  const c = document.getElementById('patientsListContent'); c.innerHTML = '...';
+async function loadLab() {
   try {
-    const snap = await db.collection('patients').get();
-    allPatientsCache = [];
-    snap.forEach(doc => allPatientsCache.push({ id: doc.id, ...doc.data() }));
-    allPatientsCache.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-    renderPatientsList();
-  } catch (e) { c.innerHTML = 'فشل'; }
+    const snap = await db.collection('lab').orderBy('createdAt', 'desc').limit(50).get();
+    const list = document.getElementById('labList');
+    if (snap.empty) { list.innerHTML = '<div class="text-gray-400 text-center py-4">لا توجد طلبات</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const div = document.createElement('div');
+      div.className = 'p-3 border rounded-lg';
+      div.innerHTML = `<div class="font-bold text-sm">${d.patient || ''}</div><div class="text-xs text-gray-500">${d.work || ''}</div>`;
+      list.appendChild(div);
+    });
+  } catch (e) { console.error(e); }
 }
-function closePatientsList() { document.getElementById('patientsListModal').classList.add('hidden'); document.getElementById('patientsListModal').classList.remove('flex'); }
-function renderPatientsList() {
-  const c = document.getElementById('patientsListContent');
-  const search = (document.getElementById('patientsSearch').value || '').trim().toLowerCase();
-  let list = allPatientsCache.slice();
-  if (search) list = list.filter(p => (p.fullName || '').toLowerCase().includes(search) || (p.phone || '').includes(search));
-  if (list.length === 0) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا نتائج</p>'; return; }
-  let html = '';
-  list.forEach((p, i) => {
-    html += `<div class="bg-white border rounded-xl p-3"><p class="font-bold text-sm">${i + 1}. ${escapeHtml(p.fullName || '-')}</p><p class="text-[10px] text-gray-500">${p.fileNumber || ''} • ${p.phone || '-'}</p><button onclick="loadPatientFromList('${p.id}')" class="w-full mt-2 bg-slate-100 text-slate-700 p-1.5 rounded-lg text-[10px] font-bold">📂 فتح</button></div>`;
-  });
-  c.innerHTML = html;
+
+function openAddLab() {
+  document.getElementById('addLabModal').classList.remove('hidden');
+  document.getElementById('addLabModal').classList.add('flex');
 }
-async function loadPatientFromList(pid) {
-  closePatientsList();
+function closeAddLab() {
+  document.getElementById('addLabModal').classList.add('hidden');
+  document.getElementById('addLabModal').classList.remove('flex');
+}
+async function saveLab() {
   try {
-    const doc = await db.collection('patients').doc(pid).get();
-    if (!doc.exists) { alert('غير موجود'); return; }
-    const d = doc.data();
-    document.getElementById('fileNumber').value = d.fileNumber || pid;
-    document.getElementById('patientName').value = d.fullName || '';
-    document.getElementById('patientGender').value = d.gender || '';
-    document.getElementById('patientAge').value = d.age || '';
-    document.getElementById('patientAddress').value = d.address || '';
-    document.getElementById('patientPhone').value = d.phone || '';
-    document.getElementById('patientAllergies').value = d.allergies || '';
-    document.getElementById('chronicDiseases').value = d.chronic || '';
-    document.getElementById('workType').value = d.workType || '';
-    document.getElementById('complaint').value = d.complaint || '';
-    document.getElementById('treatmentPlan').value = d.treatmentPlan || '';
-    alert('✅ ' + (d.fullName || pid));
-  } catch (e) { alert('فشل'); }
+    await db.collection('lab').add({
+      patient: document.getElementById('labPatient').value,
+      work: document.getElementById('labWork').value,
+      date: document.getElementById('labDate').value,
+      notes: document.getElementById('labNotes').value,
+      createdAt: new Date(), createdBy: currentUser.uid
+    });
+    closeAddLab(); loadLab();
+  } catch (e) { alert('خطأ: ' + e.message); }
 }
 
-function renderLogos() { const c = localStorage.getItem('clinicLogo'); const html = c ? '<img src="' + c + '">' : '<svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0a1e3f"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="#a8c8e8">🦷</text></svg>'; document.querySelectorAll('.clinic-logo').forEach(el => { el.innerHTML = html; }); }
-document.getElementById('logoInput')?.addEventListener('change', async function (e) {
-  const file = e.target.files[0]; if (!file) return;
-  try { const d = await compressImage(file, 500, 0.92); localStorage.setItem('clinicLogo', d); renderLogos(); } catch (err) {}
-  e.target.value = '';
-});
-
-function compressImage(file, maxDim, quality) {
-  maxDim = maxDim || 1200; quality = quality || 0.75;
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
-        else if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
-        const c = document.createElement('canvas'); c.width = w; c.height = h;
-        const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
-        resolve(c.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = reject; img.src = ev.target.result;
-    };
-    reader.onerror = reject; reader.readAsDataURL(file);
-  });
-}
-
-let selectedTeeth = [];
-const SHAPES = { central: 'M 3,3 C 7,-1 17,-1 21,3 L 22.5,7 C 22,18 22,26 21.5,33 C 19,39 16.5,41 12,41 C 7.5,41 5,39 2.5,33 C 2,26 2,18 1.5,7 Z', lateral: 'M 5,4 C 8,0.5 16,0.5 19,4 L 21,8 C 20.5,18 20.5,26 20,32 C 17.5,38 15,40 12,40 C 9,40 6.5,38 4,32 C 3.5,26 3.5,18 3,8 Z', canine: 'M 4,3 C 8,-0.5 16,-0.5 20,3 L 22,8 C 21,14 19,20 17,25 L 12,42 L 7,25 C 5,20 3,14 2,8 Z', premolar: 'M 3,5 C 6,1 9,2 12,2.5 C 15,2 18,1 21,5 L 22.5,9 C 22,17 21,25 20,30 C 17.5,38 14.5,39.5 12,39.5 C 9.5,39.5 6.5,38 4,30 C 3,25 2,17 1.5,9 Z', molar: 'M 1.5,6 C 4,2 7,2.5 9.5,3 C 11,2 13,2 14.5,3 C 17,2.5 20,2 22.5,6 L 24,10 C 23.5,18 22.5,25 21,29 C 18,38 15,39.5 12,39.5 C 9,39.5 6,38 3,29 C 1.5,25 0.5,18 0,10 Z' };
-const TYPES = { 18:'molar',17:'molar',16:'molar',15:'premolar',14:'premolar',13:'canine',12:'lateral',11:'central',21:'central',22:'lateral',23:'canine',24:'premolar',25:'premolar',26:'molar',27:'molar',28:'molar',48:'molar',47:'molar',46:'molar',45:'premolar',44:'premolar',43:'canine',42:'lateral',41:'central',31:'central',32:'lateral',33:'canine',34:'premolar',35:'premolar',36:'molar',37:'molar',38:'molar' };
-const UPPER = [{t:18,x:6,y:16,s:.8},{t:17,x:30,y:11,s:.88},{t:16,x:54,y:8,s:.95},{t:15,x:79,y:12,s:.82},{t:14,x:103,y:18,s:.82},{t:13,x:127,y:25,s:.9},{t:12,x:151,y:32,s:.82},{t:11,x:176,y:38,s:1},{t:21,x:200,y:38,s:1},{t:22,x:225,y:32,s:.82},{t:23,x:249,y:25,s:.9},{t:24,x:273,y:18,s:.82},{t:25,x:297,y:12,s:.82},{t:26,x:322,y:8,s:.95},{t:27,x:346,y:11,s:.88},{t:28,x:370,y:16,s:.8}];
-const LOWER = [{t:48,x:6,y:56,s:.8},{t:47,x:30,y:51,s:.88},{t:46,x:54,y:48,s:.95},{t:45,x:79,y:52,s:.82},{t:44,x:103,y:58,s:.82},{t:43,x:127,y:65,s:.9},{t:42,x:151,y:72,s:.82},{t:41,x:176,y:78,s:1},{t:31,x:200,y:78,s:1},{t:32,x:225,y:72,s:.82},{t:33,x:249,y:65,s:.9},{t:34,x:273,y:58,s:.82},{t:35,x:297,y:52,s:.82},{t:36,x:322,y:48,s:.95},{t:37,x:346,y:51,s:.88},{t:38,x:370,y:56,s:.8}];
-
-function buildTooth(e, isL) { const sh = SHAPES[TYPES[e.t]]; const f = isL ? ' transform="translate(0,41) scale(1,-1)"' : ''; return '<g class="tooth" data-tooth="' + e.t + '" transform="translate(' + e.x + ',' + e.y + ') scale(' + e.s + ')"><path class="crown" d="' + sh + '"' + f + '/><text class="num" x="12" y="24">' + e.t + '</text></g>'; }
-function renderDentalChart() {
-  const defs = '<defs><linearGradient id="toothGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient><linearGradient id="toothGradHover" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#eef2ff"/><stop offset="100%" stop-color="#c7d2fe"/></linearGradient><linearGradient id="toothGradSel" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient></defs>';
-  document.getElementById('upperArchSvg').innerHTML = defs + UPPER.map(e => buildTooth(e, false)).join('');
-  document.getElementById('lowerArchSvg').innerHTML = defs + LOWER.map(e => buildTooth(e, true)).join('');
-  document.querySelectorAll('.tooth').forEach(g => g.addEventListener('click', () => toggleTooth(g)));
-}
-function toggleTooth(g) { const n = parseInt(g.dataset.tooth, 10); const i = selectedTeeth.indexOf(n); if (i > -1) { selectedTeeth.splice(i, 1); g.classList.remove('selected'); } else { selectedTeeth.push(n); g.classList.add('selected'); } document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: ' + (selectedTeeth.length ? selectedTeeth.join(' • ') : 'لا يوجد'); }
-
-const currentDate = new Date().toLocaleDateString('ar-YE');
-document.getElementById('registrationDateDisplay').value = currentDate;
-function generateFileNumber() { document.getElementById('fileNumber').value = 'DR-' + Date.now().toString().slice(-6); }
-function getTodayKey() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-function getCurrentMonthKey() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
-
-let clinicImages = [];
-function renderGallery() {
-  const c = document.getElementById('imagePreviewContainer');
-  document.getElementById('imageCounter').textContent = clinicImages.length + ' صورة';
-  if (!clinicImages.length) { c.innerHTML = '<div class="col-span-3 text-center text-[11px] text-amber-700/60 py-4 border border-dashed border-amber-300 rounded-xl">لا توجد صور</div>'; return; }
-  c.innerHTML = clinicImages.map((img, i) => '<div class="relative rounded-xl overflow-hidden border border-amber-200 bg-white shadow-sm"><img src="' + img.dataUrl + '" onclick="openLightbox(' + i + ')" class="w-full h-24 object-cover cursor-zoom-in"><span class="absolute top-1 right-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold text-white ' + (img.type === 'أشعة' ? 'bg-indigo-600' : 'bg-emerald-600') + '">' + img.type + '</span><button onclick="removeImage(' + i + ')" class="absolute top-1 left-1 w-5 h-5 bg-red-600 text-white rounded-full text-[10px]">✕</button></div>').join('');
-}
-function removeImage(i) { if (confirm('حذف؟')) { clinicImages.splice(i, 1); renderGallery(); } }
-function openLightbox(i) { const img = clinicImages[i]; if (!img) return; document.getElementById('lightboxImg').src = img.dataUrl; const lb = document.getElementById('lightbox'); lb.classList.remove('hidden'); lb.classList.add('flex'); }
-function closeLightbox() { document.getElementById('lightbox').classList.add('hidden'); document.getElementById('lightbox').classList.remove('flex'); }
-async function handleImageFiles(files, type) {
-  const list = Array.from(files).slice(0, 10);
-  if (clinicImages.length + list.length > 12) { alert('الحد 12'); return; }
-  for (const f of list) {
-    try { const d = await compressImage(f, 1000, 0.7); clinicImages.push({ id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), dataUrl: d, type, date: currentDate }); } catch (e) {}
-  }
-  renderGallery();
-}
-document.getElementById('clinicalPhotoInput').addEventListener('change', e => { handleImageFiles(e.target.files, 'سريرية'); e.target.value = ''; });
-document.getElementById('xrayInput').addEventListener('change', e => { handleImageFiles(e.target.files, 'أشعة'); e.target.value = ''; });
-
-function calculateFinancials() {
-  const t = parseFloat(document.getElementById('totalAmount').value) || 0;
-  const p1 = parseFloat(document.getElementById('payment1').value) || 0;
-  const p2 = parseFloat(document.getElementById('payment2').value) || 0;
-  const p3 = parseFloat(document.getElementById('payment3').value) || 0;
-  document.getElementById('remainingDisplay').textContent = (t - (p1 + p2 + p3)) + ' ريال';
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 🤖 AI — النسخ الأصلية (تعمل)
-// ═══════════════════════════════════════════════════════════════
-function getAIEngine() { const m = document.getElementById('aiEngine') ? document.getElementById('aiEngine').value : 'auto'; const k = !!getGeminiKey(); if (m === 'auto') return k ? 'gemini' : 'builtin'; return m; }
-function getGeminiKey() { return (localStorage.getItem('geminiApiKey') || '').trim(); }
-async function callGeminiAPI(key, model, body) {
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
-  const headers = { 'Content-Type': 'application/json' };
-  if (key.startsWith('AQ.')) { headers['x-goog-api-key'] = key; return await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) }); }
-  return await fetch(url + '?key=' + key, { method: 'POST', headers, body: JSON.stringify(body) });
-}
-
-async function generateAIDiagnosis() {
-  const work = document.getElementById('workType').value;
-  if (!selectedTeeth.length && !work && !clinicImages.length) { alert('حدد البيانات'); return; }
-  const status = document.getElementById('aiStatus');
-  const results = document.getElementById('aiResults');
-  const btn = document.getElementById('btnAIDiag');
-  btn.disabled = true; status.classList.remove('hidden'); status.innerHTML = '<span class="ai-typing">🧠 تحليل</span>'; results.classList.add('hidden');
-  const key = getGeminiKey();
-  const engine = getAIEngine();
-  if (engine === 'builtin' || !key) { setTimeout(() => { runBuiltinDiagnosis(); btn.disabled = false; }, 300); }
-  else { await runGeminiFullDiagnosis(); }
-}
-
-function runBuiltinDiagnosis() {
-  const work = document.getElementById('workType').value || 'تشخيص عام';
-  const age = document.getElementById('patientAge').value;
-  let diag = '🔍 التشخيص:\n• نوع العمل: ' + work + '\n';
-  if (selectedTeeth.length) diag += '• الأسنان: ' + selectedTeeth.join(', ') + '\n';
-  if (age) diag += '• العمر: ' + age + '\n';
-  let plan = '🦷 الخطة:\n1. فحص شامل\n2. أشعة\n3. علاج\n4. متابعة';
-  renderAIResults('محرك مدمج', diag, plan, '—');
-}
-
-async function runGeminiFullDiagnosis() {
-  const key = getGeminiKey(); if (!key) { runBuiltinDiagnosis(); return; }
-  const age = document.getElementById('patientAge').value || 'غير محدد';
-  const work = document.getElementById('workType').value || 'تشخيص عام';
-  const teethList = selectedTeeth.length ? selectedTeeth.join(', ') : 'غير محددة';
-  const prompt = 'أنت استشاري طب أسنان. المريض: العمر ' + age + '، العمل ' + work + '، الأسنان ' + teethList + '.\n\nأعطِ:\n1) التشخيص\n2) الخطة\n3) البديل';
-  const parts = [{ text: prompt }];
-  for (const img of clinicImages.slice(0, 6)) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.dataUrl.split(',')[1] } });
-  const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
-  for (const model of models) {
-    try {
-      const resp = await callGeminiAPI(key, model, { contents: [{ parts }] });
-      if (!resp.ok) continue;
-      const data = await resp.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      if (!text) continue;
-      const sections = parseGeminiFullReport(text);
-      renderAIResults('Gemini AI', sections.diag, sections.plan, sections.alt);
-      document.getElementById('btnAIDiag').disabled = false; return;
-    } catch (err) {}
-  }
-  runBuiltinDiagnosis();
-  document.getElementById('btnAIDiag').disabled = false;
-}
-
-function parseGeminiFullReport(text) {
-  const lines = text.split('\n');
-  let current = 'diag';
-  const d = [], p = [], a = [];
-  lines.forEach(line => {
-    const t = line.trim();
-    if (/(?:الخطة|خيارات|Treatment)/i.test(t) && t.length < 100) current = 'plan';
-    if (/(?:البديل|المخاطر)/i.test(t) && t.length < 100) current = 'alt';
-    if (current === 'diag') d.push(line);
-    else if (current === 'plan') p.push(line);
-    else a.push(line);
-  });
-  let diag = d.join('\n').trim(), plan = p.join('\n').trim(), alt = a.join('\n').trim();
-  if (!plan && !alt) { diag = text; plan = '—'; alt = '—'; } else if (!alt) alt = '—';
-  return { diag, plan, alt };
-}
-
-function renderAIResults(engineName, diag, plan, alt) {
-  const status = document.getElementById('aiStatus');
-  const results = document.getElementById('aiResults');
-  status.innerHTML = '✅ ' + engineName;
-  status.className = 'text-[11px] text-center p-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold';
-  window.__aiResults = { diag, plan, alt, engine: engineName };
-  const box = (title, content, color) => '<div class="bg-' + color + '-50 border border-' + color + '-200 rounded-xl p-3"><p class="font-extrabold text-' + color + '-900 text-xs mb-1.5">' + title + '</p><div class="text-[11px] whitespace-pre-wrap">' + content + '</div></div>';
-  results.innerHTML = box('🔍 التشخيص', diag, 'blue') + box('🦷 الخطة', plan, 'emerald') + box('🔄 البديل', alt, 'amber');
-  results.classList.remove('hidden');
-}
-function clearAIResults() { document.getElementById('aiResults').classList.add('hidden'); document.getElementById('aiResults').innerHTML = ''; document.getElementById('aiStatus').classList.add('hidden'); window.__aiResults = null; }
-function applyAIToForm() {
-  if (!window.__aiResults) { alert('لا نتائج'); return; }
-  document.getElementById('complaint').value = window.__aiResults.diag;
-  document.getElementById('treatmentPlan').value = window.__aiResults.plan;
-  document.getElementById('alternativePlan').value = window.__aiResults.alt;
-  alert('✅');
-}
-function runSmartScanner() { alert('الماسح يحتاج مفتاح Gemini'); }
-
-function openAISettings() { document.getElementById('geminiApiKey').value = getGeminiKey(); document.getElementById('aiEngine').value = localStorage.getItem('aiEngine') || 'auto'; const m = document.getElementById('aiSettingsModal'); m.classList.remove('hidden'); m.classList.add('flex'); }
-function closeAISettings() { document.getElementById('aiSettingsModal').classList.add('hidden'); document.getElementById('aiSettingsModal').classList.remove('flex'); }
-
-function saveAISettings() {
-  const k = document.getElementById('geminiApiKey').value.trim();
-  const e = document.getElementById('aiEngine').value;
-  if (k) localStorage.setItem('geminiApiKey', k); else localStorage.removeItem('geminiApiKey');
-  localStorage.setItem('aiEngine', e);
-  const s = document.getElementById('aiSettingsStatus');
-  s.textContent = '✅ تم الحفظ — المحرك: ' + (e === 'gemini' ? 'Gemini' : e === 'builtin' ? 'مدمج' : 'تلقائي');
-  s.className = 'text-[11px] text-center font-bold text-emerald-600 block';
-  s.classList.remove('hidden');
-  setTimeout(() => s.classList.add('hidden'), 2500);
-  updateAIEngineBadge();
-}
-
-async function testAIConnection() {
-  const k = document.getElementById('geminiApiKey').value.trim();
-  const s = document.getElementById('aiSettingsStatus');
-  s.classList.remove('hidden'); s.textContent = '⏳...';
-  if (!k) { s.textContent = '⚠️ أدخل المفتاح'; s.className = 'text-[11px] text-center font-bold text-amber-600'; return; }
+async function loadExpenses() {
   try {
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + k);
-    s.textContent = r.ok ? '✅ المفتاح يعمل' : '❌ المفتاح لا يعمل';
-    s.className = 'text-[11px] text-center font-bold ' + (r.ok ? 'text-emerald-600' : 'text-red-600');
-  } catch (e) { s.textContent = '❌ فشل الاتصال'; s.className = 'text-[11px] text-center font-bold text-red-600'; }
+    const snap = await db.collection('expenses').orderBy('createdAt', 'desc').limit(50).get();
+    const list = document.getElementById('expensesList');
+    if (snap.empty) { list.innerHTML = '<div class="text-gray-400 text-center py-4">لا توجد مصروفات</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const div = document.createElement('div');
+      div.className = 'p-3 border rounded-lg flex justify-between';
+      div.innerHTML = `<span>${d.desc || ''}</span><span class="font-bold text-red-600">${d.amount || 0}</span>`;
+      list.appendChild(div);
+    });
+  } catch (e) { console.error(e); }
 }
 
-function updateAIEngineBadge() {
-  const b = document.getElementById('aiEngineBadge');
-  if (!b) return;
-  const key = !!getGeminiKey();
-  const engine = localStorage.getItem('aiEngine') || 'auto';
-  if (key && engine !== 'builtin') {
-    b.textContent = '✨ Gemini AI مفعّل';
-    b.className = 'text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold shadow';
-  } else {
-    b.textContent = 'محرك مدمج';
-    b.className = 'text-[9px] bg-white/25 text-white px-2 py-0.5 rounded-full font-bold';
-  }
+function openAddExpense() {
+  document.getElementById('addExpenseModal').classList.remove('hidden');
+  document.getElementById('addExpenseModal').classList.add('flex');
 }
-
-function openDiagnosisReferences() {
-  const m = document.getElementById('refsModal'); m.classList.remove('hidden'); m.classList.add('flex');
-  document.getElementById('refsContent').innerHTML = '<div class="bg-slate-50 border-2 border-slate-300 rounded-xl p-3"><p class="font-extrabold text-sm mb-2">📐 تصنيف Angle</p><table class="ref-table"><thead><tr><th>الزاوية</th><th>Class I</th><th>Class II</th><th>Class III</th></tr></thead><tbody><tr><td>SNA</td><td>82° ± 2°</td><td>≥ 84°</td><td>≤ 80°</td></tr><tr><td>SNB</td><td>80° ± 2°</td><td>≤ 78°</td><td>≥ 82°</td></tr><tr><td>ANB</td><td>2° ± 2°</td><td>> 4°</td><td>< 0°</td></tr></tbody></table></div>';
+function closeAddExpense() {
+  document.getElementById('addExpenseModal').classList.add('hidden');
+  document.getElementById('addExpenseModal').classList.remove('flex');
 }
-function closeDiagnosisReferences() { document.getElementById('refsModal').classList.add('hidden'); document.getElementById('refsModal').classList.remove('flex'); }
-
-async function savePatientRecord() {
-  const name = document.getElementById('patientName').value.trim();
-  if (!name) { alert('أدخل الاسم'); return; }
-  const btn = document.getElementById('saveBtn');
-  const o = btn.textContent; btn.disabled = true; btn.textContent = '⏳...';
+async function saveExpense() {
   try {
-    const fN = document.getElementById('fileNumber').value;
-    const imgRecs = clinicImages.map(img => ({ type: img.type, date: img.date, dataUrl: img.dataUrl }));
-    const rec = {
-      fileNumber: fN, fullName: name,
-      gender: document.getElementById('patientGender').value,
-      age: document.getElementById('patientAge').value,
-      address: document.getElementById('patientAddress').value,
-      phone: document.getElementById('patientPhone').value,
-      whatsapp: document.getElementById('whatsappPhone').value,
-      allergies: document.getElementById('patientAllergies').value,
-      chronic: document.getElementById('chronicDiseases').value,
-      workType: document.getElementById('workType').value,
-      selectedTeeth: selectedTeeth.join(', '),
-      complaint: document.getElementById('complaint').value,
-      treatmentPlan: document.getElementById('treatmentPlan').value,
-      alternativePlan: document.getElementById('alternativePlan').value,
-      nextVisit: document.getElementById('nextVisitDate').value,
-      paymentMethod: document.getElementById('paymentMethod').value,
-      aiDiagnosis: window.__aiResults || null,
-      images: imgRecs,
-      financials: { total: document.getElementById('totalAmount').value, payment1: document.getElementById('payment1').value, payment2: document.getElementById('payment2').value, payment3: document.getElementById('payment3').value, remaining: document.getElementById('remainingDisplay').textContent },
-      dateKey: getTodayKey(),
-      createdBy: currentUser ? currentUser.username : 'unknown',
-      createdByName: currentUser ? currentUser.fullName : 'unknown',
-      regDate: currentDate,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    await db.collection('patients').doc(fN).set(rec);
-    alert('✅ تم الحفظ'); resetForm();
-  } catch (err) { alert('خطأ: ' + err.message); }
-  finally { btn.disabled = false; btn.textContent = o; }
+    await db.collection('expenses').add({
+      desc: document.getElementById('expDesc').value,
+      amount: parseFloat(document.getElementById('expAmount').value) || 0,
+      date: document.getElementById('expDate').value,
+      createdAt: new Date(), createdBy: currentUser.uid
+    });
+    closeAddExpense(); loadExpenses();
+  } catch (e) { alert('خطأ: ' + e.message); }
 }
 
-async function loadPatientByFileNumber() { const fn = prompt('رقم الملف:'); if (!fn) return; loadPatientFromList(fn.trim()); }
-function resetForm() {
-  generateFileNumber();
-  ['patientName','patientAge','patientAddress','patientPhone','whatsappPhone','patientAllergies','chronicDiseases','complaint','treatmentPlan','alternativePlan','totalAmount','payment1','payment2','payment3'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['patientGender','workType'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  selectedTeeth = [];
-  document.querySelectorAll('.tooth.selected').forEach(g => g.classList.remove('selected'));
-  document.getElementById('selectedTeethDisplay').textContent = 'الأسنان: لا يوجد';
-  clinicImages = []; renderGallery(); calculateFinancials(); clearAIResults();
-}
-function clearForm() { if (!confirm('مريض جديد؟')) return; resetForm(); }
-
-function buildReportContent() {
-  const name = document.getElementById('patientName').value;
-  const teeth = selectedTeeth.length ? selectedTeeth.join(', ') : 'لا يوجد';
-  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-blue-900 border-b pb-1">التقرير الطبي</h3><div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border"><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><p><strong>التاريخ:</strong> ' + currentDate + '</p><p><strong>المريض:</strong> ' + name + '</p><p><strong>العمر:</strong> ' + (document.getElementById('patientAge').value || '-') + '</p></div><div class="text-xs space-y-2 pt-2"><p><strong>نوع العمل:</strong> ' + (document.getElementById('workType').value || '-') + '</p><p><strong>الأسنان:</strong> ' + teeth + '</p><p><strong>الشكوى:</strong> ' + (document.getElementById('complaint').value || '-') + '</p><p><strong>الخطة:</strong> ' + (document.getElementById('treatmentPlan').value || '-') + '</p></div>';
-}
-function printReport() { if (!document.getElementById('patientName').value) { alert('أدخل الاسم'); return; } buildReportContent(); const pA = document.getElementById('printableArea'); pA.classList.remove('hidden'); setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300); }
-function printInvoice() {
-  const name = document.getElementById('patientName').value;
-  if (!name) { alert('أدخل الاسم'); return; }
-  const total = parseFloat(document.getElementById('totalAmount').value) || 0;
-  const p1 = parseFloat(document.getElementById('payment1').value) || 0, p2 = parseFloat(document.getElementById('payment2').value) || 0, p3 = parseFloat(document.getElementById('payment3').value) || 0;
-  const rem = total - (p1 + p2 + p3);
-  document.getElementById('printBodyContent').innerHTML = '<h3 class="font-bold text-base text-green-900 border-b pb-1">سند قبض</h3><div class="text-xs space-y-2 pt-2"><p><strong>المريض:</strong> ' + name + '</p><p><strong>رقم الملف:</strong> ' + document.getElementById('fileNumber').value + '</p><hr><p>الإجمالي: ' + total + '</p><p>المدفوع: ' + (p1+p2+p3) + '</p><p><strong>المتبقي: ' + rem + '</strong></p></div>';
-  const pA = document.getElementById('printableArea'); pA.classList.remove('hidden');
-  setTimeout(() => { window.print(); setTimeout(() => pA.classList.add('hidden'), 500); }, 300);
-}
-
-async function openDailyReport() { const m = document.getElementById('dailyReportModal'); m.classList.remove('hidden'); m.classList.add('flex'); const c = document.getElementById('dailyReportContent'); c.innerHTML = '...'; try { const tk = getTodayKey(); const snap = await db.collection('patients').where('dateKey', '==', tk).get(); if (snap.empty) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا عمليات اليوم</p>'; return; } let rev = 0, cnt = 0; snap.forEach(doc => { const d = doc.data(); cnt++; const f = d.financials || {}; rev += (parseFloat(f.payment1) || 0) + (parseFloat(f.payment2) || 0) + (parseFloat(f.payment3) || 0); }); c.innerHTML = '<div class="bg-cyan-50 rounded-xl border-2 border-cyan-300 p-3"><p class="text-center font-bold">📅 ' + tk + '</p><div class="grid grid-cols-2 gap-2 mt-2"><div class="bg-white rounded-lg p-3 text-center border"><div>الإيرادات</div><div class="text-lg font-extrabold text-emerald-600">' + rev + '</div></div><div class="bg-white rounded-lg p-3 text-center border"><div>المرضى</div><div class="text-lg font-extrabold text-purple-600">' + cnt + '</div></div></div></div>'; } catch (e) { c.innerHTML = 'فشل'; } }
-function closeDailyReport() { document.getElementById('dailyReportModal').classList.add('hidden'); document.getElementById('dailyReportModal').classList.remove('flex'); }
-
-function openMonthlyReport() { document.getElementById('monthlyReportModal').classList.remove('hidden'); document.getElementById('monthlyReportModal').classList.add('flex'); document.getElementById('reportMonth').value = getCurrentMonthKey(); }
-function closeMonthlyReport() { document.getElementById('monthlyReportModal').classList.add('hidden'); document.getElementById('monthlyReportModal').classList.remove('flex'); }
-async function generateMonthlyReport() { const mk = document.getElementById('reportMonth').value; if (!mk) { alert('اختر'); return; } const c = document.getElementById('monthlyReportContent'); c.innerHTML = '...'; try { const snap = await db.collection('patients').where('dateKey', '>=', mk + '-01').where('dateKey', '<', mk + '-32').get(); if (snap.empty) { c.innerHTML = '<p class="text-center text-sm text-gray-500 py-6">📭 لا بيانات</p>'; return; } let tr = 0, tp = 0; snap.forEach(doc => { const d = doc.data(); tp++; const f = d.financials || {}; tr += (parseFloat(f.payment1) || 0) + (parseFloat(f.payment2) || 0) + (parseFloat(f.payment3) || 0); }); c.innerHTML = '<div class="bg-purple-50 rounded-xl border-2 border-purple-300 p-3"><p class="text-center font-bold">📅 ' + mk + '</p><div class="grid grid-cols-2 gap-2 mt-2"><div class="bg-white rounded-lg p-3 text-center border"><div>الإيرادات</div><div class="text-xl font-extrabold text-emerald-600">' + tr + '</div></div><div class="bg-white rounded-lg p-3 text-center border"><div>المرضى</div><div class="text-xl font-extrabold text-indigo-600">' + tp + '</div></div></div></div>'; } catch (e) { c.innerHTML = 'فشل'; } }
-
-async function openRevenueChart() {
-  const m = document.getElementById('revenueChartModal'); m.classList.remove('hidden'); m.classList.add('flex');
-  const mk = getCurrentMonthKey();
-  const snap = await db.collection('patients').where('dateKey', '>=', mk + '-01').get();
-  const days = {};
-  snap.forEach(doc => { const d = doc.data(); const f = d.financials || {}; const paid = (parseFloat(f.payment1) || 0) + (parseFloat(f.payment2) || 0) + (parseFloat(f.payment3) || 0); const dk = d.dateKey || '?'; if (!days[dk]) days[dk] = 0; days[dk] += paid; });
-  const sorted = Object.keys(days).sort();
-  const ctx = document.getElementById('revenueChartCanvas').getContext('2d');
-  if (window.__chart) window.__chart.destroy();
-  window.__chart = new Chart(ctx, { type: 'bar', data: { labels: sorted.map(d => d.slice(-2)), datasets: [{ label: 'الإيرادات', data: sorted.map(d => days[d]), backgroundColor: 'rgba(16,185,129,0.7)' }] }, options: { responsive: true, maintainAspectRatio: false } });
-}
-function closeRevenueChart() { document.getElementById('revenueChartModal').classList.add('hidden'); document.getElementById('revenueChartModal').classList.remove('flex'); }
-
-async function openImagesArchive() {
-  const m = document.getElementById('imagesArchiveModal'); m.classList.remove('hidden'); m.classList.add('flex');
-  const c = document.getElementById('imagesArchiveContent'); c.innerHTML = '...';
-  try {
-    const snap = await db.collection('patients').get();
-    const allImgs = [];
-    snap.forEach(doc => { const d = doc.data(); (d.images || []).forEach(img => { allImgs.push({ ...img, patientName: d.fullName }); }); });
-    c.innerHTML = allImgs.length ? allImgs.map(img => '<div class="bg-white border rounded-lg overflow-hidden"><img src="' + (img.dataUrl || '') + '" class="w-full h-28 object-cover"><div class="p-1.5"><p class="text-[10px] font-bold truncate">' + escapeHtml(img.patientName || '') + '</p></div></div>').join('') : '<p class="col-span-5 text-center text-sm text-gray-500 py-6">📭 لا صور</p>';
-  } catch (e) { c.innerHTML = 'فشل'; }
-}
-function closeImagesArchive() { document.getElementById('imagesArchiveModal').classList.add('hidden'); document.getElementById('imagesArchiveModal').classList.remove('flex'); }
-
-async function exportPatientsToExcel() {
-  try {
-    const snap = await db.collection('patients').get();
-    if (snap.empty) { alert('لا بيانات'); return; }
-    const data = [];
-    snap.forEach(doc => { const d = doc.data(); data.push({ 'رقم الملف': d.fileNumber || '', 'الاسم': d.fullName || '', 'الهاتف': d.phone || '', 'نوع العمل': d.workType || '' }); });
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'المرضى');
-    XLSX.writeFile(wb, 'patients_' + getTodayKey() + '.xlsx');
-    alert('✅ تم تصدير ' + data.length + ' مريض');
-  } catch (e) { alert('فشل'); }
-}
-
-function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
-
-// ═══════════════════════════════════════════════════════════════
-// 🆕 روابط الأنظمة
-// ═══════════════════════════════════════════════════════════════
-function openDentbook() {
-  if (window.parent && typeof window.parent.switchTab === 'function') { window.parent.switchTab('dentbook'); }
-  else { window.location.href = 'Dentbook.html'; }
-}
-function openLabSystem() {
-  if (window.parent && typeof window.parent.switchTab === 'function') { window.parent.switchTab('lab'); }
-  else { window.location.href = 'Lab.html'; }
-}
-function openAnalyzerSystem() {
-  if (window.parent && typeof window.parent.switchTab === 'function') { window.parent.switchTab('analyzer'); }
-  else { window.location.href = 'Analyzer.html'; }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 🚀 التشغيل
-// ═══════════════════════════════════════════════════════════════
-document.addEventListener("DOMContentLoaded", () => {
-  renderLogos();
-  renderDentalChart();
-  generateFileNumber();
-  renderGallery();
-  const savedEngine = localStorage.getItem('aiEngine');
-  if (savedEngine && document.getElementById('aiEngine')) { document.getElementById('aiEngine').value = savedEngine; }
-  updateAIEngineBadge();
-});
+async function loadAdmin() { /* placeholder */ }
 </script>
 </body>
 </html>
