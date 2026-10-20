@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة الاشتراكات — NAQClinixAI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>body{font-family:'Cairo',sans-serif;background:#f0f2f5}</style>
+</head>
+<body class="min-h-screen p-4">
+
+<div id="loadingScreen" class="fixed inset-0 bg-gradient-to-br from-blue-900 to-teal-600 flex items-center justify-center z-50">
+  <div class="text-white text-center"><div class="text-6xl mb-4">💳</div><div class="text-xl font-bold">جاري التحميل...</div></div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+  <div class="bg-gradient-to-r from-blue-900 to-teal-600 text-white rounded-2xl p-5 mb-4 flex justify-between items-center">
+    <div>
+      <h1 class="text-xl font-extrabold">💳 إدارة الاشتراكات</h1>
+      <p class="text-xs opacity-80 mt-1" id="userLabel">...</p>
+    </div>
+    <a href="clinical.html" class="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-xs font-bold">← رجوع</a>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-5 mb-4">
+    <h2 class="font-bold text-blue-900 mb-3">➕ إضافة خطة اشتراك</h2>
+    <div class="grid md:grid-cols-2 gap-2">
+      <input type="text" id="planName" placeholder="اسم الخطة (مثال: شهري)" class="p-2 border rounded-lg text-sm">
+      <input type="number" id="planPrice" placeholder="السعر" class="p-2 border rounded-lg text-sm">
+      <select id="planCurrency" class="p-2 border rounded-lg text-sm">
+        <option value="YER">ريال يمني</option>
+        <option value="USD">دولار</option>
+        <option value="USDT">USDT</option>
+      </select>
+      <input type="number" id="planDuration" placeholder="المدة (أيام)" class="p-2 border rounded-lg text-sm">
+      <input type="text" id="planContent" placeholder="المحتوى/المميزات (مفصولة بفاصلة)" class="p-2 border rounded-lg text-sm md:col-span-2">
+      <input type="text" id="planBinance" placeholder="عنوان Binance USDT (TRC20)" class="p-2 border rounded-lg text-sm md:col-span-2" dir="ltr">
+      <button onclick="savePlan()" class="bg-emerald-600 text-white p-2 rounded-lg font-bold md:col-span-2">💾 حفظ الخطة</button>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-5">
+    <h2 class="font-bold text-blue-900 mb-3">📋 الخطط الحالية</h2>
+    <div id="plansList" class="space-y-2"><div class="text-gray-400 text-center py-4">جاري التحميل...</div></div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
+  authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
+  projectId: "naqclinixai-dental-clinic",
+  storageBucket: "naqclinixai-dental-clinic.firebasestorage.app",
+  messagingSenderId: "796796158387",
+  appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUser = user;
+  const userDoc = await db.collection('users').doc(user.uid).get();
+  if (!userDoc.exists || userDoc.data().role !== 'owner') {
+    alert('⛔ هذه الصفحة للمالك فقط');
+    window.location.href = 'clinical.html';
+    return;
+  }
+  document.getElementById('userLabel').textContent = user.email;
+  document.getElementById('loadingScreen').style.display = 'none';
+  loadPlans();
+});
+
+async function savePlan() {
+  const name = document.getElementById('planName').value.trim();
+  const price = parseFloat(document.getElementById('planPrice').value) || 0;
+  const currency = document.getElementById('planCurrency').value;
+  const duration = parseInt(document.getElementById('planDuration').value) || 30;
+  const content = document.getElementById('planContent').value;
+  const binance = document.getElementById('planBinance').value.trim();
+
+  if (!name || !price) return alert('اسم الخطة والسعر مطلوبان');
+
+  try {
+    await db.collection('subscription_plans').add({
+      name, price, currency, duration,
+      content: content.split(',').map(s => s.trim()).filter(Boolean),
+      binanceWallet: binance,
+      active: true,
+      createdAt: new Date(),
+      createdBy: currentUser.uid
+    });
+    document.getElementById('planName').value = '';
+    document.getElementById('planPrice').value = '';
+    document.getElementById('planContent').value = '';
+    document.getElementById('planBinance').value = '';
+    loadPlans();
+  } catch (e) { alert('خطأ: ' + e.message); }
+}
+
+async function loadPlans() {
+  try {
+    const snap = await db.collection('subscription_plans').orderBy('createdAt', 'desc').get();
+    const list = document.getElementById('plansList');
+    if (snap.empty) { list.innerHTML = '<div class="text-gray-400 text-center py-4">لا توجد خطط بعد</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const div = document.createElement('div');
+      div.className = 'p-3 border rounded-lg flex justify-between items-start';
+      div.innerHTML = `
+        <div class="flex-1">
+          <div class="font-bold text-sm text-blue-900">${d.name} — ${d.price} ${d.currency}</div>
+          <div class="text-xs text-gray-500 mt-1">المدة: ${d.duration} يوم</div>
+          <div class="text-xs text-gray-500">${(d.content || []).join(' • ')}</div>
+          ${d.binanceWallet ? `<div class="text-xs text-gray-500 mt-1" dir="ltr">Binance: ${d.binanceWallet}</div>` : ''}
+        </div>
+        <button onclick="deletePlan('${doc.id}')" class="text-red-600 text-xs font-bold">🗑️ حذف</button>
+      `;
+      list.appendChild(div);
+    });
+  } catch (e) { console.error(e); }
+}
+
+async function deletePlan(id) {
+  if (!confirm('حذف الخطة؟')) return;
+  try { await db.collection('subscription_plans').doc(id).delete(); loadPlans(); }
+  catch (e) { alert('خطأ: ' + e.message); }
+}
+</script>
+</body>
+</html>
