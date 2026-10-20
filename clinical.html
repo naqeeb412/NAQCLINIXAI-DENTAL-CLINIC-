@@ -114,7 +114,6 @@
   <div id="tab-lab" class="tab-content">
     <div class="bg-white rounded-xl p-4 shadow">
       <h2 class="font-bold text-blue-900 mb-3">🧪 المعمل</h2>
-      <p class="text-sm text-gray-500 mb-3">إدارة طلبات المعمل</p>
       <button onclick="openAddLab()" class="bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-bold mb-3">➕ طلب جديد</button>
       <div id="labList" class="space-y-2"><div class="text-gray-400 text-center py-4">لا توجد طلبات</div></div>
     </div>
@@ -273,10 +272,17 @@ let allPatients = [];
 auth.onAuthStateChanged(async (user) => {
   if (!user) { window.location.href = 'login.html'; return; }
   currentUser = user;
+  
   try {
     const userDoc = await db.collection('users').doc(user.uid).get();
-    if (userDoc.exists) currentUserData = userDoc.data();
-    else {
+    if (userDoc.exists) {
+      currentUserData = userDoc.data();
+      // ✅ إصلاح تلقائي لدور المالك
+      if (user.email === 'naqclinixai@gmail.com' && currentUserData.role !== 'owner') {
+        await db.collection('users').doc(user.uid).update({ role: 'owner' });
+        currentUserData.role = 'owner';
+      }
+    } else {
       currentUserData = { name: user.displayName || user.email.split('@')[0], email: user.email, role: 'doctor' };
       await db.collection('users').doc(user.uid).set({ ...currentUserData, uid: user.uid, createdAt: new Date() });
     }
@@ -334,30 +340,50 @@ async function loadDashboard() {
   } catch (e) { console.error(e); }
 }
 
+// ✅ قسم المرضى (محدث)
 async function loadPatients() {
   try {
     const snap = await db.collection('patients').orderBy('createdAt', 'desc').limit(200).get();
     allPatients = [];
     snap.forEach(doc => allPatients.push({ id: doc.id, ...doc.data() }));
     filterPatients();
-  } catch (e) { console.error(e); }
+  } catch (e) { 
+    console.error(e);
+    document.getElementById('patientsList').innerHTML = '<div class="text-red-500 text-center py-4">خطأ: ' + e.message + '</div>';
+  }
 }
 
 function filterPatients() {
   const term = (document.getElementById('patientSearch')?.value || '').toLowerCase();
   const list = document.getElementById('patientsList');
   const filtered = allPatients.filter(p => !term || (p.name || '').toLowerCase().includes(term) || (p.phone || '').includes(term));
+  
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="text-gray-400 text-center py-4">لا يوجد مرضى</div>';
+    list.innerHTML = '<div class="text-gray-400 text-center py-4">لا يوجد مرضى. أضف مريضاً جديداً.</div>';
     return;
   }
+  
   list.innerHTML = '';
   filtered.forEach(p => {
     const div = document.createElement('div');
-    div.className = 'p-3 border rounded-lg hover:bg-gray-50 cursor-pointer';
-    div.innerHTML = `<div class="font-bold text-sm">${p.name || 'بدون اسم'}</div><div class="text-xs text-gray-500">${p.phone || ''} • ${p.gender || ''} • ${p.age || ''}</div>`;
+    div.className = 'p-3 border rounded-lg bg-white mb-2 flex justify-between items-center';
+    div.innerHTML = `
+      <div>
+        <div class="font-bold text-sm text-blue-900">${p.name || 'بدون اسم'}</div>
+        <div class="text-xs text-gray-500">${p.phone || 'لا يوجد هاتف'} • ${p.age || '—'} سنة • ${p.gender || '—'}</div>
+      </div>
+      <button onclick="deletePatient('${p.id}')" class="text-red-500 text-xs font-bold">حذف</button>
+    `;
     list.appendChild(div);
   });
+}
+
+async function deletePatient(id) {
+  if (!confirm('حذف هذا المريض؟')) return;
+  try {
+    await db.collection('patients').doc(id).delete();
+    loadPatients();
+  } catch (e) { alert('خطأ: ' + e.message); }
 }
 
 function openAddPatient() {
@@ -386,6 +412,7 @@ async function savePatient() {
   } catch (e) { alert('خطأ: ' + e.message); }
 }
 
+// ✅ قسم AI (Gemini)
 async function runAI() {
   const input = document.getElementById('aiInput').value.trim();
   if (!input) return alert('اكتب الحالة أولاً');
@@ -411,10 +438,12 @@ function loadGeminiKey() {
 }
 function saveGeminiKey() {
   geminiApiKey = document.getElementById('geminiKey').value.trim();
+  if (!geminiApiKey) return alert('أدخل مفتاح API');
   localStorage.setItem('gemini_key', geminiApiKey);
-  alert('✅ تم الحفظ');
+  alert('✅ تم حفظ المفتاح بنجاح');
 }
 
+// ✅ قسم الدردشة (مؤقت)
 function sendChat() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
@@ -427,6 +456,7 @@ function sendChat() {
   input.value = ''; list.scrollTop = list.scrollHeight;
 }
 
+// ✅ قسم المستخدمين
 async function loadUsers() {
   try {
     const snap = await db.collection('users').get();
@@ -435,13 +465,14 @@ async function loadUsers() {
     snap.forEach(doc => {
       const d = doc.data();
       const div = document.createElement('div');
-      div.className = 'p-3 border rounded-lg';
+      div.className = 'p-3 border rounded-lg mb-2';
       div.innerHTML = `<div class="font-bold text-sm">${d.name || d.email}</div><div class="text-xs text-gray-500">${d.role || ''}</div>`;
       list.appendChild(div);
     });
   } catch (e) { console.error(e); }
 }
 
+// ✅ قسم النشاطات
 async function loadAllActivity() {
   try {
     const snap = await db.collection('activity').orderBy('timestamp', 'desc').limit(50).get();
@@ -457,6 +488,7 @@ async function loadAllActivity() {
   } catch (e) { console.error(e); }
 }
 
+// ✅ قسم المعمل (محدث)
 async function loadLab() {
   try {
     const snap = await db.collection('lab').orderBy('createdAt', 'desc').limit(50).get();
@@ -466,8 +498,8 @@ async function loadLab() {
     snap.forEach(doc => {
       const d = doc.data();
       const div = document.createElement('div');
-      div.className = 'p-3 border rounded-lg';
-      div.innerHTML = `<div class="font-bold text-sm">${d.patient || ''}</div><div class="text-xs text-gray-500">${d.work || ''}</div>`;
+      div.className = 'p-3 border rounded-lg mb-2';
+      div.innerHTML = `<div class="font-bold text-sm">${d.patient || ''}</div><div class="text-xs text-gray-500">${d.work || ''} • ${d.date || ''}</div>`;
       list.appendChild(div);
     });
   } catch (e) { console.error(e); }
@@ -494,6 +526,7 @@ async function saveLab() {
   } catch (e) { alert('خطأ: ' + e.message); }
 }
 
+// ✅ قسم المصروفات
 async function loadExpenses() {
   try {
     const snap = await db.collection('expenses').orderBy('createdAt', 'desc').limit(50).get();
@@ -503,7 +536,7 @@ async function loadExpenses() {
     snap.forEach(doc => {
       const d = doc.data();
       const div = document.createElement('div');
-      div.className = 'p-3 border rounded-lg flex justify-between';
+      div.className = 'p-3 border rounded-lg flex justify-between mb-2';
       div.innerHTML = `<span>${d.desc || ''}</span><span class="font-bold text-red-600">${d.amount || 0}</span>`;
       list.appendChild(div);
     });
