@@ -20,7 +20,7 @@
 <div class="max-w-4xl mx-auto">
   <div class="bg-gradient-to-r from-blue-900 to-teal-600 text-white rounded-2xl p-5 mb-4 flex justify-between items-center">
     <div>
-      <h1 class="text-xl font-extrabold">💳 إدارة الاشتراكات</h1>
+      <h1 class="text-xl font-extrabold">💳 إدارة خطط الاشتراك</h1>
       <p class="text-xs opacity-80 mt-1" id="userLabel">...</p>
     </div>
     <a href="clinical.html" class="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-xs font-bold">← رجوع</a>
@@ -28,18 +28,41 @@
 
   <div class="bg-white rounded-2xl shadow p-5 mb-4">
     <h2 class="font-bold text-blue-900 mb-3">➕ إضافة خطة اشتراك</h2>
-    <div class="grid md:grid-cols-2 gap-2">
-      <input type="text" id="planName" placeholder="اسم الخطة (مثال: شهري)" class="p-2 border rounded-lg text-sm">
-      <input type="number" id="planPrice" placeholder="السعر" class="p-2 border rounded-lg text-sm">
-      <select id="planCurrency" class="p-2 border rounded-lg text-sm">
-        <option value="YER">ريال يمني</option>
-        <option value="USD">دولار</option>
-        <option value="USDT">USDT</option>
-      </select>
-      <input type="number" id="planDuration" placeholder="المدة (أيام)" class="p-2 border rounded-lg text-sm">
-      <input type="text" id="planContent" placeholder="المحتوى/المميزات (مفصولة بفاصلة)" class="p-2 border rounded-lg text-sm md:col-span-2">
-      <input type="text" id="planBinance" placeholder="عنوان Binance USDT (TRC20)" class="p-2 border rounded-lg text-sm md:col-span-2" dir="ltr">
-      <button onclick="savePlan()" class="bg-emerald-600 text-white p-2 rounded-lg font-bold md:col-span-2">💾 حفظ الخطة</button>
+    <div class="space-y-2">
+      <input type="text" id="planName" placeholder="اسم الخطة (مثال: شهري، سنوي، VIP)" class="w-full p-2 border rounded-lg text-sm">
+      
+      <div class="grid grid-cols-2 gap-2">
+        <input type="number" id="planPrice" placeholder="السعر" class="p-2 border rounded-lg text-sm">
+        <select id="planCurrency" class="p-2 border rounded-lg text-sm">
+          <option value="YER">ريال يمني</option>
+          <option value="USD">دولار</option>
+          <option value="USDT">USDT</option>
+        </select>
+      </div>
+
+      <input type="number" id="planDuration" placeholder="المدة (بالأيام)" class="w-full p-2 border rounded-lg text-sm">
+      
+      <input type="text" id="planFeatures" placeholder="المميزات (مفصولة بفاصلة، مثال: دردشة، AI، ملف شخصي)" class="w-full p-2 border rounded-lg text-sm">
+
+      <hr class="my-2">
+      <p class="text-sm font-bold text-blue-900">طرق الدفع:</p>
+      
+      <div>
+        <label class="text-xs font-bold block">عنوان Binance USDT (TRC20)</label>
+        <input type="text" id="binanceWallet" placeholder="T..." class="w-full p-2 border rounded-lg text-sm" dir="ltr">
+      </div>
+      
+      <div>
+        <label class="text-xs font-bold block">Binance Pay ID</label>
+        <input type="text" id="binancePayId" placeholder="123456789" class="w-full p-2 border rounded-lg text-sm" dir="ltr">
+      </div>
+      
+      <div>
+        <label class="text-xs font-bold block">FaucetPay (USDT/BTC...)</label>
+        <input type="text" id="faucetpay" placeholder="عنوان محفظة FaucetPay" class="w-full p-2 border rounded-lg text-sm" dir="ltr">
+      </div>
+
+      <button onclick="savePlan()" class="bg-emerald-600 text-white w-full p-2 rounded-lg font-bold">💾 حفظ الخطة</button>
     </div>
   </div>
 
@@ -68,11 +91,14 @@ auth.onAuthStateChanged(async (user) => {
   if (!user) { window.location.href = 'login.html'; return; }
   currentUser = user;
   const userDoc = await db.collection('users').doc(user.uid).get();
+  
+  // التحقق من أن المستخدم هو المالك (owner)
   if (!userDoc.exists || userDoc.data().role !== 'owner') {
-    alert('⛔ هذه الصفحة للمالك فقط');
+    alert('⛔ هذه الصفحة للمالك فقط. يرجى تغيير دورك إلى owner في Firebase.');
     window.location.href = 'clinical.html';
     return;
   }
+  
   document.getElementById('userLabel').textContent = user.email;
   document.getElementById('loadingScreen').style.display = 'none';
   loadPlans();
@@ -83,24 +109,35 @@ async function savePlan() {
   const price = parseFloat(document.getElementById('planPrice').value) || 0;
   const currency = document.getElementById('planCurrency').value;
   const duration = parseInt(document.getElementById('planDuration').value) || 30;
-  const content = document.getElementById('planContent').value;
-  const binance = document.getElementById('planBinance').value.trim();
+  const features = document.getElementById('planFeatures').value;
+  const binanceWallet = document.getElementById('binanceWallet').value.trim();
+  const binancePayId = document.getElementById('binancePayId').value.trim();
+  const faucetpay = document.getElementById('faucetpay').value.trim();
 
   if (!name || !price) return alert('اسم الخطة والسعر مطلوبان');
 
   try {
     await db.collection('subscription_plans').add({
-      name, price, currency, duration,
-      content: content.split(',').map(s => s.trim()).filter(Boolean),
-      binanceWallet: binance,
+      name,
+      price,
+      currency,
+      duration,
+      features: features.split(',').map(s => s.trim()).filter(Boolean),
+      paymentMethods: { binanceWallet, binancePayId, faucetpay },
       active: true,
       createdAt: new Date(),
       createdBy: currentUser.uid
     });
+    
+    // تفريغ الحقول
     document.getElementById('planName').value = '';
     document.getElementById('planPrice').value = '';
-    document.getElementById('planContent').value = '';
-    document.getElementById('planBinance').value = '';
+    document.getElementById('planDuration').value = '';
+    document.getElementById('planFeatures').value = '';
+    document.getElementById('binanceWallet').value = '';
+    document.getElementById('binancePayId').value = '';
+    document.getElementById('faucetpay').value = '';
+    
     loadPlans();
   } catch (e) { alert('خطأ: ' + e.message); }
 }
@@ -114,15 +151,17 @@ async function loadPlans() {
     snap.forEach(doc => {
       const d = doc.data();
       const div = document.createElement('div');
-      div.className = 'p-3 border rounded-lg flex justify-between items-start';
+      div.className = 'p-3 border rounded-lg';
       div.innerHTML = `
-        <div class="flex-1">
-          <div class="font-bold text-sm text-blue-900">${d.name} — ${d.price} ${d.currency}</div>
-          <div class="text-xs text-gray-500 mt-1">المدة: ${d.duration} يوم</div>
-          <div class="text-xs text-gray-500">${(d.content || []).join(' • ')}</div>
-          ${d.binanceWallet ? `<div class="text-xs text-gray-500 mt-1" dir="ltr">Binance: ${d.binanceWallet}</div>` : ''}
+        <div class="font-bold text-sm text-blue-900">${d.name} — ${d.price} ${d.currency}</div>
+        <div class="text-xs text-gray-500 mt-1">⏱️ ${d.duration} يوم</div>
+        <div class="text-xs text-gray-500">${(d.features || []).join(' • ')}</div>
+        <div class="text-xs text-gray-500 mt-1" dir="ltr">
+          ${d.paymentMethods?.binanceWallet ? 'Binance: ' + d.paymentMethods.binanceWallet : ''}
+          ${d.paymentMethods?.binancePayId ? ' | PayID: ' + d.paymentMethods.binancePayId : ''}
+          ${d.paymentMethods?.faucetpay ? ' | FaucetPay: ' + d.paymentMethods.faucetpay : ''}
         </div>
-        <button onclick="deletePlan('${doc.id}')" class="text-red-600 text-xs font-bold">🗑️ حذف</button>
+        <button onclick="deletePlan('${doc.id}')" class="text-red-600 text-xs font-bold mt-2">🗑️ حذف</button>
       `;
       list.appendChild(div);
     });
