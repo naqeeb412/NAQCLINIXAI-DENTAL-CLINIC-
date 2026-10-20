@@ -66,10 +66,13 @@
     <button onclick="switchTab('lab')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">🧪</span> المعمل</button>
     <button onclick="switchTab('analysis')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">🔬</span> التحليل</button>
     <button onclick="switchTab('archive')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">🖼️</span> الأرشيف</button>
-    <button onclick="switchTab('chat')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">💬</span> دردشة</button>
+    <a href="dentchat.html" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">💬</span> DentChat</a>
     <a href="dentbook.html" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">📖</span> DentBook</a>
+    <a href="profile.html" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">👤</span> الملف الشخصي</a>
+    <a href="subscribe.html" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">💳</span> الاشتراكات</a>
     <hr class="my-2">
     <button onclick="switchTab('admin')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">👑</span> لوحة المدير</button>
+    <a href="admin-plans.html" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">💳</span> إدارة الخطط</a>
     <button onclick="switchTab('expenses')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">💸</span> المصروفات</button>
     <button onclick="switchTab('aiSettings')" class="w-full text-right p-3 rounded-lg hover:bg-blue-50 flex items-center gap-3"><span class="text-xl">⚙️</span> إعدادات AI</button>
     <hr class="my-2">
@@ -281,6 +284,8 @@ auth.onAuthStateChanged(async (user) => {
 
   document.getElementById('userName').textContent = currentUserData.name || user.email;
   document.getElementById('userRole').textContent = currentUserData.role === 'owner' ? '👑 المالك' : '👨‍⚕️ ' + (currentUserData.role || 'طبيب');
+  document.getElementById('clinicName').textContent = currentUserData.clinicName || 'العيادة التخصصية';
+
   document.getElementById('loadingScreen').style.display = 'none';
 
   loadDashboard();
