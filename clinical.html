@@ -119,13 +119,26 @@
     </div>
   </div>
 
-  <!-- التحليل -->
+  <!-- التحليل (Gemini AI) -->
   <div id="tab-analysis" class="tab-content">
     <div class="bg-white rounded-xl p-4 shadow">
       <h2 class="font-bold text-blue-900 mb-3">🔬 التحليل الذكي (Gemini AI)</h2>
-      <textarea id="aiInput" rows="5" placeholder="اكتب الحالة الطبية..." class="w-full p-3 border rounded-lg text-sm mb-2"></textarea>
-      <button onclick="runAI()" id="aiBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-bold w-full">🧠 تحليل بالذكاء الاصطناعي</button>
-      <div id="aiOutput" class="bg-blue-50 p-3 rounded-lg text-sm min-h-[100px] mt-3 hidden"></div>
+      
+      <div class="space-y-2 mb-3">
+        <label class="text-xs font-bold block">معلومات المريض</label>
+        <input type="text" id="aiPatientName" placeholder="اسم المريض" class="w-full p-2 border rounded-lg text-sm">
+        <input type="text" id="aiComplaint" placeholder="الشكوى الرئيسية" class="w-full p-2 border rounded-lg text-sm">
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-2 mb-3">
+        <textarea id="aiDiagnosis" rows="3" placeholder="التشخيص اليدوي..." class="p-2 border rounded-lg text-sm"></textarea>
+        <textarea id="aiPlan" rows="3" placeholder="خطة العلاج..." class="p-2 border rounded-lg text-sm"></textarea>
+        <textarea id="aiAlternative" rows="3" placeholder="العلاج البديل..." class="p-2 border rounded-lg text-sm"></textarea>
+      </div>
+
+      <button onclick="runAI()" id="aiBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-bold w-full">🧠 تحليل شامل بالذكاء الاصطناعي</button>
+      
+      <div id="aiOutput" class="bg-blue-50 p-3 rounded-lg text-sm mt-3 hidden"></div>
     </div>
   </div>
 
@@ -173,9 +186,10 @@
   <div id="tab-aiSettings" class="tab-content">
     <div class="bg-white rounded-xl p-4 shadow">
       <h2 class="font-bold text-blue-900 mb-3">⚙️ إعدادات AI</h2>
-      <label class="text-sm font-bold block mb-1">🔑 مفتاح Gemini</label>
+      <label class="text-sm font-bold block mb-1">🔑 مفتاح Gemini API</label>
       <input type="password" id="geminiKey" class="w-full p-2 border rounded-lg text-sm mb-2" dir="ltr">
-      <button onclick="saveGeminiKey()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">💾 حفظ</button>
+      <button onclick="saveGeminiKey()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">💾 حفظ المفتاح</button>
+      <p class="text-xs text-gray-500 mt-2">احصل على مفتاحك من: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600">Google AI Studio</a></p>
     </div>
   </div>
 
@@ -272,17 +286,10 @@ let allPatients = [];
 auth.onAuthStateChanged(async (user) => {
   if (!user) { window.location.href = 'login.html'; return; }
   currentUser = user;
-  
   try {
     const userDoc = await db.collection('users').doc(user.uid).get();
-    if (userDoc.exists) {
-      currentUserData = userDoc.data();
-      // ✅ إصلاح تلقائي لدور المالك
-      if (user.email === 'naqclinixai@gmail.com' && currentUserData.role !== 'owner') {
-        await db.collection('users').doc(user.uid).update({ role: 'owner' });
-        currentUserData.role = 'owner';
-      }
-    } else {
+    if (userDoc.exists) currentUserData = userDoc.data();
+    else {
       currentUserData = { name: user.displayName || user.email.split('@')[0], email: user.email, role: 'doctor' };
       await db.collection('users').doc(user.uid).set({ ...currentUserData, uid: user.uid, createdAt: new Date() });
     }
@@ -293,7 +300,6 @@ auth.onAuthStateChanged(async (user) => {
   document.getElementById('clinicName').textContent = currentUserData.clinicName || 'العيادة التخصصية';
 
   document.getElementById('loadingScreen').style.display = 'none';
-
   loadDashboard();
   loadPatients();
   loadGeminiKey();
@@ -340,29 +346,23 @@ async function loadDashboard() {
   } catch (e) { console.error(e); }
 }
 
-// ✅ قسم المرضى (محدث)
 async function loadPatients() {
   try {
     const snap = await db.collection('patients').orderBy('createdAt', 'desc').limit(200).get();
     allPatients = [];
     snap.forEach(doc => allPatients.push({ id: doc.id, ...doc.data() }));
     filterPatients();
-  } catch (e) { 
-    console.error(e);
-    document.getElementById('patientsList').innerHTML = '<div class="text-red-500 text-center py-4">خطأ: ' + e.message + '</div>';
-  }
+  } catch (e) { console.error(e); }
 }
 
 function filterPatients() {
   const term = (document.getElementById('patientSearch')?.value || '').toLowerCase();
   const list = document.getElementById('patientsList');
   const filtered = allPatients.filter(p => !term || (p.name || '').toLowerCase().includes(term) || (p.phone || '').includes(term));
-  
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="text-gray-400 text-center py-4">لا يوجد مرضى. أضف مريضاً جديداً.</div>';
+    list.innerHTML = '<div class="text-gray-400 text-center py-4">لا يوجد مرضى</div>';
     return;
   }
-  
   list.innerHTML = '';
   filtered.forEach(p => {
     const div = document.createElement('div');
@@ -370,7 +370,7 @@ function filterPatients() {
     div.innerHTML = `
       <div>
         <div class="font-bold text-sm text-blue-900">${p.name || 'بدون اسم'}</div>
-        <div class="text-xs text-gray-500">${p.phone || 'لا يوجد هاتف'} • ${p.age || '—'} سنة • ${p.gender || '—'}</div>
+        <div class="text-xs text-gray-500">${p.phone || ''} • ${p.gender || ''} • ${p.age || ''} سنة</div>
       </div>
       <button onclick="deletePatient('${p.id}')" class="text-red-500 text-xs font-bold">حذف</button>
     `;
@@ -380,10 +380,8 @@ function filterPatients() {
 
 async function deletePatient(id) {
   if (!confirm('حذف هذا المريض؟')) return;
-  try {
-    await db.collection('patients').doc(id).delete();
-    loadPatients();
-  } catch (e) { alert('خطأ: ' + e.message); }
+  try { await db.collection('patients').doc(id).delete(); loadPatients(); }
+  catch (e) { alert('خطأ: ' + e.message); }
 }
 
 function openAddPatient() {
@@ -412,24 +410,59 @@ async function savePatient() {
   } catch (e) { alert('خطأ: ' + e.message); }
 }
 
-// ✅ قسم AI (Gemini)
+// ✅ قسم AI (Gemini) - محدث
 async function runAI() {
-  const input = document.getElementById('aiInput').value.trim();
-  if (!input) return alert('اكتب الحالة أولاً');
-  if (!geminiApiKey) return alert('أضف مفتاح Gemini من الإعدادات');
+  const patientName = document.getElementById('aiPatientName').value.trim();
+  const complaint = document.getElementById('aiComplaint').value.trim();
+  const diagnosis = document.getElementById('aiDiagnosis').value.trim();
+  const plan = document.getElementById('aiPlan').value.trim();
+  const alternative = document.getElementById('aiAlternative').value.trim();
+
+  if (!complaint && !diagnosis) {
+    return alert('أدخل الشكوى أو التشخيص على الأقل');
+  }
+
+  if (!geminiApiKey) {
+    return alert('أضف مفتاح Gemini من إعدادات AI أولاً');
+  }
+
   const btn = document.getElementById('aiBtn');
-  btn.disabled = true; btn.textContent = '⏳...';
+  btn.disabled = true;
+  btn.textContent = '⏳ جاري التحليل...';
+
+  const prompt = `
+أنت مساعد طبي متخصص في طب الأسنان. حلل الحالة التالية وقدّم تقريراً شاملاً:
+
+- اسم المريض: ${patientName || 'غير محدد'}
+- الشكوى: ${complaint || 'غير محددة'}
+- التشخيص اليدوي: ${diagnosis || 'غير محدد'}
+- خطة العلاج المقترحة: ${plan || 'غير محددة'}
+- العلاج البديل: ${alternative || 'غير محدد'}
+
+المطلوب:
+1. تحليل شامل للحالة.
+2. تأكيد أو تصحيح التشخيص.
+3. اقتراح خطة علاج مفصلة.
+4. اقتراح بدائل علاجية.
+5. نصائح للمريض.
+`;
+
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: `أنت مساعد طبي لطبيب أسنان. حلل: ${input}` }] }] })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || JSON.stringify(data);
     const out = document.getElementById('aiOutput');
-    out.textContent = text; out.classList.remove('hidden');
-  } catch (e) { alert('خطأ: ' + e.message); }
-  btn.disabled = false; btn.textContent = '🧠 تحليل';
+    out.textContent = text;
+    out.classList.remove('hidden');
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = '🧠 تحليل شامل بالذكاء الاصطناعي';
 }
 
 function loadGeminiKey() {
@@ -443,7 +476,6 @@ function saveGeminiKey() {
   alert('✅ تم حفظ المفتاح بنجاح');
 }
 
-// ✅ قسم الدردشة (مؤقت)
 function sendChat() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
@@ -456,7 +488,6 @@ function sendChat() {
   input.value = ''; list.scrollTop = list.scrollHeight;
 }
 
-// ✅ قسم المستخدمين
 async function loadUsers() {
   try {
     const snap = await db.collection('users').get();
@@ -472,7 +503,6 @@ async function loadUsers() {
   } catch (e) { console.error(e); }
 }
 
-// ✅ قسم النشاطات
 async function loadAllActivity() {
   try {
     const snap = await db.collection('activity').orderBy('timestamp', 'desc').limit(50).get();
@@ -488,7 +518,6 @@ async function loadAllActivity() {
   } catch (e) { console.error(e); }
 }
 
-// ✅ قسم المعمل (محدث)
 async function loadLab() {
   try {
     const snap = await db.collection('lab').orderBy('createdAt', 'desc').limit(50).get();
@@ -526,7 +555,6 @@ async function saveLab() {
   } catch (e) { alert('خطأ: ' + e.message); }
 }
 
-// ✅ قسم المصروفات
 async function loadExpenses() {
   try {
     const snap = await db.collection('expenses').orderBy('createdAt', 'desc').limit(50).get();
