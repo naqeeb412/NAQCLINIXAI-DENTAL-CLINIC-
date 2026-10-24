@@ -3,252 +3,3181 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>NAQClinixAI — النظام الموحد</title>
+<title>HarmonizeAI Pro — DENTAL AI OS</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
-html,body{height:100%;overflow:hidden;background:#0b1220;color:#e8eef7}
-#app{display:flex;flex-direction:column;height:100vh}
-#topbar{background:linear-gradient(135deg,#1e3a8a,#0d9488);padding:8px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 10px rgba(0,0,0,.3);z-index:100;min-height:56px;flex-wrap:wrap}
-#topbar .logo{font-size:22px}
-#topbar .brand{font-weight:800;font-size:15px;color:#fff;letter-spacing:.5px;margin-left:8px}
-#topbar .tabs{display:flex;gap:6px;flex:1;flex-wrap:wrap}
-#topbar .tab-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;transition:all .2s;font-family:inherit;white-space:nowrap}
-#topbar .tab-btn:hover{background:rgba(255,255,255,.25)}
-#topbar .tab-btn.active{background:#fff;color:#1e3a8a;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-#topbar .user-info{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);padding:5px 10px;border-radius:8px;font-size:11px;max-width:180px}
-#topbar .user-info .avatar{width:28px;height:28px;border-radius:50%;background:#fff;color:#1e3a8a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
-#topbar .user-info .meta{overflow:hidden}
-#topbar .user-info .name{font-weight:700;color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#topbar .user-info .role{color:rgba(255,255,255,.8);font-size:9px}
-#topbar .logout-btn{background:rgba(239,68,68,.25);border:1px solid rgba(239,68,68,.5);color:#fecaca;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;white-space:nowrap}
-#topbar .logout-btn:hover{background:rgba(239,68,68,.4)}
-#mainFrame{flex:1;width:100%;border:none;background:#f0f4f8;display:block}
-#loadingOverlay{position:fixed;inset:0;background:rgba(11,18,32,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:999}
-#loadingOverlay.show{display:flex}
-.spinner{width:50px;height:50px;border:4px solid rgba(20,184,166,.2);border-top-color:#14b8a6;border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#loadingOverlay p{color:#8fa3bf;font-size:14px;font-weight:600}
-#errorBanner{display:none;position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#dc2626;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:998;box-shadow:0 4px 12px rgba(0,0,0,.3);max-width:90%}
-#errorBanner.show{display:block}
-@media(max-width:768px){
-  #topbar{padding:6px 8px;min-height:48px;gap:6px}
-  #topbar .brand{font-size:12px;margin-left:4px}
-  #topbar .tab-btn{padding:6px 8px;font-size:10px}
-  #topbar .user-info{display:none!important}
-  #topbar .logout-btn{padding:5px 8px;font-size:10px}
-  #topbar .logo{font-size:18px}
+:root{
+  --bg:#0b1220;--bg2:#0f1a2e;--card:#132039;--card2:#182747;
+  --teal:#14b8a6;--teal2:#0d9488;--cyan:#22d3ee;--gold:#f5c76a;
+  --txt:#e8eef7;--muted:#8fa3bf;--danger:#f87171;--ok:#34d399;
+  --border:rgba(255,255,255,.08);--radius:16px;--shadow:0 8px 32px rgba(0,0,0,.4);
 }
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+body{background:linear-gradient(135deg,#0b1220,#0d1b30 60%,#0b1220);color:var(--txt);min-height:100vh}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#243858;border-radius:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+a{color:var(--cyan);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+.hidden{display:none!important}
+
+/* Login */
+#loginScreen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(1200px 600px at 80% -10%,rgba(20,184,166,.18),transparent),
+  radial-gradient(900px 500px at 10% 110%,rgba(34,211,238,.12),transparent),var(--bg);padding:20px}
+.login-card{width:min(440px,92vw);background:var(--card);border:1px solid var(--border);border-radius:24px;
+  padding:34px 30px;box-shadow:0 30px 80px rgba(0,0,0,.5);text-align:center;max-height:98vh;overflow-y:auto}
+.login-card .logo{font-size:44px}
+.login-card h1{font-size:26px;margin:8px 0 2px;background:linear-gradient(90deg,var(--teal),var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.login-card .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.badge{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card2);color:var(--muted)}
+.field{margin-bottom:12px;text-align:right}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--border);
+  background:#0d1830;color:var(--txt);font-size:14px;outline:none;transition:.2s;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(20,184,166,.15)}
+.btn-primary{width:100%;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:700;
+  background:linear-gradient(90deg,var(--teal),var(--cyan));color:#04222b;transition:.2s}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.btn-ghost{width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:600;
+  background:transparent;color:var(--muted);border:1px solid var(--border);transition:.2s;margin-top:8px;cursor:pointer}
+.btn-ghost:hover{border-color:var(--teal);color:var(--txt)}
+.tabs-auth{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.tab-auth{flex:1;padding:10px;background:none;border:none;color:var(--muted);font-weight:600;font-size:13px;
+  border-bottom:2px solid transparent;cursor:pointer;transition:.2s}
+.tab-auth.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.link-small{font-size:12px;color:var(--cyan);cursor:pointer}
+.link-small:hover{text-decoration:underline}
+.login-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;padding:8px;
+  background:rgba(34,211,238,.08);border-radius:8px;border:1px solid rgba(34,211,238,.2)}
+
+/* App */
+#app{display:flex;min-height:100vh}
+#sidebar{width:250px;background:var(--bg2);border-left:1px solid var(--border);padding:18px 12px;
+  position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0;z-index:500;transition:transform .3s}
+#sidebar .brand{text-align:center;margin-bottom:14px}
+#sidebar .brand .logo{font-size:34px}
+#sidebar .brand h2{font-size:18px;background:linear-gradient(90deg,var(--teal),var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+#sidebar .brand small{color:var(--muted);font-size:11px;line-height:1.6;display:block;margin-top:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--muted);
+  font-size:13.5px;font-weight:600;cursor:pointer;margin-bottom:3px;border:1px solid transparent;
+  transition:.15s;width:100%;background:none;text-align:right;font-family:inherit}
+.nav-item:hover{background:var(--card2);color:var(--txt)}
+.nav-item.active{background:linear-gradient(90deg,rgba(20,184,166,.2),rgba(34,211,238,.1));
+  color:var(--txt);border-color:rgba(20,184,166,.35)}
+.nav-item .ic{font-size:16px;width:22px;text-align:center}
+.nav-sep{font-size:10px;color:#5b6f92;margin:12px 8px 5px;letter-spacing:1px;text-transform:uppercase}
+#main{flex:1;padding:20px 24px;min-width:0}
+#topbar{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px 18px;margin-bottom:18px;flex-wrap:wrap}
+#topbar .hello{font-weight:700}
+#topbar .spacer{flex:1}
+.chip-btn{padding:9px 14px;border-radius:11px;border:1px solid var(--border);background:var(--card2);
+  color:var(--txt);font-size:13px;font-weight:600;transition:.15s;font-family:inherit;cursor:pointer}
+.chip-btn:hover{border-color:var(--teal)}
+.chip-btn.accent{background:linear-gradient(90deg,var(--teal),var(--cyan));color:#04222b;border:none}
+.chip-btn.danger{background:rgba(248,113,113,.15);border-color:var(--danger);color:var(--danger)}
+.section{display:none;animation:fade .25s ease}
+.section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:18px}
+.panel h2{font-size:19px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.panel .desc{color:var(--muted);font-size:13px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.grid2,.grid3,.grid4{grid-template-columns:1fr}
+  #sidebar{position:fixed;top:0;right:0;bottom:0;transform:translateX(100%);z-index:1000;width:280px;padding-top:20px}
+  #sidebar.open{transform:none}
+  #menuBtn{display:flex!important}}
+@media(min-width:901px){#menuBtn{display:none!important}}
+
+.stat-card{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;text-align:center}
+.stat-card .ic{font-size:28px}
+.stat-card .num{font-size:30px;font-weight:800;margin:6px 0 2px}
+.stat-card .lbl{color:var(--muted);font-size:13px}
+
+.btn-save{padding:11px 22px;border:none;border-radius:12px;font-weight:700;font-size:14px;
+  background:linear-gradient(90deg,var(--teal),var(--cyan));color:#04222b;cursor:pointer;transition:.2s;font-family:inherit}
+.btn-save:hover{filter:brightness(1.1)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0e2a26;
+  border:1px solid var(--teal);color:var(--txt);padding:12px 22px;border-radius:12px;z-index:2000;
+  font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:opacity .3s;opacity:0;
+  pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:1;pointer-events:auto}
+.toast.error{background:#2a0e0e;border-color:var(--danger)}
+
+.loader-overlay{position:fixed;inset:0;background:rgba(11,18,32,.9);z-index:3000;display:flex;
+  align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.spinner{width:50px;height:50px;border:4px solid rgba(20,184,166,.2);border-top-color:var(--teal);
+  border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .ic{font-size:48px;margin-bottom:12px;opacity:.5}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th,table.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:right}
+table.tbl th{color:var(--cyan);font-size:12px;background:var(--card2)}
+
+@media(max-width:600px){#main{padding:12px}.login-card{padding:24px 16px}}
 </style>
 </head>
 <body>
 
-<div id="app">
-  <div id="topbar">
+<!-- شاشة الدخول -->
+<div id="loginScreen">
+  <div class="login-card">
     <div class="logo">🦷</div>
-    <div class="brand">NAQClinixAI</div>
+    <h1>HarmonizeAI</h1>
+    <div class="sub">نظام إدارة العيادة الذكي</div>
+    <div class="badges">
+      <span class="badge">🔒 Firebase Auth</span>
+      <span class="badge">☁️ Cloud Sync</span>
+      <span class="badge">v8.0</span>
+    </div>
+    <div class="tabs-auth">
+      <button class="tab-auth active" onclick="switchAuthTab('login')" id="tabLoginBtn">🔑 دخول</button>
+      <button class="tab-auth" onclick="switchAuthTab('register')" id="tabRegisterBtn">➕ حساب جديد</button>
+    </div>
+    <div id="loginForm">
+      <div class="field"><label>📧 البريد الإلكتروني</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="username"></div>
+      <div class="field"><label>🔑 كلمة المرور</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn-primary" onclick="doLogin()" id="btnLogin">🚪 دخول</button>
+      <button class="btn-ghost" onclick="showResetPassword()">🔐 نسيت كلمة المرور؟</button>
+      <p id="loginError" class="hidden" style="margin-top:10px;color:var(--danger);font-size:12px;text-align:center"></p>
+    </div>
+    <div id="registerForm" class="hidden">
+      <div class="field"><label>👤 الاسم الكامل</label>
+        <input type="text" id="regFullName" placeholder="د. أحمد محمد"></div>
+      <div class="field"><label>📧 البريد الإلكتروني</label>
+        <input type="email" id="regEmail" placeholder="your@email.com"></div>
+      <div class="field"><label>🔑 كلمة المرور (6 أحرف على الأقل)</label>
+        <input type="password" id="regPassword" placeholder="••••••••" autocomplete="new-password"></div>
+      <div class="field"><label>🔒 تأكيد كلمة المرور</label>
+        <input type="password" id="regPassword2" placeholder="••••••••" autocomplete="new-password"></div>
+      <div class="field"><label>💼 الدور</label>
+        <select id="regRole">
+          <option value="doctor">👨‍⚕️ طبيب</option>
+          <option value="employee">👨‍💼 موظف</option>
+        </select></div>
+      <button class="btn-primary" onclick="doRegister()" id="btnRegister">➕ إنشاء الحساب</button>
+      <p id="registerError" class="hidden" style="margin-top:10px;color:var(--danger);font-size:12px;text-align:center"></p>
+    </div>
+    <div class="login-hint">💡 يتطلب الاتصال بالإنترنت — البيانات محفوظة سحابياً</div>
+  </div>
+</div>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="clinic" onclick="switchTab('clinic')">🏥 العيادة</button>
-      <button class="tab-btn" data-tab="lab" onclick="switchTab('lab')">🧪 المعمل</button>
-      <button class="tab-btn" data-tab="analyzer" onclick="switchTab('analyzer')">🔬 التحليل</button>
-      <button class="tab-btn" data-tab="dentbook" onclick="switchTab('dentbook')">💬 Dentbook</button>
+<!-- التطبيق -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="logo">🦷</div>
+      <h2>HarmonizeAI</h2>
+      <small id="brandSub">جاري التحميل...</small>
+    </div>
+    <div class="nav-sep">الرئيسية</div>
+    <button class="nav-item active" data-sec="dashboard"><span class="ic">🏥</span>لوحة التحكم</button>
+    <div class="nav-sep">المرضى</div>
+    <button class="nav-item" data-sec="patients"><span class="ic">👥</span>قائمة المرضى</button>
+    <button class="nav-item" data-sec="patient"><span class="ic">👤</span>بيانات المريض</button>
+    <button class="nav-item" data-sec="history"><span class="ic">💊</span>التاريخ الطبي</button>
+    <button class="nav-item" data-sec="oral"><span class="ic">🦷</span>الفحص الفموي</button>
+    <button class="nav-item" data-sec="chart"><span class="ic">📊</span>مخطط الأسنان</button>
+    <button class="nav-item" data-sec="clinical"><span class="ic">🔬</span>الفحص السريري</button>
+    <button class="nav-item" data-sec="plan"><span class="ic">📐</span>تخطيط العلاج</button>
+    <button class="nav-item" data-sec="appoint"><span class="ic">🗓️</span>المواعيد</button>
+    <div class="nav-sep">التحليل الذكي</div>
+    <button class="nav-item" data-sec="face"><span class="ic">🧑‍⚕️</span>تحليل الوجه</button>
+    <button class="nav-item" data-sec="xray"><span class="ic">🩻</span>تحليل الأشعة</button>
+    <button class="nav-item" data-sec="ceph"><span class="ic">📐</span>السيفالومترية</button>
+    <button class="nav-item" data-sec="smile"><span class="ic">😁</span>تصميم الابتسامة</button>
+    <button class="nav-item" data-sec="diag"><span class="ic">🎓</span>التشخيص الذكي</button>
+    <button class="nav-item" data-sec="report"><span class="ic">📄</span>التقرير الشامل</button>
+    <div class="nav-sep">الأنظمة</div>
+    <button class="nav-item" onclick="openLabSystem()"><span class="ic">🧪</span>نظام المعمل</button>
+    <button class="nav-item" onclick="openAnalyzerSystem()"><span class="ic">🔬</span>التحليل التلقائي</button>
+    <div class="nav-sep">الحساب</div>
+    <button class="nav-item" data-sec="settings"><span class="ic">⚙️</span>الإعدادات</button>
+    <button class="nav-item" onclick="doLogout()" style="color:var(--danger)"><span class="ic">🚪</span>خروج</button>
+  </aside>
+
+  <main id="main">
+    <div id="topbar">
+      <span class="hello">مرحباً، <b id="userName">-</b> 👋</span>
+      <span class="spacer"></span>
+      <button class="chip-btn" onclick="refreshAll()">🔄 تحديث</button>
+      <button class="chip-btn" onclick="showSection('settings')">⚙️</button>
+      <button class="chip-btn" id="menuBtn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
     </div>
 
-    <div class="user-info" id="userInfo" style="display:none">
-      <div class="avatar" id="userAvatar">-</div>
-      <div class="meta">
-        <div class="name" id="userName">-</div>
-        <div class="role" id="userRole">-</div>
+    <!-- لوحة التحكم -->
+    <div id="sec-dashboard" class="section active">
+      <div class="panel">
+        <h2>📊 لوحة التحكم</h2>
+        <div class="desc">نظرة عامة على العيادة (من Firebase مباشرة)</div>
+        <div class="grid4" id="dashStats">
+          <div class="stat-card"><div class="ic">⏳</div><div class="num">...</div><div class="lbl">جاري التحميل</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px">
+            <h3 style="font-size:14px;margin-bottom:10px">📈 مرضى هذا الشهر</h3>
+            <canvas id="chartPatients" height="140"></canvas>
+          </div>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px">
+            <h3 style="font-size:14px;margin-bottom:10px">💰 الاتجاه</h3>
+            <canvas id="chartRevenue" height="140"></canvas>
+          </div>
+        </div>
       </div>
     </div>
 
-    <button class="logout-btn" onclick="logout()" style="display:none" id="logoutBtn">🚪</button>
-  </div>
+    <!-- قائمة المرضى -->
+    <div id="sec-patients" class="section">
+      <div class="panel">
+        <h2>👥 قائمة المرضى</h2>
+        <div class="desc">جميع المرضى المسجلين في النظام</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <input type="text" id="searchPatients" placeholder="🔍 بحث بالاسم أو الهاتف أو رقم الملف..."
+            style="flex:1;padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:#0d1830;color:var(--txt);min-width:200px"
+            oninput="renderPatientsList()">
+          <button class="chip-btn accent" onclick="openNewPatientModal()">➕ مريض جديد</button>
+          <button class="chip-btn" onclick="refreshPatients()">🔄 تحديث</button>
+        </div>
+        <div id="patientsList">
+          <div class="empty-state"><div class="ic">⏳</div><p>جاري التحميل...</p></div>
+        </div>
+      </div>
+    </div>
 
-  <iframe id="mainFrame" src="Clinical.html" title="النظام الرئيسي"></iframe>
+    <!-- بيانات المريض -->
+    <div id="sec-patient" class="section">
+      <div class="panel">
+        <h2>👤 بيانات المريض</h2>
+        <div class="desc" id="patientContext">لم يتم اختيار مريض</div>
+        <div id="patientForm" class="hidden">
+          <div class="grid2">
+            <div class="field"><label>الاسم الكامل *</label><input id="pName" placeholder="أدخل الاسم"></div>
+            <div class="field"><label>رقم الهاتف *</label><input id="pPhone" placeholder="7xxxxxxxx" type="tel"></div>
+            <div class="field"><label>رقم الواتساب</label><input id="pWhatsapp" placeholder="اختياري" type="tel"></div>
+            <div class="field"><label>البريد الإلكتروني</label><input id="pEmail" placeholder="اختياري" type="email"></div>
+            <div class="field"><label>العمر</label><input id="pAge" type="number" min="1" max="120" placeholder="العمر"></div>
+            <div class="field"><label>الجنس</label>
+              <select id="pGender"><option value="">اختر...</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
+            </div>
+            <div class="field"><label>العنوان</label><input id="pAddress" placeholder="المدينة - الحي"></div>
+            <div class="field"><label>رقم الملف</label><input id="pFileNumber" readonly style="background:#0a1020;color:var(--muted)"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+            <button class="btn-primary" style="flex:1" onclick="savePatient()">💾 حفظ البيانات</button>
+            <button class="btn-ghost" style="flex:0 0 auto;padding:11px 20px;margin:0;color:var(--danger);border-color:var(--danger)" onclick="deletePatient()">🗑️ حذف</button>
+          </div>
+        </div>
+        <div id="patientEmpty" class="empty-state">
+          <div class="ic">👤</div>
+          <p>اختر مريضاً من <a onclick="showSection('patients')" style="cursor:pointer">قائمة المرضى</a> أو أضف مريضاً جديداً</p>
+          <button class="chip-btn accent" style="margin-top:12px" onclick="openNewPatientModal()">➕ إضافة مريض</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- أقسام ستُبنى في الأجزاء التالية -->
+    <div id="sec-history" class="section"><div class="panel"><h2>💊 التاريخ الطبي</h2><div class="desc">سيُضاف في الجزء 2</div></div></div>
+    <div id="sec-oral" class="section"><div class="panel"><h2>🦷 الفحص الفموي</h2><div class="desc">سيُضاف في الجزء 2</div></div></div>
+    <div id="sec-chart" class="section"><div class="panel"><h2>📊 مخطط الأسنان</h2><div class="desc">سيُضاف في الجزء 2</div></div></div>
+    <div id="sec-clinical" class="section"><div class="panel"><h2>🔬 الفحص السريري</h2><div class="desc">سيُضاف في الجزء 2</div></div></div>
+    <div id="sec-plan" class="section"><div class="panel"><h2>📐 تخطيط العلاج</h2><div class="desc">سيُضاف في الجزء 2</div></div></div>
+    <div id="sec-appoint" class="section"><div class="panel"><h2>🗓️ المواعيد</h2><div class="desc">سيُضاف في الجزء 2</div></div></div>
+    <div id="sec-face" class="section"><div class="panel"><h2>🧑‍⚕️ تحليل الوجه</h2><div class="desc">سيُضاف في الجزء 3</div></div></div>
+    <div id="sec-xray" class="section"><div class="panel"><h2>🩻 تحليل الأشعة</h2><div class="desc">سيُضاف في الجزء 3</div></div></div>
+    <div id="sec-ceph" class="section"><div class="panel"><h2>📐 السيفالومترية</h2><div class="desc">سيُضاف في الجزء 3</div></div></div>
+    <div id="sec-smile" class="section"><div class="panel"><h2>😁 تصميم الابتسامة</h2><div class="desc">سيُضاف في الجزء 3</div></div></div>
+    <div id="sec-diag" class="section"><div class="panel"><h2>🎓 التشخيص الذكي</h2><div class="desc">سيُضاف في الجزء 3</div></div></div>
+    <div id="sec-report" class="section"><div class="panel"><h2>📄 التقرير الشامل</h2><div class="desc">سيُضاف في الجزء 4</div></div></div>
+    <div id="sec-settings" class="section">
+      <div class="panel">
+        <h2>⚙️ الإعدادات</h2>
+        <div class="desc">بيانات حسابك</div>
+        <div class="grid2">
+          <div class="field"><label>البريد الإلكتروني</label><input id="setEmail" readonly style="background:#0a1020"></div>
+          <div class="field"><label>الاسم الكامل</label><input id="setFullName"></div>
+          <div class="field"><label>الدور</label><input id="setRole" readonly style="background:#0a1020"></div>
+          <div class="field"><label>الحالة</label><input id="setActive" readonly style="background:#0a1020"></div>
+        </div>
+        <button class="btn-primary" style="margin-top:16px" onclick="saveProfile()">💾 حفظ الاسم</button>
+        <button class="btn-ghost" onclick="showChangePassword()">🔑 تغيير كلمة المرور</button>
+      </div>
+    </div>
+
+    <footer style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0;border-top:1px solid var(--border);margin-top:20px">
+      © 2026 HarmonizeAI Pro — Firebase Auth + Firestore
+    </footer>
+  </main>
 </div>
 
-<div id="loadingOverlay">
+<div id="loader" class="loader-overlay hidden">
   <div class="spinner"></div>
-  <p id="loadingText">جاري التحميل...</p>
+  <p style="color:var(--muted)">جاري التحميل...</p>
 </div>
 
-<div id="errorBanner"></div>
+<!-- Modal مريض جديد -->
+<div id="newPatientModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;max-width:400px;width:100%">
+    <h3 style="margin-bottom:16px">➕ مريض جديد</h3>
+    <div class="field"><label>الاسم الكامل *</label><input id="npName" placeholder="اسم المريض"></div>
+    <div class="field"><label>رقم الهاتف *</label><input id="npPhone" type="tel" placeholder="7xxxxxxxx"></div>
+    <div class="field"><label>العمر</label><input id="npAge" type="number" placeholder="اختياري"></div>
+    <div class="field"><label>الجنس</label>
+      <select id="npGender"><option value="">اختر...</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-primary" style="flex:1" onclick="createPatient()">➕ إضافة</button>
+      <button class="btn-ghost" style="flex:0 0 auto;padding:11px 20px;margin:0" onclick="closeNewPatientModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
+  authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
+  projectId: "naqclinixai-dental-clinic",
+  storageBucket: "naqclinixai-dental-clinic.firebasestorage.app",
+  messagingSenderId: "796796158387",
+  appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// State
+let currentUser = null;
+let patients = [];
+let currentPatient = null;
+let charts = {};
+
+function toast(msg, isError) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.toggle('error', !!isError);
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+}
+function showLoader(show) { document.getElementById('loader').classList.toggle('hidden', !show); }
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('tabLoginBtn').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegisterBtn').classList.toggle('active', tab === 'register');
+  document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
+  const btn = document.getElementById('btnLogin');
+  err.classList.add('hidden');
+  if (!email || !password) { err.textContent = '⚠️ أدخل البريد وكلمة المرور'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = '⏳ جاري الدخول...';
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    toast('✅ تم تسجيل الدخول');
+  } catch (e) {
+    let msg = e.message;
+    if (e.code === 'auth/user-not-found') msg = '❌ البريد غير مسجل';
+    else if (e.code === 'auth/wrong-password') msg = '❌ كلمة المرور غير صحيحة';
+    else if (e.code === 'auth/invalid-email') msg = '❌ البريد غير صالح';
+    else if (e.code === 'auth/too-many-requests') msg = '❌ محاولات كثيرة، حاول لاحقاً';
+    err.textContent = msg;
+    err.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = '🚪 دخول';
+  }
+}
+
+async function doRegister() {
+  const fullName = document.getElementById('regFullName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const password2 = document.getElementById('regPassword2').value;
+  const role = document.getElementById('regRole').value;
+  const err = document.getElementById('registerError');
+  const btn = document.getElementById('btnRegister');
+  err.classList.add('hidden');
+  if (!fullName || !email || !password) { err.textContent = '⚠️ أكمل جميع الحقول'; err.classList.remove('hidden'); return; }
+  if (password.length < 6) { err.textContent = '⚠️ كلمة المرور 6 أحرف على الأقل'; err.classList.remove('hidden'); return; }
+  if (password !== password2) { err.textContent = '⚠️ كلمتا المرور غير متطابقتين'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = '⏳ جاري الإنشاء...';
+  try {
+    const userCred = await auth.createUserWithEmailAndPassword(email, password);
+    await db.collection('users').doc(email).set({
+      email: email, fullName: fullName, role: role, active: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await userCred.user.updateProfile({ displayName: fullName });
+    toast('✅ تم إنشاء الحساب');
+  } catch (e) {
+    let msg = e.message;
+    if (e.code === 'auth/email-already-in-use') msg = '❌ البريد مسجل مسبقاً';
+    else if (e.code === 'auth/weak-password') msg = '❌ كلمة المرور ضعيفة';
+    err.textContent = msg;
+    err.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = '➕ إنشاء الحساب';
+  }
+}
+
+async function showResetPassword() {
+  const email = prompt('أدخل بريدك الإلكتروني لإرسال رابط إعادة التعيين:',
+    document.getElementById('loginEmail').value.trim());
+  if (!email) return;
+  try {
+    await auth.sendPasswordResetEmail(email);
+    toast('📧 تم إرسال رابط إعادة التعيين');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function showChangePassword() {
+  const newPass = prompt('أدخل كلمة المرور الجديدة (6 أحرف على الأقل):');
+  if (!newPass) return;
+  if (newPass.length < 6) { toast('❌ كلمة المرور قصيرة', true); return; }
+  try {
+    await currentUser.authUser.updatePassword(newPass);
+    toast('✅ تم تغيير كلمة المرور');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function doLogout() {
+  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  await auth.signOut();
+  toast('👋 تم تسجيل الخروج');
+}
+
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    showLoader(true);
+    try {
+      const doc = await db.collection('users').doc(user.email).get();
+      let userData;
+      if (doc.exists) userData = doc.data();
+      else {
+        userData = { email: user.email, fullName: user.displayName || user.email,
+          role: 'doctor', active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+        await db.collection('users').doc(user.email).set(userData);
+      }
+      if (userData.active === false) {
+        await auth.signOut();
+        toast('🚫 حسابك موقوف', true);
+        showLoader(false); return;
+      }
+      currentUser = {
+        authUser: user, email: user.email,
+        fullName: userData.fullName || user.email,
+        role: userData.role || 'doctor', active: true
+      };
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('userName').textContent = currentUser.fullName;
+      document.getElementById('brandSub').textContent =
+        (currentUser.role === 'admin' ? '👑 مدير' : currentUser.role === 'doctor' ? '👨‍⚕️ طبيب' : '👨‍💼 موظف')
+        + ' — ' + currentUser.email;
+      await loadPatients();
+      await updateDashboard();
+      fillSettings();
+      db.collection('activity').add({
+        email: currentUser.email, fullName: currentUser.fullName, role: currentUser.role,
+        action: 'تسجيل دخول', timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(() => {});
+      toast('✅ مرحباً ' + currentUser.fullName);
+    } catch (e) {
+      console.error(e);
+      toast('❌ خطأ في التحميل: ' + e.message, true);
+    } finally { showLoader(false); }
+  } else {
+    currentUser = null;
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('app').classList.add('hidden');
+  }
+});
+
+function showSection(secId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('sec-' + secId);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.nav-item[data-sec="${secId}"]`);
+  if (btn) btn.classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+  // Load section-specific data
+  if (secId === 'history' && currentPatient && typeof loadHistory === 'function') loadHistory();
+  if (secId === 'oral' && currentPatient && typeof loadOral === 'function') loadOral();
+  if (secId === 'chart' && currentPatient && typeof loadChart === 'function') loadChart();
+  if (secId === 'clinical' && currentPatient && typeof loadClinical === 'function') loadClinical();
+  if (secId === 'plan' && currentPatient && typeof loadPlan === 'function') loadPlan();
+  if (secId === 'appoint' && currentPatient && typeof loadAppointments === 'function') loadAppointments();
+  if (secId === 'report' && currentPatient && typeof loadReport === 'function') loadReport();
+}
+document.querySelectorAll('.nav-item[data-sec]').forEach(btn => {
+  btn.addEventListener('click', function () { showSection(this.dataset.sec); });
+});
+
+async function loadPatients() {
+  try {
+    const snap = await db.collection('patients').get();
+    patients = [];
+    snap.forEach(doc => patients.push({ id: doc.id, ...doc.data() }));
+    patients.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    renderPatientsList();
+    updateDashboard();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('patientsList').innerHTML =
+      '<div class="empty-state"><div class="ic">❌</div><p>فشل التحميل: ' + escapeHtml(e.message) + '</p></div>';
+  }
+}
+
+async function refreshPatients() { toast('🔄 جاري التحديث...'); await loadPatients(); toast('✅ تم'); }
+
+function renderPatientsList() {
+  const search = (document.getElementById('searchPatients').value || '').toLowerCase().trim();
+  const container = document.getElementById('patientsList');
+  let filtered = patients;
+  if (search) {
+    filtered = patients.filter(p =>
+      (p.fullName || '').toLowerCase().includes(search) ||
+      (p.phone || '').includes(search) ||
+      (p.fileNumber || '').toLowerCase().includes(search));
+  }
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="ic">📭</div>
+      <p>${search ? 'لا نتائج' : 'لا يوجد مرضى بعد'}</p>
+      ${!search ? '<button class="chip-btn accent" style="margin-top:12px" onclick="openNewPatientModal()">➕ إضافة أول مريض</button>' : ''}</div>`;
+    return;
+  }
+  container.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">' +
+    filtered.map(p => `
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;transition:.2s"
+           onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='var(--border)'"
+           onclick="openPatient('${p.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+          <div>
+            <div style="font-weight:700;font-size:14px">${escapeHtml(p.fullName || 'بدون اسم')}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${escapeHtml(p.fileNumber || p.id)}</div>
+          </div>
+          <span style="font-size:11px;padding:3px 8px;border-radius:6px;background:rgba(20,184,166,.15);color:var(--teal)">
+            ${escapeHtml(p.gender || '—')}</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap">
+          ${p.phone ? `<span>📱 ${escapeHtml(p.phone)}</span>` : ''}
+          ${p.age ? `<span>🎂 ${p.age} سنة</span>` : ''}
+        </div>
+        <div style="margin-top:10px">
+          <button class="chip-btn" style="width:100%;padding:6px;font-size:11px" onclick="event.stopPropagation();openPatient('${p.id}')">📂 فتح الملف</button>
+        </div>
+      </div>`).join('') + '</div>';
+}
+
+async function openPatient(id) {
+  try {
+    const doc = await db.collection('patients').doc(id).get();
+    if (!doc.exists) { toast('❌ غير موجود', true); return; }
+    currentPatient = { id: doc.id, ...doc.data() };
+    document.getElementById('patientEmpty').classList.add('hidden');
+    document.getElementById('patientForm').classList.remove('hidden');
+    document.getElementById('patientContext').textContent =
+      `عرض: ${currentPatient.fullName || id} — ${currentPatient.fileNumber || id}`;
+    document.getElementById('pName').value = currentPatient.fullName || '';
+    document.getElementById('pPhone').value = currentPatient.phone || '';
+    document.getElementById('pWhatsapp').value = currentPatient.whatsapp || '';
+    document.getElementById('pEmail').value = currentPatient.email || '';
+    document.getElementById('pAge').value = currentPatient.age || '';
+    document.getElementById('pGender').value = currentPatient.gender || '';
+    document.getElementById('pAddress').value = currentPatient.address || '';
+    document.getElementById('pFileNumber').value = currentPatient.fileNumber || id;
+    showSection('patient');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function savePatient() {
+  if (!currentPatient) { toast('⚠️ اختر مريضاً', true); return; }
+  const name = document.getElementById('pName').value.trim();
+  const phone = document.getElementById('pPhone').value.trim();
+  if (!name || !phone) { toast('⚠️ الاسم والهاتف مطلوبان', true); return; }
+  try {
+    await db.collection('patients').doc(currentPatient.id).update({
+      fullName: name, phone: phone,
+      whatsapp: document.getElementById('pWhatsapp').value.trim(),
+      email: document.getElementById('pEmail').value.trim(),
+      age: document.getElementById('pAge').value ? parseInt(document.getElementById('pAge').value) : null,
+      gender: document.getElementById('pGender').value,
+      address: document.getElementById('pAddress').value.trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.email
+    });
+    currentPatient = { ...currentPatient, fullName: name, phone: phone };
+    toast('✅ تم حفظ البيانات');
+    await loadPatients();
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function deletePatient() {
+  if (!currentPatient) return;
+  if (!confirm('⚠️ هل تريد حذف هذا المريض نهائياً؟')) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id).delete();
+    toast('🗑️ تم الحذف');
+    currentPatient = null;
+    document.getElementById('patientForm').classList.add('hidden');
+    document.getElementById('patientEmpty').classList.remove('hidden');
+    document.getElementById('patientContext').textContent = 'لم يتم اختيار مريض';
+    await loadPatients();
+    showSection('patients');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+function openNewPatientModal() {
+  document.getElementById('newPatientModal').classList.remove('hidden');
+  ['npName','npPhone','npAge'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('npGender').value = '';
+  setTimeout(() => document.getElementById('npName').focus(), 100);
+}
+function closeNewPatientModal() {
+  document.getElementById('newPatientModal').classList.add('hidden');
+}
+
+async function createPatient() {
+  const name = document.getElementById('npName').value.trim();
+  const phone = document.getElementById('npPhone').value.trim();
+  const age = document.getElementById('npAge').value;
+  const gender = document.getElementById('npGender').value;
+  if (!name || !phone) { toast('⚠️ الاسم والهاتف مطلوبان', true); return; }
+  try {
+    const fileNumber = 'DR-' + Date.now().toString().slice(-8);
+    const ref = await db.collection('patients').add({
+      fullName: name, phone: phone,
+      age: age ? parseInt(age) : null,
+      gender: gender, fileNumber: fileNumber,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser.email, createdByName: currentUser.fullName
+    });
+    toast('✅ تم إنشاء المريض: ' + fileNumber);
+    closeNewPatientModal();
+    await loadPatients();
+    await openPatient(ref.id);
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function updateDashboard() {
+  const total = patients.length;
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thisMonth = patients.filter(p => {
+    if (!p.createdAt) return false;
+    const d = p.createdAt.toDate ? p.createdAt.toDate() : new Date(p.createdAt.seconds * 1000);
+    return d >= monthStart;
+  }).length;
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card"><div class="ic">👥</div><div class="num">${total}</div><div class="lbl">إجمالي المرضى</div></div>
+    <div class="stat-card"><div class="ic">📅</div><div class="num">${thisMonth}</div><div class="lbl">مرضى هذا الشهر</div></div>
+    <div class="stat-card"><div class="ic">🔬</div><div class="num">0</div><div class="lbl">تحليلات AI</div></div>
+    <div class="stat-card"><div class="ic">📊</div><div class="num">0</div><div class="lbl">خطط العلاج</div></div>`;
+  drawCharts();
+}
+
+function drawCharts() {
+  const months = [], counts = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(d.toLocaleDateString('ar-EG', { month: 'short' }));
+    counts.push(patients.filter(p => {
+      if (!p.createdAt) return false;
+      const pd = p.createdAt.toDate ? p.createdAt.toDate() : new Date(p.createdAt.seconds * 1000);
+      return pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth();
+    }).length);
+  }
+  const ctx1 = document.getElementById('chartPatients');
+  if (ctx1) {
+    if (charts.patients) charts.patients.destroy();
+    charts.patients = new Chart(ctx1, {
+      type: 'bar',
+      data: { labels: months, datasets: [{ label: 'مرضى جدد', data: counts,
+        backgroundColor: 'rgba(20,184,166,0.6)', borderColor: '#14b8a6', borderWidth: 2 }] },
+      options: { responsive: true, plugins: { legend: { labels: { color: '#e8eef7', font: { size: 11 } } } },
+        scales: { y: { ticks: { color: '#8fa3bf' }, beginAtZero: true }, x: { ticks: { color: '#8fa3bf' } } } }
+    });
+  }
+  const ctx2 = document.getElementById('chartRevenue');
+  if (ctx2) {
+    if (charts.revenue) charts.revenue.destroy();
+    charts.revenue = new Chart(ctx2, {
+      type: 'line',
+      data: { labels: months, datasets: [{ label: 'الاتجاه', data: counts,
+        borderColor: '#22d3ee', backgroundColor: 'rgba(34,211,238,0.15)', tension: 0.3, fill: true }] },
+      options: { responsive: true, plugins: { legend: { labels: { color: '#e8eef7', font: { size: 11 } } } },
+        scales: { y: { ticks: { color: '#8fa3bf' }, beginAtZero: true }, x: { ticks: { color: '#8fa3bf' } } } }
+    });
+  }
+}
+
+function fillSettings() {
+  if (!currentUser) return;
+  document.getElementById('setEmail').value = currentUser.email;
+  document.getElementById('setFullName').value = currentUser.fullName;
+  document.getElementById('setRole').value =
+    currentUser.role === 'admin' ? '👑 مدير' : currentUser.role === 'doctor' ? '👨‍⚕️ طبيب' : '👨‍💼 موظف';
+  document.getElementById('setActive').value = '✅ نشط';
+}
+
+async function saveProfile() {
+  const name = document.getElementById('setFullName').value.trim();
+  if (!name) { toast('⚠️ الاسم مطلوب', true); return; }
+  try {
+    await db.collection('users').doc(currentUser.email).update({ fullName: name });
+    await currentUser.authUser.updateProfile({ displayName: name });
+    currentUser.fullName = name;
+    document.getElementById('userName').textContent = name;
+    toast('✅ تم الحفظ');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+function openLabSystem() {
+  if (!currentUser) return;
+  const p = new URLSearchParams({ user: currentUser.email, name: currentUser.fullName, role: currentUser.role });
+  window.open('lab.html?' + p.toString(), '_blank');
+}
+function openAnalyzerSystem() {
+  if (!currentUser) return;
+  const p = new URLSearchParams({
+    user: currentUser.email, name: currentUser.fullName, role: currentUser.role,
+    patient: currentPatient?.id || '', patientName: currentPatient?.fullName || ''
+  });
+  window.open('analyzer.html?' + p.toString(), '_blank');
+}
+function refreshAll() { loadPatients(); toast('🔄 تم'); }
+
+console.log('🦷 HarmonizeAI Pro v8.0 — الجزء 1');
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- الجزء 2: التاريخ الطبي + الفحص + مخطط الأسنان + المواعيد -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// إعدادات الأنظمة
+// البيانات الطبية - تُحفظ في: patients/{id}/medical/{doc}
 // ═══════════════════════════════════════════════════════════════
-const SYSTEMS = {
-  clinic: { file: 'Clinical.html', name: 'العيادة' },
-  lab: { file: 'Lab.html', name: 'المعمل' },
-  analyzer: { file: 'Analyzer.html', name: 'التحليل التلقائي' },
-  dentbook: { file: 'Dentbook.html', name: 'Dentbook' }
+
+// ─────── التاريخ الطبي ───────
+async function loadHistory() {
+  if (!currentPatient) {
+    document.getElementById('sec-history').innerHTML =
+      '<div class="panel"><h2>💊 التاريخ الطبي</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-history').innerHTML = `
+    <div class="panel">
+      <h2>💊 التاريخ الطبي</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b></div>
+      <div id="historyForm">
+        <div class="field"><label>الأمراض المزمنة</label>
+          <textarea id="histChronic" rows="3" placeholder="مثال: سكري، ضغط، قلب..."></textarea></div>
+        <div class="field"><label>الحساسية (أدوية / طعام)</label>
+          <textarea id="histAllergy" rows="2" placeholder="مثال: بنسلين، لاكتوز..."></textarea></div>
+        <div class="field"><label>الأدوية الحالية</label>
+          <textarea id="histDrugs" rows="2" placeholder="الأدوية التي يتناولها حالياً"></textarea></div>
+        <div class="grid2">
+          <div class="field"><label>هل يدخن؟</label>
+            <select id="histSmoke"><option value="">اختر...</option><option value="لا">لا</option><option value="نعم - خفيف">نعم - خفيف</option><option value="نعم - مدخن">نعم - مدخن</option></select></div>
+          <div class="field"><label>هل سبق إجراء عمليات جراحية؟</label>
+            <select id="histSurgery"><option value="">اختر...</option><option value="لا">لا</option><option value="نعم">نعم</option></select></div>
+        </div>
+        <div class="field"><label>ملاحظات إضافية</label>
+          <textarea id="histNotes" rows="2" placeholder="أي ملاحظات طبية أخرى"></textarea></div>
+        <button class="btn-save" onclick="saveHistory()">💾 حفظ التاريخ الطبي</button>
+      </div>
+      <div class="empty-state hidden" id="historyEmpty"><div class="ic">📋</div><p>لا يوجد تاريخ طبي مسجل بعد</p></div>
+    </div>`;
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('medical').doc('history').get();
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('histChronic').value = d.chronic || '';
+      document.getElementById('histAllergy').value = d.allergy || '';
+      document.getElementById('histDrugs').value = d.drugs || '';
+      document.getElementById('histSmoke').value = d.smoke || '';
+      document.getElementById('histSurgery').value = d.surgery || '';
+      document.getElementById('histNotes').value = d.notes || '';
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function saveHistory() {
+  if (!currentPatient) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id).collection('medical').doc('history').set({
+      chronic: document.getElementById('histChronic').value.trim(),
+      allergy: document.getElementById('histAllergy').value.trim(),
+      drugs: document.getElementById('histDrugs').value.trim(),
+      smoke: document.getElementById('histSmoke').value,
+      surgery: document.getElementById('histSurgery').value,
+      notes: document.getElementById('histNotes').value.trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.email
+    }, { merge: true });
+    toast('✅ تم حفظ التاريخ الطبي');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ─────── الفحص الفموي ───────
+async function loadOral() {
+  if (!currentPatient) {
+    document.getElementById('sec-oral').innerHTML =
+      '<div class="panel"><h2>🦷 الفحص الفموي</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-oral').innerHTML = `
+    <div class="panel">
+      <h2>🦷 الفحص الفموي</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b></div>
+      <div class="grid2">
+        <div class="field"><label>حالة الأسنان</label>
+          <select id="oralTeeth"><option value="">اختر...</option><option>جيد</option><option>متوسط</option><option>سيئ</option></select></div>
+        <div class="field"><label>حالة اللثة</label>
+          <select id="oralGum"><option value="">اختر...</option><option>سليمة</option><option>التهاب خفيف</option><option>التهاب متوسط</option><option>التهاب حاد</option></select></div>
+        <div class="field"><label>نظافة الفم</label>
+          <select id="oralHygiene"><option value="">اختر...</option><option>ممتازة</option><option>جيدة</option><option>متوسطة</option><option>ضعيفة</option></select></div>
+        <div class="field"><label>وجود تسوس</label>
+          <select id="oralCaries"><option value="">اختر...</option><option>لا يوجد</option><option>سن واحد</option><option>أسنان متعددة</option></select></div>
+        <div class="field"><label>حشوات سابقة</label>
+          <select id="oralFillings"><option value="">اختر...</option><option>لا يوجد</option><option>حشوات قليلة</option><option>حشوات متعددة</option></select></div>
+        <div class="field"><label>تركيبات سابقة</label>
+          <select id="oralCrowns"><option value="">اختر...</option><option>لا يوجد</option><option>تيجان</option><option>جسور</option><option>زراعة</option></select></div>
+        <div class="field"><label>رائحة الفم</label>
+          <select id="oralBreath"><option value="">اختر...</option><option>لا توجد</option><option>خفيفة</option><option>واضحة</option></select></div>
+        <div class="field"><label>جفاف الفم</label>
+          <select id="oralDry"><option value="">اختر...</option><option>لا يوجد</option><option>خفيف</option><option>شديد</option></select></div>
+      </div>
+      <div class="field"><label>ملاحظات الفحص</label>
+        <textarea id="oralNotes" rows="3" placeholder="أي ملاحظات إضافية عن الفحص"></textarea></div>
+      <button class="btn-save" onclick="saveOral()">💾 حفظ الفحص الفموي</button>
+    </div>`;
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('medical').doc('oral').get();
+    if (doc.exists) {
+      const d = doc.data();
+      ['Teeth','Gum','Hygiene','Caries','Fillings','Crowns','Breath','Dry'].forEach(k => {
+        const el = document.getElementById('oral' + k);
+        if (el && d[k.toLowerCase()]) el.value = d[k.toLowerCase()];
+      });
+      document.getElementById('oralNotes').value = d.notes || '';
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function saveOral() {
+  if (!currentPatient) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id).collection('medical').doc('oral').set({
+      teeth: document.getElementById('oralTeeth').value,
+      gum: document.getElementById('oralGum').value,
+      hygiene: document.getElementById('oralHygiene').value,
+      caries: document.getElementById('oralCaries').value,
+      fillings: document.getElementById('oralFillings').value,
+      crowns: document.getElementById('oralCrowns').value,
+      breath: document.getElementById('oralBreath').value,
+      dry: document.getElementById('oralDry').value,
+      notes: document.getElementById('oralNotes').value.trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.email
+    }, { merge: true });
+    toast('✅ تم حفظ الفحص الفموي');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ─────── مخطط الأسنان (32 سن) ───────
+let toothStatuses = Array(32).fill('normal');
+let missingMode = false;
+
+const TOOTH_STATUS = {
+  normal:   { bg: '#34d399', label: 'سليم', icon: '✅' },
+  carious:  { bg: '#fbbf24', label: 'تسوس', icon: '⚠️' },
+  treated:  { bg: '#f87171', label: 'معالج', icon: '🩹' },
+  missing:  { bg: '#6b7280', label: 'مفقود', icon: '❌' },
+  crown:    { bg: '#a78bfa', label: 'تاج', icon: '👑' },
+  rootCanal:{ bg: '#fb923c', label: 'علاج عصب', icon: '🦷' }
 };
 
-let currentTab = 'clinic';
-let currentUser = null;
-let iframeLoadTimeout = null;
+async function loadChart() {
+  if (!currentPatient) {
+    document.getElementById('sec-chart').innerHTML =
+      '<div class="panel"><h2>📊 مخطط الأسنان</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-chart').innerHTML = `
+    <div class="panel">
+      <h2>📊 مخطط الأسنان</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b> — اضغط على أي سن لتغيير حالته</div>
+      <div style="background:var(--card2);padding:14px;border-radius:12px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:12px;color:var(--muted)">الفك العلوي</span>
+          <button class="chip-btn" onclick="toggleMissingMode()" id="missingModeBtn" style="padding:5px 10px;font-size:11px">🚫 وضع مفقود</button>
+        </div>
+        <div id="upperTeeth" style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:12px"></div>
+        <div style="height:1px;background:var(--border);margin:10px 0"></div>
+        <span style="font-size:12px;color:var(--muted)">الفك السفلي</span>
+        <div id="lowerTeeth" style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:8px"></div>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;font-size:12px">
+        ${Object.entries(TOOTH_STATUS).map(([k,v]) => `
+          <span><span style="display:inline-block;width:12px;height:12px;background:${v.bg};border-radius:3px;margin-left:4px;vertical-align:middle"></span>${v.label}</span>
+        `).join('')}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <button class="chip-btn" onclick="resetChart()">🔄 إعادة ضبط</button>
+        <button class="btn-save" onclick="saveChart()">💾 حفظ المخطط</button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">
+        ملاحظة: الأرقام 1-16 للفك العلوي، 17-32 للفك السفلي (ترقيم أمريكي)
+      </p>
+    </div>`;
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('medical').doc('chart').get();
+    if (doc.exists && Array.isArray(doc.data().teeth)) {
+      toothStatuses = doc.data().teeth;
+    } else {
+      toothStatuses = Array(32).fill('normal');
+    }
+    renderChart();
+  } catch (e) {
+    toothStatuses = Array(32).fill('normal');
+    renderChart();
+  }
+}
+
+function renderChart() {
+  const upper = document.getElementById('upperTeeth');
+  const lower = document.getElementById('lowerTeeth');
+  if (!upper || !lower) return;
+
+  function makeTooth(idx, toothNum) {
+    const st = TOOTH_STATUS[toothStatuses[idx]] || TOOTH_STATUS.normal;
+    return `<div onclick="toggleTooth(${idx})"
+      style="width:32px;height:44px;background:${st.bg};border-radius:6px 6px 10px 10px;cursor:pointer;
+             display:flex;flex-direction:column;align-items:center;justify-content:center;
+             font-size:9px;color:${toothStatuses[idx] === 'missing' ? '#fff' : '#04222b'};font-weight:700;
+             transition:.15s;position:relative"
+      onmouseover="this.style.transform='scale(1.15)';this.style.zIndex=5"
+      onmouseout="this.style.transform='scale(1)';this.style.zIndex=1"
+      title="سن ${toothNum} - ${st.label}">
+      <div style="font-size:11px">${st.icon}</div>
+      <div>${toothNum}</div>
+    </div>`;
+  }
+
+  upper.innerHTML = '';
+  for (let i = 0; i < 16; i++) upper.innerHTML += makeTooth(i, i + 1);
+  lower.innerHTML = '';
+  for (let i = 16; i < 32; i++) lower.innerHTML += makeTooth(i, i + 1);
+}
+
+function toggleTooth(idx) {
+  if (missingMode) {
+    toothStatuses[idx] = 'missing';
+  } else {
+    const statuses = ['normal', 'carious', 'treated', 'crown', 'rootCanal', 'missing'];
+    const cur = statuses.indexOf(toothStatuses[idx]);
+    toothStatuses[idx] = statuses[(cur + 1) % statuses.length];
+  }
+  renderChart();
+  toast(`🦷 السن #${idx + 1}: ${TOOTH_STATUS[toothStatuses[idx]].label}`);
+}
+
+function toggleMissingMode() {
+  missingMode = !missingMode;
+  const btn = document.getElementById('missingModeBtn');
+  if (btn) {
+    btn.style.background = missingMode ? 'var(--danger)' : 'var(--card2)';
+    btn.style.color = missingMode ? '#fff' : 'var(--txt)';
+    btn.textContent = missingMode ? '🚫 وضع مفقود (نشط)' : '🚫 وضع مفقود';
+  }
+}
+
+function resetChart() {
+  if (!confirm('🔄 إعادة ضبط جميع الأسنان إلى "سليم"؟')) return;
+  toothStatuses = Array(32).fill('normal');
+  renderChart();
+  toast('🔄 تم إعادة الضبط');
+}
+
+async function saveChart() {
+  if (!currentPatient) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id).collection('medical').doc('chart').set({
+      teeth: toothStatuses,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.email
+    }, { merge: true });
+    toast('✅ تم حفظ مخطط الأسنان');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ─────── الفحص السريري ───────
+async function loadClinical() {
+  if (!currentPatient) {
+    document.getElementById('sec-clinical').innerHTML =
+      '<div class="panel"><h2>🔬 الفحص السريري</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-clinical').innerHTML = `
+    <div class="panel">
+      <h2>🔬 الفحص السريري</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b></div>
+      <div class="grid2">
+        <div class="field"><label>ضغط الدم (mmHg)</label><input id="clinBP" placeholder="120/80"></div>
+        <div class="field"><label>معدل النبض (نبضة/دقيقة)</label><input id="clinPulse" type="number" placeholder="72"></div>
+        <div class="field"><label>درجة الحرارة (°C)</label><input id="clinTemp" type="number" step="0.1" placeholder="36.5"></div>
+        <div class="field"><label>الوزن (كجم)</label><input id="clinWeight" type="number" step="0.1" placeholder="70"></div>
+        <div class="field"><label>الطول (سم)</label><input id="clinHeight" type="number" placeholder="170"></div>
+        <div class="field"><label>فتح الفم (مم)</label><input id="clinMouthOpen" type="number" placeholder="40"></div>
+        <div class="field"><label>حركة الفك TMJ</label>
+          <select id="clinTMJ"><option value="">اختر...</option><option>طبيعية</option><option>محدودة</option><option>غير طبيعية</option></select></div>
+        <div class="field"><label>صوت المفصل</label>
+          <select id="clinJoint"><option value="">اختر...</option><option>لا يوجد</option><option>نقر</option><option>طحن</option></select></div>
+      </div>
+      <div class="field"><label>ملاحظات سريرية</label>
+        <textarea id="clinNotes" rows="3" placeholder="ملاحظات الفحص السريري"></textarea></div>
+      <button class="btn-save" onclick="saveClinical()">💾 حفظ الفحص السريري</button>
+    </div>`;
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('medical').doc('clinical').get();
+    if (doc.exists) {
+      const d = doc.data();
+      ['BP','Pulse','Temp','Weight','Height','MouthOpen'].forEach(k => {
+        const el = document.getElementById('clin' + k);
+        if (el && d[k.toLowerCase()]) el.value = d[k.toLowerCase()];
+      });
+      document.getElementById('clinTMJ').value = d.tmj || '';
+      document.getElementById('clinJoint').value = d.joint || '';
+      document.getElementById('clinNotes').value = d.notes || '';
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function saveClinical() {
+  if (!currentPatient) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id).collection('medical').doc('clinical').set({
+      bp: document.getElementById('clinBP').value.trim(),
+      pulse: document.getElementById('clinPulse').value,
+      temp: document.getElementById('clinTemp').value,
+      weight: document.getElementById('clinWeight').value,
+      height: document.getElementById('clinHeight').value,
+      mouthopen: document.getElementById('clinMouthOpen').value,
+      tmj: document.getElementById('clinTMJ').value,
+      joint: document.getElementById('clinJoint').value,
+      notes: document.getElementById('clinNotes').value.trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.email
+    }, { merge: true });
+    toast('✅ تم حفظ الفحص السريري');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ─────── تخطيط العلاج ───────
+async function loadPlan() {
+  if (!currentPatient) {
+    document.getElementById('sec-plan').innerHTML =
+      '<div class="panel"><h2>📐 تخطيط العلاج</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-plan').innerHTML = `
+    <div class="panel">
+      <h2>📐 تخطيط العلاج</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b></div>
+      <div class="field"><label>الخطة الرئيسية *</label>
+        <textarea id="planMain" rows="4" placeholder="مثال: زراعة سن أمامي + تقويم خفيف"></textarea></div>
+      <div class="field"><label>خطة بديلة</label>
+        <textarea id="planAlt" rows="3" placeholder="مثال: جسر خزفي بدلاً من الزراعة"></textarea></div>
+      <div class="grid3">
+        <div class="field"><label>المدة المتوقعة</label><input id="planDuration" placeholder="مثال: 6 أشهر"></div>
+        <div class="field"><label>التكلفة التقديرية</label><input id="planCost" type="number" placeholder="0"></div>
+        <div class="field"><label>العملة</label>
+          <select id="planCurrency"><option value="ريال">ريال يمني</option><option value="USD">دولار</option><option value="SAR">ريال سعودي</option></select></div>
+      </div>
+      <div class="field"><label>مراحل العلاج</label>
+        <textarea id="planStages" rows="3" placeholder="1. تنظيف عميق&#10;2. زراعة&#10;3. متابعة"></textarea></div>
+      <button class="btn-save" onclick="savePlan()">💾 حفظ الخطة</button>
+    </div>`;
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('medical').doc('plan').get();
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('planMain').value = d.main || '';
+      document.getElementById('planAlt').value = d.alt || '';
+      document.getElementById('planDuration').value = d.duration || '';
+      document.getElementById('planCost').value = d.cost || '';
+      document.getElementById('planCurrency').value = d.currency || 'ريال';
+      document.getElementById('planStages').value = d.stages || '';
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function savePlan() {
+  if (!currentPatient) return;
+  const main = document.getElementById('planMain').value.trim();
+  if (!main) { toast('⚠️ الخطة الرئيسية مطلوبة', true); return; }
+  try {
+    await db.collection('patients').doc(currentPatient.id).collection('medical').doc('plan').set({
+      main: main,
+      alt: document.getElementById('planAlt').value.trim(),
+      duration: document.getElementById('planDuration').value.trim(),
+      cost: parseFloat(document.getElementById('planCost').value) || 0,
+      currency: document.getElementById('planCurrency').value,
+      stages: document.getElementById('planStages').value.trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.email
+    }, { merge: true });
+    toast('✅ تم حفظ خطة العلاج');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ─────── المواعيد (CRUD كامل) ───────
+async function loadAppointments() {
+  if (!currentPatient) {
+    document.getElementById('sec-appoint').innerHTML =
+      '<div class="panel"><h2>🗓️ المواعيد</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-appoint').innerHTML = `
+    <div class="panel">
+      <h2>🗓️ المواعيد</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b></div>
+      <div style="background:var(--card2);padding:14px;border-radius:12px;margin-bottom:14px">
+        <h3 style="font-size:14px;margin-bottom:10px">➕ إضافة موعد جديد</h3>
+        <div class="grid3">
+          <div class="field"><label>التاريخ *</label><input type="date" id="apptDate"></div>
+          <div class="field"><label>الوقت *</label><input type="time" id="apptTime"></div>
+          <div class="field"><label>الإجراء</label><input id="apptProcedure" placeholder="فحص / تنظيف / جراحة"></div>
+        </div>
+        <div class="field"><label>ملاحظات</label>
+          <input id="apptNotes" placeholder="اختياري"></div>
+        <button class="btn-save" onclick="addAppointment()">➕ إضافة الموعد</button>
+      </div>
+      <h3 style="font-size:14px;margin-bottom:10px">📅 المواعيد المسجلة</h3>
+      <div id="appointmentsList"><div class="empty-state"><div class="ic">⏳</div><p>جاري التحميل...</p></div></div>
+    </div>`;
+  await refreshAppointments();
+}
+
+async function refreshAppointments() {
+  try {
+    const snap = await db.collection('patients').doc(currentPatient.id)
+      .collection('appointments').get();
+    const appts = [];
+    snap.forEach(doc => appts.push({ id: doc.id, ...doc.data() }));
+    appts.sort((a, b) => {
+      const da = (a.date || '') + ' ' + (a.time || '');
+      const db2 = (b.date || '') + ' ' + (b.time || '');
+      return da.localeCompare(db2);
+    });
+    renderAppointments(appts);
+  } catch (e) {
+    document.getElementById('appointmentsList').innerHTML =
+      '<div class="empty-state"><div class="ic">❌</div><p>' + escapeHtml(e.message) + '</p></div>';
+  }
+}
+
+function renderAppointments(appts) {
+  const container = document.getElementById('appointmentsList');
+  if (appts.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="ic">📅</div><p>لا توجد مواعيد مسجلة</p></div>';
+    return;
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  container.innerHTML = appts.map(a => {
+    const isPast = a.date < today;
+    const isToday = a.date === today;
+    const statusColor = a.completed ? 'var(--ok)' : isPast ? 'var(--danger)' : isToday ? 'var(--gold)' : 'var(--cyan)';
+    const statusLabel = a.completed ? '✅ مكتمل' : isPast ? '⚠️ متأخر' : isToday ? '🔔 اليوم' : '📅 قادم';
+    return `
+      <div style="background:var(--card2);border:1px solid var(--border);border-right:3px solid ${statusColor};
+                  border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;
+                  align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:150px">
+          <div style="font-weight:700;font-size:14px">
+            ${a.date || '—'} ${a.time ? ' • ' + a.time : ''}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">
+            ${escapeHtml(a.procedure || 'بدون إجراء')} ${a.notes ? ' — ' + escapeHtml(a.notes) : ''}
+          </div>
+        </div>
+        <div style="font-size:11px;padding:4px 10px;border-radius:8px;background:${statusColor}22;color:${statusColor};font-weight:700">
+          ${statusLabel}
+        </div>
+        <div style="display:flex;gap:4px">
+          ${!a.completed ? `<button class="chip-btn" style="padding:5px 8px;font-size:11px;background:rgba(52,211,153,.15);border-color:var(--ok);color:var(--ok)" onclick="completeAppointment('${a.id}')">✓</button>` : ''}
+          <button class="chip-btn danger" style="padding:5px 8px;font-size:11px" onclick="deleteAppointment('${a.id}')">🗑️</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function addAppointment() {
+  if (!currentPatient) return;
+  const date = document.getElementById('apptDate').value;
+  const time = document.getElementById('apptTime').value;
+  if (!date || !time) { toast('⚠️ التاريخ والوقت مطلوبان', true); return; }
+  try {
+    await db.collection('patients').doc(currentPatient.id).collection('appointments').add({
+      date: date, time: time,
+      procedure: document.getElementById('apptProcedure').value.trim(),
+      notes: document.getElementById('apptNotes').value.trim(),
+      completed: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser.email
+    });
+    document.getElementById('apptDate').value = '';
+    document.getElementById('apptTime').value = '';
+    document.getElementById('apptProcedure').value = '';
+    document.getElementById('apptNotes').value = '';
+    toast('✅ تم إضافة الموعد');
+    await refreshAppointments();
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function completeAppointment(id) {
+  try {
+    await db.collection('patients').doc(currentPatient.id).collection('appointments').doc(id).update({
+      completed: true,
+      completedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅ تم تعليم الموعد كمكتمل');
+    await refreshAppointments();
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function deleteAppointment(id) {
+  if (!confirm('حذف هذا الموعد؟')) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id).collection('appointments').doc(id).delete();
+    toast('🗑️ تم الحذف');
+    await refreshAppointments();
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+console.log('✅ الجزء 2 جاهز: التاريخ الطبي، الفحص الفموي، مخطط الأسنان، الفحص السريري، تخطيط العلاج، المواعيد');
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- الجزء 3: التحليل الذكي - الوجه والأشعة والسيفالومترية و DSD -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// أدوات مساعدة لرفع الصور (تُخزن كـ base64 في Firestore)
+// ═══════════════════════════════════════════════════════════════
+function compressImage(dataUrl, maxDim, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+      else if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
+function pickImage(callback, acceptType) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = acceptType || 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { toast('⚠️ الصورة كبيرة جداً (أقصى 10MB)', true); return; }
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const compressed = await compressImage(ev.target.result, 1200, 0.75);
+        callback(compressed);
+      } catch (err) { toast('❌ فشل الصورة', true); }
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
 
 // ═══════════════════════════════════════════════════════════════
-// التبديل بين الأنظمة
+// تحليل الوجه
 // ═══════════════════════════════════════════════════════════════
-function switchTab(systemKey) {
-  if (!SYSTEMS[systemKey]) {
-    console.error('نظام غير معروف:', systemKey);
+async function loadFace() {
+  if (!currentPatient) {
+    document.getElementById('sec-face').innerHTML =
+      '<div class="panel"><h2>🧑‍⚕️ تحليل الوجه</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-face').innerHTML = `
+    <div class="panel">
+      <h2>🧑‍⚕️ تحليل الوجه</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b></div>
+      <div id="faceImageContainer" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="chip-btn accent" onclick="uploadFaceImage('front')">📸 صورة أمامية</button>
+        <button class="chip-btn" onclick="uploadFaceImage('profile')">📸 صورة جانبية</button>
+        <button class="chip-btn" onclick="uploadFaceImage('smile')">📸 صورة الابتسامة</button>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>تناسق الوجه (0-100%)</label>
+          <input type="number" id="faceSymmetry" min="0" max="100" placeholder="مثال: 92"></div>
+        <div class="field"><label>خط منتصف الوجه</label>
+          <select id="faceMidline"><option value="">اختر...</option><option>مستقيم</option><option>منحرف يميناً</option><option>منحرف يساراً</option></select></div>
+        <div class="field"><label>خط الحدقة</label>
+          <select id="facePupils"><option value="">اختر...</option><option>مستوى</option><option>مائل</option></select></div>
+        <div class="field"><label>بروز الوجه (للأمام/للخلف)</label>
+          <select id="faceProfile"><option value="">اختر...</option><option>طبيعي (مستقيم)</option><option>محدب</option><option>مقعر</option></select></div>
+      </div>
+      <div class="field"><label>ملاحظات الوجه</label>
+        <textarea id="faceNotes" rows="2" placeholder="أي ملاحظات على الوجه"></textarea></div>
+      <button class="btn-save" onclick="saveFaceAnalysis()">💾 حفظ تحليل الوجه</button>
+    </div>`;
+  await loadFaceData();
+}
+
+async function loadFaceData() {
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('face').get();
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('faceSymmetry').value = d.symmetry || '';
+      document.getElementById('faceMidline').value = d.midline || '';
+      document.getElementById('facePupils').value = d.pupils || '';
+      document.getElementById('faceProfile').value = d.profile || '';
+      document.getElementById('faceNotes').value = d.notes || '';
+      renderFaceImages(d.images || {});
+    } else {
+      renderFaceImages({});
+    }
+  } catch (e) { console.error(e); }
+}
+
+function renderFaceImages(images) {
+  const container = document.getElementById('faceImageContainer');
+  const labels = { front: 'أمامية', profile: 'جانبية', smile: 'ابتسامة' };
+  container.innerHTML = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">' +
+    Object.keys(labels).map(k => {
+      if (images[k]) {
+        return `<div style="position:relative;background:var(--card2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <img src="${images[k]}" style="width:100%;height:120px;object-fit:cover;display:block">
+          <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.7);color:#fff;padding:2px 8px;font-size:10px">${labels[k]}</div>
+          <button onclick="deleteFaceImage('${k}')" style="position:absolute;top:4px;left:4px;background:var(--danger);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:11px">✕</button>
+        </div>`;
+      } else {
+        return `<div style="background:var(--card2);border:2px dashed var(--border);border-radius:10px;height:120px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">${labels[k]}</div>`;
+      }
+    }).join('') + '</div>';
+}
+
+function uploadFaceImage(type) {
+  pickImage(async (dataUrl) => {
+    try {
+      const doc = await db.collection('patients').doc(currentPatient.id)
+        .collection('analysis').doc('face').get();
+      const images = doc.exists ? (doc.data().images || {}) : {};
+      images[type] = dataUrl;
+      await db.collection('patients').doc(currentPatient.id)
+        .collection('analysis').doc('face').set({
+          images: images,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      toast('✅ تم رفع الصورة');
+      await loadFaceData();
+    } catch (e) { toast('❌ ' + e.message, true); }
+  });
+}
+
+async function deleteFaceImage(type) {
+  if (!confirm('حذف هذه الصورة؟')) return;
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('face').get();
+    if (!doc.exists) return;
+    const images = doc.data().images || {};
+    delete images[type];
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('face').update({ images: images });
+    toast('🗑️ تم الحذف');
+    await loadFaceData();
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function saveFaceAnalysis() {
+  if (!currentPatient) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('face').set({
+        symmetry: parseInt(document.getElementById('faceSymmetry').value) || null,
+        midline: document.getElementById('faceMidline').value,
+        pupils: document.getElementById('facePupils').value,
+        profile: document.getElementById('faceProfile').value,
+        notes: document.getElementById('faceNotes').value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: currentUser.email
+      }, { merge: true });
+    toast('✅ تم حفظ تحليل الوجه');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// تحليل الأشعة
+// ═══════════════════════════════════════════════════════════════
+async function loadXray() {
+  if (!currentPatient) {
+    document.getElementById('sec-xray').innerHTML =
+      '<div class="panel"><h2>🩻 تحليل الأشعة</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-xray').innerHTML = `
+    <div class="panel">
+      <h2>🩻 تحليل الأشعة</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b></div>
+      <div id="xrayImageContainer" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="chip-btn accent" onclick="uploadXrayImage('panoramic')">🩻 بانوراما</button>
+        <button class="chip-btn" onclick="uploadXrayImage('periapical')">🩻 بيريابيكال</button>
+        <button class="chip-btn" onclick="uploadXrayImage('bitewing')">🩻 بايت وينغ</button>
+        <button class="chip-btn" onclick="uploadXrayImage('cbct')">🩻 CBCT</button>
+        <button class="chip-btn" onclick="uploadXrayImage('ceph')">📐 سيفالومتريك</button>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>حالة العظام</label>
+          <select id="xrayBone"><option value="">اختر...</option><option>طبيعية</option><option>فقدان عظم خفيف</option><option>فقدان عظم متوسط</option><option>فقدان عظم شديد</option></select></div>
+        <div class="field"><label>وجود كسور</label>
+          <select id="xrayFracture"><option value="">اختر...</option><option>لا يوجد</option><option>كسر بسيط</option><option>كسر معقد</option></select></div>
+        <div class="field"><label>حالة الجيوب الأنفية</label>
+          <select id="xraySinus"><option value="">اختر...</option><option>طبيعية</option><option>التهاب</option><option>انسداد</option></select></div>
+        <div class="field"><label>أسنان مطمورة</label>
+          <select id="xrayImpacted"><option value="">اختر...</option><option>لا يوجد</option><option>ضرس عقل مطمور</option><option>أنياب مطمورة</option></select></div>
+      </div>
+      <div class="field"><label>ملاحظات الأشعة</label>
+        <textarea id="xrayNotes" rows="2" placeholder="ملاحظات إضافية"></textarea></div>
+      <button class="btn-save" onclick="saveXrayAnalysis()">💾 حفظ تحليل الأشعة</button>
+    </div>`;
+  await loadXrayData();
+}
+
+async function loadXrayData() {
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('xray').get();
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('xrayBone').value = d.bone || '';
+      document.getElementById('xrayFracture').value = d.fracture || '';
+      document.getElementById('xraySinus').value = d.sinus || '';
+      document.getElementById('xrayImpacted').value = d.impacted || '';
+      document.getElementById('xrayNotes').value = d.notes || '';
+      renderXrayImages(d.images || {});
+    } else {
+      renderXrayImages({});
+    }
+  } catch (e) { console.error(e); }
+}
+
+function renderXrayImages(images) {
+  const container = document.getElementById('xrayImageContainer');
+  const labels = { panoramic: 'بانوراما', periapical: 'بيريابيكال', bitewing: 'بايت وينغ', cbct: 'CBCT', ceph: 'سيفالو' };
+  const existing = Object.keys(labels).filter(k => images[k]);
+  if (existing.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="padding:20px"><div class="ic">🩻</div><p style="font-size:12px">لا توجد أشعة مرفوعة</p></div>';
+    return;
+  }
+  container.innerHTML = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">' +
+    existing.map(k => `
+      <div style="position:relative;background:var(--card2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <img src="${images[k]}" style="width:100%;height:140px;object-fit:cover;display:block">
+        <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.7);color:#fff;padding:2px 8px;font-size:10px">${labels[k]}</div>
+        <button onclick="deleteXrayImage('${k}')" style="position:absolute;top:4px;left:4px;background:var(--danger);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:11px">✕</button>
+      </div>
+    `).join('') + '</div>';
+}
+
+function uploadXrayImage(type) {
+  pickImage(async (dataUrl) => {
+    try {
+      const doc = await db.collection('patients').doc(currentPatient.id)
+        .collection('analysis').doc('xray').get();
+      const images = doc.exists ? (doc.data().images || {}) : {};
+      images[type] = dataUrl;
+      await db.collection('patients').doc(currentPatient.id)
+        .collection('analysis').doc('xray').set({
+          images: images,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      toast('✅ تم رفع الأشعة');
+      await loadXrayData();
+    } catch (e) { toast('❌ ' + e.message, true); }
+  });
+}
+
+async function deleteXrayImage(type) {
+  if (!confirm('حذف هذه الأشعة؟')) return;
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('xray').get();
+    if (!doc.exists) return;
+    const images = doc.data().images || {};
+    delete images[type];
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('xray').update({ images: images });
+    toast('🗑️ تم الحذف');
+    await loadXrayData();
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function saveXrayAnalysis() {
+  if (!currentPatient) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('xray').set({
+        bone: document.getElementById('xrayBone').value,
+        fracture: document.getElementById('xrayFracture').value,
+        sinus: document.getElementById('xraySinus').value,
+        impacted: document.getElementById('xrayImpacted').value,
+        notes: document.getElementById('xrayNotes').value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: currentUser.email
+      }, { merge: true });
+    toast('✅ تم حفظ تحليل الأشعة');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// السيفالومترية
+// ═══════════════════════════════════════════════════════════════
+const CEPH_NORMAL = { SNA: 82, SNB: 80, ANB: 2, IMPA: 90, 'FMA': 25, 'SN-GoGn': 32 };
+
+async function loadCeph() {
+  if (!currentPatient) {
+    document.getElementById('sec-ceph').innerHTML =
+      '<div class="panel"><h2>📐 السيفالومترية</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-ceph').innerHTML = `
+    <div class="panel">
+      <h2>📐 السيفالومترية</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b> — أدخل القياسات يدوياً</div>
+      <div class="grid2">
+        ${Object.entries(CEPH_NORMAL).map(([k, v]) => `
+          <div class="field">
+            <label>${k} (الطبيعي: ${v}°)</label>
+            <input type="number" id="ceph_${k}" step="0.1" placeholder="${v}">
+          </div>
+        `).join('')}
+      </div>
+      <div class="field"><label>ملاحظات السيفالو</label>
+        <textarea id="cephNotes" rows="2" placeholder="أي ملاحظات"></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-save" onclick="saveCeph()">💾 حفظ القياسات</button>
+        <button class="chip-btn" onclick="analyzeCeph()">🔬 تحليل تلقائي</button>
+      </div>
+      <div id="cephAnalysis" style="margin-top:14px"></div>
+    </div>`;
+  await loadCephData();
+}
+
+async function loadCephData() {
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('ceph').get();
+    if (doc.exists) {
+      const d = doc.data();
+      Object.keys(CEPH_NORMAL).forEach(k => {
+        const el = document.getElementById('ceph_' + k);
+        if (el && d[k] !== undefined && d[k] !== null) el.value = d[k];
+      });
+      document.getElementById('cephNotes').value = d.notes || '';
+      if (d.analysis) showCephAnalysis(d.analysis);
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function saveCeph() {
+  if (!currentPatient) return;
+  const data = {
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: currentUser.email
+  };
+  Object.keys(CEPH_NORMAL).forEach(k => {
+    const v = document.getElementById('ceph_' + k).value;
+    data[k] = v ? parseFloat(v) : null;
+  });
+  data.notes = document.getElementById('cephNotes').value.trim();
+  try {
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('ceph').set(data, { merge: true });
+    toast('✅ تم حفظ القياسات');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+function analyzeCeph() {
+  const values = {};
+  Object.keys(CEPH_NORMAL).forEach(k => {
+    const v = parseFloat(document.getElementById('ceph_' + k).value);
+    values[k] = isNaN(v) ? null : v;
+  });
+  if (values.SNA === null || values.SNB === null) {
+    toast('⚠️ أدخل SNA و SNB على الأقل', true);
+    return;
+  }
+  const anb = values.ANB !== null ? values.ANB : (values.SNA - values.SNB);
+  let classification = 'Class I (إطباق طبيعي)';
+  if (anb > 4) classification = 'Class II (بروز الفك العلوي)';
+  else if (anb < 0) classification = 'Class III (بروز الفك السفلي)';
+
+  const results = {
+    classification: classification,
+    anb: anb.toFixed(1),
+    severity: Math.abs(anb - 2) > 4 ? 'شديد' : Math.abs(anb - 2) > 2 ? 'متوسط' : 'خفيف',
+    recommendation: anb > 4 ? 'تقويم لتقليل البروز' : anb < 0 ? 'تقويم لتصحيح العضة' : 'متابعة دورية',
+    timestamp: new Date().toISOString()
+  };
+
+  showCephAnalysis(results);
+
+  // حفظ التحليل في Firebase
+  if (currentPatient) {
+    db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('ceph').set({
+        analysis: results,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(() => {});
+  }
+  toast('🔬 تم التحليل');
+}
+
+function showCephAnalysis(a) {
+  document.getElementById('cephAnalysis').innerHTML = `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <h3 style="font-size:14px;color:var(--cyan);margin-bottom:10px">📊 نتيجة التحليل</h3>
+      <div class="kv" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)">
+        <span style="color:var(--muted)">التصنيف</span><b>${escapeHtml(a.classification)}</b>
+      </div>
+      <div class="kv" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)">
+        <span style="color:var(--muted)">ANB</span><b>${a.anb}°</b>
+      </div>
+      <div class="kv" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)">
+        <span style="color:var(--muted)">الشدة</span><b>${escapeHtml(a.severity)}</b>
+      </div>
+      <div class="kv" style="display:flex;justify-content:space-between;padding:6px 0">
+        <span style="color:var(--muted)">التوصية</span><b style="color:var(--gold)">${escapeHtml(a.recommendation)}</b>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// تصميم الابتسامة DSD
+// ═══════════════════════════════════════════════════════════════
+async function loadSmile() {
+  if (!currentPatient) {
+    document.getElementById('sec-smile').innerHTML =
+      '<div class="panel"><h2>😁 تصميم الابتسامة DSD</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-smile').innerHTML = `
+    <div class="panel">
+      <h2>😁 تصميم الابتسامة DSD</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b></div>
+      <div id="smileImageContainer" style="margin-bottom:14px"></div>
+      <button class="chip-btn accent" onclick="uploadSmileImage()" style="margin-bottom:14px">📸 رفع صورة الابتسامة</button>
+      <div class="grid2">
+        <div class="field"><label>خط الابتسامة</label>
+          <select id="smileLine"><option value="">اختر...</option><option>منخفض</option><option>متوسط</option><option>مرتفع</option></select></div>
+        <div class="field"><label>قوس الابتسامة</label>
+          <select id="smileArc"><option value="">اختر...</option><option>متناسق</option><option>معكوس</option></select></div>
+        <div class="field"><label>الممر الشدقي</label>
+          <select id="smileBuccal"><option value="">اختر...</option><option>ضيق</option><option>متوسط (2-3 مم)</option><option>واسع (>3 مم)</option></select></div>
+        <div class="field"><label>الإظهار القاطعي</label>
+          <select id="smileIncisal"><option value="">اختر...</option><option>قليل</option><option>متوسط (3 مم)</option><option>كثير</option></select></div>
+        <div class="field"><label>لون الأسنان (فيتا)</label>
+          <select id="smileVita">
+            <option value="">اختر...</option>
+            <option>A1 (أبيض فاتح)</option><option>A2 (أبيض)</option><option>A3 (أبيض متوسط)</option>
+            <option>B1 (أصفر فاتح)</option><option>B2 (أصفر)</option>
+            <option>C1 (رمادي فاتح)</option><option>C2 (رمادي)</option>
+          </select></div>
+        <div class="field"><label>شكل الأسنان</label>
+          <select id="smileShape"><option value="">اختر...</option><option>مربع</option><option>بيضاوي</option><option>مثلث</option></select></div>
+      </div>
+      <div class="field"><label>ملاحظات التصميم</label>
+        <textarea id="smileNotes" rows="3" placeholder="ملاحظات على التصميم"></textarea></div>
+      <button class="btn-save" onclick="saveSmileDesign()">💾 حفظ تصميم الابتسامة</button>
+    </div>`;
+  await loadSmileData();
+}
+
+async function loadSmileData() {
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('smile').get();
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('smileLine').value = d.line || '';
+      document.getElementById('smileArc').value = d.arc || '';
+      document.getElementById('smileBuccal').value = d.buccal || '';
+      document.getElementById('smileIncisal').value = d.incisal || '';
+      document.getElementById('smileVita').value = d.vita || '';
+      document.getElementById('smileShape').value = d.shape || '';
+      document.getElementById('smileNotes').value = d.notes || '';
+      if (d.image) {
+        document.getElementById('smileImageContainer').innerHTML = `
+          <div style="position:relative;background:var(--card2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <img src="${d.image}" style="width:100%;max-height:300px;object-fit:contain;display:block">
+            <button onclick="deleteSmileImage()" style="position:absolute;top:8px;left:8px;background:var(--danger);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px">✕</button>
+          </div>`;
+      }
+    }
+  } catch (e) { console.error(e); }
+}
+
+function uploadSmileImage() {
+  pickImage(async (dataUrl) => {
+    try {
+      await db.collection('patients').doc(currentPatient.id)
+        .collection('analysis').doc('smile').set({
+          image: dataUrl,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      toast('✅ تم رفع صورة الابتسامة');
+      await loadSmileData();
+    } catch (e) { toast('❌ ' + e.message, true); }
+  });
+}
+
+async function deleteSmileImage() {
+  if (!confirm('حذف الصورة؟')) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('smile').update({ image: null });
+    document.getElementById('smileImageContainer').innerHTML = '';
+    toast('🗑️ تم الحذف');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+async function saveSmileDesign() {
+  if (!currentPatient) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('smile').set({
+        line: document.getElementById('smileLine').value,
+        arc: document.getElementById('smileArc').value,
+        buccal: document.getElementById('smileBuccal').value,
+        incisal: document.getElementById('smileIncisal').value,
+        vita: document.getElementById('smileVita').value,
+        shape: document.getElementById('smileShape').value,
+        notes: document.getElementById('smileNotes').value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: currentUser.email
+      }, { merge: true });
+    toast('✅ تم حفظ التصميم');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// التشخيص الذكي
+// ═══════════════════════════════════════════════════════════════
+const DIAGNOSIS_DB = [
+  { key: 'perio_mild', label: 'التهاب لثة خفيف', causes: ['اللثة محمرة', 'نزيف بسيط'], treatment: 'تنظيف + تحسين النظافة' },
+  { key: 'perio_severe', label: 'التهاب دواعم شديد', causes: ['جيوب عميقة', 'حركة الأسنان'], treatment: 'تنظيف عميق + جراحة' },
+  { key: 'caries', label: 'تسوس متعدد', causes: ['تسوس في أسنان متعددة'], treatment: 'حشوات + توعية' },
+  { key: 'class2', label: 'إطباق Class II', causes: ['ANB > 4'], treatment: 'تقويم أو جراحة' },
+  { key: 'class3', label: 'إطباق Class III', causes: ['ANB < 0'], treatment: 'تقويم أو جراحة' },
+  { key: 'missing', label: 'فقدان أسنان', causes: ['أسنان مفقودة'], treatment: 'زراعة أو جسر' }
+];
+
+async function loadDiag() {
+  if (!currentPatient) {
+    document.getElementById('sec-diag').innerHTML =
+      '<div class="panel"><h2>🎓 التشخيص الذكي</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
+    return;
+  }
+  document.getElementById('sec-diag').innerHTML = `
+    <div class="panel">
+      <h2>🎓 التشخيص الذكي</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b> — يُبنى على البيانات المُدخلة</div>
+      <button class="btn-save" onclick="runDiagnosis()" style="margin-bottom:14px">🧠 تشغيل التشخيص</button>
+      <div id="diagResult"></div>
+      <div class="field" style="margin-top:14px"><label>ملاحظات الطبيب</label>
+        <textarea id="diagDoctorNotes" rows="3" placeholder="أضف ملاحظاتك على التشخيص"></textarea></div>
+      <button class="btn-save" onclick="saveDiagNotes()">💾 حفظ الملاحظات</button>
+    </div>`;
+  await loadDiagData();
+}
+
+async function loadDiagData() {
+  try {
+    const doc = await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('diagnosis').get();
+    if (doc.exists) {
+      const d = doc.data();
+      if (d.notes) document.getElementById('diagDoctorNotes').value = d.notes;
+      if (d.result) showDiagResult(d.result);
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function runDiagnosis() {
+  if (!currentPatient) return;
+  try {
+    // جمع البيانات من الأقسام المختلفة
+    const [chartDoc, oralDoc, cephDoc] = await Promise.all([
+      db.collection('patients').doc(currentPatient.id).collection('medical').doc('chart').get(),
+      db.collection('patients').doc(currentPatient.id).collection('medical').doc('oral').get(),
+      db.collection('patients').doc(currentPatient.id).collection('analysis').doc('ceph').get()
+    ]);
+
+    const findings = [];
+    let matchedDiag = [];
+
+    // فحص المخطط
+    if (chartDoc.exists) {
+      const teeth = chartDoc.data().teeth || [];
+      const missing = teeth.filter(t => t === 'missing').length;
+      const carious = teeth.filter(t => t === 'carious').length;
+      const rootCanal = teeth.filter(t => t === 'rootCanal').length;
+      if (missing > 0) findings.push({ icon: '❌', text: `فقدان ${missing} سن` });
+      if (carious > 0) { findings.push({ icon: '⚠️', text: `تسوس في ${carious} سن` }); matchedDiag.push('caries'); }
+      if (rootCanal > 0) findings.push({ icon: '🦷', text: `علاج عصب سابق في ${rootCanal} سن` });
+      if (missing > 0) matchedDiag.push('missing');
+    }
+
+    // فحص اللثة
+    if (oralDoc.exists) {
+      const gum = oralDoc.data().gum || '';
+      if (gum.includes('خفيف')) { findings.push({ icon: '🩸', text: 'التهاب لثة خفيف' }); matchedDiag.push('perio_mild'); }
+      else if (gum.includes('حاد') || gum.includes('متوسط')) { findings.push({ icon: '🩸', text: 'التهاب دواعم شديد' }); matchedDiag.push('perio_severe'); }
+    }
+
+    // فحص السيفالو
+    if (cephDoc.exists) {
+      const anb = cephDoc.data().ANB;
+      if (anb !== null && anb !== undefined) {
+        if (anb > 4) { findings.push({ icon: '📐', text: `ANB = ${anb}° → Class II` }); matchedDiag.push('class2'); }
+        else if (anb < 0) { findings.push({ icon: '📐', text: `ANB = ${anb}° → Class III` }); matchedDiag.push('class3'); }
+      }
+    }
+
+    const result = {
+      findings: findings,
+      diagnoses: [...new Set(matchedDiag)].map(k => DIAGNOSIS_DB.find(x => x.key === k)).filter(Boolean),
+      timestamp: new Date().toISOString(),
+      doctorNotes: ''
+    };
+
+    showDiagResult(result);
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('diagnosis').set({
+        result: result,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    toast('🧠 تم التشخيص');
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+    console.error(e);
+  }
+}
+
+function showDiagResult(r) {
+  const container = document.getElementById('diagResult');
+  if (!r.findings || r.findings.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="ic">📋</div><p>لا توجد نتائج — تأكد من إدخال بيانات الفحص والمخطط</p></div>';
+    return;
+  }
+  container.innerHTML = `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <h3 style="font-size:14px;color:var(--cyan);margin-bottom:12px">📊 النتائج</h3>
+      <div style="margin-bottom:12px">
+        <b style="font-size:13px;color:var(--muted)">الملاحظات:</b>
+        <ul style="list-style:none;padding:0;margin-top:6px">
+          ${r.findings.map(f => `<li style="padding:4px 0;font-size:13px">${f.icon} ${escapeHtml(f.text)}</li>`).join('')}
+        </ul>
+      </div>
+      <div>
+        <b style="font-size:13px;color:var(--muted)">التشخيصات المحتملة:</b>
+        <div style="margin-top:8px">
+          ${r.diagnoses.length === 0 ? '<p style="color:var(--muted);font-size:12px">لا تشخيص واضح</p>' :
+            r.diagnoses.map(d => `
+              <div style="background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.3);border-radius:8px;padding:10px;margin-top:6px">
+                <b style="color:var(--teal);font-size:13px">${escapeHtml(d.label)}</b>
+                <p style="font-size:11px;color:var(--muted);margin-top:4px">💡 ${escapeHtml(d.treatment)}</p>
+              </div>
+            `).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function saveDiagNotes() {
+  if (!currentPatient) return;
+  try {
+    await db.collection('patients').doc(currentPatient.id)
+      .collection('analysis').doc('diagnosis').set({
+        notes: document.getElementById('diagDoctorNotes').value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    toast('✅ تم حفظ الملاحظات');
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// تحديث showSection لتحميل الأقسام الجديدة
+// ═══════════════════════════════════════════════════════════════
+const _origShowSection = window.showSection;
+window.showSection = function(secId) {
+  _origShowSection(secId);
+  if (secId === 'face' && currentPatient && typeof loadFace === 'function') loadFace();
+  if (secId === 'xray' && currentPatient && typeof loadXray === 'function') loadXray();
+  if (secId === 'ceph' && currentPatient && typeof loadCeph === 'function') loadCeph();
+  if (secId === 'smile' && currentPatient && typeof loadSmile === 'function') loadSmile();
+  if (secId === 'diag' && currentPatient && typeof loadDiag === 'function') loadDiag();
+};
+
+console.log('✅ الجزء 3 جاهز: تحليل الوجه، الأشعة، السيفالومترية، DSD، التشخيص');
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- الجزء 4: التقرير الشامل + الطباعة + واتساب -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<style>
+/* أنماط الطباعة */
+@media print {
+  body * { visibility: hidden; }
+  #printReportArea, #printReportArea * { visibility: visible; }
+  #printReportArea {
+    position: absolute; left: 0; top: 0; width: 100%;
+    display: block !important; background: #fff !important; color: #000 !important;
+  }
+  #printReportArea .no-print { display: none !important; }
+  .app-sidebar, #sidebar, #topbar, .chat-fab, .toast { display: none !important; }
+  @page { margin: 10mm; size: A4; }
+}
+
+#printReportArea {
+  display: none;
+  background: #fff;
+  color: #000;
+  padding: 20px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  direction: rtl;
+}
+#printReportArea.show { display: block; }
+#printReportArea .report-header {
+  text-align: center; border-bottom: 3px double #0d4e8a; padding-bottom: 15px; margin-bottom: 20px;
+}
+#printReportArea .report-header h1 { color: #0d4e8a; margin: 0 0 6px; font-size: 22px; }
+#printReportArea .report-header p { margin: 3px 0; font-size: 12px; color: #555; }
+#printReportArea .report-section {
+  margin-bottom: 18px; page-break-inside: avoid;
+}
+#printReportArea .report-section h2 {
+  color: #0d4e8a; font-size: 15px; border-right: 4px solid #0d4e8a;
+  padding-right: 10px; margin-bottom: 10px; background: #f0f6fc; padding: 6px 10px;
+}
+#printReportArea .kv-row {
+  display: flex; justify-content: space-between; padding: 6px 0;
+  border-bottom: 1px dashed #ccc; font-size: 12px;
+}
+#printReportArea .kv-row .lbl { color: #666; }
+#printReportArea .kv-row .val { font-weight: 600; color: #000; }
+#printReportArea .teeth-grid {
+  display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px;
+}
+#printReportArea .tooth-print {
+  width: 26px; height: 32px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #fff;
+}
+#printReportArea .img-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;
+}
+#printReportArea .img-grid img {
+  width: 100%; height: 100px; object-fit: cover; border: 1px solid #ccc; border-radius: 6px;
+}
+#printReportArea .inv-totals {
+  text-align: left; margin-top: 15px;
+}
+#printReportArea .inv-totals table {
+  width: auto; margin-right: 0; margin-left: auto; border-collapse: collapse;
+}
+#printReportArea .inv-totals td {
+  padding: 6px 15px; font-size: 13px; border: 1px solid #ccc;
+}
+#printReportArea .inv-totals .grand {
+  background: #0d4e8a; color: #fff; font-weight: 700;
+}
+#printReportArea .signatures {
+  display: flex; justify-content: space-around; margin-top: 40px;
+  padding-top: 20px; border-top: 1px dashed #999;
+}
+#printReportArea .signatures div {
+  text-align: center; font-size: 12px;
+}
+#printReportArea .signatures .line {
+  width: 150px; border-top: 1px solid #333; margin-top: 40px; padding-top: 5px;
+}
+#printReportArea .print-footer {
+  text-align: center; margin-top: 30px; padding-top: 15px;
+  border-top: 2px solid #ddd; font-size: 11px; color: #888;
+}
+</style>
+
+<div id="printReportArea">
+  <div id="printReportContent"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// تحميل التقرير الشامل
+// ═══════════════════════════════════════════════════════════════
+let reportData = null;
+
+async function loadReport() {
+  if (!currentPatient) {
+    document.getElementById('sec-report').innerHTML =
+      '<div class="panel"><h2>📄 التقرير الشامل</h2><div class="empty-state"><div class="ic">👤</div><p>اختر مريضاً أولاً</p></div></div>';
     return;
   }
 
-  // تحديث التبويبات النشطة
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === systemKey);
+  document.getElementById('sec-report').innerHTML = `
+    <div class="panel">
+      <h2>📄 التقرير الشامل</h2>
+      <div class="desc">للمريض: <b>${escapeHtml(currentPatient.fullName || '')}</b> — يشمل جميع البيانات المسجلة</div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="chip-btn accent" onclick="generateReport()">🔄 توليد/تحديث التقرير</button>
+        <button class="chip-btn" onclick="printReport()">🖨️ طباعة / PDF</button>
+        <button class="chip-btn" onclick="shareWhatsApp()">📤 إرسال واتساب</button>
+        <button class="chip-btn" onclick="copyReportText()">📋 نسخ النص</button>
+      </div>
+
+      <div id="reportPreview" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;min-height:200px">
+        <div class="empty-state"><div class="ic">📄</div><p>اضغط "توليد التقرير" لعرض البيانات</p></div>
+      </div>
+    </div>`;
+
+  // توليد تلقائي
+  setTimeout(generateReport, 300);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// جمع كل البيانات من Firebase
+// ═══════════════════════════════════════════════════════════════
+async function collectReportData() {
+  const id = currentPatient.id;
+  try {
+    // جمع كل البيانات بالتوازي
+    const [
+      historyDoc, oralDoc, chartDoc, clinicalDoc, planDoc,
+      faceDoc, xrayDoc, cephDoc, smileDoc, diagDoc,
+      apptsSnap, analysesSnap
+    ] = await Promise.all([
+      db.collection('patients').doc(id).collection('medical').doc('history').get().catch(() => null),
+      db.collection('patients').doc(id).collection('medical').doc('oral').get().catch(() => null),
+      db.collection('patients').doc(id).collection('medical').doc('chart').get().catch(() => null),
+      db.collection('patients').doc(id).collection('medical').doc('clinical').get().catch(() => null),
+      db.collection('patients').doc(id).collection('medical').doc('plan').get().catch(() => null),
+      db.collection('patients').doc(id).collection('analysis').doc('face').get().catch(() => null),
+      db.collection('patients').doc(id).collection('analysis').doc('xray').get().catch(() => null),
+      db.collection('patients').doc(id).collection('analysis').doc('ceph').get().catch(() => null),
+      db.collection('patients').doc(id).collection('analysis').doc('smile').get().catch(() => null),
+      db.collection('patients').doc(id).collection('analysis').doc('diagnosis').get().catch(() => null),
+      db.collection('patients').doc(id).collection('appointments').get().catch(() => null),
+      db.collection('patients').doc(id).collection('analyses').get().catch(() => null)
+    ]);
+
+    return {
+      patient: currentPatient,
+      history: historyDoc?.exists ? historyDoc.data() : null,
+      oral: oralDoc?.exists ? oralDoc.data() : null,
+      chart: chartDoc?.exists ? chartDoc.data() : null,
+      clinical: clinicalDoc?.exists ? clinicalDoc.data() : null,
+      plan: planDoc?.exists ? planDoc.data() : null,
+      face: faceDoc?.exists ? faceDoc.data() : null,
+      xray: xrayDoc?.exists ? xrayDoc.data() : null,
+      ceph: cephDoc?.exists ? cephDoc.data() : null,
+      smile: smileDoc?.exists ? smileDoc.data() : null,
+      diagnosis: diagDoc?.exists ? diagDoc.data() : null,
+      appointments: apptsSnap ? apptsSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [],
+      aiAnalyses: analysesSnap ? analysesSnap.docs.map(d => ({ id: d.id, ...d.data() })) : []
+    };
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// توليد التقرير (معاينة داخل التطبيق)
+// ═══════════════════════════════════════════════════════════════
+async function generateReport() {
+  if (!currentPatient) return;
+  const preview = document.getElementById('reportPreview');
+  preview.innerHTML = '<div class="empty-state"><div class="ic">⏳</div><p>جاري التوليد...</p></div>';
+
+  try {
+    reportData = await collectReportData();
+    const html = buildReportHtml(reportData);
+    preview.innerHTML = `<div style="color:var(--txt)">${html}</div>`;
+    toast('✅ تم توليد التقرير');
+  } catch (e) {
+    preview.innerHTML = `<div class="empty-state"><div class="ic">❌</div><p>فشل: ${escapeHtml(e.message)}</p></div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// بناء HTML للتقرير (للمعاينة والطباعة)
+// ═══════════════════════════════════════════════════════════════
+function buildReportHtml(d) {
+  const p = d.patient;
+  const dateStr = new Date().toLocaleDateString('ar-EG', {
+    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
   });
 
-  // عرض شاشة التحميل
-  const frame = document.getElementById('mainFrame');
-  const overlay = document.getElementById('loadingOverlay');
-  const text = document.getElementById('loadingText');
-  const errorBanner = document.getElementById('errorBanner');
-
-  overlay.classList.add('show');
-  errorBanner.classList.remove('show');
-  text.textContent = 'جاري تحميل ' + SYSTEMS[systemKey].name + '...';
-
-  // بناء الرابط
-  const url = SYSTEMS[systemKey].file;
-  frame.src = url;
-  currentTab = systemKey;
-  localStorage.setItem('currentTab', systemKey);
-
-  // إخفاء شاشة التحميل عند التحميل
-  clearTimeout(iframeLoadTimeout);
-  iframeLoadTimeout = setTimeout(() => {
-    overlay.classList.remove('show');
-  }, 3000);
-
-  frame.onload = () => {
-    clearTimeout(iframeLoadTimeout);
-    setTimeout(() => overlay.classList.remove('show'), 200);
+  const TOOTH_COLORS = {
+    normal: '#34d399', carious: '#fbbf24', treated: '#f87171',
+    missing: '#6b7280', crown: '#a78bfa', rootCanal: '#fb923c'
+  };
+  const TOOTH_LABELS = {
+    normal: 'سليم', carious: 'تسوس', treated: 'معالج',
+    missing: 'مفقود', crown: 'تاج', rootCanal: 'عصب'
   };
 
-  frame.onerror = () => {
-    clearTimeout(iframeLoadTimeout);
-    overlay.classList.remove('show');
-    showError('فشل تحميل ' + SYSTEMS[systemKey].name);
-  };
+  // البيانات الأساسية
+  let html = `
+    <div class="report-header">
+      <h1>🦷 تقرير طبي شامل</h1>
+      <p>عيادة د. علي النقيب — HarmonizeAI Pro</p>
+      <p style="margin-top:6px"><b>التاريخ:</b> ${dateStr}</p>
+    </div>
+
+    <!-- المريض -->
+    <div class="report-section">
+      <h2>👤 بيانات المريض</h2>
+      <div class="kv-row"><span class="lbl">الاسم</span><span class="val">${escapeHtml(p.fullName || '—')}</span></div>
+      <div class="kv-row"><span class="lbl">رقم الملف</span><span class="val">${escapeHtml(p.fileNumber || p.id)}</span></div>
+      <div class="kv-row"><span class="lbl">الهاتف</span><span class="val">${escapeHtml(p.phone || '—')}</span></div>
+      <div class="kv-row"><span class="lbl">العمر</span><span class="val">${p.age || '—'}</span></div>
+      <div class="kv-row"><span class="lbl">الجنس</span><span class="val">${escapeHtml(p.gender || '—')}</span></div>
+      <div class="kv-row"><span class="lbl">العنوان</span><span class="val">${escapeHtml(p.address || '—')}</span></div>
+    </div>`;
+
+  // التاريخ الطبي
+  if (d.history) {
+    html += `<div class="report-section">
+      <h2>💊 التاريخ الطبي</h2>
+      ${d.history.chronic ? `<div class="kv-row"><span class="lbl">الأمراض المزمنة</span><span class="val">${escapeHtml(d.history.chronic)}</span></div>` : ''}
+      ${d.history.allergy ? `<div class="kv-row"><span class="lbl">الحساسية</span><span class="val" style="color:#c53030">${escapeHtml(d.history.allergy)}</span></div>` : ''}
+      ${d.history.drugs ? `<div class="kv-row"><span class="lbl">الأدوية</span><span class="val">${escapeHtml(d.history.drugs)}</span></div>` : ''}
+      ${d.history.smoke ? `<div class="kv-row"><span class="lbl">التدخين</span><span class="val">${escapeHtml(d.history.smoke)}</span></div>` : ''}
+      ${d.history.surgery ? `<div class="kv-row"><span class="lbl">عمليات سابقة</span><span class="val">${escapeHtml(d.history.surgery)}</span></div>` : ''}
+      ${d.history.notes ? `<div class="kv-row"><span class="lbl">ملاحظات</span><span class="val">${escapeHtml(d.history.notes)}</span></div>` : ''}
+    </div>`;
+  }
+
+  // الفحص الفموي
+  if (d.oral) {
+    html += `<div class="report-section">
+      <h2>🦷 الفحص الفموي</h2>
+      ${d.oral.teeth ? `<div class="kv-row"><span class="lbl">حالة الأسنان</span><span class="val">${escapeHtml(d.oral.teeth)}</span></div>` : ''}
+      ${d.oral.gum ? `<div class="kv-row"><span class="lbl">حالة اللثة</span><span class="val">${escapeHtml(d.oral.gum)}</span></div>` : ''}
+      ${d.oral.hygiene ? `<div class="kv-row"><span class="lbl">نظافة الفم</span><span class="val">${escapeHtml(d.oral.hygiene)}</span></div>` : ''}
+      ${d.oral.caries ? `<div class="kv-row"><span class="lbl">التسوس</span><span class="val">${escapeHtml(d.oral.caries)}</span></div>` : ''}
+      ${d.oral.notes ? `<div class="kv-row"><span class="lbl">ملاحظات</span><span class="val">${escapeHtml(d.oral.notes)}</span></div>` : ''}
+    </div>`;
+  }
+
+  // مخطط الأسنان
+  if (d.chart && Array.isArray(d.chart.teeth)) {
+    html += `<div class="report-section">
+      <h2>📊 مخطط الأسنان</h2>
+      <div class="teeth-grid">
+        ${d.chart.teeth.map((t, i) => `
+          <div class="tooth-print" style="background:${TOOTH_COLORS[t] || '#34d399'}" title="${TOOTH_LABELS[t] || 'سليم'}">
+            ${i + 1}
+          </div>
+        `).join('')}
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:#666">
+        ${Object.entries(TOOTH_COLORS).map(([k, c]) =>
+          `<span style="margin-left:12px"><span style="display:inline-block;width:10px;height:10px;background:${c};border-radius:2px;margin-left:3px"></span>${TOOTH_LABELS[k]}</span>`
+        ).join('')}
+      </div>
+    </div>`;
+  }
+
+  // الفحص السريري
+  if (d.clinical && (d.clinical.bp || d.clinical.pulse || d.clinical.notes)) {
+    html += `<div class="report-section">
+      <h2>🔬 الفحص السريري</h2>
+      ${d.clinical.bp ? `<div class="kv-row"><span class="lbl">ضغط الدم</span><span class="val">${escapeHtml(d.clinical.bp)}</span></div>` : ''}
+      ${d.clinical.pulse ? `<div class="kv-row"><span class="lbl">النبض</span><span class="val">${d.clinical.pulse}</span></div>` : ''}
+      ${d.clinical.temp ? `<div class="kv-row"><span class="lbl">الحرارة</span><span class="val">${d.clinical.temp}°C</span></div>` : ''}
+      ${d.clinical.tmj ? `<div class="kv-row"><span class="lbl">TMJ</span><span class="val">${escapeHtml(d.clinical.tmj)}</span></div>` : ''}
+      ${d.clinical.notes ? `<div class="kv-row"><span class="lbl">ملاحظات</span><span class="val">${escapeHtml(d.clinical.notes)}</span></div>` : ''}
+    </div>`;
+  }
+
+  // السيفالومترية
+  if (d.ceph && (d.ceph.SNA || d.ceph.SNB)) {
+    html += `<div class="report-section">
+      <h2>📐 السيفالومترية</h2>
+      ${d.ceph.SNA ? `<div class="kv-row"><span class="lbl">SNA</span><span class="val">${d.ceph.SNA}°</span></div>` : ''}
+      ${d.ceph.SNB ? `<div class="kv-row"><span class="lbl">SNB</span><span class="val">${d.ceph.SNB}°</span></div>` : ''}
+      ${d.ceph.ANB !== undefined && d.ceph.ANB !== null ? `<div class="kv-row"><span class="lbl">ANB</span><span class="val">${d.ceph.ANB}°</span></div>` : ''}
+      ${d.ceph.IMPA ? `<div class="kv-row"><span class="lbl">IMPA</span><span class="val">${d.ceph.IMPA}°</span></div>` : ''}
+      ${d.ceph.analysis ? `<div class="kv-row"><span class="lbl">التصنيف</span><span class="val" style="color:#c05621">${escapeHtml(d.ceph.analysis.classification)}</span></div>` : ''}
+      ${d.ceph.analysis ? `<div class="kv-row"><span class="lbl">التوصية</span><span class="val">${escapeHtml(d.ceph.analysis.recommendation)}</span></div>` : ''}
+    </div>`;
+  }
+
+  // تحليل الوجه (صور)
+  if (d.face && d.face.images && Object.keys(d.face.images).length > 0) {
+    html += `<div class="report-section">
+      <h2>🧑‍⚕️ تحليل الوجه</h2>
+      ${d.face.symmetry ? `<div class="kv-row"><span class="lbl">تناسق الوجه</span><span class="val">${d.face.symmetry}%</span></div>` : ''}
+      ${d.face.midline ? `<div class="kv-row"><span class="lbl">خط المنتصف</span><span class="val">${escapeHtml(d.face.midline)}</span></div>` : ''}
+      ${d.face.profile ? `<div class="kv-row"><span class="lbl">البروز</span><span class="val">${escapeHtml(d.face.profile)}</span></div>` : ''}
+      <div class="img-grid">
+        ${Object.entries(d.face.images).map(([k, url]) =>
+          `<img src="${url}" alt="${k}">`
+        ).join('')}
+      </div>
+    </div>`;
+  }
+
+  // الأشعة
+  if (d.xray && d.xray.images && Object.keys(d.xray.images).length > 0) {
+    html += `<div class="report-section">
+      <h2>🩻 الأشعة</h2>
+      ${d.xray.bone ? `<div class="kv-row"><span class="lbl">حالة العظام</span><span class="val">${escapeHtml(d.xray.bone)}</span></div>` : ''}
+      ${d.xray.fracture ? `<div class="kv-row"><span class="lbl">الكسور</span><span class="val">${escapeHtml(d.xray.fracture)}</span></div>` : ''}
+      <div class="img-grid">
+        ${Object.entries(d.xray.images).map(([k, url]) =>
+          `<img src="${url}" alt="${k}">`
+        ).join('')}
+      </div>
+    </div>`;
+  }
+
+  // DSD الابتسامة
+  if (d.smile && (d.smile.image || d.smile.line || d.smile.vita)) {
+    html += `<div class="report-section">
+      <h2>😁 تصميم الابتسامة DSD</h2>
+      ${d.smile.line ? `<div class="kv-row"><span class="lbl">خط الابتسامة</span><span class="val">${escapeHtml(d.smile.line)}</span></div>` : ''}
+      ${d.smile.arc ? `<div class="kv-row"><span class="lbl">قوس الابتسامة</span><span class="val">${escapeHtml(d.smile.arc)}</span></div>` : ''}
+      ${d.smile.vita ? `<div class="kv-row"><span class="lbl">لون فيتا</span><span class="val">${escapeHtml(d.smile.vita)}</span></div>` : ''}
+      ${d.smile.image ? `<div style="margin-top:10px"><img src="${d.smile.image}" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #ccc"></div>` : ''}
+    </div>`;
+  }
+
+  // خطة العلاج
+  if (d.plan && d.plan.main) {
+    html += `<div class="report-section">
+      <h2>📐 خطة العلاج</h2>
+      <div class="kv-row"><span class="lbl">الخطة الرئيسية</span><span class="val">${escapeHtml(d.plan.main)}</span></div>
+      ${d.plan.alt ? `<div class="kv-row"><span class="lbl">البديل</span><span class="val">${escapeHtml(d.plan.alt)}</span></div>` : ''}
+      ${d.plan.duration ? `<div class="kv-row"><span class="lbl">المدة</span><span class="val">${escapeHtml(d.plan.duration)}</span></div>` : ''}
+      ${d.plan.cost ? `<div class="kv-row"><span class="lbl">التكلفة</span><span class="val">${d.plan.cost} ${escapeHtml(d.plan.currency || 'ريال')}</span></div>` : ''}
+      ${d.plan.stages ? `<div class="kv-row"><span class="lbl">المراحل</span><span class="val" style="white-space:pre-wrap">${escapeHtml(d.plan.stages)}</span></div>` : ''}
+    </div>`;
+  }
+
+  // التشخيص
+  if (d.diagnosis && d.diagnosis.result) {
+    const r = d.diagnosis.result;
+    html += `<div class="report-section">
+      <h2>🎓 التشخيص الذكي</h2>
+      ${r.findings && r.findings.length > 0 ? `
+        <div style="margin-bottom:8px"><b style="font-size:12px;color:#0d4e8a">الملاحظات:</b></div>
+        ${r.findings.map(f => `<div class="kv-row"><span class="lbl">${f.icon} ${escapeHtml(f.text)}</span><span class="val"></span></div>`).join('')}
+      ` : ''}
+      ${r.diagnoses && r.diagnoses.length > 0 ? `
+        <div style="margin-top:10px"><b style="font-size:12px;color:#0d4e8a">التشخيصات:</b></div>
+        ${r.diagnoses.map(x => `<div class="kv-row"><span class="lbl">${escapeHtml(x.label)}</span><span class="val" style="color:#c05621;font-size:11px">${escapeHtml(x.treatment)}</span></div>`).join('')}
+      ` : ''}
+      ${d.diagnosis.notes ? `<div class="kv-row"><span class="lbl">ملاحظات الطبيب</span><span class="val">${escapeHtml(d.diagnosis.notes)}</span></div>` : ''}
+    </div>`;
+  }
+
+  // المواعيد
+  if (d.appointments && d.appointments.length > 0) {
+    const sorted = [...d.appointments].sort((a, b) => {
+      const da = (a.date || '') + ' ' + (a.time || '');
+      const db2 = (b.date || '') + ' ' + (b.time || '');
+      return da.localeCompare(db2);
+    });
+    html += `<div class="report-section">
+      <h2>🗓️ المواعيد</h2>
+      ${sorted.map(a => `
+        <div class="kv-row">
+          <span class="lbl">${a.date || '—'} ${a.time || ''} — ${escapeHtml(a.procedure || 'بدون إجراء')}</span>
+          <span class="val" style="color:${a.completed ? '#059669' : '#c05621'}">${a.completed ? '✅ مكتمل' : '⏳ قادم'}</span>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  // التذييل + التوقيعات
+  html += `
+    <div class="signatures">
+      <div><div class="line">توقيع الطبيب</div></div>
+      <div><div class="line">توقيع المريض</div></div>
+    </div>
+    <div class="print-footer">
+      تم إنشاء هذا التقرير بواسطة HarmonizeAI Pro — ${dateStr}<br>
+      عيادة د. علي النقيب · 777700412
+    </div>`;
+
+  return html;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// عرض رسالة خطأ
+// طباعة التقرير
 // ═══════════════════════════════════════════════════════════════
-function showError(msg) {
-  const banner = document.getElementById('errorBanner');
-  banner.textContent = '❌ ' + msg;
-  banner.classList.add('show');
-  setTimeout(() => banner.classList.remove('show'), 4000);
-}
+async function printReport() {
+  if (!currentPatient) { toast('⚠️ اختر مريضاً', true); return; }
+  toast('⏳ جاري تحضير التقرير...');
 
-// ═══════════════════════════════════════════════════════════════
-// تحميل بيانات المستخدم
-// ═══════════════════════════════════════════════════════════════
-function loadUser() {
   try {
-    const saved = localStorage.getItem('currentUser');
-    if (saved) {
-      const newUser = JSON.parse(saved);
-      const changed = !currentUser || currentUser.username !== newUser.username;
-      currentUser = newUser;
+    if (!reportData) reportData = await collectReportData();
+    const html = buildReportHtml(reportData);
 
-      document.getElementById('userInfo').style.display = 'flex';
-      document.getElementById('logoutBtn').style.display = 'block';
-      document.getElementById('userName').textContent = currentUser.fullName || currentUser.username;
-      document.getElementById('userRole').textContent =
-        currentUser.role === 'admin' ? '👑 مدير' :
-        currentUser.role === 'doctor' ? '👨‍⚕️ طبيب' : '👨‍💼 موظف';
-      document.getElementById('userAvatar').textContent = (currentUser.fullName || 'U').charAt(0);
+    const printArea = document.getElementById('printReportArea');
+    document.getElementById('printReportContent').innerHTML = html;
+    printArea.classList.add('show');
 
-      // إذا تغير المستخدم، أعد تحميل التبويب الحالي
-      if (changed && currentTab !== 'clinic') {
-        switchTab(currentTab);
-      }
-    } else {
-      currentUser = null;
-      document.getElementById('userInfo').style.display = 'none';
-      document.getElementById('logoutBtn').style.display = 'none';
-    }
+    // انتظر تحميل الصور
+    const images = printArea.querySelectorAll('img');
+    await Promise.all(Array.from(images).map(img =>
+      img.complete ? Promise.resolve() :
+      new Promise(r => { img.onload = r; img.onerror = r; })
+    ));
+
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        printArea.classList.remove('show');
+      }, 1000);
+    }, 500);
+
+    toast('🖨️ جاري الطباعة');
   } catch (e) {
-    console.error('loadUser error:', e);
+    toast('❌ ' + e.message, true);
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// تسجيل الخروج
+// إرسال واتساب
 // ═══════════════════════════════════════════════════════════════
-function logout() {
-  if (!confirm('تسجيل الخروج من جميع الأنظمة؟')) return;
-  localStorage.removeItem('currentUser');
-  localStorage.removeItem('currentTab');
-  currentUser = null;
-  document.getElementById('userInfo').style.display = 'none';
-  document.getElementById('logoutBtn').style.display = 'none';
-  // إعادة تحميل العيادة (ستعيد توجيهها لصفحة الدخول)
-  switchTab('clinic');
+async function shareWhatsApp() {
+  if (!currentPatient) { toast('⚠️ اختر مريضاً', true); return; }
+  const phone = currentPatient.whatsapp || currentPatient.phone;
+  if (!phone) { toast('⚠️ لا يوجد رقم هاتف للمريض', true); return; }
+
+  try {
+    if (!reportData) reportData = await collectReportData();
+
+    // نص التقرير المختصر
+    const text = buildWhatsAppText(reportData);
+    const cleanPhone = phone.replace(/\D/g, '');
+    const intlPhone = cleanPhone.startsWith('967') ? cleanPhone : '967' + cleanPhone.replace(/^0/, '');
+
+    const url = 'https://wa.me/' + intlPhone + '?text=' + encodeURIComponent(text);
+    window.open(url, '_blank');
+    toast('📤 تم فتح واتساب');
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  }
+}
+
+function buildWhatsAppText(d) {
+  const p = d.patient;
+  let msg = `السلام عليكم ${p.fullName || ''} 👋\n\n`;
+  msg += `*التقرير الطبي - عيادة د. علي النقيب*\n`;
+  msg += `📁 رقم الملف: ${p.fileNumber || p.id}\n`;
+  msg += `📅 التاريخ: ${new Date().toLocaleDateString('ar-EG')}\n`;
+  msg += `━━━━━━━━━━━━━━━━\n`;
+
+  if (d.ceph && d.ceph.analysis) {
+    msg += `📐 *التحليل السيفالومتري:*\n`;
+    msg += `• التصنيف: ${d.ceph.analysis.classification}\n`;
+    msg += `• ANB: ${d.ceph.analysis.anb}°\n`;
+    msg += `• التوصية: ${d.ceph.analysis.recommendation}\n\n`;
+  }
+
+  if (d.diagnosis && d.diagnosis.result && d.diagnosis.result.diagnoses.length > 0) {
+    msg += `🎓 *التشخيص:*\n`;
+    d.diagnosis.result.diagnoses.forEach(x => { msg += `• ${x.label}\n`; });
+    msg += `\n`;
+  }
+
+  if (d.plan && d.plan.main) {
+    msg += `📐 *خطة العلاج:*\n`;
+    msg += `${d.plan.main}\n`;
+    if (d.plan.cost) msg += `💰 التكلفة: ${d.plan.cost} ${d.plan.currency || 'ريال'}\n`;
+    if (d.plan.duration) msg += `⏱️ المدة: ${d.plan.duration}\n`;
+    msg += `\n`;
+  }
+
+  if (d.appointments && d.appointments.length > 0) {
+    const upcoming = d.appointments.filter(a => !a.completed).sort((a, b) => a.date.localeCompare(b.date))[0];
+    if (upcoming) {
+      msg += `📅 *الموعد القادم:*\n`;
+      msg += `${upcoming.date} - ${upcoming.time || ''}\n`;
+      msg += `${upcoming.procedure || ''}\n\n`;
+    }
+  }
+
+  msg += `━━━━━━━━━━━━━━━━\n`;
+  msg += `📍 أب - ميتم - سوق الثلوث\n`;
+  msg += `📞 777700412`;
+  return msg;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// الاستماع لتغييرات localStorage (تسجيل الدخول من داخل iframe)
+// نسخ نص التقرير
 // ═══════════════════════════════════════════════════════════════
-window.addEventListener('storage', (e) => {
-  if (e.key === 'currentUser') {
-    loadUser();
+async function copyReportText() {
+  if (!currentPatient) return;
+  try {
+    if (!reportData) reportData = await collectReportData();
+    const text = buildWhatsAppText(reportData);
+    await navigator.clipboard.writeText(text);
+    toast('📋 تم نسخ نص التقرير');
+  } catch (e) {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = buildWhatsAppText(reportData);
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('📋 تم النسخ');
   }
-});
-
-// ═══════════════════════════════════════════════════════════════
-// استقبال رسائل من iframe (للتبديل بين الأنظمة)
-// ═══════════════════════════════════════════════════════════════
-window.addEventListener('message', (event) => {
-  if (!event.data || typeof event.data !== 'object') return;
-
-  // طلب التبديل إلى نظام
-  if (event.data.type === 'switchTab' && SYSTEMS[event.data.tab]) {
-    switchTab(event.data.tab);
-  }
-
-  // تسجيل دخول/خروج
-  if (event.data.type === 'login' || event.data.type === 'logout') {
-    loadUser();
-  }
-});
-
-// ═══════════════════════════════════════════════════════════════
-// بدء التشغيل
-// ═══════════════════════════════════════════════════════════════
-function init() {
-  loadUser();
-
-  // استرجاع آخر تبويب
-  const savedTab = localStorage.getItem('currentTab');
-  if (savedTab && SYSTEMS[savedTab]) {
-    switchTab(savedTab);
-  } else {
-    switchTab('clinic');
-  }
-
-  // فحص دوري للمستخدم
-  setInterval(loadUser, 2000);
 }
 
-// بدء عند تحميل الصفحة
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+// ═══════════════════════════════════════════════════════════════
+// تسجيل loadReport في نظام التنقل
+// ═══════════════════════════════════════════════════════════════
+const _prevShowSection = window.showSection;
+window.showSection = function(secId) {
+  _prevShowSection(secId);
+  if (secId === 'report' && currentPatient && typeof loadReport === 'function') {
+    setTimeout(loadReport, 100);
+  }
+};
 
-console.log('✅ NAQClinixAI — النظام الموحد جاهز');
-console.log('📁 الأنظمة المتاحة:', Object.keys(SYSTEMS).map(k => SYSTEMS[k].name).join(' | '));
+console.log('✅ الجزء 4 جاهز: التقرير الشامل، الطباعة، واتساب');
 </script>
 
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- الجزء 5: الدردشة، Three.js، الإشعارات، الإنهاء -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ====== زر الدردشة العائم ====== */
+.chat-bubble { position: fixed; bottom: 22px; right: 22px; z-index: 900; }
+.chat-fab {
+  width: 58px; height: 58px; border-radius: 50%; border: none;
+  font-size: 26px; background: linear-gradient(135deg, var(--teal), var(--cyan));
+  box-shadow: 0 8px 25px rgba(20, 184, 166, .4);
+  color: #04222b; cursor: pointer; transition: .2s;
+}
+.chat-fab:hover { transform: scale(1.05); }
+.chat-win {
+  position: absolute; bottom: 70px; right: 0; width: 320px; max-width: 90vw;
+  background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+  overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); display: none;
+}
+.chat-win.open { display: block; }
+.chat-head {
+  padding: 12px 14px; background: var(--card2); font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.chat-body {
+  height: 260px; overflow-y: auto; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.chat-msg {
+  max-width: 85%; padding: 9px 12px; border-radius: 14px; font-size: 13px; line-height: 1.5;
+  animation: msgIn .25s ease;
+}
+@keyframes msgIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+.chat-msg.bot { background: var(--card2); align-self: flex-start; }
+.chat-msg.me {
+  background: linear-gradient(90deg, var(--teal), var(--cyan));
+  color: #04222b; align-self: flex-end;
+}
+.chat-input {
+  display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--border);
+}
+.chat-input input {
+  flex: 1; padding: 9px; border-radius: 10px; border: 1px solid var(--border);
+  background: #0d1830; color: var(--txt); font-family: inherit; outline: none;
+}
+.chat-input input:focus { border-color: var(--teal); }
+.chat-input button {
+  padding: 9px 14px; border-radius: 10px; border: none; background: var(--teal);
+  color: #04222b; font-weight: 700; cursor: pointer;
+}
+
+/* ====== Three.js container ====== */
+#threeContainer {
+  width: 100%; height: 320px; border-radius: 12px; overflow: hidden;
+  background: #0d1830; position: relative;
+}
+#threeContainer canvas { display: block; }
+
+/* ====== بطاقة إشعار ====== */
+.notif-item {
+  padding: 12px; background: var(--card2); border-radius: 10px;
+  border-right: 3px solid var(--teal); margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: start; gap: 10px;
+  animation: msgIn .3s ease;
+}
+.notif-item.warn { border-right-color: var(--gold); }
+.notif-item.danger { border-right-color: var(--danger); }
+.notif-item.ok { border-right-color: var(--ok); }
+.notif-item .title { font-weight: 700; font-size: 13px; }
+.notif-item .meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ====== زر تثبيت ====== */
+#installBtn {
+  position: fixed; bottom: 22px; left: 22px; z-index: 900;
+  padding: 12px 20px; border-radius: 30px; border: none;
+  background: linear-gradient(135deg, var(--gold), #e6a832);
+  color: #3a2c05; font-weight: 700; font-size: 13px; cursor: pointer;
+  box-shadow: 0 8px 25px rgba(245, 199, 106, .4);
+  display: none;
+}
+#installBtn:hover { transform: scale(1.05); }
+</style>
+
+<!-- زر الدردشة -->
+<div class="chat-bubble">
+  <button class="chat-fab" onclick="toggleChat()" title="مساعد ذكي">💬</button>
+  <div id="chatWin" class="chat-win">
+    <div class="chat-head">
+      <span>🤖 مساعد HarmonizeAI</span>
+      <button onclick="toggleChat()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="chat-body" id="chatBody"></div>
+    <div class="chat-input">
+      <input id="chatInput" placeholder="اكتب سؤالك..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()">إرسال</button>
+    </div>
+  </div>
+</div>
+
+<!-- زر التثبيت PWA -->
+<button id="installBtn" onclick="installPWA()">📲 تثبيت التطبيق</button>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// الدردشة الذكية
+// ═══════════════════════════════════════════════════════════════
+let chatHistory = [];
+let chatLoaded = false;
+
+async function toggleChat() {
+  const win = document.getElementById('chatWin');
+  win.classList.toggle('open');
+  if (win.classList.contains('open') && !chatLoaded) {
+    await loadChatHistory();
+    chatLoaded = true;
+    setTimeout(() => document.getElementById('chatInput').focus(), 100);
+  }
+}
+
+async function loadChatHistory() {
+  const body = document.getElementById('chatBody');
+  body.innerHTML = '<div class="chat-msg bot">مرحباً! 👋 أنا مساعدك الذكي. اسألني عن:<br>• مواعيد المريض<br>• بياناته<br>• خطط العلاج<br>• أي معلومة عن النظام</div>';
+
+  // تحميل آخر 20 رسالة من Firebase
+  if (!currentUser) return;
+  try {
+    const snap = await db.collection('chat_history')
+      .where('email', '==', currentUser.email)
+      .orderBy('timestamp', 'desc')
+      .limit(20)
+      .get();
+
+    const messages = [];
+    snap.forEach(doc => messages.push(doc.data()));
+    messages.reverse();
+
+    if (messages.length > 0) {
+      messages.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'chat-msg ' + (m.sender === 'user' ? 'me' : 'bot');
+        div.textContent = m.text;
+        body.appendChild(div);
+      });
+      body.scrollTop = body.scrollHeight;
+    }
+  } catch (e) { console.error('Chat history:', e); }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const body = document.getElementById('chatBody');
+
+  // رسالة المستخدم
+  const meDiv = document.createElement('div');
+  meDiv.className = 'chat-msg me';
+  meDiv.textContent = text;
+  body.appendChild(meDiv);
+  input.value = '';
+  body.scrollTop = body.scrollHeight;
+
+  // حفظ رسالة المستخدم في Firebase
+  if (currentUser) {
+    db.collection('chat_history').add({
+      email: currentUser.email,
+      sender: 'user',
+      text: text,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(() => {});
+  }
+
+  // مؤشر الكتابة
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'chat-msg bot';
+  typingDiv.innerHTML = '<span style="opacity:.6">يكتب...</span>';
+  body.appendChild(typingDiv);
+  body.scrollTop = body.scrollHeight;
+
+  // رد المساعد (بعد 600ms)
+  setTimeout(async () => {
+    const reply = await getAssistantReply(text);
+    typingDiv.textContent = reply;
+
+    // حفظ رد البوت
+    if (currentUser) {
+      db.collection('chat_history').add({
+        email: currentUser.email,
+        sender: 'bot',
+        text: reply,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(() => {});
+    }
+  }, 600);
+}
+
+async function getAssistantReply(text) {
+  const lower = text.toLowerCase();
+
+  // ردود ذكية بناءً على الكلمات المفتاحية
+  if (lower.includes('مريض') || lower.includes('مرضى')) {
+    return `لديك ${patients.length} مريض في النظام حالياً. هل تريد فتح قائمة المرضى؟`;
+  }
+
+  if (lower.includes('موعد') || lower.includes('مواعيد')) {
+    if (!currentPatient) return 'اختر مريضاً أولاً لرؤية مواعيده.';
+    try {
+      const snap = await db.collection('patients').doc(currentPatient.id).collection('appointments').get();
+      const appts = [];
+      snap.forEach(d => appts.push(d.data()));
+      if (appts.length === 0) return `لا توجد مواعيد مسجلة لـ ${currentPatient.fullName}.`;
+      const next = appts.filter(a => !a.completed).sort((a, b) => a.date.localeCompare(b.date))[0];
+      if (next) return `📅 الموعد القادم لـ ${currentPatient.fullName}: ${next.date} الساعة ${next.time} — ${next.procedure || 'فحص'}`;
+      return `كل مواعيد ${currentPatient.fullName} مكتملة ✅`;
+    } catch (e) { return 'حدث خطأ في جلب المواعيد.'; }
+  }
+
+  if (lower.includes('خطة') || lower.includes('علاج')) {
+    if (!currentPatient) return 'اختر مريضاً أولاً.';
+    try {
+      const doc = await db.collection('patients').doc(currentPatient.id).collection('medical').doc('plan').get();
+      if (doc.exists && doc.data().main) {
+        return `📐 خطة علاج ${currentPatient.fullName}:\n${doc.data().main}`;
+      }
+      return `لا توجد خطة علاج مسجلة لـ ${currentPatient.fullName} بعد.`;
+    } catch (e) { return 'حدث خطأ.'; }
+  }
+
+  if (lower.includes('تشخيص')) {
+    return 'يمكنك استخدام قسم "التشخيص الذكي" من القائمة الجانبية.';
+  }
+
+  if (lower.includes('سيفالو') || lower.includes('ceph')) {
+    return 'قسم السيفالومترية يحسب SNA و SNB و ANB تلقائياً ويصنّف الحالة إلى Class I/II/III.';
+  }
+
+  if (lower.includes('تقرير') || lower.includes('طباعة')) {
+    return 'اذهب إلى قسم "التقرير الشامل" واختر المريض ثم اضغط "توليد التقرير". يمكنك الطباعة أو الإرسال عبر واتساب.';
+  }
+
+  if (lower.includes('معمل') || lower.includes('lab')) {
+    return 'نظام المعمل متاح من القائمة الجانبية — اضغط "نظام المعمل" لفتحه في نافذة جديدة.';
+  }
+
+  if (lower.includes('تحليل') || lower.includes('analyzer')) {
+    return 'نظام التحليل التلقائي (Naqeeb412) متاح من القائمة — اضغط "التحليل التلقائي".';
+  }
+
+  if (lower.includes('مساعد') || lower.includes('مساعدة') || lower.includes('help')) {
+    return 'أنا هنا لمساعدتك! يمكنك سؤالي عن: المرضى، المواعيد، خطط العلاج، السيفالومترية، التقارير، أو أي قسم في النظام.';
+  }
+
+  if (lower.includes('مرحبا') || lower.includes('سلام') || lower.includes('hello') || lower.includes('hi')) {
+    return `مرحباً ${currentUser?.fullName || ''}! 👋 كيف يمكنني مساعدتك اليوم؟`;
+  }
+
+  if (lower.includes('شكرا') || lower.includes('thanks')) {
+    return 'على الرحب والسعة! 🌟';
+  }
+
+  // رد افتراضي
+  const defaults = [
+    'يمكنني مساعدتك في: البحث عن مرضى، عرض المواعيد، خطط العلاج، أو توليد التقارير. ماذا تريد؟',
+    'سؤالك مهم! جرب أحد الأقسام في القائمة الجانبية أو اسألني عن شيء محدد.',
+    'أنا مساعدك الذكي — اسألني عن "مواعيد"، "خطط"، "مرضى"، "تقارير"، أو "تشخيص".'
+  ];
+  return defaults[Math.floor(Math.random() * defaults.length)];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Three.js — نموذج ثلاثي الأبعاد للسن
+// ═══════════════════════════════════════════════════════════════
+let threeScene, threeCamera, threeRenderer, threeGroup, threeAnimationId;
+let threeInitialized = false;
+
+function initThree() {
+  const container = document.getElementById('threeContainer');
+  if (!container || threeInitialized) return;
+
+  // مساحة العمل
+  const w = container.clientWidth || 400;
+  const h = container.clientHeight || 320;
+
+  // Scene
+  threeScene = new THREE.Scene();
+  threeScene.background = new THREE.Color(0x0d1830);
+
+  // Camera
+  threeCamera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+  threeCamera.position.set(3, 2, 5);
+  threeCamera.lookAt(0, 0, 0);
+
+  // Renderer
+  threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+  threeRenderer.setSize(w, h);
+  threeRenderer.shadowMap.enabled = true;
+  container.innerHTML = '';
+  container.appendChild(threeRenderer.domElement);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  threeScene.add(ambientLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+  dirLight.position.set(5, 5, 5);
+  threeScene.add(dirLight);
+  const backLight = new THREE.DirectionalLight(0x22d3ee, 0.5);
+  backLight.position.set(-5, -2, -3);
+  threeScene.add(backLight);
+
+  // Model Group
+  threeGroup = new THREE.Group();
+
+  // تاج السن (Crown)
+  const crownMaterial = new THREE.MeshStandardMaterial({
+    color: 0xf5f5f0,
+    roughness: 0.3,
+    metalness: 0.1,
+    emissive: 0x0d9488,
+    emissiveIntensity: 0.05
+  });
+  const crownGeometry = new THREE.BoxGeometry(1.2, 1.0, 1.2);
+  const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+  crown.position.y = 0.5;
+  threeGroup.add(crown);
+
+  // زوايا مدورة للتاج (باستخدام Sphere)
+  const crownSphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.7, 16, 16),
+    crownMaterial
+  );
+  crownSphere.position.y = 1.0;
+  crownSphere.scale.set(1, 0.5, 1);
+  threeGroup.add(crownSphere);
+
+  // الجذور (Roots)
+  const rootMaterial = new THREE.MeshStandardMaterial({
+    color: 0xd4c8a8,
+    roughness: 0.6,
+    metalness: 0.1
+  });
+
+  for (let i = -1; i <= 1; i += 2) {
+    const root = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.25, 1.0, 12),
+      rootMaterial
+    );
+    root.position.set(i * 0.3, -0.5, 0);
+    root.rotation.z = i * 0.1;
+    threeGroup.add(root);
+  }
+
+  // سن ثالث أمامي
+  const frontRoot = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.28, 1.2, 12),
+    rootMaterial
+  );
+  frontRoot.position.set(0, -0.6, 0);
+  threeGroup.add(frontRoot);
+
+  threeScene.add(threeGroup);
+
+  // Animation
+  function animate() {
+    threeAnimationId = requestAnimationFrame(animate);
+    if (threeGroup) {
+      threeGroup.rotation.y += 0.008;
+      threeGroup.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
+    }
+    threeRenderer.render(threeScene, threeCamera);
+  }
+  animate();
+
+  // Resize
+  window.addEventListener('resize', () => {
+    if (!container) return;
+    const nw = container.clientWidth;
+    const nh = container.clientHeight;
+    threeCamera.aspect = nw / nh;
+    threeCamera.updateProjectionMatrix();
+    threeRenderer.setSize(nw, nh);
+  });
+
+  threeInitialized = true;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// الإشعارات الذكية
+// ═══════════════════════════════════════════════════════════════
+async function checkNotifications() {
+  if (!currentUser) return;
+
+  try {
+    const notifications = [];
+
+    // مواعيد اليوم
+    const today = new Date().toISOString().slice(0, 10);
+    const patientsSnap = await db.collection('patients').get();
+    const patientIds = [];
+    patientsSnap.forEach(doc => patientIds.push({ id: doc.id, name: doc.data().fullName }));
+
+    // فحص مواعيد اليوم لكل مريض
+    const apptsPromises = patientIds.map(async (p) => {
+      try {
+        const apptSnap = await db.collection('patients').doc(p.id).collection('appointments').get();
+        const todayAppts = [];
+        apptSnap.forEach(a => {
+          const d = a.data();
+          if (d.date === today && !d.completed) {
+            todayAppts.push({ patientName: p.name, ...d });
+          }
+        });
+        return todayAppts;
+      } catch (e) { return []; }
+    });
+
+    const allTodayAppts = (await Promise.all(apptsPromises)).flat();
+
+    allTodayAppts.forEach(a => {
+      notifications.push({
+        type: 'warn',
+        icon: '🔔',
+        title: `موعد اليوم: ${a.patientName}`,
+        meta: `${a.time || ''} — ${a.procedure || 'فحص'}`
+      });
+    });
+
+    // طلب إذن الإشعارات (مرة واحدة)
+    if (Notification.permission === 'granted' && allTodayAppts.length > 0) {
+      allTodayAppts.forEach(a => {
+        try {
+          new Notification('🔔 موعد اليوم', {
+            body: `${a.patientName} — ${a.time} ${a.procedure || ''}`,
+            tag: 'appt-' + a.patientName
+          });
+        } catch (e) {}
+      });
+    }
+
+    return notifications;
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
+async function showNotifications() {
+  const notifs = await checkNotifications();
+
+  let html = '';
+  if (notifs.length === 0) {
+    html = '<div class="empty-state"><div class="ic">🔔</div><p>لا توجد إشعارات جديدة</p></div>';
+  } else {
+    html = notifs.map(n => `
+      <div class="notif-item ${n.type}">
+        <div style="flex:1">
+          <div class="title">${n.icon} ${escapeHtml(n.title)}</div>
+          <div class="meta">${escapeHtml(n.meta)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // أضف عناصر ثابتة
+  html += `
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+      <h3 style="font-size:14px;margin-bottom:12px;color:var(--muted)">⚙️ إعدادات الإشعارات</h3>
+      <div style="display:flex;justify-content:space-between;padding:10px;background:var(--card2);border-radius:10px;margin-bottom:8px">
+        <span style="font-size:13px">🔔 إشعارات المتصفح</span>
+        <button class="chip-btn" onclick="requestNotifPermission()" id="notifPermBtn" style="padding:6px 14px;font-size:12px">
+          ${Notification.permission === 'granted' ? '✅ مفعّلة' : Notification.permission === 'denied' ? '❌ مرفوضة' : 'تفعيل'}
+        </button>
+      </div>
+    </div>`;
+
+  document.getElementById('sec-notifications').innerHTML = `
+    <div class="panel">
+      <h2>🔔 الإشعارات</h2>
+      <div class="desc">تنبيهات المواعيد والإجراءات</div>
+      ${html}
+    </div>`;
+
+  // أضف قسم الإشعارات للتنقل إذا لم يكن موجوداً
+  if (!document.querySelector('.nav-item[data-sec="notifications"]')) {
+    const sep = document.querySelectorAll('.nav-sep')[2] || document.querySelector('.nav-sep');
+    const btn = document.createElement('button');
+    btn.className = 'nav-item';
+    btn.setAttribute('data-sec', 'notifications');
+    btn.innerHTML = '<span class="ic">🔔</span>الإشعارات';
+    btn.onclick = () => showSection('notifications');
+    sep?.after(btn);
+  }
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) {
+    toast('❌ المتصفح لا يدعم الإشعارات', true);
+    return;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      toast('✅ تم تفعيل الإشعارات');
+      try {
+        new Notification('🔔 تم التفعيل', { body: 'ستصلك تنبيهات المواعيد' });
+      } catch (e) {}
+      showNotifications();
+    } else {
+      toast('⚠️ لم يتم التفعيل', true);
+    }
+  } catch (e) { toast('❌ ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PWA — تثبيت التطبيق
+// ═══════════════════════════════════════════════════════════════
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'block';
+});
+
+async function installPWA() {
+  if (!deferredPrompt) {
+    toast('ℹ️ التطبيق مثبت أو المتصفح لا يدعم التثبيت', true);
+    return;
+  }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    toast('✅ تم تثبيت التطبيق');
+    document.getElementById('installBtn').style.display = 'none';
+  }
+  deferredPrompt = null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// إضافة قسم الإشعارات للقائمة الجانبية عند التحميل
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // إضافة قسم الإشعارات
+  const settingsBtn = document.querySelector('.nav-item[data-sec="settings"]');
+  if (settingsBtn && !document.querySelector('.nav-item[data-sec="notifications"]')) {
+    const notifBtn = document.createElement('button');
+    notifBtn.className = 'nav-item';
+    notifBtn.setAttribute('data-sec', 'notifications');
+    notifBtn.innerHTML = '<span class="ic">🔔</span>الإشعارات';
+    notifBtn.onclick = () => {
+      showSection('notifications');
+      showNotifications();
+    };
+    settingsBtn.before(notifBtn);
+
+    // إضافة قسم الإشعارات في المحتوى إذا لم يكن موجوداً
+    if (!document.getElementById('sec-notifications')) {
+      const sec = document.createElement('div');
+      sec.id = 'sec-notifications';
+      sec.className = 'section';
+      document.querySelector('main').appendChild(sec);
+    }
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// توسيع showSection لتفعيل Three.js والإشعارات
+// ═══════════════════════════════════════════════════════════════
+const _prevShowSection2 = window.showSection;
+window.showSection = function(secId) {
+  _prevShowSection2(secId);
+
+  if (secId === 'notifications') {
+    showNotifications();
+  }
+  if (secId === 'cadcam') {
+    setTimeout(initThree, 200);
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// إضافة قسم CAD/CAM للتنقل
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const reportBtn = document.querySelector('.nav-item[data-sec="report"]');
+  if (reportBtn && !document.querySelector('.nav-item[data-sec="cadcam"]')) {
+    const cadBtn = document.createElement('button');
+    cadBtn.className = 'nav-item';
+    cadBtn.setAttribute('data-sec', 'cadcam');
+    cadBtn.innerHTML = '<span class="ic">⚙️</span>CAD/CAM 3D';
+    cadBtn.onclick = () => {
+      showSection('cadcam');
+      setTimeout(initThree, 200);
+    };
+    reportBtn.before(cadBtn);
+
+    if (!document.getElementById('sec-cadcam')) {
+      const sec = document.createElement('div');
+      sec.id = 'sec-cadcam';
+      sec.className = 'section';
+      sec.innerHTML = `
+        <div class="panel">
+          <h2>⚙️ CAD/CAM & 3D</h2>
+          <div class="desc">عرض ثلاثي الأبعاد للسن (Three.js — يعمل مباشرة)</div>
+          <div id="threeContainer"></div>
+          <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">
+            🔄 النموذج يدور تلقائياً — استخدم الماوس للسحب والتدوير يدوياً
+          </p>
+        </div>`;
+      document.querySelector('main').appendChild(sec);
+    }
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// تحميل الشعار من Firebase (بدلاً من localStorage)
+// ═══════════════════════════════════════════════════════════════
+async function loadClinicLogo() {
+  try {
+    const doc = await db.collection('settings').doc('clinic').get();
+    if (doc.exists && doc.data().logo) {
+      // عرض الشعار في مكانه
+      document.querySelectorAll('.clinic-logo').forEach(el => {
+        el.innerHTML = `<img src="${doc.data().logo}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+      });
+    }
+  } catch (e) { console.error(e); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// الإنهاء - تحميل تلقائي عند بدء التطبيق
+// ═══════════════════════════════════════════════════════════════
+console.log('%c✅ HarmonizeAI Pro v8.0 جاهز', 'color:#14b8a6;font-size:16px;font-weight:bold');
+console.log('📦 Firebase Auth + Firestore');
+console.log('🔐 جلسة دائمة، تشفير كلمات المرور، حماية الحساب');
+console.log('📄 جميع الأقسام: المرضى، التاريخ الطبي، الفحص، المخطط، السيفالو، DSD، التشخيص، التقرير، الإشعارات');
+console.log('🎨 Three.js 3D، 💬 دردشة ذكية، 📱 PWA');
+
+// عند نجاح تسجيل الدخول، حمّل الشعار
+auth.onAuthStateChanged(user => {
+  if (user) {
+    setTimeout(loadClinicLogo, 500);
+  }
+});
+
+// فحص دوري للمواعيد (كل 5 دقائق)
+setInterval(async () => {
+  if (currentUser && Notification.permission === 'granted') {
+    const notifs = await checkNotifications();
+    // لا نكرر نفس الإشعارات
+    notifs.forEach(n => {
+      const key = 'notif_' + n.title;
+      if (!sessionStorage.getItem(key)) {
+        try {
+          new Notification('🔔 ' + n.title, { body: n.meta });
+          sessionStorage.setItem(key, '1');
+        } catch (e) {}
+      }
+    });
+  }
+}, 5 * 60 * 1000);
+</script>
 </body>
 </html>
