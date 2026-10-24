@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // ✅ 1) حماية ملفات المستخدمين — لا أحد يعدّل ملف غيره
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // ✅ 2) منشورات Dentbook — الكل يقرأ، المؤلف فقط يحذف
+    match /dentbook_posts/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+                    && request.resource.data.authorId == request.auth.uid;
+      allow update: if signedIn();  // ضروري للإعجابات والتعليقات
+      allow delete: if signedIn()
+                    && resource.data.authorId == request.auth.uid;
+    }
+
+    // ⚠️ 3) مؤقت — بقية المجموعات (clinical, lab, patients...)
+    // نتركها مفتوحة للمستخدمين المسجلين فقط حتى نراجع ملفاتها
+    match /{document=**} {
+      allow read, write: if signedIn();
+    }
+  }
+}
