@@ -19,3 +19,4 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NAQCLINIXAI_DENTAL_CLINIC }}"
           channelId: live
           projectId: naqclinixai-dental-clinic
+          firebaseToolsVersion: 15.34.0
