@@ -7,41 +7,38 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#0b1220;--bg2:#0f1a2e;--card:#132039;--card2:#182747;--teal:#14b8a6;--teal2:#0d9488;--cyan:#22d3ee;--gold:#f5c76a;--txt:#e8eef7;--muted:#8fa3bf;--danger:#f87171;--ok:#34d399;--border:rgba(255,255,255,.08);--radius:16px;--shadow:0 8px 32px rgba(0,0,0,0.4)}
+:root{--bg:#0b1220;--bg2:#0f1a2e;--card:#132039;--card2:#182747;--teal:#14b8a6;--teal2:#0d9488;--cyan:#22d3ee;--gold:#f5c76a;--txt:#e8eef7;--muted:#8fa3bf;--danger:#f87171;--ok:#34d399;--border:rgba(255,255,255,.08);--radius:16px}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
 body{background:linear-gradient(135deg,#0b1220,#0d1b30 60%,#0b1220);color:var(--txt);min-height:100vh}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#243858;border-radius:8px}
 a{color:var(--cyan);text-decoration:none}button{cursor:pointer;font-family:inherit}
 .hidden{display:none!important}
-#loginScreen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:radial-gradient(1200px 600px at 80% -10%,rgba(20,184,166,.18),transparent),radial-gradient(900px 500px at 10% 110%,rgba(34,211,238,.12),transparent),var(--bg);padding:20px;overflow-y:auto}
+#loginScreen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:radial-gradient(1200px 600px at 80% -10%,rgba(20,184,166,.18),transparent),var(--bg);padding:20px;overflow-y:auto}
 .login-card{width:min(460px,92vw);background:var(--card);border:1px solid var(--border);border-radius:24px;padding:30px 26px;box-shadow:0 30px 80px rgba(0,0,0,.5);text-align:center;max-height:98vh;overflow-y:auto;margin:auto}
 .login-card .logo{font-size:44px}
 .login-card h1{font-size:26px;margin:8px 0 2px;background:linear-gradient(90deg,var(--teal),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
 .login-card .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
 .tabs-auth{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border)}
-.tab-auth{flex:1;padding:10px;background:none;border:none;color:var(--muted);font-weight:700;font-size:13px;border-bottom:2px solid transparent;cursor:pointer}
+.tab-auth{flex:1;padding:10px;background:none;border:none;color:var(--muted);font-weight:700;font-size:13px;border-bottom:2px solid transparent}
 .tab-auth.active{color:var(--teal);border-bottom-color:var(--teal)}
 .social-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.social-btn{display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 4px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--txt);font-size:11px;font-weight:600;transition:.2s;cursor:pointer}
+.social-btn{display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 4px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--txt);font-size:11px;font-weight:600;transition:.2s}
 .social-btn:hover{transform:translateY(-2px);border-color:var(--teal)}
-.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:14px 0}
-.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
 .field{margin-bottom:12px;text-align:right}
 .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600}
 input,select,textarea{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--border);background:#0d1830;color:var(--txt);font-size:14px;outline:none;transition:.2s;font-family:inherit}
 input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(20,184,166,.15)}
-.btn-primary{width:100%;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:700;background:linear-gradient(90deg,var(--teal),var(--cyan));color:#04222b;transition:.2s;cursor:pointer}
+.btn-primary{width:100%;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:700;background:linear-gradient(90deg,var(--teal),var(--cyan));color:#04222b;transition:.2s}
 .btn-primary:hover{filter:brightness(1.1)}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed}
-.btn-ghost{width:100%;padding:10px;border-radius:12px;background:transparent;color:var(--muted);border:1px solid var(--border);margin-top:8px;cursor:pointer;font-size:12px;font-weight:600}
+.btn-ghost{width:100%;padding:10px;border-radius:12px;background:transparent;color:var(--muted);border:1px solid var(--border);margin-top:8px;font-size:12px;font-weight:600}
 .role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
-.role-btn{padding:10px 6px;background:rgba(0,0,0,.3);border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;font-size:11px;font-weight:700;color:var(--txt)}
+.role-btn{padding:10px 6px;background:rgba(0,0,0,.3);border:2px solid var(--border);border-radius:10px;text-align:center;font-size:11px;font-weight:700;color:var(--txt)}
 .role-btn.active{background:rgba(20,184,166,.15);border-color:var(--teal);color:var(--teal)}
 .role-btn .icon{font-size:20px;display:block;margin-bottom:4px}
 #app{display:flex;min-height:100vh}
@@ -50,7 +47,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 
 #sidebar .brand .logo{font-size:34px}
 #sidebar .brand h2{font-size:18px;background:linear-gradient(90deg,var(--teal),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
 #sidebar .brand small{color:var(--muted);font-size:11px;line-height:1.6;display:block;margin-top:4px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:3px;border:1px solid transparent;transition:.15s;width:100%;background:none;text-align:right}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--muted);font-size:13px;font-weight:600;margin-bottom:3px;border:1px solid transparent;transition:.15s;width:100%;background:none;text-align:right}
 .nav-item:hover{background:var(--card2);color:var(--txt)}
 .nav-item.active{background:linear-gradient(90deg,rgba(20,184,166,.2),rgba(34,211,238,.1));color:var(--txt);border-color:rgba(20,184,166,.35)}
 .nav-item .ic{font-size:16px;width:22px;text-align:center}
@@ -59,26 +56,25 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 
 #topbar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;flex-wrap:wrap}
 #topbar .hello{font-weight:700;font-size:13px}
 #topbar .spacer{flex:1}
-.chip-btn{padding:9px 13px;border-radius:11px;border:1px solid var(--border);background:var(--card2);color:var(--txt);font-size:12px;font-weight:600;transition:.15s;cursor:pointer}
+.chip-btn{padding:9px 13px;border-radius:11px;border:1px solid var(--border);background:var(--card2);color:var(--txt);font-size:12px;font-weight:600;transition:.15s}
 .chip-btn:hover{border-color:var(--teal)}
 .chip-btn.accent{background:linear-gradient(90deg,var(--teal),var(--cyan));color:#04222b;border:none}
 .section{display:none;animation:fade .25s ease}
 .section.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
-.panel h2{font-size:18px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.panel h2{font-size:18px;margin-bottom:4px}
 .panel .desc{color:var(--muted);font-size:12px;margin-bottom:14px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-@media(max-width:900px){.grid2,.grid3,.grid4{grid-template-columns:1fr}#sidebar{position:fixed;top:0;right:0;bottom:0;transform:translateX(100%);z-index:1000;width:280px}#sidebar.open{transform:none}#menuBtn{display:flex!important}#main{padding:12px}}
-@media(min-width:901px){#menuBtn{display:none!important}}
-.menu-toggle{background:var(--card);border:1px solid var(--border);color:var(--txt);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+@media(max-width:900px){.grid2,.grid3,.grid4{grid-template-columns:1fr}#sidebar{position:fixed;top:0;right:0;bottom:0;transform:translateX(100%);z-index:1000;width:280px}#sidebar.open{transform:none}#main{padding:12px}}
+.menu-toggle{background:var(--card);border:1px solid var(--border);color:var(--txt);width:36px;height:36px;border-radius:8px;font-size:16px;display:flex;align-items:center;justify-content:center}
 .stat-card{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
 .stat-card .ic{font-size:26px}
 .stat-card .num{font-size:26px;font-weight:800;margin:6px 0 2px;color:var(--gold)}
 .stat-card .lbl{color:var(--muted);font-size:12px}
-.btn-save{padding:11px 22px;border:none;border-radius:12px;font-weight:700;font-size:13px;background:linear-gradient(90deg,var(--teal),var(--cyan));color:#04222b;cursor:pointer;transition:.2s}
+.btn-save{padding:11px 22px;border:none;border-radius:12px;font-weight:700;font-size:13px;background:linear-gradient(90deg,var(--teal),var(--cyan));color:#04222b;transition:.2s}
 .btn-save:hover{filter:brightness(1.1)}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0e2a26;border:1px solid var(--teal);color:var(--txt);padding:12px 22px;border-radius:12px;z-index:2000;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:opacity .3s;opacity:0;pointer-events:none;max-width:90%;text-align:center}
 .toast.show{opacity:1;pointer-events:auto}
@@ -86,27 +82,25 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 
 table.tbl{width:100%;border-collapse:collapse;font-size:12px}
 table.tbl th,table.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:right}
 table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
-.tooth{width:34px;height:44px;border-radius:8px 8px 12px 12px;border:2px solid #3b5178;background:#1a2a49;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);transition:.15s;position:relative}
+.tooth{width:34px;height:44px;border-radius:8px 8px 12px 12px;border:2px solid #3b5178;background:#1a2a49;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);transition:.15s}
 .tooth:hover{transform:scale(1.12);z-index:2;border-color:var(--teal)}
 .tooth.caries{background:linear-gradient(145deg,#fbbf24,#d97706);color:#fff}
 .tooth.filled{background:linear-gradient(145deg,#f87171,#dc2626);color:#fff}
 .tooth.crown{background:linear-gradient(145deg,#a78bfa,#7c3aed);color:#fff}
 .tooth.missing{background:#6b7280;color:#fff}
 .tooth.root{background:linear-gradient(145deg,#fb923c,#ea580c);color:#fff}
-.dropzone{border:2px dashed #33507e;border-radius:14px;padding:22px;text-align:center;color:var(--muted);cursor:pointer;transition:.2s;background:#0d1830}
-.dropzone:hover{border-color:var(--teal);color:var(--txt)}
-.chat-fab{position:fixed;bottom:22px;left:22px;width:56px;height:56px;border-radius:50%;border:none;font-size:24px;background:linear-gradient(135deg,var(--teal),var(--cyan));box-shadow:0 8px 25px rgba(20,184,166,.4);color:#04222b;cursor:pointer;z-index:990}
+.chat-fab{position:fixed;bottom:22px;left:22px;width:56px;height:56px;border-radius:50%;border:none;font-size:24px;background:linear-gradient(135deg,var(--teal),var(--cyan));box-shadow:0 8px 25px rgba(20,184,166,.4);color:#04222b;z-index:990}
 #chatPanel{position:fixed;bottom:88px;left:22px;width:350px;max-width:calc(100vw - 44px);height:500px;max-height:calc(100vh - 120px);background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:991;display:none;flex-direction:column;overflow:hidden}
 #chatPanel.open{display:flex}
 .chat-head{padding:11px 14px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:13px}
-.chat-head button{background:none;border:none;color:#fff;font-size:16px;cursor:pointer}
+.chat-head button{background:none;border:none;color:#fff;font-size:16px}
 .chat-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
 .chat-msg{max-width:85%;padding:8px 11px;border-radius:12px;font-size:12px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
 .chat-msg.user{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;align-self:flex-start}
 .chat-msg.bot{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--txt);align-self:flex-end}
 .chat-input{padding:8px;border-top:1px solid var(--border);display:flex;gap:5px}
 .chat-input input{flex:1;padding:8px 10px;border-radius:16px;font-size:12px}
-.chat-input button{padding:8px 12px;border-radius:16px;border:none;background:var(--gold);color:#04222b;font-weight:700;cursor:pointer;font-size:11px}
+.chat-input button{padding:8px 12px;border-radius:16px;border:none;background:var(--gold);color:#04222b;font-weight:700;font-size:11px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1500;display:none;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
 .modal.show{display:flex}
 .modal .box{background:var(--card);border-radius:16px;padding:18px;max-width:460px;width:100%;margin-top:30px}
@@ -125,24 +119,10 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 .meet-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
 .spec-check-item{display:flex;align-items:center;gap:8px;padding:6px;background:rgba(20,184,166,.05);border-radius:6px;margin-bottom:4px;cursor:pointer;font-size:12px}
 #threeContainer{width:100%;height:320px;border-radius:12px;overflow:hidden;background:#0d1830;margin:12px 0}
-.step-flow{display:flex;gap:10px;flex-wrap:wrap}
-.step{flex:1;min-width:150px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;transition:.2s}
-.step:hover{border-color:var(--cyan)}
-.step .st-ic{font-size:22px}
-.step h4{font-size:13px;margin:6px 0 3px}
-.step p{font-size:11px;color:var(--muted)}
-.step .st-status{font-size:11px;margin-top:8px;font-weight:700}
 .plan-card{background:var(--card2);border:1px solid var(--border);border-radius:18px;padding:22px;text-align:center;position:relative;transition:.2s}
 .plan-card:hover{transform:translateY(-4px);border-color:var(--teal)}
 .plan-card .price{font-size:32px;font-weight:800;margin:10px 0;color:var(--gold)}
-.plan-card ul{list-style:none;text-align:right;margin:14px 0;font-size:13px;color:var(--muted)}
-.plan-card ul li{padding:5px 0}
 .plan-pop{position:absolute;top:-11px;right:50%;transform:translateX(50%);background:var(--gold);color:#3a2c05;font-size:11px;font-weight:800;padding:4px 12px;border-radius:999px;white-space:nowrap}
-.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px}
-.kv span:first-child{color:var(--muted)}
-.progress-bar{height:10px;background:#0d1830;border-radius:999px;overflow:hidden;border:1px solid var(--border)}
-.progress-bar>div{height:100%;background:linear-gradient(90deg,var(--teal),var(--cyan));border-radius:999px;transition:width .5s}
-.app-footer{text-align:center;color:var(--muted);font-size:12px;padding:26px 0 10px;border-top:1px solid var(--border);margin-top:20px}
 .product-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}
 .product-card:hover{border-color:var(--teal);transform:translateY(-2px)}
 .product-cover{width:100%;height:140px;background:linear-gradient(135deg,#182747,#132039);display:flex;align-items:center;justify-content:center;font-size:48px;object-fit:cover}
@@ -152,12 +132,11 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 .product-price{font-size:16px;font-weight:800}
 .pay-method{background:rgba(0,0,0,.2);border:2px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;cursor:pointer;transition:.2s;display:flex;justify-content:space-between;align-items:center}
 .pay-method:hover{border-color:var(--teal);transform:translateX(-4px)}
+.app-footer{text-align:center;color:var(--muted);font-size:12px;padding:26px 0 10px;border-top:1px solid var(--border);margin-top:20px}
 </style>
 </head>
 <body>
-<!-- ============================================================ -->
-<!-- شاشة الدخول -->
-<!-- ============================================================ -->
+
 <div id="loginScreen">
 <div class="login-card">
 <div class="logo">🦷</div>
@@ -181,25 +160,25 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 <div class="role-btn" id="roleEmployeeBtn" onclick="selectRegRole('employee')"><span class="icon">👨‍💼</span>موظف<br><span style="font-size:9px;opacity:.7">ينضم لعيادة</span></div>
 <div class="role-btn" id="roleGuestBtn" onclick="selectRegRole('guest')"><span class="icon">👤</span>عام<br><span style="font-size:9px;opacity:.7">استكشاف</span></div>
 </div></div>
-<div class="field"><label>👤 الاسم الكامل *</label><input type="text" id="regName" placeholder="د. أحمد"></div>
-<div class="field"><label>📧 البريد *</label><input type="email" id="regEmail" placeholder="your@email.com"></div>
+<div class="field"><label>👤 الاسم الكامل *</label><input type="text" id="regName"></div>
+<div class="field"><label>📧 البريد *</label><input type="email" id="regEmail"></div>
 <div class="field"><label>🔑 كلمة المرور (6+)</label><input type="password" id="regPassword"></div>
 <div class="field"><label>🔒 تأكيد كلمة المرور</label><input type="password" id="regPassword2"></div>
 <div id="doctorFields">
-<div class="field"><label>🏥 اسم العيادة *</label><input type="text" id="regClinicName" placeholder="عيادة البسمة"></div>
-<div class="field"><label>📍 عنوان العيادة</label><input type="text" id="regClinicAddress" placeholder="المدينة - الحي"></div>
+<div class="field"><label>🏥 اسم العيادة *</label><input type="text" id="regClinicName"></div>
+<div class="field"><label>📍 عنوان العيادة</label><input type="text" id="regClinicAddress"></div>
 <div class="field"><label>🎓 التخصص</label><select id="regSpecialty"><option>عام</option><option>تقويم</option><option>جراحة</option><option>تجميل</option><option>لبية</option><option>أطفال</option><option>تركيبات</option><option>لثة</option></select></div>
-<div class="field"><label>📞 هاتف العيادة</label><input type="tel" id="regClinicPhone" placeholder="+967..."></div>
+<div class="field"><label>📞 هاتف العيادة</label><input type="tel" id="regClinicPhone"></div>
 </div>
 <div id="employeeFields" class="hidden">
-<div class="field"><label>🏥 كود العيادة *</label><input type="text" id="regClinicCode" placeholder="CLN-XXXXXX" style="font-family:monospace;text-transform:uppercase"></div>
+<div class="field"><label>🏥 كود العيادة *</label><input type="text" id="regClinicCode" style="font-family:monospace;text-transform:uppercase"></div>
 <div class="field"><label>💼 المنصب</label><select id="regPosition"><option>مساعد طبيب</option><option>موظف استقبال</option><option>فني مختبر</option><option>محاسب</option></select></div>
 </div>
 <div id="guestFields">
-<div class="field"><label>🎓 التخصص/الاهتمام</label><input type="text" id="regInterest" placeholder="طالب طب أسنان"></div>
-<div class="field"><label>🌍 البلد</label><input type="text" id="regCountry" placeholder="اليمن"></div>
+<div class="field"><label>🎓 التخصص/الاهتمام</label><input type="text" id="regInterest"></div>
+<div class="field"><label>🌍 البلد</label><input type="text" id="regCountry"></div>
 </div>
-<div style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:11px;color:var(--muted);text-align:right">
+<div style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:11px;color:var(--muted)">
 <input type="checkbox" id="regPrivacy" checked style="width:16px;height:16px;flex:0">
 <label for="regPrivacy" style="margin:0">أوافق على سياسة الخصوصية</label>
 </div>
@@ -220,9 +199,6 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- التطبيق الرئيسي -->
-<!-- ============================================================ -->
 <div id="app" class="hidden">
 <aside id="sidebar">
 <div class="brand"><div class="logo">🦷</div><h2>HarmonizeAI</h2><small id="brandSub">v11.0</small></div>
@@ -272,9 +248,6 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 <button class="chip-btn" onclick="showSection('settings')">⚙️</button>
 </div>
 
-<!-- ============================================================ -->
-<!-- لوحة التحكم -->
-<!-- ============================================================ -->
 <section class="section active" id="sec-dashboard">
 <div class="panel"><h2>📊 لوحة التحكم</h2><div class="desc" id="clinicInfo">جاري التحميل...</div>
 <div class="grid4">
@@ -287,12 +260,8 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- المرضى -->
-<!-- ============================================================ -->
 <section class="section" id="sec-patients">
-<div class="panel">
-<h2>👥 المرضى</h2><div class="desc">مرضى عيادتك</div>
+<div class="panel"><h2>👥 المرضى</h2><div class="desc">مرضى عيادتك</div>
 <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
 <input type="text" id="searchPatients" placeholder="🔍 بحث..." oninput="renderPatients()" style="flex:1;min-width:150px">
 <button class="chip-btn accent" onclick="openAddPatient()" style="flex:0">➕ مريض</button>
@@ -301,9 +270,6 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- التاريخ الطبي -->
-<!-- ============================================================ -->
 <section class="section" id="sec-history">
 <div class="panel"><h2>💊 التاريخ الطبي</h2><div class="desc" id="historyCtx">لم يتم اختيار مريض</div>
 <div id="historyForm" class="hidden">
@@ -320,9 +286,6 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- مخطط الأسنان -->
-<!-- ============================================================ -->
 <section class="section" id="sec-chart">
 <div class="panel"><h2>📊 مخطط الأسنان</h2><div class="desc" id="chartCtx">لم يتم اختيار مريض</div>
 <div id="chartForm" class="hidden">
@@ -330,7 +293,7 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 <div id="upperTeeth" style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-bottom:10px"></div>
 <div style="margin-bottom:6px;font-size:11px;color:var(--muted)">الفك السفلي</div>
 <div id="lowerTeeth" style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-bottom:10px"></div>
-<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:10px;margin-bottom:8px;align-items:center">
+<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:10px;margin-bottom:8px">
 <span>✅ سليم</span><span style="color:#fbbf24">⚠️ تسوس</span><span style="color:#f87171">🩹 حشو</span><span style="color:#a78bfa">👑 تاج</span><span style="color:#fb923c">🦷 عصب</span><span style="color:#6b7280">❌ مفقود</span>
 </div>
 <button class="btn-save" onclick="saveChart()">💾 حفظ</button>
@@ -338,12 +301,8 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- المواعيد -->
-<!-- ============================================================ -->
 <section class="section" id="sec-appointments">
-<div class="panel">
-<h2>🗓️ المواعيد</h2><div class="desc">حجز وإدارة</div>
+<div class="panel"><h2>🗓️ المواعيد</h2><div class="desc">حجز وإدارة</div>
 <div class="grid2" style="margin-bottom:10px">
 <div class="field"><label>المريض *</label><select id="apptPatient"></select></div>
 <div class="field"><label>التاريخ *</label><input type="date" id="apptDate"></div>
@@ -356,15 +315,11 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- تشخيص AI -->
-<!-- ============================================================ -->
 <section class="section" id="sec-aiDiagnosis">
-<div class="panel">
-<h2>🧠 تشخيص AI</h2><div class="desc">تحليل ذكي بالذكاء الاصطناعي</div>
+<div class="panel"><h2>🧠 تشخيص AI</h2><div class="desc">تحليل ذكي</div>
 <div class="grid2">
 <div class="field"><label>المريض</label><select id="aiPatient"></select></div>
-<div class="field"><label>الشكوى *</label><input id="aiComplaint" placeholder="ألم في الضرس"></div>
+<div class="field"><label>الشكوى *</label><input id="aiComplaint"></div>
 </div>
 <div class="field"><label style="margin-top:8px">تفاصيل</label><textarea id="aiDetails" rows="2"></textarea></div>
 <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
@@ -375,26 +330,18 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- خطة العلاج AI -->
-<!-- ============================================================ -->
 <section class="section" id="sec-aiTreatment">
-<div class="panel">
-<h2>📋 خطة العلاج AI</h2><div class="desc">خطة علاجية مقترحة</div>
+<div class="panel"><h2>📋 خطة العلاج AI</h2><div class="desc">خطة علاجية مقترحة</div>
 <div class="field"><label>المريض</label><select id="aiPatient2"></select></div>
-<div class="field"><label>التشخيص / الشكوى</label><input id="aiComplaint2" placeholder="تسوس متعدد"></div>
+<div class="field"><label>التشخيص / الشكوى</label><input id="aiComplaint2"></div>
 <button class="btn-save" style="margin-top:10px" onclick="runAITreatment()">🧠 توليد الخطة</button>
 <div id="aiOutput2"></div>
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- تصميم الابتسامة -->
-<!-- ============================================================ -->
 <section class="section" id="sec-smileDesign">
-<div class="panel">
-<h2>😁 تصميم الابتسامة (DSD)</h2><div class="desc">تصميم رقمي احترافي</div>
-<div onclick="document.getElementById('exoUpload').click()" style="border:2px dashed var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:rgba(0,0,0,.2);min-height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column" id="exoUploadZone">
+<div class="panel"><h2>😁 تصميم الابتسامة (DSD)</h2><div class="desc">تصميم رقمي احترافي</div>
+<div onclick="document.getElementById('exoUpload').click()" style="border:2px dashed var(--border);border-radius:12px;padding:14px;text-align:center;background:rgba(0,0,0,.2);min-height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer" id="exoUploadZone">
 <div id="exoUploadPh"><div style="font-size:30px;color:var(--gold)">📸</div><div style="color:var(--muted);font-size:11px">اضغط لرفع صورة</div></div>
 <img id="exoImg" style="display:none;max-width:100%;max-height:280px;border-radius:10px">
 </div>
@@ -424,27 +371,19 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- CAD/CAM -->
-<!-- ============================================================ -->
 <section class="section" id="sec-cadcam">
-<div class="panel">
-<h2>⚙️ CAD/CAM & 3D</h2><div class="desc">عرض ثلاثي الأبعاد للنماذج الطبية</div>
+<div class="panel"><h2>⚙️ CAD/CAM & 3D</h2><div class="desc">عرض ثلاثي الأبعاد</div>
 <div id="threeContainer"></div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-<button class="chip-btn" onclick="toast('📥 تم تصدير STL')">📥 تصدير STL</button>
-<button class="chip-btn accent" onclick="toast('🔄 تم إرسال إلى Exocad')">🔄 Exocad</button>
-<button class="chip-btn" onclick="toast('👑 تم إنشاء التاج')">👑 تاج</button>
+<button class="chip-btn" onclick="toast('📥 تم تصدير STL')">📥 STL</button>
+<button class="chip-btn accent" onclick="toast('🔄 Exocad')">🔄 Exocad</button>
+<button class="chip-btn" onclick="toast('👑 تاج')">👑 تاج</button>
 </div>
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- المتجر الرقمي -->
-<!-- ============================================================ -->
 <section class="section" id="sec-store">
-<div class="panel">
-<h2>🏪 المتجر الرقمي</h2><div class="desc">كتب، أنظمة، أدوات، وإضافات الذكاء الاصطناعي</div>
+<div class="panel"><h2>🏪 المتجر الرقمي</h2><div class="desc">كتب، أنظمة، أدوات، وإضافات AI</div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
 <input id="storeSearch" placeholder="🔍 ابحث..." oninput="renderStore()" style="flex:1;min-width:150px">
 <select id="storeFilter" onchange="renderStore()" style="flex:0;min-width:150px">
@@ -460,42 +399,26 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- مشترياتي -->
-<!-- ============================================================ -->
 <section class="section" id="sec-myOrders">
-<div class="panel">
-<h2>📦 مشترياتي</h2><div class="desc">الكتب والأنظمة التي اشتريتها</div>
+<div class="panel"><h2>📦 مشترياتي</h2><div class="desc">الكتب والأنظمة التي اشتريتها</div>
 <div id="myOrdersList"></div>
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- خطط الاشتراك -->
-<!-- ============================================================ -->
 <section class="section" id="sec-subscriptions">
-<div class="panel">
-<h2>⭐ خطط الاشتراك</h2><div class="desc">اختر الخطة المناسبة لاحتياجاتك</div>
+<div class="panel"><h2>⭐ خطط الاشتراك</h2><div class="desc">اختر الخطة المناسبة</div>
 <div id="subscriptionPlans" class="grid3"></div>
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- اشتراكي -->
-<!-- ============================================================ -->
 <section class="section" id="sec-mySubscription">
-<div class="panel">
-<h2>🎫 اشتراكي الحالي</h2><div class="desc">حالة اشتراكك والفترة المتبقية</div>
+<div class="panel"><h2>🎫 اشتراكي الحالي</h2><div class="desc">حالة اشتراكك والفترة المتبقية</div>
 <div id="mySubscriptionInfo"></div>
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- الأصدقاء -->
-<!-- ============================================================ -->
 <section class="section" id="sec-friends">
-<div class="panel">
-<h2>👫 الأصدقاء</h2><div class="desc">إدارة الصداقات</div>
+<div class="panel"><h2>👫 الأصدقاء</h2><div class="desc">إدارة الصداقات</div>
 <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
 <button class="chip-btn accent" onclick="loadFriends()">🔄</button>
 <button class="chip-btn" onclick="openAddFriendModal()">➕ إضافة</button>
@@ -509,12 +432,8 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- Dentbook -->
-<!-- ============================================================ -->
 <section class="section" id="sec-dentbook">
-<div class="panel">
-<h2>📖 Dentbook</h2><div class="desc">منصة التواصل الطبي</div>
+<div class="panel"><h2>📖 Dentbook</h2><div class="desc">منصة التواصل الطبي</div>
 <div style="background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px">
 <textarea id="postInput" rows="2" placeholder="ماذا تريد مشاركته؟" style="width:100%;border:none;background:transparent;color:var(--txt);font-size:13px;resize:none;outline:none"></textarea>
 <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);align-items:center">
@@ -529,12 +448,8 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- DentChat -->
-<!-- ============================================================ -->
 <section class="section" id="sec-dentchat">
-<div class="panel">
-<h2>💬 DentChat</h2><div class="desc">دردشة المجتمع</div>
+<div class="panel"><h2>💬 DentChat</h2><div class="desc">دردشة المجتمع</div>
 <div id="dentChatBody" style="background:rgba(0,0,0,.2);border-radius:10px;padding:10px;min-height:280px;max-height:400px;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:6px"></div>
 <div style="display:flex;gap:5px">
 <input id="dentChatInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter')sendDentChat()">
@@ -543,18 +458,14 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- المناقشات -->
-<!-- ============================================================ -->
 <section class="section" id="sec-discussions">
-<div class="panel">
-<h2>🗣️ المناقشات</h2><div class="desc">نقاش الحالات</div>
+<div class="panel"><h2>🗣️ المناقشات</h2><div class="desc">نقاش الحالات</div>
 <div class="grid2" style="margin-bottom:8px">
-<div class="field"><label>العنوان</label><input id="discTitle" placeholder="عنوان المناقشة"></div>
+<div class="field"><label>العنوان</label><input id="discTitle"></div>
 <div class="field"><label>النوع</label><select id="discType"><option value="general">عامة</option><option value="case">حالة سريرية</option><option value="specialist">استشارة أخصائي</option></select></div>
 </div>
 <div class="field"><label>المريض</label><select id="discPatient"><option value="">—</option></select></div>
-<div class="field"><label>الوصف</label><textarea id="discBody" rows="3" placeholder="تفاصيل الحالة..."></textarea></div>
+<div class="field"><label>الوصف</label><textarea id="discBody" rows="3"></textarea></div>
 <label style="margin-top:10px;color:var(--muted);font-size:12px;display:block">الأخصائيون المدعوون</label>
 <div id="discInvitesList" style="background:rgba(0,0,0,.2);padding:8px;border-radius:10px;max-height:120px;overflow-y:auto;margin-bottom:10px"></div>
 <button class="btn-save" onclick="createDiscussion()">➕ نشر</button>
@@ -563,26 +474,22 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- الاجتماعات -->
-<!-- ============================================================ -->
 <section class="section" id="sec-meetings">
-<div class="panel">
-<h2>📹 الاجتماعات</h2><div class="desc">Jitsi · متعدد التخصصات</div>
+<div class="panel"><h2>📹 الاجتماعات</h2><div class="desc">Jitsi · متعدد التخصصات</div>
 <div class="grid2" style="margin-bottom:10px">
-<div class="field"><label>العنوان *</label><input id="meetTitle" placeholder="مناقشة حالة"></div>
+<div class="field"><label>العنوان *</label><input id="meetTitle"></div>
 <div class="field"><label>النوع</label><select id="meetType"><option value="discussion">📋 مناقشة</option><option value="consultation">👨‍⚕️ استشارة</option><option value="multidisciplinary">🎯 متعدد التخصصات</option><option value="treatment-plan">📐 خطة علاج</option></select></div>
 <div class="field"><label>التاريخ *</label><input type="date" id="meetDate"></div>
 <div class="field"><label>الوقت *</label><input type="time" id="meetTime" value="14:00"></div>
 <div class="field"><label>المدة (دقيقة)</label><input type="number" id="meetDuration" value="30" min="15" max="180"></div>
-<div class="field"><label>الموقع</label><input id="meetLocation" placeholder="أونلاين" value="أونلاين"></div>
+<div class="field"><label>الموقع</label><input id="meetLocation" value="أونلاين"></div>
 </div>
 <div class="field"><label>المريض</label><select id="meetPatient"><option value="">—</option></select></div>
 <label style="margin-top:10px;color:var(--muted);font-size:12px;display:block">الأخصائيون المدعوون</label>
 <div id="meetSpecialistsList" style="max-height:150px;overflow-y:auto;background:rgba(0,0,0,.2);padding:8px;border-radius:10px;margin-bottom:10px"></div>
 <div class="grid2" style="margin-bottom:10px">
-<div class="field"><label>اسم جهة الاتصال</label><input id="meetContactName" placeholder="اسم"></div>
-<div class="field"><label>الهاتف</label><input id="meetContactPhone" type="tel" placeholder="+967..."></div>
+<div class="field"><label>جهة الاتصال</label><input id="meetContactName"></div>
+<div class="field"><label>الهاتف</label><input id="meetContactPhone" type="tel"></div>
 </div>
 <div class="field"><label>ملاحظات</label><textarea id="meetNotes" rows="2"></textarea></div>
 <button class="btn-save" style="margin-top:10px" onclick="createMeeting()">➕ إنشاء اجتماع</button>
@@ -591,16 +498,12 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- المعمل -->
-<!-- ============================================================ -->
 <section class="section" id="sec-lab">
-<div class="panel">
-<h2>🧪 المعمل</h2><div class="desc">إدارة طلبات المعمل</div>
+<div class="panel"><h2>🧪 المعمل</h2><div class="desc">إدارة طلبات المعمل</div>
 <div class="grid2" style="margin-bottom:10px">
 <div class="field"><label>المريض</label><select id="labPatient"></select></div>
 <div class="field"><label>نوع العمل</label><select id="labType"><option>تاج</option><option>جسر</option><option>طقم</option><option>زرعة</option><option>فينير</option></select></div>
-<div class="field"><label>المعمل</label><input id="labName" placeholder="اسم المعمل"></div>
+<div class="field"><label>المعمل</label><input id="labName"></div>
 <div class="field"><label>الاستلام</label><input type="date" id="labDue"></div>
 </div>
 <div class="field"><label>ملاحظات</label><textarea id="labNotes" rows="2"></textarea></div>
@@ -610,20 +513,16 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- الأخصائيون -->
-<!-- ============================================================ -->
 <section class="section" id="sec-specialists">
-<div class="panel">
-<h2>🎓 الأخصائيون</h2><div class="desc">بيانات كاملة للتواصل</div>
+<div class="panel"><h2>🎓 الأخصائيون</h2><div class="desc">بيانات كاملة للتواصل</div>
 <h3 style="font-size:13px;margin-bottom:10px;color:var(--gold)">➕ إضافة أخصائي</h3>
 <div class="grid2" style="margin-bottom:10px">
-<div class="field"><label>الاسم *</label><input id="specName" placeholder="د. محمد"></div>
+<div class="field"><label>الاسم *</label><input id="specName"></div>
 <div class="field"><label>التخصص *</label><select id="specSpecialty"><option>تقويم</option><option>جراحة فم</option><option>لبية</option><option>تركيبات</option><option>أطفال</option><option>لثة</option><option>أشعة</option><option>تجميل</option><option>مخ وأعصاب</option><option>أنف وأذن</option><option>جلدية</option></select></div>
-<div class="field"><label>الهاتف *</label><input id="specPhone" type="tel" placeholder="+967..."></div>
+<div class="field"><label>الهاتف *</label><input id="specPhone" type="tel"></div>
 <div class="field"><label>البريد</label><input id="specEmail" type="email"></div>
-<div class="field"><label>الموقع</label><input id="specLocation" placeholder="العنوان"></div>
-<div class="field"><label>المدينة</label><input id="specCity" placeholder="صنعاء"></div>
+<div class="field"><label>الموقع</label><input id="specLocation"></div>
+<div class="field"><label>المدينة</label><input id="specCity"></div>
 </div>
 <div class="field"><label>متاح Zoom؟</label>
 <select id="specZoomAvailable"><option value="yes">✅ نعم</option><option value="no">❌ لا</option><option value="appointment">📅 بموعد</option></select></div>
@@ -634,12 +533,8 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- الفريق -->
-<!-- ============================================================ -->
 <section class="section" id="sec-users">
-<div class="panel">
-<h2>👥 الفريق</h2><div class="desc">أعضاء العيادة</div>
+<div class="panel"><h2>👥 الفريق</h2><div class="desc">أعضاء العيادة</div>
 <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
 <button class="chip-btn accent" onclick="openAddStaffModal()">➕ إضافة</button>
 <button class="chip-btn" onclick="loadUsers()">🔄</button>
@@ -648,12 +543,8 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- التقرير الشامل -->
-<!-- ============================================================ -->
 <section class="section" id="sec-report">
-<div class="panel">
-<h2>📄 التقرير الشامل</h2><div class="desc" id="reportCtx">لم يتم اختيار مريض</div>
+<div class="panel"><h2>📄 التقرير الشامل</h2><div class="desc" id="reportCtx">لم يتم اختيار مريض</div>
 <div id="reportForm" class="hidden">
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
 <button class="chip-btn accent" onclick="generateReport()">🔄 تحديث</button>
@@ -664,26 +555,22 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- إدارة المنتجات (Admin) -->
-<!-- ============================================================ -->
 <section class="section" id="sec-manageProducts">
-<div class="panel">
-<h2>📚 إدارة المنتجات الرقمية</h2><div class="desc">إضافة وتعديل وحذف الكتب والأنظمة (للمالك فقط)</div>
+<div class="panel"><h2>📚 إدارة المنتجات الرقمية</h2><div class="desc">إضافة وتعديل وحذف (للمالك فقط)</div>
 <div style="background:rgba(20,184,166,.05);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
 <h3 style="font-size:13px;color:var(--teal);margin-bottom:10px">➕ إضافة منتج جديد</h3>
 <div class="grid2">
-<div class="field"><label>العنوان *</label><input id="dpTitle" placeholder="كتاب تناغم الوجه"></div>
+<div class="field"><label>العنوان *</label><input id="dpTitle"></div>
 <div class="field"><label>النوع *</label><select id="dpType"><option value="book">📚 كتاب</option><option value="system">⚙️ نظام</option><option value="editor">🎨 أداة تحرير</option><option value="ai">🧠 أداة AI</option><option value="course">🎓 دورة</option></select></div>
 <div class="field"><label>السعر ($) *</label><input id="dpPrice" type="number" value="0" min="0" step="0.01"></div>
 <div class="field"><label>مجاني؟</label><select id="dpFree"><option value="no">مدفوع</option><option value="yes">مجاني</option></select></div>
 </div>
 <div class="field"><label>الوصف</label><textarea id="dpDesc" rows="2"></textarea></div>
 <div class="field"><label>رابط صورة الغلاف</label><input id="dpCover" placeholder="https://..."></div>
-<div class="field"><label>رابط الملف (PDF/ZIP/Drive)</label><input id="dpFile" placeholder="https://..."></div>
+<div class="field"><label>رابط الملف (Google Drive مباشر)</label><input id="dpFile" placeholder="https://drive.google.com/uc?export=download&id=..."></div>
 <div class="grid2">
-<div class="field"><label>واتساب للتواصل</label><input id="dpWhatsApp" placeholder="+967..." type="tel"></div>
-<div class="field"><label>البريد للتواصل</label><input id="dpEmail" type="email" placeholder="you@email.com"></div>
+<div class="field"><label>واتساب للتواصل</label><input id="dpWhatsApp" type="tel"></div>
+<div class="field"><label>البريد للتواصل</label><input id="dpEmail" type="email"></div>
 </div>
 <button class="btn-save" onclick="addDigitalProduct()">💾 إضافة المنتج</button>
 </div>
@@ -692,23 +579,19 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- إدارة الاشتراكات (Admin) -->
-<!-- ============================================================ -->
 <section class="section" id="sec-manageSubscriptions">
-<div class="panel">
-<h2>🎯 إدارة خطط الاشتراك</h2><div class="desc">إنشاء وتعديل خطط الاشتراك (للمالك فقط)</div>
+<div class="panel"><h2>🎯 إدارة خطط الاشتراك</h2><div class="desc">(للمالك فقط)</div>
 <div style="background:rgba(245,199,106,.05);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
 <h3 style="font-size:13px;color:var(--gold);margin-bottom:10px">➕ خطة جديدة</h3>
 <div class="grid2">
-<div class="field"><label>اسم الخطة *</label><input id="spName" placeholder="الخطة المتقدمة"></div>
+<div class="field"><label>اسم الخطة *</label><input id="spName"></div>
 <div class="field"><label>السعر ($) *</label><input id="spPrice" type="number" value="99" min="0"></div>
 <div class="field"><label>المدة (أيام) *</label><input id="spDuration" type="number" value="30" min="1"></div>
 <div class="field"><label>الترتيب</label><input id="spOrder" type="number" value="1" min="1"></div>
 </div>
-<div class="field"><label>الوصف</label><textarea id="spDesc" rows="2" placeholder="مميزات الخطة..."></textarea></div>
+<div class="field"><label>الوصف</label><textarea id="spDesc" rows="2"></textarea></div>
 <div class="field">
-<label>الأقسام المتاحة بهذه الخطة</label>
+<label>الأقسام المتاحة</label>
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;background:rgba(0,0,0,.2);padding:10px;border-radius:10px">
 <label class="spec-check-item"><input type="checkbox" class="sp-section" value="patients" checked> المرضى</label>
 <label class="spec-check-item"><input type="checkbox" class="sp-section" value="history" checked> التاريخ الطبي</label>
@@ -728,30 +611,26 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 <h3 style="font-size:13px;margin:14px 0 8px">📋 الخطط الحالية</h3>
 <div id="adminPlansList"></div>
-<h3 style="font-size:13px;margin:16px 0 8px">👥 المشتركون الحاليون</h3>
+<h3 style="font-size:13px;margin:16px 0 8px">👥 المشتركون</h3>
 <div id="allSubscriptionsList"></div>
 <h3 style="font-size:13px;margin:16px 0 8px;color:var(--gold)">⏳ طلبات الدفع المعلقة</h3>
 <div id="pendingOrdersList"></div>
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- إدارة الإعلانات (Admin) -->
-<!-- ============================================================ -->
 <section class="section" id="sec-manageAds">
-<div class="panel">
-<h2>📢 إدارة الإعلانات</h2><div class="desc">إنشاء وإدارة الإعلانات الترويجية (للمالك فقط)</div>
+<div class="panel"><h2>📢 إدارة الإعلانات</h2><div class="desc">(للمالك فقط)</div>
 <div style="background:rgba(34,211,238,.05);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
 <h3 style="font-size:13px;color:var(--cyan);margin-bottom:10px">➕ إعلان جديد</h3>
-<div class="field"><label>العنوان *</label><input id="adTitle" placeholder="خصم 20% على الزراعة"></div>
+<div class="field"><label>العنوان *</label><input id="adTitle"></div>
 <div class="field"><label>الوصف</label><textarea id="adDesc" rows="2"></textarea></div>
 <div class="grid2">
-<div class="field"><label>رابط الصورة</label><input id="adImage" placeholder="https://..."></div>
-<div class="field"><label>رابط الوجهة</label><input id="adLink" placeholder="https://..."></div>
+<div class="field"><label>رابط الصورة</label><input id="adImage"></div>
+<div class="field"><label>رابط الوجهة</label><input id="adLink"></div>
 <div class="field"><label>البداية *</label><input id="adStart" type="date"></div>
 <div class="field"><label>النهاية *</label><input id="adEnd" type="date"></div>
 </div>
-<div class="field"><label>الجمهور المستهدف</label>
+<div class="field"><label>الجمهور</label>
 <select id="adAudience">
 <option value="all">الجميع</option>
 <option value="doctors">الأطباء</option>
@@ -768,22 +647,19 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 <div style="background:rgba(52,211,153,.05);border:1px solid var(--border);border-radius:12px;padding:14px">
 <div class="grid2">
 <div class="field"><label>🪙 Binance ID</label><input id="payBinanceId" placeholder="360202769"></div>
-<div class="field"><label>📱 محفظة يمنية (رقم)</label><input id="payWalletNumber" placeholder="777700412" type="tel"></div>
-<div class="field"><label>🏦 اسم البنك</label><input id="payBankName" placeholder="بنك التضامن"></div>
-<div class="field"><label>🔢 رقم الحساب البنكي</label><input id="payBankAccount" placeholder="123456789"></div>
-<div class="field"><label>👤 اسم صاحب الحساب</label><input id="payAccountHolder" placeholder="د. علي النقيب"></div>
-<div class="field"><label>📧 البريد للتحويل</label><input id="payEmail" type="email" placeholder="you@email.com"></div>
+<div class="field"><label>📱 محفظة يمنية</label><input id="payWalletNumber" placeholder="777700412" type="tel"></div>
+<div class="field"><label>🏦 اسم البنك</label><input id="payBankName"></div>
+<div class="field"><label>🔢 رقم الحساب</label><input id="payBankAccount"></div>
+<div class="field"><label>👤 صاحب الحساب</label><input id="payAccountHolder"></div>
+<div class="field"><label>📧 البريد</label><input id="payEmail" type="email"></div>
 </div>
-<div class="field"><label>💬 رقم واتساب للتواصل</label><input id="payWhatsApp" placeholder="777700412" type="tel"></div>
-<div class="field"><label>📝 تعليمات إضافية</label><textarea id="payInstructions" rows="2" placeholder="أرسل صورة التحويل عبر واتساب..."></textarea></div>
-<button class="btn-save" onclick="savePaymentConfig()">💾 حفظ إعدادات الدفع</button>
+<div class="field"><label>💬 واتساب</label><input id="payWhatsApp" placeholder="777700412" type="tel"></div>
+<div class="field"><label>📝 تعليمات</label><textarea id="payInstructions" rows="2"></textarea></div>
+<button class="btn-save" onclick="savePaymentConfig()">💾 حفظ</button>
 </div>
 </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- الإعدادات -->
-<!-- ============================================================ -->
 <section class="section" id="sec-settings">
 <div class="panel">
 <h2>⚙️ الإعدادات</h2><div class="desc">الحساب والخصوصية</div>
@@ -791,13 +667,13 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 <div class="field"><label>البريد</label><input id="setEmail" readonly></div>
 <div class="field"><label>الاسم</label><input id="setName"></div>
 <div class="field"><label>الدور</label><input id="setRole" readonly></div>
-<div class="field"><label>كود العيادة</label><input id="setClinicCode" readonly style="font-family:monospace;letter-spacing:1px"></div>
+<div class="field"><label>كود العيادة</label><input id="setClinicCode" readonly style="font-family:monospace"></div>
 </div>
 <h3 style="font-size:13px;margin:14px 0 8px">🔐 الخصوصية</h3>
 <div style="display:flex;flex-direction:column;gap:6px">
-<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="privShowEmail" style="width:16px"> عرض بريدي</label>
-<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="privShowPhone" style="width:16px"> عرض هاتفي</label>
-<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="privAllowFriends" style="width:16px"> السماح بالصداقة</label>
+<label style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="checkbox" id="privShowEmail" style="width:16px"> عرض بريدي</label>
+<label style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="checkbox" id="privShowPhone" style="width:16px"> عرض هاتفي</label>
+<label style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="checkbox" id="privAllowFriends" style="width:16px"> السماح بالصداقة</label>
 </div>
 <button class="btn-save" style="margin-top:12px" onclick="saveProfile()">💾 حفظ</button>
 </div>
@@ -815,13 +691,10 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 </div>
 </section>
 
-<footer class="app-footer">© 2026 HarmonizeAI – نظام إدارة العيادة الذكي | v11.0</footer>
+<footer class="app-footer">© 2026 HarmonizeAI | v11.0</footer>
 </main>
 </div>
 
-<!-- ============================================================ -->
-<!-- المودالات -->
-<!-- ============================================================ -->
 <div class="modal" id="addPatientModal">
 <div class="box">
 <h3 style="margin-bottom:12px">➕ مريض جديد</h3>
@@ -897,7 +770,7 @@ table.tbl th{color:var(--cyan);font-size:11px;background:var(--card2)}
 
 <script>
 // ============================================================
-// Firebase Init
+// Firebase Init — بدون Storage
 // ============================================================
 const firebaseConfig = {
   apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
@@ -910,7 +783,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
+
+// ============ Catbox API لرفع الصور ============
+const CATBOX_API_URL = "https://catbox.moe/user/api.php";
 
 // ============================================================
 // الحالة العامة
@@ -928,20 +803,13 @@ let toothState = {}, threeInit = false;
 let postMedia = { image: null, video: null };
 let regRole = 'doctor';
 let paymentConfig = {
-  binanceId: '360202769',
-  walletNumber: '777700412',
-  bankName: '',
-  bankAccount: '',
-  accountHolder: 'د. علي النقيب',
-  email: '',
-  whatsApp: '777700412',
+  binanceId: '360202769', walletNumber: '777700412',
+  bankName: '', bankAccount: '', accountHolder: 'د. علي النقيب',
+  email: '', whatsApp: '777700412',
   instructions: 'بعد التحويل، أرسل صورة الإيصال عبر واتساب لتأكيد الدفع.'
 };
 let currentPayment = null;
 
-// ============================================================
-// Utilities
-// ============================================================
 function toast(m, err) {
   const t = document.getElementById('toast');
   if (!t) return;
@@ -957,9 +825,6 @@ function esc(s) {
 function today() { return new Date().toISOString().slice(0, 10); }
 function isAdmin() { return CD && (CD.role === 'admin' || CD.role === 'doctor'); }
 
-// ============================================================
-// Auth - Login / Register / Social
-// ============================================================
 function switchAuth(tab) {
   document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
   document.getElementById('tabReg').classList.toggle('active', tab === 'register');
@@ -968,7 +833,7 @@ function switchAuth(tab) {
 }
 function selectRegRole(role) {
   regRole = role;
-  ['doctor', 'employee', 'guest'].forEach(r => {
+  ['doctor','employee','guest'].forEach(r => {
     const btn = document.getElementById('role' + r.charAt(0).toUpperCase() + r.slice(1) + 'Btn');
     if (btn) btn.classList.toggle('active', r === role);
   });
@@ -982,14 +847,9 @@ async function doLogin() {
   const password = document.getElementById('loginPassword').value;
   const err = document.getElementById('loginErr');
   err.classList.add('hidden');
-  if (!email || !password) {
-    err.textContent = '⚠️ أدخل البريد وكلمة المرور';
-    err.classList.remove('hidden');
-    return;
-  }
+  if (!email || !password) { err.textContent = '⚠️ أدخل البريد وكلمة المرور'; err.classList.remove('hidden'); return; }
   const btn = document.getElementById('btnLogin');
-  btn.disabled = true;
-  btn.textContent = '⏳...';
+  btn.disabled = true; btn.textContent = '⏳...';
   try {
     await auth.signInWithEmailAndPassword(email, password);
     toast('✅');
@@ -999,10 +859,7 @@ async function doLogin() {
     else if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'كلمة المرور خطأ';
     err.textContent = '❌ ' + msg;
     err.classList.remove('hidden');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🚪 دخول';
-  }
+  } finally { btn.disabled = false; btn.textContent = '🚪 دخول'; }
 }
 
 async function doRegister() {
@@ -1017,26 +874,23 @@ async function doRegister() {
   if (password.length < 6) { err.textContent = '⚠️ 6 أحرف على الأقل'; err.classList.remove('hidden'); return; }
   if (password !== password2) { err.textContent = '⚠️ كلمتا المرور مختلفتان'; err.classList.remove('hidden'); return; }
   if (!privacy) { err.textContent = '⚠️ وافق على الخصوصية'; err.classList.remove('hidden'); return; }
-
   let userData = {
     email, fullName: name, role: regRole, active: true,
     privacy: { showEmail: false, showPhone: false, allowFriends: true },
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
-
   if (regRole === 'doctor') {
     const cn = document.getElementById('regClinicName').value.trim();
     if (!cn) { err.textContent = '⚠️ اسم العيادة'; err.classList.remove('hidden'); return; }
     const code = 'CLN-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-    userData.clinicId = code;
-    userData.clinicName = cn;
+    userData.clinicId = code; userData.clinicName = cn;
     userData.clinicAddress = document.getElementById('regClinicAddress').value.trim();
     userData.specialty = document.getElementById('regSpecialty').value;
     userData.clinicPhone = document.getElementById('regClinicPhone').value.trim();
   } else if (regRole === 'employee') {
     const code = document.getElementById('regClinicCode').value.trim().toUpperCase();
     if (!code) { err.textContent = '⚠️ كود العيادة'; err.classList.remove('hidden'); return; }
-    const chk = await db.collection('users').where('clinicId', '==', code).limit(1).get();
+    const chk = await db.collection('users').where('clinicId','==',code).limit(1).get();
     if (chk.empty) { err.textContent = '❌ كود غير صحيح'; err.classList.remove('hidden'); return; }
     userData.clinicId = code;
     userData.position = document.getElementById('regPosition').value;
@@ -1045,10 +899,8 @@ async function doRegister() {
     userData.country = document.getElementById('regCountry').value.trim();
     userData.clinicId = 'GUEST-' + Math.random().toString(36).substring(2, 8).toUpperCase();
   }
-
   const btn = document.getElementById('btnReg');
-  btn.disabled = true;
-  btn.textContent = '⏳...';
+  btn.disabled = true; btn.textContent = '⏳...';
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, password);
     const isFirst = (await db.collection('users').get()).size === 0;
@@ -1056,19 +908,14 @@ async function doRegister() {
     await db.collection('users').doc(cred.user.uid).set(userData);
     await cred.user.updateProfile({ displayName: name });
     toast('✅');
-    if (regRole === 'doctor') {
-      setTimeout(() => alert(`🏥 كود عيادتك: ${userData.clinicId}\n\n⚠️ احفظه لإضافة موظفين`), 800);
-    }
+    if (regRole === 'doctor') setTimeout(() => alert(`🏥 كود عيادتك: ${userData.clinicId}\n\n⚠️ احفظه لإضافة موظفين`), 800);
   } catch (e) {
     let msg = e.message;
     if (e.code === 'auth/email-already-in-use') msg = 'البريد مسجل';
     else if (e.code === 'auth/weak-password') msg = 'كلمة المرور ضعيفة';
     err.textContent = '❌ ' + msg;
     err.classList.remove('hidden');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '➕ إنشاء';
-  }
+  } finally { btn.disabled = false; btn.textContent = '➕ إنشاء'; }
 }
 
 async function loginAnonymous() {
@@ -1080,10 +927,8 @@ async function loginAnonymous() {
     const g = 'زائر-' + u.uid.slice(0, 6).toUpperCase();
     const isFirst = (await db.collection('users').get()).size === 0;
     await db.collection('users').doc(u.uid).set({
-      email: u.uid + '@guest.local',
-      fullName: g,
-      role: isFirst ? 'admin' : 'guest',
-      active: true, isGuest: true,
+      email: u.uid + '@guest.local', fullName: g,
+      role: isFirst ? 'admin' : 'guest', active: true, isGuest: true,
       clinicId: 'GUEST-' + u.uid.slice(0, 6).toUpperCase(),
       privacy: { showEmail: false, showPhone: false, allowFriends: true },
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1091,13 +936,8 @@ async function loginAnonymous() {
     await u.updateProfile({ displayName: g });
     toast('✅ مرحباً ' + g);
   } catch (e) {
-    if (e.code === 'auth/operation-not-allowed') {
-      err.textContent = '⚠️ فعّل Anonymous من Firebase';
-      err.classList.remove('hidden');
-    } else {
-      err.textContent = '❌ ' + e.message;
-      err.classList.remove('hidden');
-    }
+    if (e.code === 'auth/operation-not-allowed') { err.textContent = '⚠️ فعّل Anonymous'; err.classList.remove('hidden'); }
+    else { err.textContent = '❌ ' + e.message; err.classList.remove('hidden'); }
   }
 }
 
@@ -1119,8 +959,7 @@ async function socialLogin(provider) {
       const isFirst = (await db.collection('users').get()).size === 0;
       await db.collection('users').doc(u.uid).set({
         email, fullName: u.displayName || email.split('@')[0],
-        avatar: u.photoURL || '',
-        role: isFirst ? 'admin' : 'guest',
+        avatar: u.photoURL || '', role: isFirst ? 'admin' : 'guest',
         active: true, provider,
         clinicId: 'GUEST-' + u.uid.slice(0, 6).toUpperCase(),
         privacy: { showEmail: false, showPhone: false, allowFriends: true },
@@ -1142,53 +981,36 @@ function resetPassword() {
   const e = prompt('بريدك:');
   if (e) auth.sendPasswordResetEmail(e).then(() => toast('📧 تحقق من بريدك')).catch(err => toast('❌ ' + err.message, true));
 }
-function doLogout() {
-  if (confirm('تسجيل الخروج؟')) auth.signOut();
-}
+function doLogout() { if (confirm('تسجيل الخروج؟')) auth.signOut(); }
 
-// ============================================================
-// Auth State
-// ============================================================
 auth.onAuthStateChanged(async user => {
   if (user) {
     CU = user;
     try {
       const doc = await db.collection('users').doc(user.uid).get();
-      if (doc.exists) {
-        CD = doc.data();
-      } else {
+      if (doc.exists) CD = doc.data();
+      else {
         const isFirst = (await db.collection('users').get()).size === 0;
         CD = {
           email: user.email || user.uid,
           fullName: user.displayName || user.email || 'مستخدم',
-          role: isFirst ? 'admin' : 'guest',
-          active: true,
+          role: isFirst ? 'admin' : 'guest', active: true,
           clinicId: 'GUEST-' + user.uid.slice(0, 6).toUpperCase(),
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         await db.collection('users').doc(user.uid).set(CD);
       }
-      if (CD.active === false) {
-        await auth.signOut();
-        toast('🚫 الحساب معطل', true);
-        return;
-      }
+      if (CD.active === false) { await auth.signOut(); toast('🚫 الحساب معطل', true); return; }
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('userName').textContent = CD.fullName;
       document.getElementById('brandSub').textContent =
-        (CD.role === 'admin' ? '👑' : CD.role === 'doctor' ? '👨‍⚕️' : CD.role === 'employee' ? '👨‍💼' : '👤')
-        + ' — ' + (user.email || 'ضيف');
+        (CD.role === 'admin' ? '👑' : CD.role === 'doctor' ? '👨‍⚕️' : CD.role === 'employee' ? '👨‍💼' : '👤') + ' — ' + (user.email || 'ضيف');
       const ci = document.getElementById('clinicInfo');
-      if (ci) ci.innerHTML = CD.clinicName
-        ? `🏥 ${esc(CD.clinicName)} • كود: <b>${esc(CD.clinicId || '')}</b>`
-        : 'الحساب: ' + (CD.role || '');
-
-      // إظهار/إخفاء أزرار الإدارة
+      if (ci) ci.innerHTML = CD.clinicName ? `🏥 ${esc(CD.clinicName)} • كود: <b>${esc(CD.clinicId || '')}</b>` : 'الحساب: ' + (CD.role || '');
       document.querySelectorAll('[data-admin="true"]').forEach(el => {
         el.style.display = isAdmin() ? 'flex' : 'none';
       });
-
       loadGeminiSettings();
       await Promise.all([
         loadPatients(), loadAppointments(), loadUsers(), loadLab(),
@@ -1197,18 +1019,12 @@ auth.onAuthStateChanged(async user => {
         loadSubscriptionPlans(), loadUserSubscription(),
         loadAdvertisements(), loadPaymentConfig()
       ]);
-      if (isAdmin()) {
-        await loadAllSubscriptions();
-        await loadPendingOrders();
-      }
+      if (isAdmin()) { await loadAllSubscriptions(); await loadPendingOrders(); }
       updateDashboard();
       fillSettings();
       setTimeout(() => { drawExoDiagram(); initThree(); }, 300);
       toast('✅ مرحباً ' + CD.fullName);
-    } catch (e) {
-      console.error(e);
-      toast('❌ ' + e.message, true);
-    }
+    } catch (e) { console.error(e); toast('❌ ' + e.message, true); }
   } else {
     CU = null; CD = null;
     document.getElementById('loginScreen').classList.remove('hidden');
@@ -1216,14 +1032,8 @@ auth.onAuthStateChanged(async user => {
   }
 });
 
-// ============================================================
-// Navigation
-// ============================================================
 function showSection(sec) {
-  if (!hasAccessToSection(sec)) {
-    toast('🔒 هذا القسم يتطلب اشتراكًا نشطًا', true);
-    return;
-  }
+  if (!hasAccessToSection(sec)) { toast('🔒 هذا القسم يتطلب اشتراكًا نشطًا', true); return; }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const el = document.getElementById('sec-' + sec);
   if (el) el.classList.add('active');
@@ -1231,13 +1041,8 @@ function showSection(sec) {
   const btn = document.querySelector(`.nav-item[data-sec="${sec}"]`);
   if (btn) btn.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
-
-  const pSecs = ['history', 'chart', 'report'];
-  if (pSecs.includes(sec) && !currentPatient) {
-    openSelectPatientFor(sec);
-    return;
-  }
-
+  const pSecs = ['history','chart','report'];
+  if (pSecs.includes(sec) && !currentPatient) { openSelectPatientFor(sec); return; }
   if (sec === 'patients') renderPatients();
   if (sec === 'appointments') renderAppointments();
   if (sec === 'users') renderUsers();
@@ -1255,15 +1060,8 @@ function showSection(sec) {
   if (sec === 'smileDesign') drawExoDiagram();
   if (sec === 'cadcam') initThree();
   if (sec === 'manageProducts' && isAdmin()) loadDigitalProducts();
-  if (sec === 'manageSubscriptions' && isAdmin()) {
-    loadSubscriptionPlans();
-    loadAllSubscriptions();
-    loadPendingOrders();
-  }
-  if (sec === 'manageAds' && isAdmin()) {
-    loadAdvertisements();
-    loadPaymentConfig();
-  }
+  if (sec === 'manageSubscriptions' && isAdmin()) { loadSubscriptionPlans(); loadAllSubscriptions(); loadPendingOrders(); }
+  if (sec === 'manageAds' && isAdmin()) { loadAdvertisements(); loadPaymentConfig(); }
   if (pSecs.includes(sec)) loadPatientSection(sec);
 }
 document.querySelectorAll('.nav-item[data-sec]').forEach(btn => {
@@ -1275,9 +1073,7 @@ function openSelectPatientFor(sec) {
   const m = document.getElementById('selectPatientModal');
   const l = document.getElementById('selectPatientList');
   if (!patients.length) l.innerHTML = '<div class="empty">لا يوجد مرضى</div>';
-  else l.innerHTML = patients.map(p =>
-    `<div class="appt-card" style="cursor:pointer" onclick="selectPatientFor('${p.id}','${sec}')"><div class="info"><strong>${esc(p.fullName)}</strong><small>${esc(p.phone || '')}</small></div></div>`
-  ).join('');
+  else l.innerHTML = patients.map(p => `<div class="appt-card" style="cursor:pointer" onclick="selectPatientFor('${p.id}','${sec}')"><div class="info"><strong>${esc(p.fullName)}</strong><small>${esc(p.phone || '')}</small></div></div>`).join('');
   m.classList.add('show');
 }
 function selectPatientFor(id, sec) {
@@ -1288,7 +1084,7 @@ function selectPatientFor(id, sec) {
 
 function hasAccessToSection(sectionId) {
   if (isAdmin()) return true;
-  const freeSections = ['dashboard', 'store', 'myOrders', 'subscriptions', 'mySubscription', 'settings', 'report', 'patients', 'history', 'chart', 'appointments', 'users', 'specialists', 'lab', 'dentbook', 'dentchat', 'friends', 'discussions', 'meetings'];
+  const freeSections = ['dashboard','store','myOrders','subscriptions','mySubscription','settings','report','patients','history','chart','appointments','users','specialists','lab','dentbook','dentchat','friends','discussions','meetings'];
   if (freeSections.includes(sectionId)) return true;
   if (userSubscription && userSubscription.status === 'active') {
     const access = userSubscription.sectionsAccess || [];
@@ -1297,27 +1093,20 @@ function hasAccessToSection(sectionId) {
   return false;
 }
 
-// ============================================================
-// Patients
-// ============================================================
+// ============ Patients ============
 async function loadPatients() {
-  const snap = await db.collection('patients').where('clinicId', '==', CD.clinicId).get();
+  const snap = await db.collection('patients').where('clinicId','==',CD.clinicId).get();
   patients = [];
   snap.forEach(d => patients.push({ id: d.id, ...d.data() }));
   patients.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-  renderPatients();
-  populatePatientSelects();
-  updateDashboard();
+  renderPatients(); populatePatientSelects(); updateDashboard();
 }
 function renderPatients() {
   const q = (document.getElementById('searchPatients')?.value || '').toLowerCase();
   const list = patients.filter(p => !q || (p.fullName || '').toLowerCase().includes(q) || (p.phone || '').includes(q));
   const el = document.getElementById('patientsList');
   if (!el) return;
-  if (!list.length) {
-    el.innerHTML = '<div class="empty"><div class="ic">📭</div><p>لا يوجد مرضى</p></div>';
-    return;
-  }
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="ic">📭</div><p>لا يوجد مرضى</p></div>'; return; }
   el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">' +
     list.map(p => `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px">
       <div style="display:flex;justify-content:space-between;margin-bottom:5px;gap:6px">
@@ -1358,8 +1147,7 @@ async function createPatient() {
 async function deletePatient(id) {
   if (!confirm('حذف المريض؟')) return;
   await db.collection('patients').doc(id).delete();
-  toast('🗑️');
-  await loadPatients();
+  toast('🗑️'); await loadPatients();
 }
 function populatePatientSelects() {
   const opts = '<option value="">— اختر —</option>' + patients.map(p => `<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
@@ -1398,12 +1186,9 @@ async function saveHistory() {
     notes: document.getElementById('histNotes').value.trim(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   }, { merge: true });
-  toast('✅ تم حفظ التاريخ الطبي');
+  toast('✅');
 }
 
-// ============================================================
-// Teeth Chart
-// ============================================================
 const UPPER = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
 const LOWER = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
 function renderChart() {
@@ -1424,28 +1209,24 @@ function cycleTooth(n) {
 }
 async function saveChart() {
   await db.collection('patients').doc(currentPatient.id).collection('medical').doc('chart').set({
-    teeth: toothState,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    teeth: toothState, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   }, { merge: true });
-  toast('✅ تم حفظ المخطط');
+  toast('✅');
 }
 
-// ============================================================
-// Appointments
-// ============================================================
+// ============ Appointments ============
 async function loadAppointments() {
-  const snap = await db.collection('appointments').where('clinicId', '==', CD.clinicId).get();
+  const snap = await db.collection('appointments').where('clinicId','==',CD.clinicId).get();
   appointments = [];
   snap.forEach(d => appointments.push({ id: d.id, ...d.data() }));
   appointments.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-  renderAppointments();
-  updateDashboard();
+  renderAppointments(); updateDashboard();
 }
 async function addAppointment() {
   const pid = document.getElementById('apptPatient').value;
   const date = document.getElementById('apptDate').value;
   const time = document.getElementById('apptTime').value;
-  if (!pid || !date || !time) { toast('⚠️ أكمل البيانات', true); return; }
+  if (!pid || !date || !time) { toast('⚠️', true); return; }
   const p = patients.find(x => x.id === pid);
   await db.collection('appointments').add({
     patientId: pid, patientName: p?.fullName || '',
@@ -1454,24 +1235,19 @@ async function addAppointment() {
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     createdBy: CU.email || CU.uid
   });
-  toast('✅');
-  await loadAppointments();
+  toast('✅'); await loadAppointments();
 }
 function renderAppointments() {
   const el = document.getElementById('appointmentsList');
   if (!el) return;
-  if (!appointments.length) {
-    el.innerHTML = '<div class="empty"><div class="ic">📅</div><p>لا مواعيد</p></div>';
-    return;
-  }
+  if (!appointments.length) { el.innerHTML = '<div class="empty"><div class="ic">📅</div><p>لا مواعيد</p></div>'; return; }
   const ts = today();
   el.innerHTML = appointments.map(a => {
     const p = a.date < ts, t = a.date === ts;
-    const c = a.completed ? 'completed' : '';
     const col = a.completed ? 'var(--ok)' : p ? 'var(--danger)' : t ? 'var(--gold)' : 'var(--teal)';
     const lbl = a.completed ? '✅' : p ? '⚠️' : t ? '🔔' : '📅';
-    return `<div class="appt-card ${c}" style="border-right-color:${col}">
-      <div class="info"><strong>${esc(a.patientName || '—')}</strong><small>${esc(a.date)} • ${esc(a.time)} — ${esc(a.type || 'فحص')}</small></div>
+    return `<div class="appt-card ${a.completed ? 'completed' : ''}" style="border-right-color:${col}">
+      <div class="info"><strong>${esc(a.patientName || '—')}</strong><small>${esc(a.date)} • ${esc(a.time)} — ${esc(a.type || '')}</small></div>
       <span style="color:${col};font-size:10px">${lbl}</span>
       <div style="display:flex;gap:3px">
         ${!a.completed ? `<button class="chip-btn" style="padding:3px 7px;font-size:10px" onclick="completeAppt('${a.id}')">✓</button>` : ''}
@@ -1480,46 +1256,26 @@ function renderAppointments() {
     </div>`;
   }).join('');
 }
-async function completeAppt(id) {
-  await db.collection('appointments').doc(id).update({ completed: true });
-  toast('✅');
-  await loadAppointments();
-}
-async function deleteAppt(id) {
-  if (!confirm('حذف؟')) return;
-  await db.collection('appointments').doc(id).delete();
-  toast('🗑️');
-  await loadAppointments();
-}
+async function completeAppt(id) { await db.collection('appointments').doc(id).update({ completed: true }); toast('✅'); await loadAppointments(); }
+async function deleteAppt(id) { if (!confirm('حذف؟')) return; await db.collection('appointments').doc(id).delete(); toast('🗑️'); await loadAppointments(); }
 
-// ============================================================
-// Users / Team
-// ============================================================
+// ============ Users ============
 async function loadUsers() {
-  const snap = await db.collection('users').where('clinicId', '==', CD.clinicId).get();
+  const snap = await db.collection('users').where('clinicId','==',CD.clinicId).get();
   users = [];
   snap.forEach(d => users.push({ id: d.id, ...d.data() }));
-  renderUsers();
-  updateDashboard();
+  renderUsers(); updateDashboard();
 }
 function renderUsers() {
   const el = document.getElementById('usersList');
   if (!el) return;
   if (!users.length) { el.innerHTML = '<div class="empty">لا يوجد</div>'; return; }
   el.innerHTML = `<table class="tbl"><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th></th></tr></thead><tbody>` +
-    users.map(u => `<tr>
-      <td><b>${esc(u.fullName || '—')}</b></td>
-      <td style="font-size:10px">${esc(u.email || '')}</td>
+    users.map(u => `<tr><td><b>${esc(u.fullName || '')}</b></td><td style="font-size:10px">${esc(u.email || '')}</td>
       <td><span style="background:rgba(20,184,166,.15);color:var(--teal);padding:2px 8px;border-radius:8px;font-size:10px">${u.role === 'admin' ? '👑' : u.role === 'doctor' ? '👨‍⚕️' : u.role === 'employee' ? '👨‍💼' : '👤'}</span></td>
-      <td>${(CD.role === 'admin' || CD.role === 'doctor') && u.id !== CU.uid ? `<button class="chip-btn" style="padding:2px 6px;font-size:9px;background:rgba(248,113,113,.15);color:var(--danger)" onclick="deleteUser('${u.id}')">🗑️</button>` : ''}</td>
-    </tr>`).join('') + '</tbody></table>';
+      <td>${(CD.role === 'admin' || CD.role === 'doctor') && u.id !== CU.uid ? `<button class="chip-btn" style="padding:2px 6px;font-size:9px;background:rgba(248,113,113,.15);color:var(--danger)" onclick="deleteUser('${u.id}')">🗑️</button>` : ''}</td></tr>`).join('') + '</tbody></table>';
 }
-async function deleteUser(id) {
-  if (!confirm('حذف؟')) return;
-  await db.collection('users').doc(id).delete();
-  toast('🗑️');
-  await loadUsers();
-}
+async function deleteUser(id) { if (!confirm('حذف؟')) return; await db.collection('users').doc(id).delete(); toast('🗑️'); await loadUsers(); }
 function openAddStaffModal() {
   if (CD.role !== 'admin' && CD.role !== 'doctor') { toast('⛔ للمالك فقط', true); return; }
   document.getElementById('addStaffModal').classList.add('show');
@@ -1528,24 +1284,21 @@ async function createStaffAccount() {
   const name = document.getElementById('staffName').value.trim();
   const email = document.getElementById('staffEmail').value.trim();
   const password = document.getElementById('staffPassword').value;
-  const role = document.getElementById('staffRole').value;
-  const sp = document.getElementById('staffSpecialty').value;
   const err = document.getElementById('staffErr');
   err.classList.add('hidden');
-  if (!name || !email || !password) { err.textContent = '⚠️'; err.classList.remove('hidden'); return; }
-  if (password.length < 6) { err.textContent = '⚠️ 6+'; err.classList.remove('hidden'); return; }
+  if (!name || !email || !password || password.length < 6) { err.textContent = '⚠️ تحقق من البيانات'; err.classList.remove('hidden'); return; }
   try {
     const sec = firebase.initializeApp(firebaseConfig, 'sec' + Date.now());
     const secAuth = sec.auth();
     const cred = await secAuth.createUserWithEmailAndPassword(email, password);
     await db.collection('users').doc(cred.user.uid).set({
-      email, fullName: name, role, specialty: sp || '',
+      email, fullName: name, role: document.getElementById('staffRole').value,
+      specialty: document.getElementById('staffSpecialty').value || '',
       clinicId: CD.clinicId, active: true,
       createdBy: CU.email || CU.uid,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    await secAuth.signOut();
-    await sec.delete();
+    await secAuth.signOut(); await sec.delete();
     toast('✅');
     document.getElementById('addStaffModal').classList.remove('show');
     ['staffName','staffEmail','staffPassword'].forEach(id => document.getElementById(id).value = '');
@@ -1553,25 +1306,20 @@ async function createStaffAccount() {
   } catch (e) {
     let msg = e.message;
     if (e.code === 'auth/email-already-in-use') msg = 'البريد مسجل';
-    err.textContent = '❌ ' + msg;
-    err.classList.remove('hidden');
+    err.textContent = '❌ ' + msg; err.classList.remove('hidden');
   }
 }
 
-// ============================================================
-// Lab
-// ============================================================
+// ============ Lab ============
 async function loadLab() {
-  const snap = await db.collection('lab').where('clinicId', '==', CD.clinicId).get();
+  const snap = await db.collection('lab').where('clinicId','==',CD.clinicId).get();
   lab = [];
   snap.forEach(d => lab.push({ id: d.id, ...d.data() }));
-  lab.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-  renderLab();
-  updateDashboard();
+  renderLab(); updateDashboard();
 }
 async function addLab() {
   const pid = document.getElementById('labPatient').value;
-  if (!pid) { toast('⚠️ اختر المريض', true); return; }
+  if (!pid) { toast('⚠️', true); return; }
   const p = patients.find(x => x.id === pid);
   await db.collection('lab').add({
     patientId: pid, patientName: p?.fullName || '',
@@ -1584,37 +1332,26 @@ async function addLab() {
   });
   document.getElementById('labName').value = '';
   document.getElementById('labNotes').value = '';
-  toast('✅');
-  await loadLab();
+  toast('✅'); await loadLab();
 }
 function renderLab() {
   const el = document.getElementById('labList');
   if (!el) return;
   if (!lab.length) { el.innerHTML = '<div class="empty"><div class="ic">🧪</div><p>لا طلبات</p></div>'; return; }
   el.innerHTML = lab.map(l => `<div class="appt-card">
-    <div class="info"><strong>${esc(l.patientName || '—')}</strong><small>${esc(l.type)} • ${esc(l.labName || '—')} • ${esc(l.due || '')}</small></div>
+    <div class="info"><strong>${esc(l.patientName || '')}</strong><small>${esc(l.type)} • ${esc(l.labName || '')} • ${esc(l.due || '')}</small></div>
     <span style="background:rgba(245,199,106,.15);color:var(--gold);padding:2px 8px;border-radius:8px;font-size:9px">${esc(l.status)}</span>
     <button class="chip-btn" style="padding:3px 7px;font-size:10px;background:rgba(248,113,113,.15);color:var(--danger)" onclick="deleteLab('${l.id}')">🗑️</button>
   </div>`).join('');
 }
-async function deleteLab(id) {
-  if (!confirm('حذف؟')) return;
-  await db.collection('lab').doc(id).delete();
-  toast('🗑️');
-  await loadLab();
-}
+async function deleteLab(id) { if (!confirm('حذف؟')) return; await db.collection('lab').doc(id).delete(); toast('🗑️'); await loadLab(); }
 
-// ============================================================
-// Specialists
-// ============================================================
+// ============ Specialists ============
 async function loadSpecialists() {
-  const snap = await db.collection('specialists').where('clinicId', '==', CD.clinicId).get();
+  const snap = await db.collection('specialists').where('clinicId','==',CD.clinicId).get();
   specialists = [];
   snap.forEach(d => specialists.push({ id: d.id, ...d.data() }));
-  renderSpecialists();
-  renderSpecialistsCheckboxes();
-  renderDiscInvitesCheckboxes();
-  updateDashboard();
+  renderSpecialists(); renderSpecialistsCheckboxes(); renderDiscInvitesCheckboxes(); updateDashboard();
 }
 async function addSpecialist() {
   const name = document.getElementById('specName').value.trim();
@@ -1632,8 +1369,7 @@ async function addSpecialist() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     ['specName','specPhone','specEmail','specLocation','specCity','specNotes'].forEach(id => document.getElementById(id).value = '');
-    toast('✅');
-    await loadSpecialists();
+    toast('✅'); await loadSpecialists();
   } catch (e) { toast('❌ ' + e.message, true); }
 }
 function renderSpecialists() {
@@ -1647,24 +1383,17 @@ function renderSpecialists() {
         <div style="font-size:11px;color:var(--teal);margin-top:2px">🎓 ${esc(s.specialty)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:5px;line-height:1.6">
           ${s.phone ? `📱 <a href="tel:${esc(s.phone)}" style="color:var(--txt)">${esc(s.phone)}</a><br>` : ''}
-          ${s.email ? `📧 <a href="mailto:${esc(s.email)}" style="color:var(--teal)">${esc(s.email)}</a><br>` : ''}
-          ${s.location ? `📍 ${esc(s.location)}${s.city ? ', ' + esc(s.city) : ''}<br>` : ''}
+          ${s.email ? `📧 ${esc(s.email)}<br>` : ''}
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
         ${s.phone ? `<a href="https://wa.me/${s.phone.replace(/\D/g, '')}" target="_blank" class="chip-btn" style="padding:5px 10px;font-size:10px;background:#25D366;color:#fff;text-decoration:none;text-align:center">💬</a>` : ''}
-        <button class="chip-btn" style="padding:5px 10px;font-size:10px" onclick="quickMeeting('${s.id}')">📹</button>
         <button class="chip-btn" style="padding:5px 10px;font-size:10px;background:rgba(248,113,113,.15);color:var(--danger)" onclick="deleteSpecialist('${s.id}')">🗑️</button>
       </div>
     </div>
   </div>`).join('');
 }
-async function deleteSpecialist(id) {
-  if (!confirm('حذف؟')) return;
-  await db.collection('specialists').doc(id).delete();
-  toast('🗑️');
-  await loadSpecialists();
-}
+async function deleteSpecialist(id) { if (!confirm('حذف؟')) return; await db.collection('specialists').doc(id).delete(); toast('🗑️'); await loadSpecialists(); }
 function renderSpecialistsCheckboxes() {
   const el = document.getElementById('meetSpecialistsList');
   if (!el) return;
@@ -1678,11 +1407,9 @@ function renderDiscInvitesCheckboxes() {
   el.innerHTML = specialists.map(s => `<label class="spec-check-item" style="font-size:11px"><input type="checkbox" class="disc-spec-check" value="${s.id}" style="width:14px;height:14px"><span><b style="color:var(--teal)">${esc(s.name)}</b> — ${esc(s.specialty)}</span></label>`).join('');
 }
 
-// ============================================================
-// Meetings
-// ============================================================
+// ============ Meetings ============
 async function loadMeetings() {
-  const snap = await db.collection('zoom_meetings').where('clinicId', '==', CD.clinicId).get();
+  const snap = await db.collection('zoom_meetings').where('clinicId','==',CD.clinicId).get();
   meetings = [];
   snap.forEach(d => meetings.push({ id: d.id, ...d.data() }));
   meetings.sort((a, b) => (b.datetime || '').localeCompare(a.datetime || ''));
@@ -1692,7 +1419,7 @@ async function createMeeting() {
   const title = document.getElementById('meetTitle').value.trim();
   const date = document.getElementById('meetDate').value;
   const time = document.getElementById('meetTime').value;
-  if (!title || !date || !time) { toast('⚠️ أكمل البيانات', true); return; }
+  if (!title || !date || !time) { toast('⚠️', true); return; }
   const selSpecs = Array.from(document.querySelectorAll('.spec-check:checked')).map(cb => {
     const s = specialists.find(x => x.id === cb.value);
     return s ? { id: s.id, name: s.name, specialty: s.specialty, phone: s.phone } : null;
@@ -1706,7 +1433,7 @@ async function createMeeting() {
       datetime: `${date}T${time}`, date, time,
       duration: parseInt(document.getElementById('meetDuration').value) || 30,
       location: document.getElementById('meetLocation').value.trim() || 'أونلاين',
-      doctor: { name: CD.fullName, phone: CD.clinicPhone || '', email: CU.email || '', clinicName: CD.clinicName || '', clinicLocation: CD.clinicAddress || '' },
+      doctor: { name: CD.fullName, phone: CD.clinicPhone || '', email: CU.email || '', clinicName: CD.clinicName || '' },
       patient: patient ? { id: patient.id, name: patient.fullName, phone: patient.phone || '' } : null,
       specialists: selSpecs,
       contactName: document.getElementById('meetContactName').value.trim(),
@@ -1719,8 +1446,7 @@ async function createMeeting() {
     });
     ['meetTitle','meetContactName','meetContactPhone','meetNotes'].forEach(id => document.getElementById(id).value = '');
     document.querySelectorAll('.spec-check:checked').forEach(cb => cb.checked = false);
-    toast('✅');
-    await loadMeetings();
+    toast('✅'); await loadMeetings();
   } catch (e) { toast('❌ ' + e.message, true); }
 }
 function renderMeetings() {
@@ -1741,7 +1467,6 @@ function renderMeetings() {
           <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.7">
             📅 ${new Date(m.datetime).toLocaleString('ar-EG')} (${m.duration || 30}د)<br>
             ${m.patient ? `👤 ${esc(m.patient.name)}<br>` : ''}
-            ${m.specialists && m.specialists.length ? `👨‍⚕️ ${m.specialists.map(s => esc(s.name)).join(', ')}<br>` : ''}
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:4px">
@@ -1752,41 +1477,19 @@ function renderMeetings() {
     </div>`;
   }).join('');
 }
-async function deleteMeeting(id) {
-  if (!confirm('حذف؟')) return;
-  await db.collection('zoom_meetings').doc(id).delete();
-  toast('🗑️');
-  await loadMeetings();
-}
-async function quickMeeting(specId) {
-  const s = specialists.find(x => x.id === specId);
-  if (!s) return;
-  showSection('meetings');
-  document.getElementById('meetTitle').value = `استشارة مع ${s.name}`;
-  document.getElementById('meetDate').value = today();
-  setTimeout(() => {
-    document.querySelectorAll('.spec-check').forEach(cb => {
-      if (cb.value === specId) cb.checked = true;
-    });
-    toast('✅ أكمل البيانات');
-  }, 200);
-}
+async function deleteMeeting(id) { if (!confirm('حذف؟')) return; await db.collection('zoom_meetings').doc(id).delete(); toast('🗑️'); await loadMeetings(); }
 
-// ============================================================
-// Discussions
-// ============================================================
+// ============ Discussions ============
 async function loadDiscussions() {
-  const snap = await db.collection('discussions').where('clinicId', '==', CD.clinicId).get();
+  const snap = await db.collection('discussions').where('clinicId','==',CD.clinicId).get();
   discussions = [];
   snap.forEach(d => discussions.push({ id: d.id, ...d.data() }));
   discussions.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-  renderDiscussions();
-  renderDiscInvitesCheckboxes();
+  renderDiscussions(); renderDiscInvitesCheckboxes();
 }
 async function createDiscussion() {
   const title = document.getElementById('discTitle').value.trim();
-  const body = document.getElementById('discBody').value.trim();
-  if (!title) { toast('⚠️ العنوان', true); return; }
+  if (!title) { toast('⚠️', true); return; }
   const selSpecs = Array.from(document.querySelectorAll('.disc-spec-check:checked')).map(cb => {
     const s = specialists.find(x => x.id === cb.value);
     return s ? { id: s.id, name: s.name, specialty: s.specialty, phone: s.phone } : null;
@@ -1794,27 +1497,25 @@ async function createDiscussion() {
   const pid = document.getElementById('discPatient').value;
   const patient = pid ? patients.find(p => p.id === pid) : null;
   await db.collection('discussions').add({
-    title, body: body || '', type: document.getElementById('discType').value,
+    title, body: document.getElementById('discBody').value.trim(),
+    type: document.getElementById('discType').value,
     patient: patient ? { id: patient.id, name: patient.fullName, phone: patient.phone || '' } : null,
     specialists: selSpecs,
-    authorEmail: CU.email || CU.uid,
-    authorName: CD.fullName,
-    authorPhone: CD.clinicPhone || '',
+    authorEmail: CU.email || CU.uid, authorName: CD.fullName,
     clinicId: CD.clinicId, replies: [],
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
   document.getElementById('discTitle').value = '';
   document.getElementById('discBody').value = '';
   document.querySelectorAll('.disc-spec-check:checked').forEach(cb => cb.checked = false);
-  toast('✅');
-  await loadDiscussions();
+  toast('✅'); await loadDiscussions();
 }
 function renderDiscussions() {
   const el = document.getElementById('discussionsList');
   if (!el) return;
   if (!discussions.length) { el.innerHTML = '<div class="empty"><div class="ic">💬</div><p>لا مناقشات</p></div>'; return; }
   el.innerHTML = discussions.map(d => `<div class="post-card">
-    <div class="meta"><strong style="color:var(--gold)">${esc(d.authorName)}</strong> · ${d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString('ar-EG') : ''}</div>
+    <div class="meta"><strong style="color:var(--gold)">${esc(d.authorName)}</strong></div>
     <div style="font-weight:700;font-size:13px;color:var(--gold);margin-bottom:5px">${esc(d.title)}</div>
     ${d.patient ? `<div style="background:rgba(20,184,166,.08);border-radius:8px;padding:6px;margin-bottom:6px;font-size:11px">👤 ${esc(d.patient.name)}</div>` : ''}
     ${d.body ? `<div class="text">${esc(d.body)}</div>` : ''}
@@ -1831,18 +1532,10 @@ async function openThread(id) {
     <div style="background:var(--card);border-radius:16px;padding:18px;max-width:700px;margin:30px auto">
       <div style="display:flex;justify-content:space-between;margin-bottom:12px">
         <h3 style="font-size:15px;color:var(--gold)">${esc(d.title)}</h3>
-        <button onclick="document.getElementById('tm').remove()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+        <button onclick="document.getElementById('tm').remove()" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button>
       </div>
-      <div style="background:rgba(0,0,0,.2);padding:12px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.7">${esc(d.body || '')}</div>
-      <h4 style="font-size:13px;margin-bottom:8px">💬 الردود (${(d.replies || []).length})</h4>
-      <div style="max-height:300px;overflow-y:auto;margin-bottom:12px">
-        ${(d.replies || []).length === 0 ? '<div style="color:var(--muted);font-size:12px;padding:8px">لا ردود</div>' :
-          (d.replies || []).map(r => `<div style="background:rgba(0,0,0,.2);padding:10px;border-radius:8px;margin-bottom:6px">
-            <div style="font-size:11px;color:var(--teal);font-weight:700;margin-bottom:4px">${esc(r.authorName)}</div>
-            <div style="font-size:12px;line-height:1.6">${esc(r.text)}</div>
-          </div>`).join('')}
-      </div>
-      <textarea id="tReply" rows="3" placeholder="ردك..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#0a1424;color:var(--txt);font-family:inherit"></textarea>
+      <div style="background:rgba(0,0,0,.2);padding:12px;border-radius:10px;margin-bottom:14px;font-size:13px">${esc(d.body || '')}</div>
+      <textarea id="tReply" rows="3" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#0a1424;color:var(--txt)"></textarea>
       <button class="btn-save" style="margin-top:8px" onclick="addReply('${id}')">📤 إرسال</button>
     </div>
   </div>`;
@@ -1855,24 +1548,15 @@ async function addReply(id) {
   const replies = doc.data().replies || [];
   replies.push({ text, authorName: CD.fullName, authorEmail: CU.email || CU.uid, createdAt: Date.now() });
   await db.collection('discussions').doc(id).update({ replies });
-  document.getElementById('tReply').value = '';
   document.getElementById('tm').remove();
-  toast('✅');
-  await loadDiscussions();
+  toast('✅'); await loadDiscussions();
 }
-async function deleteDisc(id) {
-  if (!confirm('حذف؟')) return;
-  await db.collection('discussions').doc(id).delete();
-  toast('🗑️');
-  await loadDiscussions();
-}
+async function deleteDisc(id) { if (!confirm('حذف؟')) return; await db.collection('discussions').doc(id).delete(); toast('🗑️'); await loadDiscussions(); }
 
-// ============================================================
-// Friends
-// ============================================================
+// ============ Friends ============
 async function loadFriends() {
   const myEmail = CU.email || CU.uid;
-  const inc = await db.collection('friend_requests').where('to', '==', myEmail).where('status', '==', 'pending').get();
+  const inc = await db.collection('friend_requests').where('to','==',myEmail).where('status','==','pending').get();
   const iEl = document.getElementById('incomingRequests');
   const iList = inc.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   iEl.innerHTML = iList.length === 0 ? '<div class="empty" style="padding:10px">لا طلبات</div>' :
@@ -1883,22 +1567,19 @@ async function loadFriends() {
         <button class="chip-btn" style="padding:3px 8px;font-size:10px;background:rgba(248,113,113,.15);color:var(--danger)" onclick="rejectFriend('${d.id}')">✕</button>
       </div>
     </div>`).join('');
-
-  const out = await db.collection('friend_requests').where('from', '==', myEmail).where('status', '==', 'pending').get();
+  const out = await db.collection('friend_requests').where('from','==',myEmail).where('status','==','pending').get();
   const oEl = document.getElementById('outgoingRequests');
   const oList = out.docs.map(doc => doc.data());
   oEl.innerHTML = oList.length === 0 ? '<div class="empty" style="padding:10px">لا طلبات</div>' :
     oList.map(d => `<div class="appt-card" style="padding:8px"><div class="info"><strong>${esc(d.toName)}</strong><small>${esc(d.to)}</small></div><span style="color:var(--gold);font-size:10px">⏳</span></div>`).join('');
-
-  const f1 = await db.collection('friendships').where('user1', '==', myEmail).get();
-  const f2 = await db.collection('friendships').where('user2', '==', myEmail).get();
+  const f1 = await db.collection('friendships').where('user1','==',myEmail).get();
+  const f2 = await db.collection('friendships').where('user2','==',myEmail).get();
   const friends = [...f1.docs, ...f2.docs].map(d => d.data());
   const fEl = document.getElementById('friendsList');
   fEl.innerHTML = friends.length === 0 ? '<div class="empty" style="padding:10px">لا أصدقاء</div>' :
     friends.map(f => {
-      const em = f.user1 === myEmail ? f.user2 : f.user1;
       const nm = f.user1 === myEmail ? f.user2Name : f.user1Name;
-      return `<div class="appt-card" style="padding:8px"><div class="info"><strong>${esc(nm)}</strong><small>${esc(em)}</small></div><button class="chip-btn accent" style="padding:3px 8px;font-size:10px" onclick="showSection('dentchat')">💬</button></div>`;
+      return `<div class="appt-card" style="padding:8px"><div class="info"><strong>${esc(nm)}</strong></div></div>`;
     }).join('');
 }
 function openAddFriendModal() {
@@ -1925,11 +1606,10 @@ async function searchUsers() {
 }
 async function sendFriendRequest(to, toName) {
   try {
-    const ex = await db.collection('friend_requests').where('from', '==', CU.email || CU.uid).where('to', '==', to).where('status', '==', 'pending').get();
+    const ex = await db.collection('friend_requests').where('from','==',CU.email || CU.uid).where('to','==',to).where('status','==','pending').get();
     if (!ex.empty) { toast('⚠️ مرسل مسبقاً', true); return; }
     await db.collection('friend_requests').add({
-      from: CU.email || CU.uid, fromName: CD.fullName,
-      to, toName, status: 'pending',
+      from: CU.email || CU.uid, fromName: CD.fullName, to, toName, status: 'pending',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     toast('✅');
@@ -1942,49 +1622,38 @@ async function acceptFriend(rid, from, fromName) {
     user2: from, user2Name: fromName,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
-  toast('✅');
-  await loadFriends();
+  toast('✅'); await loadFriends();
 }
-async function rejectFriend(rid) {
-  await db.collection('friend_requests').doc(rid).update({ status: 'rejected' });
-  toast('تم');
-  await loadFriends();
-}
+async function rejectFriend(rid) { await db.collection('friend_requests').doc(rid).update({ status: 'rejected' }); toast('تم'); await loadFriends(); }
 
-// ============================================================
-// Dentbook Posts
-// ============================================================
+// ============ Dentbook ============
 async function loadPosts() {
-  const snap = await db.collection('dentbook_posts').orderBy('createdAt', 'desc').limit(30).get();
+  const snap = await db.collection('dentbook_posts').orderBy('createdAt','desc').limit(30).get();
   posts = [];
   snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
   renderPosts();
 }
 function handlePostImage(input) {
-  const f = input.files[0];
-  if (!f) return;
+  const f = input.files[0]; if (!f) return;
   if (f.size > 8 * 1024 * 1024) { toast('⚠️ 8MB', true); return; }
   const r = new FileReader();
   r.onload = ev => {
     const img = new Image();
     img.onload = () => {
       const c = document.createElement('canvas');
-      const m = 1000;
-      let w = img.width, h = img.height;
+      const m = 1000; let w = img.width, h = img.height;
       if (w > m || h > m) { if (w > h) { h = h * m / w; w = m; } else { w = w * m / h; h = m; } }
       c.width = w; c.height = h;
       c.getContext('2d').drawImage(img, 0, 0, w, h);
       postMedia.image = c.toDataURL('image/jpeg', 0.75);
-      renderPostMediaPreview();
-      toast('✅');
+      renderPostMediaPreview(); toast('✅');
     };
     img.src = ev.target.result;
   };
   r.readAsDataURL(f);
 }
 function handlePostVideo(input) {
-  const f = input.files[0];
-  if (!f) return;
+  const f = input.files[0]; if (!f) return;
   if (f.size > 5 * 1024 * 1024) { toast('⚠️ 5MB', true); return; }
   const r = new FileReader();
   r.onload = ev => { postMedia.video = ev.target.result; renderPostMediaPreview(); toast('✅'); };
@@ -1994,8 +1663,8 @@ function renderPostMediaPreview() {
   const el = document.getElementById('postMediaPreview');
   if (!el) return;
   let h = '';
-  if (postMedia.image) h += `<div style="position:relative;display:inline-block;margin:3px"><img src="${postMedia.image}" style="max-height:100px;border-radius:6px;border:1px solid var(--border)"><button onclick="removeMedia('image')" style="position:absolute;top:3px;left:3px;background:var(--danger);border:none;color:#fff;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:10px">✕</button></div>`;
-  if (postMedia.video) h += `<div style="position:relative;display:inline-block;margin:3px"><video src="${postMedia.video}" style="max-height:100px;border-radius:6px;border:1px solid var(--border)" muted></video><button onclick="removeMedia('video')" style="position:absolute;top:3px;left:3px;background:var(--danger);border:none;color:#fff;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:10px">✕</button></div>`;
+  if (postMedia.image) h += `<div style="position:relative;display:inline-block;margin:3px"><img src="${postMedia.image}" style="max-height:100px;border-radius:6px"><button onclick="removeMedia('image')" style="position:absolute;top:3px;left:3px;background:var(--danger);border:none;color:#fff;width:18px;height:18px;border-radius:50%;font-size:10px">✕</button></div>`;
+  if (postMedia.video) h += `<div style="position:relative;display:inline-block;margin:3px"><video src="${postMedia.video}" style="max-height:100px;border-radius:6px" muted></video><button onclick="removeMedia('video')" style="position:absolute;top:3px;left:3px;background:var(--danger);border:none;color:#fff;width:18px;height:18px;border-radius:50%;font-size:10px">✕</button></div>`;
   el.innerHTML = h;
 }
 function removeMedia(t) { if (t === 'image') postMedia.image = null; else postMedia.video = null; renderPostMediaPreview(); }
@@ -2014,8 +1683,7 @@ async function createPost() {
     document.getElementById('postVideoUrl').value = '';
     postMedia = { image: null, video: null };
     renderPostMediaPreview();
-    toast('✅');
-    await loadPosts();
+    toast('✅'); await loadPosts();
   } catch (e) { toast('❌ ' + e.message, true); }
 }
 function renderPosts() {
@@ -2024,15 +1692,11 @@ function renderPosts() {
   if (!posts.length) { el.innerHTML = '<div class="empty"><div class="ic">📖</div><p>لا منشورات</p></div>'; return; }
   el.innerHTML = posts.map(p => {
     let m = '';
-    if (p.image) m += `<img src="${p.image}" style="max-width:100%;max-height:400px;border-radius:8px;margin:8px 0;display:block;cursor:pointer" onclick="window.open(this.src,'_blank')">`;
+    if (p.image) m += `<img src="${p.image}" style="max-width:100%;max-height:400px;border-radius:8px;margin:8px 0;display:block">`;
     if (p.video) m += `<video src="${p.video}" controls style="max-width:100%;max-height:400px;border-radius:8px;margin:8px 0;display:block;background:#000"></video>`;
-    if (p.videoUrl) {
-      const yt = p.videoUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-      if (yt) m += `<iframe width="100%" height="220" src="https://www.youtube.com/embed/${yt[1]}" frameborder="0" allowfullscreen style="border-radius:8px;margin:8px 0;display:block;max-width:100%"></iframe>`;
-    }
     const comments = p.comments || [];
     return `<div class="post-card">
-      <div class="meta"><strong style="color:var(--teal)">${esc(p.authorName || '—')}</strong> • ${p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ar-EG') : 'الآن'}</div>
+      <div class="meta"><strong style="color:var(--teal)">${esc(p.authorName || '')}</strong> • ${p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ar-EG') : ''}</div>
       ${p.text ? `<div class="text">${esc(p.text)}</div>` : ''}${m}
       <div class="actions">
         <button class="chip-btn" style="padding:4px 10px;font-size:10px" onclick="likePost('${p.id}')">👍 ${(p.likes || []).length}</button>
@@ -2040,7 +1704,7 @@ function renderPosts() {
         ${p.authorEmail === (CU.email || CU.uid) ? `<button class="chip-btn" style="padding:4px 10px;font-size:10px;margin-right:auto;background:rgba(248,113,113,.15);color:var(--danger)" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
       </div>
       <div id="comments-${p.id}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
-        <div>${comments.map(c => `<div style="padding:3px 0;font-size:11px"><b style="color:var(--teal)">${esc(c.authorName || '')}</b>: ${esc(c.text || '')}</div>`).join('') || '<div style="font-size:10px;color:var(--muted);padding:4px">لا تعليقات</div>'}</div>
+        ${comments.map(c => `<div style="padding:3px 0;font-size:11px"><b style="color:var(--teal)">${esc(c.authorName || '')}</b>: ${esc(c.text || '')}</div>`).join('') || '<div style="font-size:10px;color:var(--muted)">لا تعليقات</div>'}
         <div style="display:flex;gap:3px;margin-top:6px">
           <input id="cmtInput-${p.id}" placeholder="تعليق..." style="padding:6px 10px;font-size:11px;border-radius:16px" onkeydown="if(event.key==='Enter')addComment('${p.id}')">
           <button class="chip-btn accent" style="padding:6px 10px;font-size:10px" onclick="addComment('${p.id}')">📤</button>
@@ -2055,8 +1719,7 @@ function toggleComments(id) {
 }
 async function addComment(id) {
   const input = document.getElementById('cmtInput-' + id);
-  const text = input.value.trim();
-  if (!text) return;
+  const text = input.value.trim(); if (!text) return;
   try {
     const doc = await db.collection('dentbook_posts').doc(id).get();
     const comments = doc.data().comments || [];
@@ -2064,10 +1727,7 @@ async function addComment(id) {
     await db.collection('dentbook_posts').doc(id).update({ comments });
     input.value = '';
     await loadPosts();
-    setTimeout(() => {
-      const c = document.getElementById('comments-' + id);
-      if (c) c.style.display = 'block';
-    }, 100);
+    setTimeout(() => { const c = document.getElementById('comments-' + id); if (c) c.style.display = 'block'; }, 100);
   } catch (e) { toast('❌', true); }
 }
 async function likePost(id) {
@@ -2076,24 +1736,16 @@ async function likePost(id) {
     const likes = doc.data().likes || [];
     const uid = CU.email || CU.uid;
     const idx = likes.indexOf(uid);
-    if (idx >= 0) likes.splice(idx, 1);
-    else likes.push(uid);
+    if (idx >= 0) likes.splice(idx, 1); else likes.push(uid);
     await db.collection('dentbook_posts').doc(id).update({ likes });
     await loadPosts();
   } catch (e) { toast('❌', true); }
 }
-async function deletePost(id) {
-  if (!confirm('حذف؟')) return;
-  await db.collection('dentbook_posts').doc(id).delete();
-  toast('🗑️');
-  await loadPosts();
-}
+async function deletePost(id) { if (!confirm('حذف؟')) return; await db.collection('dentbook_posts').doc(id).delete(); toast('🗑️'); await loadPosts(); }
 
-// ============================================================
-// DentChat
-// ============================================================
+// ============ DentChat ============
 async function loadDentChat() {
-  const snap = await db.collection('dentchat').orderBy('createdAt', 'asc').limit(50).get();
+  const snap = await db.collection('dentchat').orderBy('createdAt','asc').limit(50).get();
   dentChatMsgs = [];
   snap.forEach(d => dentChatMsgs.push({ id: d.id, ...d.data() }));
   renderDentChat();
@@ -2121,9 +1773,7 @@ function renderDentChat() {
   el.scrollTop = el.scrollHeight;
 }
 
-// ============================================================
-// Store / Products
-// ============================================================
+// ============ Store ============
 async function loadDigitalProducts() {
   try {
     const snap = await db.collection('digital_products').get();
@@ -2132,7 +1782,7 @@ async function loadDigitalProducts() {
     digitalProducts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     renderStore();
     if (isAdmin()) renderAdminProducts();
-  } catch (e) { console.error('loadDigitalProducts:', e); }
+  } catch (e) { console.error(e); }
 }
 function renderStore() {
   const el = document.getElementById('storeProducts');
@@ -2142,10 +1792,7 @@ function renderStore() {
   let list = digitalProducts.filter(p => p.isActive !== false);
   if (q) list = list.filter(p => (p.title || '').toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q));
   if (filter) list = list.filter(p => p.type === filter);
-  if (!list.length) {
-    el.innerHTML = '<div class="empty"><div class="ic">🏪</div><p>لا توجد منتجات</p></div>';
-    return;
-  }
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="ic">🏪</div><p>لا توجد منتجات</p></div>'; return; }
   const icons = { book: '📚', system: '⚙️', editor: '🎨', ai: '🧠', course: '🎓' };
   const labels = { book: 'كتاب', system: 'نظام', editor: 'أداة تحرير', ai: 'أداة AI', course: 'دورة' };
   el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">' +
@@ -2154,7 +1801,7 @@ function renderStore() {
       <div class="product-body">
         <div style="font-size:9px;color:var(--teal);font-weight:700;margin-bottom:3px">${icons[p.type] || '📦'} ${labels[p.type] || ''}</div>
         <div class="product-title">${esc(p.title)}</div>
-        <div class="product-desc">${esc((p.description || '').substring(0, 80))}${(p.description || '').length > 80 ? '...' : ''}</div>
+        <div class="product-desc">${esc((p.description || '').substring(0, 80))}</div>
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div class="product-price" style="color:${p.isFree ? 'var(--ok)' : 'var(--gold)'}">${p.isFree ? 'مجاني' : '$' + p.price}</div>
           ${p.isFree ? `<button class="chip-btn accent" style="padding:5px 12px;font-size:10px" onclick="downloadProduct('${p.id}')">⬇️ تحميل</button>` : `<button class="chip-btn accent" style="padding:5px 12px;font-size:10px" onclick="buyProduct('${p.id}')">🛒 شراء</button>`}
@@ -2168,20 +1815,14 @@ async function downloadProduct(id) {
   if (p.fileUrl) {
     window.open(p.fileUrl, '_blank');
     await db.collection('digital_products').doc(id).update({ downloads: (p.downloads || 0) + 1 });
-  } else {
-    toast('⚠️ لا يوجد ملف مرفق', true);
-  }
+  } else toast('⚠️ لا يوجد ملف', true);
 }
 async function buyProduct(id) {
   const p = digitalProducts.find(x => x.id === id);
   if (!p) return;
   if (p.isFree) { await downloadProduct(id); return; }
   const existing = myOrders.find(o => o.productId === id && o.status === 'paid');
-  if (existing) {
-    toast('✅ لديك هذا المنتج');
-    if (p.fileUrl) window.open(p.fileUrl, '_blank');
-    return;
-  }
+  if (existing) { toast('✅ لديك هذا المنتج'); if (p.fileUrl) window.open(p.fileUrl, '_blank'); return; }
   openPaymentModal('product', id, p.title, p.price);
 }
 async function addDigitalProduct() {
@@ -2203,7 +1844,7 @@ async function addDigitalProduct() {
       createdBy: CU.uid,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    toast('✅ تمت إضافة المنتج');
+    toast('✅');
     ['dpTitle','dpDesc','dpCover','dpFile','dpWhatsApp','dpEmail'].forEach(id => document.getElementById(id).value = '');
     await loadDigitalProducts();
   } catch (e) { toast('❌ ' + e.message, true); }
@@ -2227,16 +1868,9 @@ async function toggleProductActive(id) {
   await db.collection('digital_products').doc(id).update({ isActive: p.isActive === false });
   await loadDigitalProducts();
 }
-async function deleteProduct(id) {
-  if (!confirm('حذف المنتج نهائيًا؟')) return;
-  await db.collection('digital_products').doc(id).delete();
-  toast('🗑️');
-  await loadDigitalProducts();
-}
+async function deleteProduct(id) { if (!confirm('حذف؟')) return; await db.collection('digital_products').doc(id).delete(); toast('🗑️'); await loadDigitalProducts(); }
 
-// ============================================================
-// Subscription Plans
-// ============================================================
+// ============ Plans ============
 async function loadSubscriptionPlans() {
   try {
     const snap = await db.collection('subscription_plans').get();
@@ -2251,14 +1885,14 @@ function renderPlans() {
   const el = document.getElementById('subscriptionPlans');
   if (!el) return;
   const active = subscriptionPlans.filter(p => p.isActive !== false);
-  if (!active.length) { el.innerHTML = '<div class="empty" style="grid-column:1/-1">لا توجد خطط متاحة</div>'; return; }
+  if (!active.length) { el.innerHTML = '<div class="empty" style="grid-column:1/-1">لا توجد خطط</div>'; return; }
   const isSubscribed = userSubscription && userSubscription.status === 'active';
   el.innerHTML = active.map(p => `<div class="plan-card">
     <h3>${esc(p.name)}</h3>
     <div class="price">$${p.price}</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:8px">لمدة ${p.durationDays} يوم</div>
     <div style="font-size:11px;color:var(--muted);text-align:right;margin-bottom:12px;min-height:40px">${esc(p.description || '')}</div>
-    <button class="chip-btn accent" style="width:100%;padding:10px" onclick="subscribeToPlan('${p.id}')">${isSubscribed ? '🔄 تجديد' : '⭐ اشترك الآن'}</button>
+    <button class="chip-btn accent" style="width:100%;padding:10px" onclick="subscribeToPlan('${p.id}')">${isSubscribed ? '🔄 تجديد' : '⭐ اشترك'}</button>
   </div>`).join('');
 }
 async function addSubscriptionPlan() {
@@ -2298,18 +1932,12 @@ async function togglePlanActive(id) {
   await db.collection('subscription_plans').doc(id).update({ isActive: p.isActive === false });
   await loadSubscriptionPlans();
 }
-async function deletePlan(id) {
-  if (!confirm('حذف الخطة؟')) return;
-  await db.collection('subscription_plans').doc(id).delete();
-  await loadSubscriptionPlans();
-}
+async function deletePlan(id) { if (!confirm('حذف؟')) return; await db.collection('subscription_plans').doc(id).delete(); await loadSubscriptionPlans(); }
 
-// ============================================================
-// User Subscription
-// ============================================================
+// ============ User Subscription ============
 async function loadUserSubscription() {
   try {
-    const snap = await db.collection('user_subscriptions').where('userId', '==', CU.uid).where('status', '==', 'active').get();
+    const snap = await db.collection('user_subscriptions').where('userId','==',CU.uid).where('status','==','active').get();
     userSubscription = null;
     snap.forEach(d => {
       const data = { id: d.id, ...d.data() };
@@ -2357,7 +1985,7 @@ function renderAllSubscriptions() {
   const el = document.getElementById('allSubscriptionsList');
   if (!el || !isAdmin()) return;
   if (!allSubscriptions.length) { el.innerHTML = '<div class="empty">لا اشتراكات</div>'; return; }
-  const statusMap = {
+  const stMap = {
     active: { color: 'var(--ok)', label: '✅ نشط' },
     pending: { color: 'var(--gold)', label: '⏳ بانتظار' },
     expired: { color: 'var(--muted)', label: '⏰ منتهي' },
@@ -2365,13 +1993,12 @@ function renderAllSubscriptions() {
   };
   el.innerHTML = '<table class="tbl"><thead><tr><th>المستخدم</th><th>الخطة</th><th>المبلغ</th><th>الحالة</th><th></th></tr></thead><tbody>' +
     allSubscriptions.map(s => {
-      const st = statusMap[s.status] || statusMap.pending;
-      const endDate = s.endDate?.toDate ? s.endDate.toDate() : null;
+      const st = stMap[s.status] || stMap.pending;
       return `<tr>
-        <td><b>${esc(s.userName || '')}</b><br><small style="font-size:10px">${esc(s.userEmail || '')}</small></td>
+        <td><b>${esc(s.userName || '')}</b></td>
         <td>${esc(s.planName || '')}</td>
         <td>$${s.amountPaid || 0}</td>
-        <td><span style="color:${st.color};font-size:11px">${st.label}</span>${endDate ? `<br><small style="font-size:9px;color:var(--muted)">${endDate.toLocaleDateString('ar-EG')}</small>` : ''}</td>
+        <td><span style="color:${st.color};font-size:11px">${st.label}</span></td>
         <td>
           ${s.status === 'pending' ? `<button class="chip-btn accent" style="padding:3px 8px;font-size:10px" onclick="approveSubscription('${s.id}')">✅</button>` : ''}
           ${s.status === 'active' ? `<button class="chip-btn" style="padding:3px 8px;font-size:10px;background:rgba(248,113,113,.15);color:var(--danger)" onclick="cancelSubscription('${s.id}')">🚫</button>` : ''}
@@ -2391,19 +2018,11 @@ async function approveSubscription(id) {
     startDate: firebase.firestore.Timestamp.now(),
     endDate: firebase.firestore.Timestamp.fromDate(endDate)
   });
-  toast('✅');
-  await loadAllSubscriptions();
+  toast('✅'); await loadAllSubscriptions();
 }
-async function cancelSubscription(id) {
-  if (!confirm('إلغاء الاشتراك؟')) return;
-  await db.collection('user_subscriptions').doc(id).update({ status: 'cancelled' });
-  toast('🚫');
-  await loadAllSubscriptions();
-}
+async function cancelSubscription(id) { if (!confirm('إلغاء؟')) return; await db.collection('user_subscriptions').doc(id).update({ status: 'cancelled' }); toast('🚫'); await loadAllSubscriptions(); }
 
-// ============================================================
-// Ads & Payment Config
-// ============================================================
+// ============ Ads & Payment Config ============
 async function loadAdvertisements() {
   try {
     const snap = await db.collection('advertisements').get();
@@ -2417,7 +2036,7 @@ async function addAdvertisement() {
   const title = document.getElementById('adTitle').value.trim();
   const start = document.getElementById('adStart').value;
   const end = document.getElementById('adEnd').value;
-  if (!title || !start || !end) { toast('⚠️ أكمل البيانات', true); return; }
+  if (!title || !start || !end) { toast('⚠️', true); return; }
   try {
     await db.collection('advertisements').add({
       title, description: document.getElementById('adDesc').value.trim(),
@@ -2453,12 +2072,7 @@ async function toggleAdActive(id) {
   await db.collection('advertisements').doc(id).update({ isActive: a.isActive === false });
   await loadAdvertisements();
 }
-async function deleteAd(id) {
-  if (!confirm('حذف الإعلان؟')) return;
-  await db.collection('advertisements').doc(id).delete();
-  toast('🗑️');
-  await loadAdvertisements();
-}
+async function deleteAd(id) { if (!confirm('حذف؟')) return; await db.collection('advertisements').doc(id).delete(); await loadAdvertisements(); }
 
 async function loadPaymentConfig() {
   try {
@@ -2480,7 +2094,7 @@ function fillPaymentConfigForm() {
   });
 }
 async function savePaymentConfig() {
-  if (!isAdmin()) { toast('⛔ للمالك فقط', true); return; }
+  if (!isAdmin()) { toast('⛔', true); return; }
   const cfg = {
     binanceId: document.getElementById('payBinanceId').value.trim(),
     walletNumber: document.getElementById('payWalletNumber').value.trim(),
@@ -2494,21 +2108,17 @@ async function savePaymentConfig() {
   try {
     await db.collection('settings').doc('payment').set(cfg, { merge: true });
     paymentConfig = { ...paymentConfig, ...cfg };
-    toast('✅ تم حفظ إعدادات الدفع');
+    toast('✅');
   } catch (e) { toast('❌ ' + e.message, true); }
 }
 
-// ============================================================
-// Payment Flow
-// ============================================================
+// ============ Payment Flow ============
 function openPaymentModal(type, id, title, price) {
   currentPayment = { type, id, title, price };
-  const modal = document.getElementById('paymentModal');
   const content = document.getElementById('payModalContent');
   const wa = paymentConfig.whatsApp.replace(/\D/g, '');
-  const msg = `مرحبًا، أرغب بشراء: ${title}\nالسعر: $${price}\nاسمي: ${CD.fullName}\nبريدي: ${CU.email || ''}`;
+  const msg = `مرحبًا، أرغب بشراء: ${title}\nالسعر: $${price}\nاسمي: ${CD.fullName}`;
   const waUrl = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
-
   content.innerHTML = `
     <div style="background:var(--card2);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center">
       <div style="font-size:12px;color:var(--muted)">المطلوب دفعه</div>
@@ -2519,86 +2129,74 @@ function openPaymentModal(type, id, title, price) {
     <div class="pay-method" style="background:rgba(240,185,11,.08);border-color:#f0b90b" onclick="selectPaymentMethod('binance')">
       <div>
         <div style="font-weight:700;color:#f0b90b">🪙 Binance (USDT)</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">ID: <b style="color:var(--txt)" dir="ltr">${esc(paymentConfig.binanceId)}</b></div>
+        <div style="font-size:11px;color:var(--muted)" dir="ltr">ID: ${esc(paymentConfig.binanceId)}</div>
       </div>
       <div style="font-size:22px">→</div>
     </div>
     <div class="pay-method" style="background:rgba(52,211,153,.08);border-color:#34d399" onclick="selectPaymentMethod('wallet')">
       <div>
         <div style="font-weight:700;color:#34d399">📱 محفظة يمنية</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px" dir="ltr">${esc(paymentConfig.walletNumber)}</div>
-        <div style="font-size:10px;color:var(--muted)">الكريمي / العمقي / الفلوسي / جوال</div>
+        <div style="font-size:11px;color:var(--muted)" dir="ltr">${esc(paymentConfig.walletNumber)}</div>
       </div>
       <div style="font-size:22px">→</div>
     </div>
     <div class="pay-method" style="background:rgba(34,211,238,.08);border-color:#22d3ee" onclick="selectPaymentMethod('bank')">
       <div>
         <div style="font-weight:700;color:#22d3ee">🏦 تحويل بنكي</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(paymentConfig.bankName || '—')}</div>
-        <div style="font-size:11px;color:var(--muted)" dir="ltr">${esc(paymentConfig.bankAccount || '—')}</div>
+        <div style="font-size:11px;color:var(--muted)">${esc(paymentConfig.bankName || '')}</div>
       </div>
       <div style="font-size:22px">→</div>
     </div>
     <div class="pay-method" style="background:rgba(37,211,102,.08);border-color:#25D366" onclick="window.open('${waUrl}','_blank')">
       <div>
-        <div style="font-weight:700;color:#25D366">💬 تواصل مباشر</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px" dir="ltr">${esc(paymentConfig.whatsApp)}</div>
+        <div style="font-weight:700;color:#25D366">💬 واتساب مباشر</div>
+        <div style="font-size:11px;color:var(--muted)" dir="ltr">${esc(paymentConfig.whatsApp)}</div>
       </div>
       <div style="font-size:22px">→</div>
     </div>
-    <div style="background:rgba(245,199,106,.08);border-radius:10px;padding:10px;margin-top:10px;font-size:11px;color:var(--muted)">
-      ⚠️ ${esc(paymentConfig.instructions || '')}
-    </div>
+    <div style="background:rgba(245,199,106,.08);border-radius:10px;padding:10px;margin-top:10px;font-size:11px;color:var(--muted)">⚠️ ${esc(paymentConfig.instructions || '')}</div>
     <button class="chip-btn" style="width:100%;margin-top:14px" onclick="document.getElementById('paymentModal').classList.remove('show')">إلغاء</button>
   `;
-  modal.classList.add('show');
+  document.getElementById('paymentModal').classList.add('show');
 }
 
 function selectPaymentMethod(method) {
   document.getElementById('paymentModal').classList.remove('show');
-  const proofModal = document.getElementById('proofModal');
   const content = document.getElementById('proofModalContent');
-  const methodInfo = {
+  const mInfo = {
     binance: { icon: '🪙', title: 'Binance (USDT)', color: '#f0b90b',
-      details: `<div style="font-size:13px;margin:6px 0">Binance ID: <b style="color:var(--gold)" dir="ltr">${esc(paymentConfig.binanceId)}</b></div>
-                <div style="font-size:11px;color:var(--muted)">أرسل USDT (TRC20/BEP20)</div>` },
+      details: `<div style="font-size:13px">ID: <b dir="ltr">${esc(paymentConfig.binanceId)}</b></div>` },
     wallet: { icon: '📱', title: 'محفظة يمنية', color: '#34d399',
-      details: `<div style="font-size:13px;margin:6px 0">الرقم: <b style="color:var(--ok)" dir="ltr">${esc(paymentConfig.walletNumber)}</b></div>` },
+      details: `<div style="font-size:13px">الرقم: <b dir="ltr">${esc(paymentConfig.walletNumber)}</b></div>` },
     bank: { icon: '🏦', title: 'تحويل بنكي', color: '#22d3ee',
-      details: `<div style="font-size:13px">البنك: <b style="color:var(--cyan)">${esc(paymentConfig.bankName || '—')}</b></div>
-                <div style="font-size:13px">الحساب: <b dir="ltr">${esc(paymentConfig.bankAccount || '—')}</b></div>
-                <div style="font-size:11px;color:var(--muted)">صاحب الحساب: ${esc(paymentConfig.accountHolder)}</div>` }
+      details: `<div style="font-size:13px">البنك: ${esc(paymentConfig.bankName || '')}</div>
+                <div style="font-size:13px">الحساب: ${esc(paymentConfig.bankAccount || '')}</div>` }
   };
-  const m = methodInfo[method];
+  const m = mInfo[method];
   const wa = paymentConfig.whatsApp.replace(/\D/g, '');
   const msg = `مرحبًا، أرسلت الدفع لـ: ${currentPayment.title}\nالمبلغ: $${currentPayment.price}\nطريقة: ${m.title}\nاسمي: ${CD.fullName}`;
   const waUrl = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
-
   content.innerHTML = `
     <div style="background:rgba(0,0,0,.2);border-radius:12px;padding:14px;margin-bottom:14px;border-right:3px solid ${m.color}">
       <div style="font-size:24px;text-align:center">${m.icon}</div>
       <div style="text-align:center;font-weight:700;color:${m.color};margin:6px 0">${m.title}</div>
       ${m.details}
     </div>
-    <div style="background:rgba(245,199,106,.08);border-radius:10px;padding:12px;margin-bottom:14px">
-      <div style="font-weight:700;font-size:12px;color:var(--gold);margin-bottom:6px">📋 الخطوات:</div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.7">
-        1. حوّل <b>$${currentPayment.price}</b> إلى الحساب أعلاه<br>
-        2. احتفظ بصورة الإيصال<br>
-        3. ارفع الإثبات هنا أو أرسله واتساب<br>
-        4. بانتظار تأكيد الإدارة
-      </div>
+    <div style="background:rgba(245,199,106,.08);border-radius:10px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--muted);line-height:1.7">
+      1. حوّل <b>$${currentPayment.price}</b><br>
+      2. احتفظ بصورة الإيصال<br>
+      3. ارفع الإثبات هنا
     </div>
     <div class="field"><label>📸 صورة الإيصال</label><input type="file" id="proofImageInput" accept="image/*" style="padding:8px"></div>
-    <div class="field"><label>🔢 رقم العملية / TX Hash</label><input id="proofTxId" placeholder="رقم التحويل" dir="ltr"></div>
+    <div class="field"><label>🔢 رقم العملية</label><input id="proofTxId" dir="ltr"></div>
     <div class="field"><label>📝 ملاحظات</label><textarea id="proofNotes" rows="2"></textarea></div>
     <div style="display:flex;gap:8px;margin-top:10px">
       <button class="btn-save" style="flex:1" onclick="submitPaymentProof('${method}')">✅ إرسال</button>
-      <button class="chip-btn" onclick="window.open('${waUrl}','_blank')" style="background:#25D366;color:#fff;border:none">💬 واتساب</button>
+      <button class="chip-btn" onclick="window.open('${waUrl}','_blank')" style="background:#25D366;color:#fff;border:none">💬</button>
     </div>
     <button class="chip-btn" style="width:100%;margin-top:8px" onclick="document.getElementById('proofModal').classList.remove('show')">إلغاء</button>
   `;
-  proofModal.classList.add('show');
+  document.getElementById('proofModal').classList.add('show');
 }
 
 async function submitPaymentProof(method) {
@@ -2607,17 +2205,23 @@ async function submitPaymentProof(method) {
   const fileInput = document.getElementById('proofImageInput');
   const file = fileInput.files[0];
   if (!txId && !file) { toast('⚠️ أضف صورة أو رقم العملية', true); return; }
-
+  const sendBtn = document.querySelector('#proofModalContent .btn-save');
+  if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '⏳ جاري الرفع...'; }
   try {
     let proofUrl = '';
+    // رفع الصورة إلى Catbox
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { toast('⚠️ الصورة أكبر من 5MB', true); return; }
-      const storageRef = firebase.storage().ref();
-      const path = `proofs/${CU.uid}/${Date.now()}_${file.name}`;
-      const snap = await storageRef.child(path).put(file);
-      proofUrl = await snap.ref.getDownloadURL();
+      if (file.size > 5 * 1024 * 1024) { toast('⚠️ أكبر من 5MB', true); if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = '✅ إرسال'; } return; }
+      const formData = new FormData();
+      formData.append('reqtype', 'fileupload');
+      formData.append('fileToUpload', file);
+      const res = await fetch(CATBOX_API_URL, { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('فشل الرفع - ' + res.status);
+      const url = await res.text();
+      if (!url || !url.startsWith('https://')) throw new Error('استجابة غير صالحة: ' + url);
+      proofUrl = url;
+      console.log('✅ Catbox:', proofUrl);
     }
-
     const orderData = {
       userId: CU.uid, userEmail: CU.email || CU.uid,
       userName: CD.fullName,
@@ -2630,7 +2234,6 @@ async function submitPaymentProof(method) {
       status: 'pending',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-
     if (currentPayment.type === 'product') {
       orderData.productId = currentPayment.id;
       orderData.productTitle = currentPayment.title;
@@ -2647,19 +2250,20 @@ async function submitPaymentProof(method) {
       await loadUserSubscription();
     }
     document.getElementById('proofModal').classList.remove('show');
-    toast('✅ تم إرسال طلبك، بانتظار الموافقة');
-
+    toast('✅ تم إرسال طلبك');
     const wa = paymentConfig.whatsApp.replace(/\D/g, '');
-    const msg = `📤 إثبات دفع جديد\n\nالمنتج: ${currentPayment.title}\nالمبلغ: $${currentPayment.price}\nطريقة: ${method}\nرقم العملية: ${txId}\nالمستخدم: ${CD.fullName}`;
-    setTimeout(() => {
-      if (confirm('إرسال إشعار عبر واتساب؟')) window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
-    }, 500);
-  } catch (e) { toast('❌ ' + e.message, true); console.error(e); }
+    const msg = `📤 إثبات دفع\n\n${currentPayment.title}\n$${currentPayment.price}\n${method}\n${txId}\n${CD.fullName}\n\n📸 ${proofUrl || 'غير مرفق'}`;
+    setTimeout(() => { if (confirm('إرسال إشعار واتساب؟')) window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank'); }, 500);
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+    console.error(e);
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = '✅ إرسال'; }
+  }
 }
 
 async function loadMyOrders() {
   try {
-    const snap = await db.collection('orders').where('userId', '==', CU.uid).get();
+    const snap = await db.collection('orders').where('userId','==',CU.uid).get();
     myOrders = [];
     snap.forEach(d => myOrders.push({ id: d.id, ...d.data() }));
     myOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
@@ -2669,14 +2273,14 @@ async function loadMyOrders() {
 function renderMyOrders() {
   const el = document.getElementById('myOrdersList');
   if (!el) return;
-  if (!myOrders.length) { el.innerHTML = '<div class="empty"><div class="ic">📦</div><p>لا مشتريات بعد</p></div>'; return; }
-  const stMap = {
+  if (!myOrders.length) { el.innerHTML = '<div class="empty"><div class="ic">📦</div><p>لا مشتريات</p></div>'; return; }
+  const st = {
     pending: { color: 'var(--gold)', label: '⏳ بانتظار' },
     paid: { color: 'var(--ok)', label: '✅ مدفوع' },
     rejected: { color: 'var(--danger)', label: '❌ مرفوض' }
   };
   el.innerHTML = myOrders.map(o => {
-    const s = stMap[o.status] || stMap.pending;
+    const s = st[o.status] || st.pending;
     const p = digitalProducts.find(x => x.id === o.productId);
     return `<div class="appt-card" style="border-right-color:${s.color}">
       <div class="info"><strong>${esc(o.productTitle || o.planName || '')}</strong><small>${o.createdAt?.toDate ? o.createdAt.toDate().toLocaleString('ar-EG') : ''} · $${o.price}</small></div>
@@ -2689,7 +2293,7 @@ function renderMyOrders() {
 async function loadPendingOrders() {
   if (!isAdmin()) return;
   try {
-    const snap = await db.collection('orders').where('status', '==', 'pending').get();
+    const snap = await db.collection('orders').where('status','==','pending').get();
     const pending = [];
     snap.forEach(d => pending.push({ id: d.id, ...d.data() }));
     renderPendingOrders(pending);
@@ -2699,11 +2303,11 @@ function renderPendingOrders(orders) {
   const el = document.getElementById('pendingOrdersList');
   if (!el) return;
   if (!orders.length) { el.innerHTML = '<div class="empty">لا طلبات معلقة</div>'; return; }
-  const mLbl = { binance: '🪙 Binance', wallet: '📱 محفظة', bank: '🏦 بنك' };
+  const mLbl = { binance: '🪙', wallet: '📱', bank: '🏦' };
   el.innerHTML = orders.map(o => `<div class="appt-card" style="border-right-color:var(--gold)">
     <div class="info">
       <strong>${esc(o.productTitle || o.planName || '')}</strong>
-      <small>👤 ${esc(o.userName)} · $${o.price} · ${mLbl[o.paymentMethod] || o.paymentMethod}</small>
+      <small>👤 ${esc(o.userName)} · $${o.price} · ${mLbl[o.paymentMethod] || ''}</small>
       ${o.txId ? `<small>🔢 ${esc(o.txId)}</small>` : ''}
     </div>
     <div style="display:flex;gap:4px;flex-wrap:wrap">
@@ -2713,35 +2317,21 @@ function renderPendingOrders(orders) {
     </div>
   </div>`).join('');
 }
-async function approveOrder(id) {
-  await db.collection('orders').doc(id).update({ status: 'paid' });
-  toast('✅');
-  await loadPendingOrders();
-  await loadMyOrders();
-}
-async function rejectOrder(id) {
-  if (!confirm('رفض الطلب؟')) return;
-  await db.collection('orders').doc(id).update({ status: 'rejected' });
-  toast('❌');
-  await loadPendingOrders();
-}
+async function approveOrder(id) { await db.collection('orders').doc(id).update({ status: 'paid' }); toast('✅'); await loadPendingOrders(); await loadMyOrders(); }
+async function rejectOrder(id) { if (!confirm('رفض؟')) return; await db.collection('orders').doc(id).update({ status: 'rejected' }); toast('❌'); await loadPendingOrders(); }
 
-// ============================================================
-// AI - Gemini
-// ============================================================
+// ============ Gemini AI ============
 function loadGeminiSettings() {
   geminiKey = localStorage.getItem('gemini_key') || '';
   geminiModel = localStorage.getItem('gemini_model') || 'gemini-flash-latest';
-  const kEl = document.getElementById('geminiKey');
-  const mEl = document.getElementById('geminiModel');
+  const kEl = document.getElementById('geminiKey'), mEl = document.getElementById('geminiModel');
   if (kEl) kEl.value = geminiKey;
   if (mEl) mEl.value = geminiModel;
 }
 function saveGeminiSettings() {
   const k = document.getElementById('geminiKey').value.trim();
   if (!k) { toast('⚠️', true); return; }
-  geminiKey = k;
-  geminiModel = document.getElementById('geminiModel').value;
+  geminiKey = k; geminiModel = document.getElementById('geminiModel').value;
   localStorage.setItem('gemini_key', k);
   localStorage.setItem('gemini_model', geminiModel);
   toast('✅');
@@ -2761,21 +2351,19 @@ async function testGemini() {
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     out.innerHTML = `<span style="color:var(--ok)">✅ "${esc(text.slice(0, 40))}"</span>`;
-  } catch (e) {
-    out.innerHTML = `<span style="color:var(--danger)">❌ ${esc(e.message)}</span>`;
-  }
+  } catch (e) { out.innerHTML = `<span style="color:var(--danger)">❌ ${esc(e.message)}</span>`; }
 }
 async function runAIDiagnosis() {
   const pid = document.getElementById('aiPatient').value;
   const complaint = document.getElementById('aiComplaint').value.trim();
   const details = document.getElementById('aiDetails').value.trim();
   if (!pid || !complaint) { toast('⚠️', true); return; }
-  if (!geminiKey) { toast('⚠️ أضف مفتاح Gemini', true); return; }
+  if (!geminiKey) { toast('⚠️ أضف المفتاح', true); return; }
   const patient = patients.find(p => p.id === pid);
   const out = document.getElementById('aiOutput');
   out.innerHTML = '<div style="text-align:center;padding:16px">⏳...</div>';
   try {
-    const prompt = `أنت استشاري طب أسنان. حلل الحالة:\nالمريض: ${patient.fullName}, ${patient.age || '—'}, ${patient.gender || '—'}\nالشكوى: ${complaint}\nتفاصيل: ${details || '—'}\n\n1. التشخيص التفريقي\n2. الخطورة\n3. الفحوصات\n4. التوصيات\nبالعربية.`;
+    const prompt = `أنت استشاري طب أسنان. حلل:\nالمريض: ${patient.fullName}, ${patient.age || '—'}\nالشكوى: ${complaint}\nتفاصيل: ${details || '—'}\n\n1. التشخيص التفريقي\n2. الخطورة\n3. التوصيات\nبالعربية.`;
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 2000 } })
@@ -2783,7 +2371,6 @@ async function runAIDiagnosis() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     out.innerHTML = `<div class="ai-output">${esc(data.candidates?.[0]?.content?.parts?.[0]?.text || '—')}</div>`;
-    toast('✅');
   } catch (e) { out.innerHTML = `<div style="color:var(--danger)">❌ ${esc(e.message)}</div>`; }
 }
 async function runAITreatmentInline() {
@@ -2795,7 +2382,7 @@ async function runAITreatmentInline() {
   const out = document.getElementById('aiOutput');
   out.innerHTML = '<div style="text-align:center;padding:16px">⏳...</div>';
   try {
-    const prompt = `خطة علاج للمريض ${patient.fullName} (${patient.age || '—'}) يعاني من: ${complaint}.\n1. عاجل\n2. متوسط\n3. طويل\n4. التكلفة\n5. المدة\n6. النصائح\nبالعربية.`;
+    const prompt = `خطة علاج للمريض ${patient.fullName} (${patient.age || '—'}) يعاني من: ${complaint}. بالعربية.`;
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 2500 } })
@@ -2803,7 +2390,6 @@ async function runAITreatmentInline() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     out.innerHTML = `<div class="ai-output">${esc(data.candidates?.[0]?.content?.parts?.[0]?.text || '—')}</div>`;
-    toast('✅');
   } catch (e) { out.innerHTML = `<div style="color:var(--danger)">❌ ${esc(e.message)}</div>`; }
 }
 async function runAITreatment() {
@@ -2815,7 +2401,7 @@ async function runAITreatment() {
   const out = document.getElementById('aiOutput2');
   out.innerHTML = '<div style="text-align:center;padding:16px">⏳...</div>';
   try {
-    const prompt = `خطة علاج للمريض ${patient.fullName} (${patient.age || '—'}) يعاني من: ${complaint}. بالعربية مع التفاصيل.`;
+    const prompt = `خطة علاج للمريض ${patient.fullName} يعاني من: ${complaint}. بالعربية.`;
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 2500 } })
@@ -2823,13 +2409,10 @@ async function runAITreatment() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     out.innerHTML = `<div class="ai-output">${esc(data.candidates?.[0]?.content?.parts?.[0]?.text || '—')}</div>`;
-    toast('✅');
   } catch (e) { out.innerHTML = `<div style="color:var(--danger)">❌ ${esc(e.message)}</div>`; }
 }
 
-// ============================================================
-// Smile Design (Exo)
-// ============================================================
+// ============ Smile Design ============
 function drawExoDiagram() {
   const canvas = document.getElementById('exoDiagram');
   if (!canvas) return;
@@ -2876,8 +2459,7 @@ function drawExoDiagram() {
     ctx.closePath();
     ctx.fillStyle = grad; ctx.fill();
     ctx.strokeStyle = 'rgba(180,175,170,0.3)'; ctx.lineWidth = 0.8; ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = 'bold 9px Cairo'; ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = 'bold 9px Cairo'; ctx.textAlign = 'center';
     ctx.fillText(labels[i], x + tw / 2, y + th + 12);
   }
 }
@@ -2889,8 +2471,7 @@ function updateExoParam(p, v) {
   drawExoDiagram();
 }
 function handleExoUpload(e) {
-  const f = e.target.files[0];
-  if (!f) return;
+  const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
   r.onload = ev => {
     const img = new Image();
@@ -2949,33 +2530,17 @@ function designExoSmile() {
   document.getElementById('exoPreview').style.display = 'block';
   toast('✅');
 }
-function saveExoDesign() {
-  if (!exoDesigned) { toast('⚠️', true); return; }
-  const a = document.createElement('a');
-  a.download = 'exo_' + Date.now() + '.png';
-  a.href = exoDesigned;
-  a.click();
-  toast('💾');
-}
-function exportExoCAD() {
-  if (!exoDesigned) { toast('⚠️', true); return; }
-  const a = document.createElement('a');
-  a.download = 'exo_' + Date.now() + '.stl';
-  a.href = exoDesigned;
-  a.click();
-  toast('🖥️');
-}
+function saveExoDesign() { if (!exoDesigned) { toast('⚠️', true); return; } const a = document.createElement('a'); a.download = 'exo_' + Date.now() + '.png'; a.href = exoDesigned; a.click(); toast('💾'); }
+function exportExoCAD() { if (!exoDesigned) { toast('⚠️', true); return; } const a = document.createElement('a'); a.download = 'exo_' + Date.now() + '.stl'; a.href = exoDesigned; a.click(); toast('🖥️'); }
 function downloadExoReport() {
   if (!exoDesigned) { toast('⚠️', true); return; }
   const c = document.createElement('div');
   c.style.cssText = 'background:#fff;padding:30px;font-family:Cairo;direction:rtl;max-width:800px';
-  c.innerHTML = `<div style="text-align:center;border-bottom:3px double #e67e22;padding-bottom:15px;margin-bottom:20px"><h1 style="color:#e67e22">🦷 Smile Design Report</h1></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:15px"><div><img src="${exoOriginal}" style="max-width:100%;border-radius:8px"><p style="text-align:center;color:#c00">قبل</p></div><div><img src="${exoDesigned}" style="max-width:100%;border-radius:8px"><p style="text-align:center;color:#090">بعد</p></div></div>`;
+  c.innerHTML = `<div style="text-align:center;border-bottom:3px double #e67e22;padding-bottom:15px;margin-bottom:20px"><h1 style="color:#e67e22">🦷 Smile Design Report</h1></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:15px"><div><img src="${exoOriginal}" style="max-width:100%"><p style="text-align:center;color:#c00">قبل</p></div><div><img src="${exoDesigned}" style="max-width:100%"><p style="text-align:center;color:#090">بعد</p></div></div>`;
   html2pdf().set({ margin: 10, filename: `smile_${Date.now()}.pdf`, html2canvas: { scale: 2 } }).from(c).save().then(() => toast('✅')).catch(() => toast('❌', true));
 }
 
-// ============================================================
-// Report
-// ============================================================
+// ============ Report ============
 function generateReport() {
   if (!currentPatient) return;
   const p = currentPatient;
@@ -2984,25 +2549,23 @@ function generateReport() {
       <h2 style="margin:0;color:var(--gold);font-size:15px">🦷 تقرير</h2>
       <p style="color:var(--muted);font-size:11px">${esc(CD.clinicName || 'عيادة')} — ${new Date().toLocaleDateString('ar-EG')}</p>
     </div>
-    <p style="margin-bottom:5px"><b>الاسم:</b> ${esc(p.fullName)}</p>
-    <p style="margin-bottom:5px"><b>رقم الملف:</b> ${esc(p.fileNumber || p.id)}</p>
-    <p style="margin-bottom:5px"><b>الهاتف:</b> ${esc(p.phone || '—')}</p>
-    <p style="margin-bottom:5px"><b>العمر:</b> ${p.age || '—'}</p>
-    <p style="margin-bottom:5px"><b>الجنس:</b> ${esc(p.gender || '—')}</p>
-    <p style="margin-bottom:5px"><b>ملاحظات:</b> ${esc(p.notes || '—')}</p>`;
+    <p><b>الاسم:</b> ${esc(p.fullName)}</p>
+    <p><b>رقم الملف:</b> ${esc(p.fileNumber || p.id)}</p>
+    <p><b>الهاتف:</b> ${esc(p.phone || '')}</p>
+    <p><b>العمر:</b> ${p.age || '—'}</p>
+    <p><b>الجنس:</b> ${esc(p.gender || '')}</p>
+    <p><b>ملاحظات:</b> ${esc(p.notes || '')}</p>`;
   document.getElementById('reportCtx').textContent = 'للمريض: ' + p.fullName;
 }
 function downloadReportPDF() {
   if (!currentPatient) return;
   const c = document.createElement('div');
   c.style.cssText = 'background:#fff;padding:30px;font-family:Cairo;direction:rtl;max-width:800px';
-  c.innerHTML = `<div style="text-align:center;border-bottom:3px double #14b8a6;padding-bottom:15px;margin-bottom:20px"><h1 style="color:#0d9488">🦷 تقرير</h1><p style="color:#666">${esc(CD.clinicName || 'عيادة')} — ${new Date().toLocaleString('ar-EG')}</p></div><p><b>الاسم:</b> ${esc(currentPatient.fullName)}</p><p><b>رقم الملف:</b> ${esc(currentPatient.fileNumber || currentPatient.id)}</p><p><b>الهاتف:</b> ${esc(currentPatient.phone || '—')}</p><p><b>العمر:</b> ${currentPatient.age || '—'}</p>`;
+  c.innerHTML = `<div style="text-align:center;border-bottom:3px double #14b8a6;padding-bottom:15px;margin-bottom:20px"><h1 style="color:#0d9488">🦷 تقرير</h1><p style="color:#666">${esc(CD.clinicName || '')} — ${new Date().toLocaleString('ar-EG')}</p></div><p><b>الاسم:</b> ${esc(currentPatient.fullName)}</p><p><b>رقم الملف:</b> ${esc(currentPatient.fileNumber || currentPatient.id)}</p><p><b>الهاتف:</b> ${esc(currentPatient.phone || '')}</p><p><b>العمر:</b> ${currentPatient.age || '—'}</p>`;
   html2pdf().set({ margin: 10, filename: `report_${currentPatient.fullName}.pdf` }).from(c).save().then(() => toast('✅')).catch(() => toast('❌', true));
 }
 
-// ============================================================
-// Dashboard
-// ============================================================
+// ============ Dashboard ============
 function updateDashboard() {
   const sp = document.getElementById('statPatients');
   const sa = document.getElementById('statAppts');
@@ -3019,17 +2582,9 @@ function updateDashboard() {
       type: 'bar',
       data: {
         labels: ['المرضى','المواعيد','المعمل','الأخصائيون'],
-        datasets: [{
-          data: [patients.length, appointments.length, lab.length, specialists.length],
-          backgroundColor: ['#14b8a6', '#f5c76a', '#a855f7', '#34d399'],
-          borderRadius: 6
-        }]
+        datasets: [{ data: [patients.length, appointments.length, lab.length, specialists.length], backgroundColor: ['#14b8a6','#f5c76a','#a855f7','#34d399'], borderRadius: 6 }]
       },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { ticks: { color: '#8fa3bf' } }, x: { ticks: { color: '#8fa3bf' } } }
-      }
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#8fa3bf' } }, x: { ticks: { color: '#8fa3bf' } } } }
     });
   }
 }
@@ -3058,14 +2613,12 @@ async function saveProfile() {
   toast('✅');
 }
 
-// ============================================================
-// Chat
-// ============================================================
+// ============ Chat ============
 function toggleChat() {
   const p = document.getElementById('chatPanel');
   p.classList.toggle('open');
   if (p.classList.contains('open') && !chatLoaded) {
-    document.getElementById('chatBody').innerHTML = '<div class="chat-msg bot">مرحباً! 👋 كيف يمكنني مساعدتك اليوم؟</div>';
+    document.getElementById('chatBody').innerHTML = '<div class="chat-msg bot">مرحباً! 👋</div>';
     chatLoaded = true;
   }
 }
@@ -3095,17 +2648,11 @@ async function sendChat() {
     const data = await res.json();
     load.textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '—';
     body.scrollTop = body.scrollHeight;
-  } catch (e) {
-    load.style.color = 'var(--danger)';
-    load.textContent = '❌ ' + e.message;
-  } finally {
-    sendBtn.disabled = false;
-  }
+  } catch (e) { load.style.color = 'var(--danger)'; load.textContent = '❌ ' + e.message; }
+  finally { sendBtn.disabled = false; }
 }
 
-// ============================================================
-// Excel Export
-// ============================================================
+// ============ Excel ============
 function exportAllExcel() {
   if (typeof XLSX === 'undefined') { toast('⚠️', true); return; }
   const wb = XLSX.utils.book_new();
@@ -3121,9 +2668,7 @@ function exportAllExcel() {
   toast('✅');
 }
 
-// ============================================================
-// 3D Init
-// ============================================================
+// ============ 3D ============
 function initThree() {
   if (threeInit) return;
   const container = document.getElementById('threeContainer');
@@ -3140,46 +2685,24 @@ function initThree() {
   renderer.setSize(width, height);
   container.appendChild(renderer.domElement);
   scene.add(new THREE.AmbientLight(0x404060));
-  const dl = new THREE.DirectionalLight(0xffffff, 1);
-  dl.position.set(2, 5, 3);
-  scene.add(dl);
-  const bl = new THREE.DirectionalLight(0x22d3ee, 0.5);
-  bl.position.set(-2, 0, -3);
-  scene.add(bl);
+  const dl = new THREE.DirectionalLight(0xffffff, 1); dl.position.set(2, 5, 3); scene.add(dl);
+  const bl = new THREE.DirectionalLight(0x22d3ee, 0.5); bl.position.set(-2, 0, -3); scene.add(bl);
   const group = new THREE.Group();
-  const box = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 1.2),
-    new THREE.MeshStandardMaterial({ color: 0x14b8a6, emissive: 0x0d9488, emissiveIntensity: 0.3 }));
+  const box = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 1.2), new THREE.MeshStandardMaterial({ color: 0x14b8a6, emissive: 0x0d9488, emissiveIntensity: 0.3 }));
   group.add(box);
-  const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 16),
-    new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x0d9488, emissiveIntensity: 0.2 }));
-  sphere.position.y = 0.8;
-  group.add(sphere);
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 16), new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x0d9488, emissiveIntensity: 0.2 }));
+  sphere.position.y = 0.8; group.add(sphere);
   for (let i = -0.4; i <= 0.4; i += 0.4) {
-    const root = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.5),
-      new THREE.MeshStandardMaterial({ color: 0xf5c76a }));
-    root.position.set(i, -0.6, 0);
-    group.add(root);
+    const root = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.5), new THREE.MeshStandardMaterial({ color: 0xf5c76a }));
+    root.position.set(i, -0.6, 0); group.add(root);
   }
   scene.add(group);
-  function animate() {
-    requestAnimationFrame(animate);
-    group.rotation.y += 0.01;
-    group.rotation.x += 0.002;
-    renderer.render(scene, camera);
-  }
+  function animate() { requestAnimationFrame(animate); group.rotation.y += 0.01; group.rotation.x += 0.002; renderer.render(scene, camera); }
   animate();
-  const ro = new ResizeObserver(() => {
-    const w = container.clientWidth, h = 320;
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
-  });
+  const ro = new ResizeObserver(() => { const w = container.clientWidth; camera.aspect = w / 320; camera.updateProjectionMatrix(); renderer.setSize(w, 320); });
   ro.observe(container);
 }
 
-// ============================================================
-// Init
-// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   const ad = document.getElementById('apptDate');
   const md = document.getElementById('meetDate');
