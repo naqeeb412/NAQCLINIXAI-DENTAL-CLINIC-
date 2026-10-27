@@ -1,31 +1,132 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function signedIn() {
-      return request.auth != null;
+    
+    function isSignedIn() { return request.auth != null; }
+    function isOwner() { return isSignedIn() && request.auth.token.email == 'Naqclinixai@gmail.com'; }
+    function userDoc() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function userRole() { return isSignedIn() ? userDoc().role : 'none'; }
+    function userClinicId() { return isSignedIn() ? userDoc().clinicId : null; }
+    function isAdminOrOwner() { return isOwner() || userRole() == 'admin'; }
+    function isDoctor() { return userRole() == 'doctor'; }
+    function isDoctorOrAbove() { return isOwner() || userRole() == 'admin' || userRole() == 'doctor'; }
+    function sameClinic(cid) { return isSignedIn() && userClinicId() == cid; }
+    
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isOwner());
+      allow create: if isSignedIn() && request.auth.uid == userId 
+        && request.resource.data.email == request.auth.token.email;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isOwner());
+      allow delete: if isOwner();
     }
-
-    // ✅ 1) حماية ملفات المستخدمين — لا أحد يعدّل ملف غيره
-    match /users/{uid} {
-      allow read: if signedIn();
-      allow write: if signedIn() && request.auth.uid == uid;
+    
+    match /clinics/{clinicId} {
+      allow read: if isSignedIn() && (sameClinic(clinicId) || isOwner());
+      allow create: if isSignedIn() && isDoctorOrAbove();
+      allow update: if isSignedIn() && ((sameClinic(clinicId) && isDoctorOrAbove()) || isOwner());
+      allow delete: if isOwner();
     }
-
-    // ✅ 2) منشورات Dentbook — الكل يقرأ، المؤلف فقط يحذف
+    
+    match /patients/{patientId} {
+      allow read: if isSignedIn() && (isOwner() || resource.data.clinicId == userClinicId());
+      allow create: if isSignedIn() && isDoctorOrAbove() && request.resource.data.clinicId == userClinicId();
+      allow update, delete: if isSignedIn() && (isOwner() || (resource.data.clinicId == userClinicId() && isDoctorOrAbove()));
+      
+      match /medical/{docId} { allow read, write: if isSignedIn(); }
+      match /photos/{photoId} { allow read, write: if isSignedIn(); }
+      match /appointments/{apptId} { allow read, write: if isSignedIn(); }
+      match /analyses/{analysisId} { allow read, write: if isSignedIn(); }
+    }
+    
+    match /lab/{labId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isDoctorOrAbove();
+    }
+    
+    match /appointments/{apptId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isDoctorOrAbove();
+    }
+    
+    match /billing/{billId} {
+      allow read: if isSignedIn() && (isOwner() || resource.data.clinicId == userClinicId());
+      allow write: if isSignedIn() && isDoctorOrAbove();
+    }
+    
+    match /notifications/{notifId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    
     match /dentbook_posts/{postId} {
-      allow read: if signedIn();
-      allow create: if signedIn()
-                    && request.resource.data.authorId == request.auth.uid;
-      allow update: if signedIn();  // ضروري للإعجابات والتعليقات
-      allow delete: if signedIn()
-                    && resource.data.authorId == request.auth.uid;
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isOwner());
     }
-
-    // ⚠️ 3) مؤقت — بقية المجموعات (clinical, lab, patients...)
-    // نتركها مفتوحة للمستخدمين المسجلين فقط حتى نراجع ملفاتها
+    
+    match /chats/{chatId} { allow read, write: if isSignedIn(); }
+    match /chats/{chatId}/messages/{msgId} { allow read, write: if isSignedIn(); }
+    match /dentchat/{msgId} { allow read, write: if isSignedIn(); }
+    
+    match /specialists/{specId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isDoctorOrAbove();
+    }
+    
+    match /meetings/{meetId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isDoctorOrAbove();
+    }
+    
+    match /discussions/{discId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isDoctorOrAbove();
+    }
+    
+    match /digital_products/{productId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner() || isAdminOrOwner();
+    }
+    
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isOwner());
+      allow create: if isSignedIn();
+      allow update, delete: if isOwner();
+    }
+    
+    match /subscription_plans/{planId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner() || isAdminOrOwner();
+    }
+    
+    match /user_subscriptions/{subId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    
+    match /coupons/{couponId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner() || isAdminOrOwner();
+    }
+    
+    match /advertisements/{adId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner() || isAdminOrOwner();
+    }
+    
+    match /activity/{actId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow delete: if isOwner();
+    }
+    
+    match /settings/{settingId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner() || isAdminOrOwner();
+    }
+    
     match /{document=**} {
-      allow read, write: if signedIn();
+      allow read, write: if false;
     }
   }
 }
