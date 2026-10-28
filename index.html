@@ -1534,6 +1534,8 @@ function showSection(sec){
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
   const btn=document.querySelector(`.ni[data-sec="${sec}"]`);if(btn)btn.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
+
+  // ✅ كل الأقسام
   if(sec==='patients')renderPatients();
   if(sec==='team')renderTeam();
   if(sec==='users')loadUsers();
@@ -1541,6 +1543,65 @@ function showSection(sec){
   if(sec==='dentbook')loadDentbook();
   if(sec==='dentchat'){if(!chatTargetsLoaded)loadChatTargets();loadChatMessages()}
   if(sec==='cadcam')setTimeout(initThree,200);
+  if(sec==='photography'){populateSelects();const pid=document.getElementById('photoPatient')?.value;if(pid)loadPatientPhotos(pid)}
+  if(sec==='payments')loadPayments();
+  if(sec==='privateMessages'){loadPMRecipients();loadPMThread()}
+  if(sec==='labChat')loadLabChat();
+  if(sec==='treatmentPlan')populateSelects();
+  if(sec==='materials')loadMaterials();
+  if(sec==='dentbookProfile')loadDentbookProfile();
+  if(sec==='members')loadMembers();
+  if(sec==='fileSharing')loadFiles();
+  if(sec==='interdisciplinary')loadInterSpecialists();
+  if(sec==='ads')loadAds();
+  if(sec==='stl')setTimeout(initSTLViewer,100);
+  if(sec==='xrays'){populateSelects();loadXrays()}
+  if(sec==='forum')loadForum();
+  if(sec==='facialDrawing'||sec==='aiBeforeAfter'||sec==='comprehensiveReports'){
+    populateSelects();
+    const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
+    ['xrayPatient','fdPatient','aiBaPatient','crPatient'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.innerHTML=opts;
+    });
+  }
+
+  // ✅ إصلاح مخطط الأسنان
+  if(sec==='chart'){
+    if(window._currentPatientId){
+      db.collection('patients').doc(window._currentPatientId).collection('medical').doc('chart').get().then(d=>{
+        toothState=d.exists?(d.data().teeth||{}):{};
+        renderChart();
+      }).catch(()=>renderChart());
+    }else{
+      toothState={};
+      renderChart();
+    }
+  }
+
+  // ✅ إصلاح التاريخ الطبي
+  if(sec==='history'){
+    if(window._currentPatientId){
+      document.getElementById('historyCtx').textContent='للمريض: '+(window._currentPatient?.fullName||'');
+      document.getElementById('historyForm').classList.remove('hidden');
+      db.collection('patients').doc(window._currentPatientId).collection('medical').doc('history').get().then(d=>{
+        if(d.exists){
+          const data=d.data();
+          document.getElementById('histChronic').value=data.chronic||'';
+          document.getElementById('histAllergy').value=data.allergy||'';
+          document.getElementById('histDrugs').value=data.drugs||'';
+        }else{
+          document.getElementById('histChronic').value='';
+          document.getElementById('histAllergy').value='';
+          document.getElementById('histDrugs').value='';
+        }
+      });
+    }else{
+      document.getElementById('historyCtx').textContent='اختر مريضاً من القائمة أولاً';
+      document.getElementById('historyForm').classList.add('hidden');
+    }
+  }
+}
   if(sec==='photography'){populateSelects();const pid=document.getElementById('photoPatient')?.value;if(pid)loadPatientPhotos(pid)}
   if(sec==='payments')loadPayments();
   if(sec==='privateMessages'){loadPMRecipients();loadPMThread()}
@@ -1652,16 +1713,6 @@ async function openPatient(id){
   showSection('history');
 }
 
-if(sec==='chart'){
-  if(window._currentPatientId){
-    db.collection('patients').doc(window._currentPatientId).collection('medical').doc('chart').get().then(d=>{
-      if(d.exists)toothState=d.data().teeth||{};
-      renderChart();
-    });
-  }else{
-    renderChart();
-  }
-}
 function populateSelects(){
   const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
   ['apptPatient','billPatient','facePatient','aiPatient','reportPatient','labPatient','photoPatient','tpPatient'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts});
@@ -4119,12 +4170,10 @@ async function loadNotifications(){
   if(!el)return;
   el.innerHTML='<div class="empty">⏳ جارٍ التحميل...</div>';
   try{
-    const snap=await db.collection('notifications').where('recipientId','==',CU.uid).limit(50).get();   const notifs=[];
+    const snap=await db.collection('notifications').where('recipientId','==',CU.uid).limit(50).get();
+    const notifs=[];
     snap.forEach(d=>notifs.push({id:d.id,...d.data()}));
- const notifs=[];
-snap.forEach(d=>notifs.push({id:d.id,...d.data()}));
-notifs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));   
-    if(!notifs.length){
+    notifs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));    if(!notifs.length){
       el.innerHTML='<div class="empty"><div class="ic">🔕</div>لا توجد إشعارات</div>';
       updateNotifBadge(0);
       return;
