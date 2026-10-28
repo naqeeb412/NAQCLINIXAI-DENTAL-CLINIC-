@@ -10,15 +10,13 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--accent:#0d6e7a;--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
+:root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--accent:#0d6e7a;--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
 body{background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--gold);border-radius:10px}
 button{cursor:pointer;font-family:inherit}
 input,select,textarea{font-family:inherit}
 .hidden{display:none!important}
-
-/* LOGIN */
 #loginScreen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 20%,#0f172a 0%,#0a0a0a 70%);padding:20px;overflow-y:auto}
 .login-card{position:relative;z-index:2;width:min(460px,92vw);background:var(--card);border:1px solid var(--bd);border-radius:24px;padding:32px 26px;box-shadow:0 20px 60px rgba(0,0,0,.9);max-height:96vh;overflow-y:auto}
 .ll{text-align:center;margin-bottom:22px}
@@ -35,7 +33,7 @@ input,select,textarea{font-family:inherit}
 .f input:focus,.f select:focus,.f textarea:focus{border-color:var(--gold);background:rgba(197,160,89,.05)}
 .f input::placeholder{color:#5b6f92}
 .btn-gold{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--goldD));color:#0A0A0A;font-weight:800;font-size:.92rem;transition:.2s}
-.btn-gold:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(197,160,89,.3)}
+.btn-gold:hover{transform:translateY(-1px)}
 .btn-gold:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-ghost{width:100%;padding:10px;background:transparent;color:var(--muted);border:1px solid var(--bd);border-radius:12px;font-weight:600;font-size:.8rem;margin-top:8px;transition:.2s}
 .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
@@ -43,7 +41,7 @@ input,select,textarea{font-family:inherit}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bd)}
 .social{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .bsoc{padding:10px;border:1px solid var(--bd);border-radius:10px;background:rgba(255,255,255,.03);color:var(--txt);font-size:.78rem;font-weight:600;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
-.bsoc:hover{border-color:var(--gold);background:rgba(197,160,89,.12)}
+.bsoc:hover{border-color:var(--gold);background:var(--goldDim)}
 .bsoc.g{border-color:#ea4335}
 .bsoc.guest{grid-column:span 2;color:var(--gold);border-color:var(--gold)}
 .alert{padding:11px 13px;border-radius:10px;margin-bottom:14px;font-size:.8rem;font-weight:600;display:none}
@@ -52,8 +50,6 @@ input,select,textarea{font-family:inherit}
 .alert.success{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.3)}
 .alert.info{background:rgba(197,160,89,.12);color:var(--goldL);border:1px solid var(--bd)}
 .lf{text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--bd);font-size:.7rem;color:var(--muted)}
-
-/* APP */
 #app{display:none;min-height:100vh}
 #app.active{display:flex}
 #sidebar{width:260px;background:var(--card);border-left:1px solid var(--bd);height:100vh;position:sticky;top:0;padding:16px 10px;overflow-y:auto;flex-shrink:0;z-index:100;transition:transform .3s}
@@ -65,7 +61,7 @@ input,select,textarea{font-family:inherit}
 .ns{font-size:.6rem;color:#5b6f92;padding:10px 12px 4px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
 .ni{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:.15s;background:none;text-align:right;width:100%;font-family:inherit}
 .ni:hover{background:var(--card2);color:var(--txt)}
-.ni.active{background:rgba(197,160,89,.12);color:var(--gold);border-color:var(--bd)}
+.ni.active{background:var(--goldDim);color:var(--gold);border-color:var(--bd)}
 .ni .ic{font-size:15px;width:20px;text-align:center}
 #main{flex:1;padding:20px;min-width:0}
 #topbar{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -130,8 +126,8 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
     </div>
     <div class="alert" id="authAlert"></div>
     <div id="loginForm">
-      <div class="f"><label>📧 البريد الإلكتروني</label><input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="username"></div>
-      <div class="f"><label>🔒 كلمة المرور</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="f"><label>📧 البريد الإلكتروني</label><input type="email" id="loginEmail" placeholder="your@email.com"></div>
+      <div class="f"><label>🔒 كلمة المرور</label><input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="btn-gold" onclick="doLogin()" id="btnLogin">🚪 تسجيل الدخول</button>
       <button class="btn-ghost" onclick="doForgotPassword()">🔐 نسيت كلمة المرور؟</button>
     </div>
@@ -329,9 +325,9 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
         <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px">
           <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:12px">➕ إضافة مستخدم جديد</h3>
           <div class="g2">
-            <div class="f"><label>الاسم الكامل *</label><input id="newUserName" placeholder="د. أحمد محمد"></div>
-            <div class="f"><label>البريد الإلكتروني *</label><input type="email" id="newUserEmail" placeholder="user@clinic.com"></div>
-            <div class="f"><label>كلمة المرور * (6+)</label><input type="password" id="newUserPass" placeholder="••••••••"></div>
+            <div class="f"><label>الاسم الكامل *</label><input id="newUserName"></div>
+            <div class="f"><label>البريد الإلكتروني *</label><input type="email" id="newUserEmail"></div>
+            <div class="f"><label>كلمة المرور * (6+)</label><input type="password" id="newUserPass"></div>
             <div class="f"><label>الدور</label>
               <select id="newUserRole">
                 <option value="doctor">👨‍⚕️ طبيب</option>
@@ -340,13 +336,13 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
                 <option value="guest">👤 ضيف</option>
               </select>
             </div>
-            <div class="f"><label>التخصص</label><input id="newUserSpecialty" placeholder="تقويم / جراحة / أطفال"></div>
-            <div class="f"><label>الهاتف</label><input id="newUserPhone" placeholder="777xxxxxx"></div>
+            <div class="f"><label>التخصص</label><input id="newUserSpecialty"></div>
+            <div class="f"><label>الهاتف</label><input id="newUserPhone"></div>
           </div>
           <button class="btn-save" onclick="createUser()" id="btnCreateUser" style="margin-top:12px">➕ إضافة مستخدم</button>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-          <h3 style="color:var(--gold);font-size:0.95rem">📋 المستخدمون الحاليون (<span id="usersCount">0</span>)</h3>
+          <h3 style="color:var(--gold);font-size:0.95rem">📋 المستخدمون (<span id="usersCount">0</span>)</h3>
           <button class="btn-outline" onclick="loadUsers()">🔄 تحديث</button>
         </div>
         <div id="usersList"></div>
@@ -356,7 +352,7 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
     <div class="sec" id="sec-team">
       <div class="panel">
         <h2>👥 فريق العيادة</h2>
-        <div class="desc">كل الأعضاء المسجلين في النظام</div>
+        <div class="desc">كل الأعضاء المسجلين</div>
         <div id="teamList"></div>
       </div>
     </div>
@@ -406,9 +402,8 @@ try {
   firebase.initializeApp(firebaseConfig);
   auth = firebase.auth();
   db = firebase.firestore();
-  console.log('✅ Firebase initialized');
 } catch(e) {
-  console.error('❌ Firebase init failed:', e);
+  console.error('Firebase init failed:', e);
   document.body.innerHTML = '<div style="padding:40px;color:#ef4444;font-family:Arial"><h1>خطأ في تهيئة Firebase</h1><pre>' + e.message + '</pre></div>';
 }
 
@@ -474,9 +469,9 @@ async function doLogin(){
     if(e.code==='auth/user-not-found')m='البريد غير مسجل';
     else if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential')m='كلمة المرور خطأ';
     else if(e.code==='auth/invalid-email')m='البريد غير صالح';
-    else if(e.code==='auth/too-many-requests')m='محاولات كثيرة - انتظر قليلاً';
-    else if(e.code==='auth/network-request-failed')m='فشل الاتصال بالشبكة';
-    else if(e.code==='auth/operation-not-allowed')m='طريقة الدخول غير مفعلة في Firebase';
+    else if(e.code==='auth/too-many-requests')m='محاولات كثيرة - انتظر';
+    else if(e.code==='auth/network-request-failed')m='فشل الاتصال';
+    else if(e.code==='auth/operation-not-allowed')m='تسجيل الدخول بالبريد غير مفعل';
     showAlert('❌ '+m,'error');
     btn.disabled=false;
     btn.textContent='🚪 تسجيل الدخول';
@@ -489,21 +484,21 @@ async function doRegister(){
   const pass=document.getElementById('regPassword').value;
   const pass2=document.getElementById('regPassword2').value;
   if(!name||!email||!pass){
-    showAlert('⚠️ أكمل الحقول المطلوبة','error');
+    showAlert('⚠️ أكمل الحقول','error');
     return;
   }
   if(pass.length<6){
-    showAlert('⚠️ كلمة المرور 6 أحرف على الأقل','error');
+    showAlert('⚠️ كلمة المرور 6+','error');
     return;
   }
   if(pass!==pass2){
-    showAlert('⚠️ كلمتا المرور غير متطابقتين','error');
+    showAlert('⚠️ كلمتا المرور مختلفتان','error');
     return;
   }
   const btn=document.getElementById('btnReg');
   btn.disabled=true;
-  btn.textContent='⏳ جارٍ الإنشاء...';
-  showAlert('⏳ جارٍ إنشاء الحساب...','info');
+  btn.textContent='⏳...';
+  showAlert('⏳ جارٍ الإنشاء...','info');
   try{
     const cred=await auth.createUserWithEmailAndPassword(email,pass);
     await cred.user.updateProfile({displayName:name});
@@ -519,13 +514,13 @@ async function doRegister(){
       active:true,
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    showAlert('✅ تم إنشاء الحساب!','success');
+    showAlert('✅ تم إنشاء الحساب','success');
   }catch(e){
     let m='خطأ: '+e.message;
-    if(e.code==='auth/email-already-in-use')m='البريد مسجل بالفعل';
+    if(e.code==='auth/email-already-in-use')m='البريد مسجل';
     else if(e.code==='auth/weak-password')m='كلمة المرور ضعيفة';
     else if(e.code==='auth/invalid-email')m='البريد غير صالح';
-    else if(e.code==='auth/operation-not-allowed')m='إنشاء الحسابات غير مفعل في Firebase';
+    else if(e.code==='auth/operation-not-allowed')m='إنشاء الحساب غير مفعل في Firebase';
     showAlert('❌ '+m,'error');
     btn.disabled=false;
     btn.textContent='✨ إنشاء الحساب';
@@ -533,11 +528,10 @@ async function doRegister(){
 }
 
 async function doSocial(provider){
-  let p;
-  if(provider==='google')p=new firebase.auth.GoogleAuthProvider();
-  else return;
+  if(provider!=='google')return;
   try{
     showAlert('⏳ جارٍ الاتصال بـ Google...','info');
+    const p=new firebase.auth.GoogleAuthProvider();
     const cred=await auth.signInWithPopup(p);
     const u=cred.user;
     const doc=await db.collection('users').doc(u.uid).get();
@@ -587,12 +581,12 @@ async function doGuestLogin(){
 async function doForgotPassword(){
   const email=document.getElementById('loginEmail').value.trim();
   if(!email){
-    showAlert('⚠️ أدخل بريدك أولاً','error');
+    showAlert('⚠️ أدخل بريدك','error');
     return;
   }
   try{
     await auth.sendPasswordResetEmail(email);
-    showAlert('📧 تم إرسال رابط إعادة التعيين','info');
+    showAlert('📧 تم إرسال الرابط','info');
   }catch(e){
     showAlert('❌ '+e.message,'error');
   }
@@ -606,7 +600,6 @@ function doLogout(){
 auth.onAuthStateChanged(async user=>{
   if(user){
     CU=user;
-    console.log('✅ Auth state: signed in', user.email || user.uid);
     try{
       const doc=await db.collection('users').doc(user.uid).get();
       if(doc.exists){
@@ -622,27 +615,19 @@ auth.onAuthStateChanged(async user=>{
         };
         await db.collection('users').doc(user.uid).set(CD);
       }
-      // Force owner
       if(user.email===OWNER_EMAIL){
         CD.role='owner';
         if(!CD.fullName||CD.fullName==='مستخدم'||CD.fullName==='undefined'){
           CD.fullName=user.displayName||'د. علي النقيب';
         }
         try{
-          await db.collection('users').doc(user.uid).set(
-            {role:'owner',fullName:CD.fullName},
-            {merge:true}
-          );
-        }catch(e){console.warn('sync owner:',e)}
+          await db.collection('users').doc(user.uid).set({role:'owner',fullName:CD.fullName},{merge:true});
+        }catch(e){}
       }
-      // Ensure clinicId
       if(!CD.clinicId||CD.clinicId==='undefined'){
         CD.clinicId='CLN-'+user.uid.slice(0,8).toUpperCase();
         try{
-          await db.collection('users').doc(user.uid).set(
-            {clinicId:CD.clinicId},
-            {merge:true}
-          );
+          await db.collection('users').doc(user.uid).set({clinicId:CD.clinicId},{merge:true});
         }catch(e){}
       }
       if(!CD.fullName||CD.fullName==='undefined'){
@@ -673,8 +658,6 @@ auth.onAuthStateChanged(async user=>{
       toast('✅ مرحباً '+CD.fullName);
     }catch(e){
       console.error('Auth state error:',e);
-      toast('❌ '+e.message,true);
-      // Even if Firestore fails, show the app
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.add('active');
     }
@@ -748,7 +731,7 @@ async function createPatient(){
   const name=document.getElementById('pName').value.trim();
   const phone=document.getElementById('pPhone').value.trim();
   if(!name||!phone){
-    toast('⚠️ الاسم والهاتف مطلوبان',true);
+    toast('⚠️ الاسم والهاتف',true);
     return;
   }
   try{
@@ -775,7 +758,7 @@ async function deletePatient(id){
   if(!confirm('حذف المريض؟'))return;
   try{
     await db.collection('patients').doc(id).delete();
-    toast('🗑️ تم الحذف');
+    toast('🗑️');
     await loadPatients();
   }catch(e){toast('❌',true)}
 }
@@ -820,11 +803,11 @@ async function saveHistory(){
       drugs:document.getElementById('histDrugs').value,
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     },{merge:true});
-    toast('✅ تم الحفظ');
+    toast('✅');
   }catch(e){toast('❌ '+e.message,true)}
 }
 
-// ============ DENTAL CHART ============
+// ============ CHART ============
 function renderChart(){
   const up=document.getElementById('upperTeeth');
   const lo=document.getElementById('lowerTeeth');
@@ -850,7 +833,7 @@ async function saveChart(){
   if(!window._currentPatientId)return;
   try{
     await db.collection('patients').doc(window._currentPatientId).collection('medical').doc('chart').set({teeth:toothState},{merge:true});
-    toast('✅ تم الحفظ');
+    toast('✅');
   }catch(e){toast('❌',true)}
 }
 
@@ -884,7 +867,7 @@ async function addAppointment(){
       clinicId:CD.clinicId,
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    toast('✅ تم الحجز');
+    toast('✅');
     await loadAppointments();
   }catch(e){toast('❌',true)}
 }
@@ -936,7 +919,7 @@ async function saveBilling(){
   const total=parseFloat(document.getElementById('billTotal').value)||0;
   const paid=parseFloat(document.getElementById('billPaid').value)||0;
   if(!pid||!date){
-    toast('⚠️ أكمل البيانات',true);
+    toast('⚠️',true);
     return;
   }
   try{
@@ -993,10 +976,11 @@ function updateBillingStats(){
     if((b.date||'').startsWith(ys))year+=b.paid||0;
     rem+=b.remaining||0;
   });
-  document.getElementById('billingToday').textContent='$'+day.toFixed(0);
-  document.getElementById('billingMonth').textContent='$'+month.toFixed(0);
-  document.getElementById('billingYear').textContent='$'+year.toFixed(0);
-  document.getElementById('billingRemaining').textContent='$'+rem.toFixed(0);
+  const setT=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val};
+  setT('billingToday','$'+day.toFixed(0));
+  setT('billingMonth','$'+month.toFixed(0));
+  setT('billingYear','$'+year.toFixed(0));
+  setT('billingRemaining','$'+rem.toFixed(0));
 }
 
 // ============ LAB ============
@@ -1063,7 +1047,7 @@ async function loadSpecialists(){
 async function addSpecialist(){
   const name=document.getElementById('specName').value.trim();
   if(!name){
-    toast('⚠️ أدخل الاسم',true);
+    toast('⚠️',true);
     return;
   }
   try{
@@ -1153,15 +1137,11 @@ async function createUser(){
   const specialty=document.getElementById('newUserSpecialty').value.trim();
   const phone=document.getElementById('newUserPhone').value.trim();
   if(!name||!email||!pass){
-    toast('⚠️ أكمل الحقول المطلوبة',true);
+    toast('⚠️ أكمل الحقول',true);
     return;
   }
   if(pass.length<6){
-    toast('⚠️ كلمة المرور 6+',true);
-    return;
-  }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    toast('⚠️ بريد غير صالح',true);
+    toast('⚠️ 6 أحرف على الأقل',true);
     return;
   }
   const btn=document.getElementById('btnCreateUser');
@@ -1186,7 +1166,6 @@ async function createUser(){
       clinicName:CD.clinicName||'',
       active:true,
       createdBy:CU.uid,
-      createdByName:CD.fullName||CD.name,
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
     await secondaryAuth.signOut();
@@ -1204,7 +1183,6 @@ async function createUser(){
     let msg=e.message;
     if(e.code==='auth/email-already-in-use')msg='البريد مسجل';
     else if(e.code==='auth/weak-password')msg='كلمة المرور ضعيفة';
-    else if(e.code==='permission-denied')msg='صلاحيات غير كافية';
     toast('❌ '+msg,true);
   }finally{
     btn.disabled=false;
@@ -1216,16 +1194,16 @@ async function toggleUserActive(uid){
   try{
     const doc=await db.collection('users').doc(uid).get();
     if(!doc.exists){
-      toast('❌ المستخدم غير موجود',true);
+      toast('❌ غير موجود',true);
       return;
     }
     const data=doc.data();
     if(data.role==='owner'){
-      toast('⚠️ لا يمكن تعطيل المالك',true);
+      toast('⚠️ المالك محفوظ',true);
       return;
     }
     const cur=data.active!==false;
-    if(!confirm(cur?'تعطيل الحساب؟':'تفعيل الحساب؟'))return;
+    if(!confirm(cur?'تعطيل؟':'تفعيل؟'))return;
     await db.collection('users').doc(uid).update({active:!cur});
     toast(cur?'🚫 معطل':'✅ مفعل');
     await loadUsers();
@@ -1237,7 +1215,7 @@ async function resetUserPassword(email){
     toast('⚠️ لا يوجد بريد',true);
     return;
   }
-  if(!confirm(`إرسال رابط إعادة كلمة المرور إلى:\n${email}`))return;
+  if(!confirm(`إرسال رابط إلى:\n${email}`))return;
   try{
     await auth.sendPasswordResetEmail(email);
     toast('📧 تم الإرسال');
@@ -1249,11 +1227,11 @@ async function deleteUser(uid,email){
   try{
     const doc=await db.collection('users').doc(uid).get();
     if(doc.exists&&doc.data().role==='owner'){
-      toast('⚠️ لا يمكن حذف المالك',true);
+      toast('⚠️ المالك محفوظ',true);
       return;
     }
     await db.collection('users').doc(uid).delete();
-    toast('🗑️ تم الحذف');
+    toast('🗑️');
     await loadUsers();
   }catch(e){toast('❌ '+e.message,true)}
 }
@@ -1285,14 +1263,11 @@ function renderTeam(){
 
 // ============ DASHBOARD ============
 function updateDashboard(){
-  const sp=document.getElementById('statPatients');
-  if(sp)sp.textContent=patients.length;
-  const sa=document.getElementById('statAppts');
-  if(sa)sa.textContent=appointments.filter(a=>!a.completed).length;
-  const sl=document.getElementById('statLab');
-  if(sl)sl.textContent=lab.length;
-  const sr=document.getElementById('statRevenue');
-  if(sr)sr.textContent='$'+billing.reduce((s,b)=>s+(b.paid||0),0).toFixed(0);
+  const setT=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val};
+  setT('statPatients',patients.length);
+  setT('statAppts',appointments.filter(a=>!a.completed).length);
+  setT('statLab',lab.length);
+  setT('statRevenue','$'+billing.reduce((s,b)=>s+(b.paid||0),0).toFixed(0));
   drawMainChart();
 }
 
@@ -1329,7 +1304,7 @@ function fillSettings(){
 async function saveProfile(){
   const name=document.getElementById('setName').value.trim();
   if(!name){
-    toast('⚠️ أدخل الاسم',true);
+    toast('⚠️',true);
     return;
   }
   try{
@@ -1340,16 +1315,13 @@ async function saveProfile(){
   }catch(e){toast('❌',true)}
 }
 
-// ============ NOTIFICATIONS ============
+// ============ NOTIFICATIONS (FIXED - NO DUPLICATE) ============
 async function loadNotifications(){
   const el=document.getElementById('notificationsList');
   if(!el)return;
   el.innerHTML='<div class="empty">⏳ جارٍ التحميل...</div>';
   try{
-    const snap=await db.collection('notifications')
-      .where('recipientId','==',CU.uid)
-      .limit(50)
-      .get();
+    const snap=await db.collection('notifications').where('recipientId','==',CU.uid).limit(50).get();
     const notifs=[];
     snap.forEach(d=>notifs.push({id:d.id,...d.data()}));
     notifs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
@@ -1377,7 +1349,7 @@ async function loadNotifications(){
     }).join('');
   }catch(e){
     if(e.code==='failed-precondition'){
-      el.innerHTML='<div class="empty" style="color:var(--warn)">⚠️ يحتاج فهرس Firestore. تحقق من Console.</div>';
+      el.innerHTML='<div class="empty" style="color:var(--warn)">⚠️ يحتاج فهرس Firestore</div>';
     }else{
       el.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>';
     }
@@ -1407,12 +1379,9 @@ async function markRead(id){
 
 async function markAllRead(){
   try{
-    const snap=await db.collection('notifications')
-      .where('recipientId','==',CU.uid)
-      .where('read','==',false)
-      .get();
+    const snap=await db.collection('notifications').where('recipientId','==',CU.uid).where('read','==',false).get();
     if(snap.empty){
-      toast('لا توجد إشعارات غير مقروءة');
+      toast('لا توجد إشعارات');
       return;
     }
     const batch=db.batch();
@@ -1421,7 +1390,7 @@ async function markAllRead(){
       readAt:firebase.firestore.FieldValue.serverTimestamp()
     }));
     await batch.commit();
-    toast('✅ تم قراءة '+snap.size+' إشعار');
+    toast('✅ تم قراءة '+snap.size);
     await loadNotifications();
   }catch(e){toast('❌ '+e.message,true)}
 }
@@ -1456,6 +1425,9 @@ function setupNotifListener(){
       .where('read','==',false)
       .onSnapshot(snap=>{
         updateNotifBadge(snap.size);
+        if(document.getElementById('sec-notifications')?.classList.contains('active')){
+          loadNotifications();
+        }
       },err=>console.warn('notif listener:',err));
   }catch(e){
     console.warn('setupNotifListener:',e);
@@ -1468,7 +1440,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     const el=document.getElementById(id);
     if(el)el.value=today();
   });
-  console.log('✅ App ready');
 });
 </script>
 </body>
