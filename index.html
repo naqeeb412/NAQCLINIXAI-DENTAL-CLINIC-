@@ -199,7 +199,8 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     <div class="ns">الأنظمة</div>
     <button class="ni" data-sec="lab"><span class="ic">🧪</span>المعمل</button>
     <button class="ni" data-sec="specialists"><span class="ic">🎓</span>الأخصائيون</button>
-    <button class="ni" data-sec="team"><span class="ic">👨‍⚕️</span>الفريق</button>
+<button class="ni" data-sec="users"><span class="ic">👤</span>إدارة المستخدمين</button>
+<button class="ni" data-sec="team"><span class="ic">👥</span>الفريق</button>
     <div class="ns">الاشتراكات</div>
     <button class="ni" data-sec="subscriptions"><span class="ic">⭐</span>الاشتراكات</button>
     <div class="ns"></div>
@@ -449,13 +450,62 @@ input[type=range]{width:100%;accent-color:var(--gold)}
       </div>
     </div>
 
-    <div class="sec" id="sec-team">
-      <div class="panel">
-        <h2>👨‍⚕️ الفريق</h2>
-        <div class="desc">أعضاء العيادة</div>
-        <div id="teamList"></div>
+    <div class="sec" id="sec-users">
+  <div class="panel">
+    <h2>👤 إدارة المستخدمين</h2>
+    <div class="desc">إضافة أطباء وموظفين وإدارة صلاحياتهم</div>
+    
+    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px">
+      <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:12px">➕ إضافة مستخدم جديد</h3>
+      <div class="g2">
+        <div class="f">
+          <label>الاسم الكامل *</label>
+          <input id="newUserName" placeholder="د. أحمد محمد" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
+        </div>
+        <div class="f">
+          <label>البريد الإلكتروني *</label>
+          <input type="email" id="newUserEmail" placeholder="user@clinic.com" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
+        </div>
+        <div class="f">
+          <label>كلمة المرور الأولية * (6+)</label>
+          <input type="password" id="newUserPass" placeholder="••••••••" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
+        </div>
+        <div class="f">
+          <label>الدور</label>
+          <select id="newUserRole" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
+            <option value="doctor">👨‍⚕️ طبيب</option>
+            <option value="admin">👑 مدير</option>
+            <option value="employee">👨‍💼 موظف</option>
+            <option value="guest">👤 ضيف</option>
+          </select>
+        </div>
+        <div class="f">
+          <label>التخصص</label>
+          <input id="newUserSpecialty" placeholder="تقويم / جراحة / أطفال..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
+        </div>
+        <div class="f">
+          <label>الهاتف</label>
+          <input id="newUserPhone" placeholder="777xxxxxx" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
+        </div>
       </div>
+      <button class="btn-save" onclick="createUser()" id="btnCreateUser" style="margin-top:12px">➕ إضافة مستخدم</button>
     </div>
+    
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <h3 style="color:var(--gold);font-size:0.95rem">📋 المستخدمون الحاليون (<span id="usersCount">0</span>)</h3>
+      <button class="btn-outline" style="padding:6px 14px;font-size:0.75rem" onclick="loadUsers()">🔄 تحديث</button>
+    </div>
+    <div id="usersList"></div>
+  </div>
+    </div>
+
+<div class="sec" id="sec-team">
+  <div class="panel">
+    <h2>👥 فريق العيادة</h2>
+    <div class="desc">كل الأعضاء المسجلين في النظام</div>
+    <div id="teamList"></div>
+  </div>
+</div>
 
     <div class="sec" id="sec-subscriptions">
       <div class="panel">
@@ -699,8 +749,10 @@ function showSection(sec){
   const btn=document.querySelector(`.ni[data-sec="${sec}"]`);
   if(btn)btn.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
+  
   if(sec==='patients')renderPatients();
   if(sec==='team')renderTeam();
+  if(sec==='users')loadUsers();
   if(sec==='subscriptions')renderSub();
   if(sec==='cadcam')setTimeout(initThree,200);
 }
@@ -1011,11 +1063,255 @@ function renderSpecialists(){
     </div>`).join('');
 }
 
-function renderTeam(){
-  const el=document.getElementById('teamList');
-  el.innerHTML='<div class="empty"><div class="ic">👥</div>قريباً</div>';
+// ============ USER MANAGEMENT ============
+let allUsers = [];
+
+async function loadUsers() {
+  const el = document.getElementById('usersList');
+  if (el) el.innerHTML = '<div class="empty">⏳ جارٍ التحميل...</div>';
+  
+  try {
+    const snap = await db.collection('users').get();
+    allUsers = [];
+    snap.forEach(d => allUsers.push({ id: d.id, ...d.data() }));
+    allUsers.sort((a, b) => {
+      const roleOrder = { owner: 0, admin: 1, doctor: 2, employee: 3, guest: 4 };
+      const ra = roleOrder[a.role] ?? 9;
+      const rb = roleOrder[b.role] ?? 9;
+      if (ra !== rb) return ra - rb;
+      return (a.fullName || a.name || '').localeCompare(b.fullName || b.name || '');
+    });
+    
+    renderUsers();
+    renderTeam();
+  } catch (e) {
+    if (el) el.innerHTML = '<div class="empty" style="color:var(--err)">❌ ' + esc(e.message) + '</div>';
+    console.error('loadUsers:', e);
+  }
 }
 
+function renderUsers() {
+  const el = document.getElementById('usersList');
+  const cntEl = document.getElementById('usersCount');
+  if (!el) return;
+  if (cntEl) cntEl.textContent = allUsers.length;
+  
+  if (!allUsers.length) {
+    el.innerHTML = '<div class="empty"><div class="ic">👤</div>لا يوجد مستخدمون مسجلون</div>';
+    return;
+  }
+  
+  const roleLabel = (r) => ({
+    'owner': '👑 مالك',
+    'admin': '👑 مدير',
+    'doctor': '👨‍⚕️ طبيب',
+    'employee': '👨‍💼 موظف',
+    'guest': '👤 ضيف'
+  }[r] || r || '—');
+  
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr>' +
+    '<th>الاسم</th><th>البريد</th><th>الدور</th><th>التخصص</th><th>الهاتف</th><th>الحالة</th><th>إجراءات</th>' +
+    '</tr></thead><tbody>' +
+    allUsers.map(u => `
+      <tr>
+        <td><b>${esc(u.fullName || u.name || '—')}</b></td>
+        <td style="font-size:0.75rem;direction:ltr;text-align:right">${esc(u.email || '—')}</td>
+        <td style="white-space:nowrap">${roleLabel(u.role)}</td>
+        <td>${esc(u.specialty || '—')}</td>
+        <td style="direction:ltr;text-align:right">${esc(u.phone || '—')}</td>
+        <td style="color:${u.active !== false ? 'var(--ok)' : 'var(--err)'};white-space:nowrap">
+          ${u.active !== false ? '✅ نشط' : '🚫 معطل'}
+        </td>
+        <td style="white-space:nowrap">
+          <button class="btn-outline" style="padding:4px 8px;font-size:0.68rem;margin-left:4px" onclick="resetUserPassword('${esc(u.email)}')" title="إرسال رابط إعادة كلمة المرور">🔐</button>
+          ${u.role === 'owner' ? '<span style="color:var(--muted);font-size:0.7rem">محفوظ</span>' : `
+          <button class="${u.active !== false ? 'btn-outline' : 'btn-save'}" style="padding:4px 8px;font-size:0.68rem;margin-left:4px" onclick="toggleUserActive('${u.id}')" title="${u.active !== false ? 'تعطيل' : 'تفعيل'}">${u.active !== false ? '🚫' : '✅'}</button>
+          <button class="btn-danger" style="padding:4px 8px;font-size:0.68rem" onclick="deleteUser('${u.id}', '${esc(u.email)}')" title="حذف">🗑️</button>
+          `}
+        </td>
+      </tr>
+    `).join('') +
+    '</tbody></table></div>';
+}
+
+async function createUser() {
+  const name = document.getElementById('newUserName').value.trim();
+  const email = document.getElementById('newUserEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('newUserPass').value;
+  const role = document.getElementById('newUserRole').value;
+  const specialty = document.getElementById('newUserSpecialty').value.trim();
+  const phone = document.getElementById('newUserPhone').value.trim();
+  
+  if (!name || !email || !pass) {
+    toast('⚠️ أكمل الحقول المطلوبة', true);
+    return;
+  }
+  if (pass.length < 6) {
+    toast('⚠️ كلمة المرور 6 أحرف على الأقل', true);
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    toast('⚠️ البريد الإلكتروني غير صالح', true);
+    return;
+  }
+  
+  const btn = document.getElementById('btnCreateUser');
+  btn.disabled = true;
+  btn.textContent = '⏳ جارٍ الإنشاء...';
+  
+  // Use a secondary Firebase app so admin stays logged in
+  const appName = 'user-create-' + Date.now();
+  let secondaryApp = null;
+  
+  try {
+    secondaryApp = firebase.initializeApp(firebaseConfig, appName);
+    const secondaryAuth = secondaryApp.auth();
+    const secondaryDb = secondaryApp.firestore();
+    
+    // Create user in Firebase Auth
+    const cred = await secondaryAuth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: name });
+    
+    // Save user doc using secondary app (auth.uid == new user)
+    await secondaryDb.collection('users').doc(cred.user.uid).set({
+      email: email,
+      fullName: name,
+      name: name,
+      role: role,
+      specialty: specialty,
+      phone: phone,
+      clinicId: CD.clinicId || 'CLN-DEFAULT',
+      clinicName: CD.clinicName || '',
+      active: true,
+      createdBy: CU.uid,
+      createdByName: CD.fullName || CD.name,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // Cleanup
+    await secondaryAuth.signOut();
+    await secondaryApp.delete();
+    secondaryApp = null;
+    
+    toast('✅ تم إنشاء الحساب: ' + name);
+    
+    // Clear form
+    ['newUserName','newUserEmail','newUserPass','newUserSpecialty','newUserPhone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('newUserRole').value = 'doctor';
+    
+    await loadUsers();
+  } catch (e) {
+    if (secondaryApp) {
+      try { await secondaryApp.delete(); } catch(_) {}
+    }
+    let msg = e.message;
+    if (e.code === 'auth/email-already-in-use') msg = 'البريد مسجل بالفعل في Firebase Auth';
+    else if (e.code === 'auth/weak-password') msg = 'كلمة المرور ضعيفة جداً';
+    else if (e.code === 'auth/invalid-email') msg = 'البريد الإلكتروني غير صالح';
+    else if (e.code === 'permission-denied') msg = 'صلاحيات Firestore غير كافية — تحقق من Rules';
+    else if (e.code === 'auth/operation-not-allowed') msg = 'Email/Password غير مفعّل في Firebase Console';
+    toast('❌ ' + msg, true);
+    console.error('createUser:', e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '➕ إضافة مستخدم';
+  }
+}
+
+async function toggleUserActive(uid) {
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    if (!doc.exists) { toast('❌ المستخدم غير موجود', true); return; }
+    const data = doc.data();
+    if (data.role === 'owner') { toast('⚠️ لا يمكن تعطيل المالك', true); return; }
+    const currentActive = data.active !== false;
+    if (!confirm(currentActive ? 'تعطيل هذا الحساب؟ لن يستطيع الدخول بعد الآن.' : 'تفعيل الحساب؟')) return;
+    await db.collection('users').doc(uid).update({ active: !currentActive });
+    toast(currentActive ? '🚫 تم تعطيل الحساب' : '✅ تم تفعيل الحساب');
+    await loadUsers();
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  }
+}
+
+async function resetUserPassword(email) {
+  if (!email) { toast('⚠️ لا يوجد بريد', true); return; }
+  if (!confirm(`إرسال رابط إعادة تعيين كلمة المرور إلى:\n${email}`)) return;
+  try {
+    await auth.sendPasswordResetEmail(email);
+    toast('📧 تم إرسال الرابط إلى ' + email);
+  } catch (e) {
+    let msg = e.message;
+    if (e.code === 'auth/user-not-found') msg = 'البريد غير مسجل في Firebase Auth';
+    toast('❌ ' + msg, true);
+  }
+}
+
+async function deleteUser(uid, email) {
+  if (!confirm(`⚠️ حذف الحساب من Firestore؟\n${email}\n\nملاحظة: حساب Firebase Auth يبقى موجوداً (لأسباب أمنية).`)) return;
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    if (doc.exists && doc.data().role === 'owner') {
+      toast('⚠️ لا يمكن حذف المالك', true);
+      return;
+    }
+    await db.collection('users').doc(uid).delete();
+    toast('🗑️ تم حذف المستخدم من قاعدة البيانات');
+    await loadUsers();
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  }
+}
+
+// ============ TEAM RENDERING ============
+function renderTeam() {
+  const el = document.getElementById('teamList');
+  if (!el) return;
+  
+  if (!allUsers.length) {
+    el.innerHTML = '<div class="empty"><div class="ic">👥</div>لا يوجد أعضاء في الفريق بعد</div>';
+    return;
+  }
+  
+  const roleLabel = (r) => ({
+    'owner': '👑 المالك',
+    'admin': '👑 مدير',
+    'doctor': '👨‍⚕️ طبيب',
+    'employee': '👨‍💼 موظف',
+    'guest': '👤 ضيف'
+  }[r] || 'عضو');
+  
+  const roleColor = (r) => ({
+    'owner': 'var(--gold)',
+    'admin': '#8b5cf6',
+    'doctor': 'var(--ok)',
+    'employee': 'var(--info)',
+    'guest': 'var(--muted)'
+  }[r] || 'var(--muted)');
+  
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">' +
+    allUsers.map(u => {
+      const name = u.fullName || u.name || 'مستخدم';
+      const initials = name.substring(0, 2).toUpperCase();
+      return `
+        <div style="background:var(--card2);border:1px solid var(--bd);border-radius:14px;padding:16px;text-align:center">
+          <div style="width:64px;height:64px;margin:0 auto 10px;background:radial-gradient(circle at 30% 30%,var(--gold),var(--goldD));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0A0A0A">${esc(initials)}</div>
+          <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">${esc(name)}</div>
+          <div style="color:${roleColor(u.role)};font-size:0.78rem;font-weight:700;margin-bottom:6px">${roleLabel(u.role)}</div>
+          ${u.specialty ? `<div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">🎓 ${esc(u.specialty)}</div>` : ''}
+          ${u.phone ? `<div style="font-size:0.72rem;color:var(--muted);direction:ltr">📱 ${esc(u.phone)}</div>` : ''}
+          ${u.clinicName ? `<div style="font-size:0.65rem;color:var(--muted);margin-top:6px">🏥 ${esc(u.clinicName)}</div>` : ''}
+          <div style="margin-top:8px;font-size:0.65rem;color:${u.active !== false ? 'var(--ok)' : 'var(--err)'}">
+            ${u.active !== false ? '🟢 نشط' : '🔴 معطل'}
+          </div>
+        </div>
+      `;
+    }).join('') +
+    '</div>';
+  }
 function renderSub(){
   const el=document.getElementById('subInfo');
   el.innerHTML=`<div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;text-align:center">
