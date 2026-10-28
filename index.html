@@ -659,6 +659,16 @@ auth.onAuthStateChanged(async user=>{
           );
         }catch(e){console.warn('sync owner:',e)}
       }
+      // ✅ ضمان وجود clinicId لكل مستخدم
+if(!CD.clinicId||CD.clinicId==='undefined'){
+  CD.clinicId='CLN-'+user.uid.slice(0,8).toUpperCase();
+}
+try{
+  await db.collection('users').doc(user.uid).set(
+    {clinicId:CD.clinicId},
+    {merge:true}
+  );
+}catch(e){console.warn('sync clinicId:',e)}
       // ✅ احتياطي أخير
       if(!CD.fullName||CD.fullName==='undefined'){
         CD.fullName=user.displayName||user.email||'مستخدم';
