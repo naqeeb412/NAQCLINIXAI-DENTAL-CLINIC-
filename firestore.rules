@@ -3,13 +3,12 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     function isSignedIn() { return request.auth != null; }
-    function isOwner() { return isSignedIn() && request.auth.token.email == 'Naqclinixai@gmail.com'; }
-    function userDoc() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function isOwner() { return isSignedIn() && request.auth.token.email.lower() == 'naqclinixai@gmail.com'; }  function userDoc() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function userRole() { return isSignedIn() ? userDoc().role : 'none'; }
     function userClinicId() { return isSignedIn() ? userDoc().clinicId : null; }
     function isAdminOrOwner() { return isOwner() || userRole() == 'admin'; }
     function isDoctor() { return userRole() == 'doctor'; }
-    function isDoctorOrAbove() { return isOwner() || userRole() == 'admin' || userRole() == 'doctor'; }
+ function isDoctorOrAbove() { return isOwner() || userRole() == 'admin' || userRole() == 'doctor' || userRole() == 'owner'; }
     function sameClinic(cid) { return isSignedIn() && userClinicId() == cid; }
     
     match /users/{userId} {
