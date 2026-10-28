@@ -637,18 +637,37 @@ auth.onAuthStateChanged(async user=>{
     CU=user;
     try{
       const doc=await db.collection('users').doc(user.uid).get();
-      if(doc.exists)CD=doc.data();
-      else{
-        CD={email:user.email,fullName:user.displayName||'مستخدم',
+      if(doc.exists){
+        CD=doc.data();
+        if(!CD.fullName)CD.fullName=CD.name||user.displayName||user.email||'مستخدم';
+      }else{
+        CD={email:user.email,fullName:user.displayName||user.email||'مستخدم',
             role:user.email===OWNER_EMAIL?'owner':'guest',
             clinicId:'GUEST-'+user.uid.slice(0,6).toUpperCase(),active:true};
         await db.collection('users').doc(user.uid).set(CD);
+      }
+      // ✅ إجبار المالك على دور owner + اسم صحيح
+      if(user.email===OWNER_EMAIL){
+        CD.role='owner';
+        if(!CD.fullName||CD.fullName==='مستخدم'||CD.fullName==='undefined'){
+          CD.fullName=user.displayName||'د. علي النقيب';
+        }
+        try{
+          await db.collection('users').doc(user.uid).set(
+            {role:'owner',fullName:CD.fullName},
+            {merge:true}
+          );
+        }catch(e){console.warn('sync owner:',e)}
+      }
+      // ✅ احتياطي أخير
+      if(!CD.fullName||CD.fullName==='undefined'){
+        CD.fullName=user.displayName||user.email||'مستخدم';
       }
       if(CD.active===false){await auth.signOut();toast('🚫 الحساب معطل',true);return}
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.add('active');
       document.getElementById('userName').textContent=CD.fullName;
-      document.getElementById('clinicInfo').innerHTML=CD.clinicName?`🏥 ${esc(CD.clinicName)} • كود: <b>${esc(CD.clinicId||'')}</b>`:'الحساب: '+(CD.role||'');
+      document.getElementById('clinicInfo').innerHTML=CD.clinicName?`🏥 ${esc(CD.clinicName)} • كود: <b>${esc(CD.clinicId||'')}</b>`:'الحساب: '+(CD.role==='owner'?'👑 مالك':CD.role||'');
       await Promise.all([loadPatients(),loadAppointments(),loadLab(),loadSpecialists(),loadBilling()]);
       updateDashboard();
       fillSettings();
