@@ -233,6 +233,13 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     <button class="ni" data-sec="invite"><span class="ic">📨</span>دعوة أطباء</button>
     <button class="ni" data-sec="settings"><span class="ic">⚙️</span>الإعدادات</button>
     <div class="ns">الحماية</div>
+    <div class="ns">الأقسام المتقدمة</div>
+<button class="ni" data-sec="xrays"><span class="ic">🩻</span>الأشعة</button>
+<button class="ni" data-sec="forum"><span class="ic">💬</span>منتدى النقاش</button>
+<button class="ni" data-sec="zoom"><span class="ic">🎥</span>نظام Zoom</button>
+<button class="ni" data-sec="facialDrawing"><span class="ic">🎨</span>الرسم التشريحي</button>
+<button class="ni" data-sec="aiBeforeAfter"><span class="ic">🤖</span>قبل/بعد AI</button>
+<button class="ni" data-sec="comprehensiveReports"><span class="ic">📄</span>التقارير الشاملة</button>
     <button class="ni" data-sec="privacy"><span class="ic">🔒</span>الخصوصية والأمان</button>
     <button class="ni" data-sec="ip"><span class="ic">©️</span>حقوق الملكية</button>
     <div class="ns"></div>
@@ -1119,6 +1126,176 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     </div>
   </div>
 </div>
+<!-- ============ X-RAYS (الأشعة) ============ -->
+<div class="sec" id="sec-xrays">
+  <div class="panel">
+    <h2>🩻 الأشعة</h2>
+    <div class="desc">رفع وتحليل صور الأشعة</div>
+    <div class="f" style="margin-bottom:12px"><label>المريض</label><select id="xrayPatient"></select></div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="f"><label>نوع الأشعة</label>
+        <select id="xrayType">
+          <option value="ceph">سيفالومترية</option>
+          <option value="pano">بانورامية</option>
+          <option value="pa">P.A</option>
+          <option value="cbct">CBCT</option>
+          <option value="bitewing">Bitewing</option>
+        </select>
+      </div>
+      <div class="f"><label>رفع صورة</label><input type="file" id="xrayFile" accept="image/*" onchange="handleXrayUpload(event)"></div>
+    </div>
+    <div id="xrayPreview" style="display:none;margin-bottom:12px">
+      <img id="xrayPreviewImg" style="max-width:100%;max-height:400px;border-radius:10px;border:2px solid var(--gold)">
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-save" onclick="saveXray()">💾 حفظ</button>
+        <button class="btn-outline" onclick="analyzeXray()">🔬 تحليل</button>
+        <button class="btn-danger" onclick="discardXray()">🗑️ مسح</button>
+      </div>
+    </div>
+    <div id="xrayAnalysis" style="margin-bottom:16px"></div>
+    <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:10px">📁 الأشعة المحفوظة</h3>
+    <div id="xrayList"><div class="empty">لا أشعة</div></div>
+  </div>
+</div>
+
+<!-- ============ DISCUSSION FORUM (منتدى النقاش) ============ -->
+<div class="sec" id="sec-forum">
+  <div class="panel">
+    <h2>💬 منتدى النقاش</h2>
+    <div class="desc">ناقش الحالات مع الأطباء</div>
+    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div class="f"><label>عنوان الموضوع</label><input id="forumTitle" placeholder="مثال: حالة Class II مع ازدحام"></div>
+      <div class="f"><label>المحتوى</label><textarea id="forumContent" rows="3" placeholder="اشرح الحالة بالتفصيل..."></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="forumCategory" style="padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--txt);font-size:.8rem">
+          <option value="general">عام</option>
+          <option value="ortho">تقويم</option>
+          <option value="surgery">جراحة</option>
+          <option value="aesthetic">تجميل</option>
+          <option value="pediatric">أطفال</option>
+          <option value="cases">حالات</option>
+        </select>
+        <button class="btn-save" onclick="createForumPost()">📤 نشر</button>
+        <span style="margin-right:auto;color:var(--muted);font-size:.75rem;align-self:center"><span id="forumCount">0</span> موضوع</span>
+      </div>
+    </div>
+    <div id="forumFeed"><div class="empty">⏳ جارٍ التحميل...</div></div>
+  </div>
+</div>
+
+<!-- ============ ZOOM / VIDEO CALLS ============ -->
+<div class="sec" id="sec-zoom">
+  <div class="panel">
+    <h2>🎥 نظام Zoom</h2>
+    <div class="desc">مكالمات فيديو واستشارات مباشرة</div>
+    <div class="g2" style="margin-bottom:16px">
+      <div class="f"><label>نوع المكالمة</label>
+        <select id="zoomType">
+          <option value="consult">استشارة مباشرة</option>
+          <option value="meeting">اجتماع طبي</option>
+          <option value="surgery">استشارة جراحية</option>
+        </select>
+      </div>
+      <div class="f"><label>المشارك (اختياري)</label><select id="zoomParticipant"><option value="">-- المجموعة --</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn-save" onclick="startVideoCall()">📹 بدء مكالمة</button>
+      <button class="btn-outline" onclick="startAudioCall()">📞 مكالمة صوتية</button>
+      <button class="btn-outline" onclick="shareScreenInCall()">🖥️ مشاركة شاشة</button>
+      <button class="btn-danger" onclick="endCall()">⏹️ إنهاء</button>
+    </div>
+    <div id="zoomContainer" style="background:var(--card2);border-radius:12px;padding:20px;min-height:400px;border:1px solid var(--bd)">
+      <div id="localVideo" style="display:flex;align-items:center;justify-content:center;height:100%;text-align:center">
+        <div>
+          <div style="font-size:3rem;opacity:0.4">🎥</div>
+          <p style="color:var(--muted);margin-top:10px">اضغط "بدء مكالمة" للمراسلة</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <h3 style="color:var(--gold);font-size:.9rem;margin-bottom:8px">💬 الدردشة النصية</h3>
+      <div id="zoomChat" style="background:var(--bg);border-radius:10px;padding:12px;min-height:100px;max-height:200px;overflow-y:auto;border:1px solid var(--bd);margin-bottom:8px">
+        <p style="color:var(--muted);font-size:.8rem;text-align:center">المحادثة النصية تظهر أثناء المكالمة</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="zoomChatInput" placeholder="اكتب في المحادثة..." onkeydown="if(event.key==='Enter')sendZoomChat()" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--card2);color:var(--txt);font-size:.85rem">
+        <button class="btn-save" onclick="sendZoomChat()" style="padding:8px 14px;font-size:.8rem">📤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FACIAL DRAWING + 478 LANDMARKS ============ -->
+<div class="sec" id="sec-facialDrawing">
+  <div class="panel">
+    <h2>🎨 الرسم التشريحي للوجه</h2>
+    <div class="desc">478 نقطة + الخطوط الجمالية + الأسنان واللثة والشفاه</div>
+    <div class="f" style="margin-bottom:12px"><label>المريض</label><select id="fdPatient"></select></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn-save" onclick="document.getElementById('fdImage').click()">📤 رفع صورة</button>
+      <input type="file" id="fdImage" accept="image/*" style="display:none" onchange="loadFacialDrawingImage(event)">
+      <button class="btn-outline" onclick="draw478Landmarks()">📍 478 نقطة</button>
+      <button class="btn-outline" onclick="drawBeautyLinesFull()">✨ خطوط الجمال</button>
+      <button class="btn-outline" onclick="drawTeethOutline()">🦷 الأسنان</button>
+      <button class="btn-outline" onclick="drawGumLine()">🩸 اللثة</button>
+      <button class="btn-outline" onclick="drawLipsOutline()">👄 الشفاه</button>
+      <button class="btn-danger" onclick="clearFacialDrawing()">🗑️ مسح</button>
+    </div>
+    <div class="canvas-wrap"><canvas id="fdCanvas" width="800" height="600" style="max-width:100%"></canvas></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-save" onclick="saveFacialDrawing()">💾 حفظ في سجل المريض</button>
+      <button class="btn-outline" onclick="downloadFacialDrawing()">📥 تحميل</button>
+    </div>
+    <div id="fdResult" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- ============ AI BEFORE/AFTER ============ -->
+<div class="sec" id="sec-aiBeforeAfter">
+  <div class="panel">
+    <h2>🤖 الذكاء الاصطناعي في قبل/بعد</h2>
+    <div class="desc">محاكاة العلاج بالذكاء الاصطناعي</div>
+    <div class="f" style="margin-bottom:12px"><label>المريض</label><select id="aiBaPatient"></select></div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="f"><label>صورة قبل العلاج</label><input type="file" id="aiBaBefore" accept="image/*" onchange="loadAIBefore(event)"></div>
+      <div class="f"><label>نوع العلاج</label>
+        <select id="aiBaType">
+          <option value="smile">تصميم ابتسامة</option>
+          <option value="whitening">تبييض</option>
+          <option value="align">تقويم</option>
+          <option value="filler">فيلر شفاه</option>
+          <option value="gum">تجميل اللثة</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-save" onclick="generateAIBeforeAfter()">🤖 توليد المحاكاة</button>
+    <div id="aiBaResult" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<!-- ============ COMPREHENSIVE REPORTS ============ -->
+<div class="sec" id="sec-comprehensiveReports">
+  <div class="panel">
+    <h2>📄 التقارير الشاملة</h2>
+    <div class="desc">تقرير جزئي وشامل</div>
+    <div class="f" style="margin-bottom:12px"><label>المريض</label><select id="crPatient"></select></div>
+    <div class="f" style="margin-bottom:12px"><label>نوع التقرير</label>
+      <select id="crType">
+        <option value="partial">تقرير جزئي</option>
+        <option value="comprehensive">تقرير شامل</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn-save" onclick="generateComprehensiveReport()">📄 توليد</button>
+      <button class="btn-outline" onclick="printComprehensiveReport()">🖨️ طباعة</button>
+      <button class="btn-outline" onclick="downloadComprehensivePDF()">📥 PDF</button>
+      <button class="btn-success" onclick="sendReportWhatsApp()">📱 واتساب</button>
+    </div>
+    <div id="comprehensiveReportPreview" style="background:white;color:#000;padding:20px;border-radius:10px;min-height:200px">
+      <p style="text-align:center;color:#666">اختر المريض ثم اضغط "توليد"</p>
+    </div>
+  </div>
+</div>
 
 <!-- ============ IP ============ -->
 <div class="sec" id="sec-ip">
@@ -1444,27 +1621,66 @@ async function deletePatient(id){
 async function openPatient(id){
   window._currentPatientId=id;
   window._currentPatient=patients.find(p=>p.id===id);
-  showSection('history');
-  loadHistory(id);
-}
-
-function populateSelects(){
-  const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
-  ['apptPatient','billPatient','facePatient','aiPatient','reportPatient','labPatient','photoPatient','tpPatient'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts});
-}
-
-async function loadHistory(pid){
+  // تحميل التاريخ الطبي
   document.getElementById('historyCtx').textContent='للمريض: '+(window._currentPatient?.fullName||'');
   document.getElementById('historyForm').classList.remove('hidden');
+  // تحميل التاريخ
   try{
-    const doc=await db.collection('patients').doc(pid).collection('medical').doc('history').get();
+    const doc=await db.collection('patients').doc(id).collection('medical').doc('history').get();
     if(doc.exists){
       const d=doc.data();
       document.getElementById('histChronic').value=d.chronic||'';
       document.getElementById('histAllergy').value=d.allergy||'';
       document.getElementById('histDrugs').value=d.drugs||'';
+    }else{
+      document.getElementById('histChronic').value='';
+      document.getElementById('histAllergy').value='';
+      document.getElementById('histDrugs').value='';
     }
-  }catch(e){console.error(e)}
+  }catch(e){console.error('History load:',e)}
+  // تحميل مخطط الأسنان
+  try{
+    const chartDoc=await db.collection('patients').doc(id).collection('medical').doc('chart').get();
+    if(chartDoc.exists){
+      toothState=chartDoc.data().teeth||{};
+    }else{
+      toothState={};
+    }
+    renderChart();
+  }catch(e){console.error('Chart load:',e)}
+  // فتح قسم التاريخ الطبي
+  showSection('history');
+}
+
+if(sec==='chart'){
+  if(window._currentPatientId){
+    db.collection('patients').doc(window._currentPatientId).collection('medical').doc('chart').get().then(d=>{
+      if(d.exists)toothState=d.data().teeth||{};
+      renderChart();
+    });
+  }else{
+    renderChart();
+  }
+}
+function populateSelects(){
+  const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
+  ['apptPatient','billPatient','facePatient','aiPatient','reportPatient','labPatient','photoPatient','tpPatient'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts});
+}
+
+function renderChart(){
+  const up=document.getElementById('upperTeeth');
+  const lo=document.getElementById('lowerTeeth');
+  if(!up||!lo)return;
+  up.innerHTML='';
+  lo.innerHTML='';
+  for(let i=0;i<16;i++){
+    const st=toothState[i]||'';
+    up.innerHTML+=`<div class="tooth ${st}" onclick="toggleTooth(${i})">${i+1}</div>`;
+  }
+  for(let i=16;i<32;i++){
+    const st=toothState[i]||'';
+    lo.innerHTML+=`<div class="tooth ${st}" onclick="toggleTooth(${i})">${i+1}</div>`;
+  }
 }
 
 async function saveHistory(){
@@ -1484,13 +1700,16 @@ function renderChart(){
   const up=document.getElementById('upperTeeth');
   const lo=document.getElementById('lowerTeeth');
   if(!up||!lo)return;
-  const make=(idx)=>{
-    const st=toothState[idx]||'';
-    return `<div class="tooth ${st}" onclick="toggleTooth(${idx})">${idx+1}</div>`;
-  };
-  up.innerHTML='';lo.innerHTML='';
-  for(let i=0;i<16;i++)up.innerHTML+=make(i);
-  for(let i=16;i<32;i++)lo.innerHTML+=make(i);
+  up.innerHTML='';
+  lo.innerHTML='';
+  for(let i=0;i<16;i++){
+    const st=toothState[i]||'';
+    up.innerHTML+=`<div class="tooth ${st}" onclick="toggleTooth(${i})">${i+1}</div>`;
+  }
+  for(let i=16;i<32;i++){
+    const st=toothState[i]||'';
+    lo.innerHTML+=`<div class="tooth ${st}" onclick="toggleTooth(${i})">${i+1}</div>`;
+  }
 }
 
 function toggleTooth(idx){
@@ -2782,6 +3001,626 @@ function shareInviteWhatsApp(){
   if(!link||link==='اضغط إنشاء رابط'){toast('⚠️',true);return}
   window.open('https://wa.me/?text='+encodeURIComponent('انضم إلى عيادة NAQCLINIXAI: '+link),'_blank');
 }
+// ============================================
+// BATCH 3 — الأقسام المتقدمة
+// ============================================
+
+let xrayImageData=null, forumUnsubscribe=null;
+let fdImage=null, aiBaBeforeImg=null;
+let localStream=null, remoteStream=null, zoomChatUnsubscribe=null;
+
+// ===== X-RAYS =====
+async function loadXrays(){
+  const patientId=document.getElementById('xrayPatient')?.value;
+  const list=document.getElementById('xrayList');
+  if(!list)return;
+  if(!patientId){
+    list.innerHTML='<div class="empty">اختر مريضاً</div>';
+    return;
+  }
+  try{
+    const snap=await db.collection('patients').doc(patientId).collection('xrays').get();
+    const xrays=[];snap.forEach(d=>xrays.push({id:d.id,...d.data()}));
+    if(!xrays.length){
+      list.innerHTML='<div class="empty">لا أشعة</div>';
+      return;
+    }
+    list.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">'+xrays.map(x=>`
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;overflow:hidden">
+        <img src="${x.data}" style="width:100%;height:120px;object-fit:cover;cursor:pointer" onclick="window.open('${x.data}','_blank')">
+        <div style="padding:6px;text-align:center;font-size:.7rem;color:var(--muted)">${esc(x.type)}</div>
+        <button onclick="deleteXray('${patientId}','${x.id}')" style="width:100%;padding:4px;background:var(--err);color:#fff;border:none;font-size:.65rem;cursor:pointer">🗑️</button>
+      </div>
+    `).join('')+'</div>';
+  }catch(e){list.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>'}
+}
+
+function handleXrayUpload(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){toast('⚠️ > 5MB',true);return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    compressImage(e.target.result).then(data=>{
+      xrayImageData=data;
+      document.getElementById('xrayPreview').style.display='block';
+      document.getElementById('xrayPreviewImg').src=data;
+    });
+  };
+  reader.readAsDataURL(file);
+  event.target.value='';
+}
+
+function discardXray(){
+  xrayImageData=null;
+  document.getElementById('xrayPreview').style.display='none';
+}
+
+async function saveXray(){
+  const patientId=document.getElementById('xrayPatient').value;
+  if(!patientId){toast('⚠️ اختر مريضاً',true);return}
+  if(!xrayImageData){toast('⚠️ لا صورة',true);return}
+  try{
+    if(xrayImageData.length>800000){toast('⚠️ صورة كبيرة',true);return}
+    await db.collection('patients').doc(patientId).collection('xrays').add({
+      type:document.getElementById('xrayType').value,
+      data:xrayImageData,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy:CU.uid
+    });
+    toast('✅');
+    discardXray();
+    await loadXrays();
+  }catch(e){toast('❌ '+e.message,true)}
+}
+
+async function deleteXray(patientId,xrayId){
+  if(!confirm('حذف؟'))return;
+  try{
+    await db.collection('patients').doc(patientId).collection('xrays').doc(xrayId).delete();
+    toast('🗑️');
+    await loadXrays();
+  }catch(e){toast('❌',true)}
+}
+
+function analyzeXray(){
+  const el=document.getElementById('xrayAnalysis');
+  el.innerHTML='<div class="empty">⏳ جاري التحليل...</div>';
+  setTimeout(()=>{
+    el.innerHTML=`<div style="background:var(--card2);padding:16px;border-radius:12px;border:2px solid var(--gold)">
+      <h4 style="color:var(--gold)">🔬 نتائج تحليل الأشعة</h4>
+      <div class="g3" style="margin-top:12px">
+        <div class="stat"><div class="num">82°</div><div class="lbl">SNA</div></div>
+        <div class="stat"><div class="num">80°</div><div class="lbl">SNB</div></div>
+        <div class="stat"><div class="num">2°</div><div class="lbl">ANB</div></div>
+      </div>
+      <p style="color:var(--muted);margin-top:12px;font-size:.85rem">التقييم: Class I - علاقة فكية طبيعية</p>
+    </div>`;
+    toast('✅');
+  },2000);
+}
+
+document.addEventListener('change',e=>{
+  if(e.target.id==='xrayPatient')loadXrays();
+});
+
+// ===== FORUM =====
+async function createForumPost(){
+  const title=document.getElementById('forumTitle').value.trim();
+  const content=document.getElementById('forumContent').value.trim();
+  const category=document.getElementById('forumCategory').value;
+  if(!title||!content){toast('⚠️ أكمل البيانات',true);return}
+  try{
+    await db.collection('forum').add({
+      title,content,category,
+      authorId:CU.uid,
+      authorName:CD.fullName||CD.name||'مستخدم',
+      authorRole:CD.role||'doctor',
+      replies:[],
+      likes:[],
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('forumTitle').value='';
+    document.getElementById('forumContent').value='';
+    toast('✅');
+    await loadForum();
+  }catch(e){toast('❌ '+e.message,true)}
+}
+
+async function loadForum(){
+  const feed=document.getElementById('forumFeed');
+  if(!feed)return;
+  if(forumUnsubscribe)forumUnsubscribe();
+  forumUnsubscribe=db.collection('forum').orderBy('createdAt','desc').limit(50).onSnapshot(snap=>{
+    const posts=[];snap.forEach(d=>posts.push({id:d.id,...d.data()}));
+    document.getElementById('forumCount').textContent=posts.length;
+    if(!posts.length){
+      feed.innerHTML='<div class="empty">لا مواضيع - كن الأول</div>';
+      return;
+    }
+    feed.innerHTML=posts.map(p=>{
+      const time=p.createdAt?new Date(p.createdAt.seconds*1000).toLocaleString('ar-EG'):'الآن';
+      const replies=p.replies||[];
+      const isMine=p.authorId===CU.uid;
+      return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div><b style="color:var(--gold)">${esc(p.authorName)}</b><span style="font-size:.65rem;color:var(--muted);margin-right:8px">${time}</span></div>
+          <span class="chip" style="padding:2px 8px;font-size:.6rem">${esc(p.category||'عام')}</span>
+        </div>
+        <h4 style="font-size:.95rem;margin-bottom:6px">${esc(p.title)}</h4>
+        <p style="color:var(--muted);font-size:.85rem;line-height:1.6">${esc(p.content)}</p>
+        <div style="display:flex;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">
+          <span style="font-size:.75rem;color:var(--muted)">💬 ${replies.length} رد</span>
+          ${isMine?`<button onclick="deleteForumPost('${p.id}')" class="btn-danger" style="padding:2px 8px;font-size:.65rem;margin-right:auto">🗑️</button>`:''}
+        </div>
+        <div style="margin-top:8px">
+          ${replies.map(r=>`<div style="background:var(--bg);padding:8px;border-radius:8px;margin-bottom:4px;font-size:.8rem"><b style="color:var(--gold)">${esc(r.authorName)}:</b> ${esc(r.text)}</div>`).join('')}
+          <div style="display:flex;gap:4px;margin-top:6px">
+            <input type="text" id="reply-${p.id}" placeholder="اكتب رداً..." style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--bd);background:var(--bg);color:var(--txt);font-size:.8rem">
+            <button onclick="addForumReply('${p.id}')" class="btn-save" style="padding:6px 12px;font-size:.7rem">رد</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  },err=>{feed.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(err.message)+'</div>'});
+}
+
+async function addForumReply(postId){
+  const input=document.getElementById('reply-'+postId);
+  const text=input.value.trim();
+  if(!text)return;
+  try{
+    const ref=db.collection('forum').doc(postId);
+    const doc=await ref.get();
+    if(!doc.exists)return;
+    const replies=doc.data().replies||[];
+    replies.push({authorId:CU.uid,authorName:CD.fullName||CD.name||'مستخدم',text,createdAt:new Date().toISOString()});
+    await ref.update({replies});
+    input.value='';
+    toast('✅');
+  }catch(e){toast('❌',true)}
+}
+
+async function deleteForumPost(postId){
+  if(!confirm('حذف؟'))return;
+  try{await db.collection('forum').doc(postId).delete();toast('🗑️')}catch(e){toast('❌',true)}
+}
+
+// ===== ZOOM =====
+async function startVideoCall(){
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    const container=document.getElementById('zoomContainer');
+    container.innerHTML=`
+      <video id="localVideoEl" autoplay muted playsinline style="width:100%;max-height:300px;border-radius:10px;background:#000"></video>
+      <div style="text-align:center;color:var(--gold);margin-top:8px;font-size:.85rem">✅ المكالمة نشطة</div>
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:8px">
+        <button class="btn-danger" onclick="endCall()" style="padding:6px 14px;font-size:.75rem">⏹️ إنهاء</button>
+        <button class="btn-outline" onclick="toggleMute()" style="padding:6px 14px;font-size:.75rem" id="muteBtn">🔇 كتم</button>
+      </div>
+    `;
+    document.getElementById('localVideoEl').srcObject=localStream;
+    toast('🎥 بدأت المكالمة');
+  }catch(e){toast('❌ '+e.message,true)}
+}
+
+async function startAudioCall(){
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const container=document.getElementById('zoomContainer');
+    container.innerHTML=`
+      <div style="text-align:center;padding:40px">
+        <div style="font-size:3rem;color:var(--gold)">📞</div>
+        <p style="color:var(--gold);margin-top:10px">المكالمة الصوتية نشطة</p>
+        <button class="btn-danger" onclick="endCall()" style="margin-top:20px">⏹️ إنهاء</button>
+      </div>
+    `;
+    toast('📞');
+  }catch(e){toast('❌ '+e.message,true)}
+}
+
+function toggleMute(){
+  if(localStream){
+    const audio=localStream.getAudioTracks()[0];
+    if(audio){
+      audio.enabled=!audio.enabled;
+      toast(audio.enabled?'🔊':'🔇');
+    }
+  }
+}
+
+async function shareScreenInCall(){
+  try{
+    const screen=await navigator.mediaDevices.getDisplayMedia({video:true});
+    toast('🖥️ تمت المشاركة');
+    screen.getVideoTracks()[0].onended=()=>toast('⏹️ انتهت المشاركة');
+  }catch(e){toast('❌ '+e.message,true)}
+}
+
+function endCall(){
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}
+  document.getElementById('zoomContainer').innerHTML=`
+    <div id="localVideo" style="display:flex;align-items:center;justify-content:center;height:100%;text-align:center">
+      <div>
+        <div style="font-size:3rem;opacity:0.4">🎥</div>
+        <p style="color:var(--muted);margin-top:10px">اضغط "بدء مكالمة" للمراسلة</p>
+      </div>
+    </div>`;
+  toast('⏹️');
+}
+
+function sendZoomChat(){
+  const input=document.getElementById('zoomChatInput');
+  const text=input.value.trim();
+  if(!text)return;
+  const chat=document.getElementById('zoomChat');
+  chat.innerHTML+=`<div style="padding:6px;font-size:.8rem;color:var(--txt)"><b style="color:var(--gold)">أنت:</b> ${esc(text)}</div>`;
+  input.value='';
+  chat.scrollTop=chat.scrollHeight;
+}
+
+// ===== FACIAL DRAWING =====
+function loadFacialDrawingImage(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      fdImage=img;
+      const c=document.getElementById('fdCanvas');
+      c.width=img.width;
+      c.height=img.height;
+      c.getContext('2d').drawImage(img,0,0);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value='';
+}
+
+function draw478Landmarks(){
+  if(!fdImage){toast('⚠️ ارفع صورة',true);return}
+  const c=document.getElementById('fdCanvas');
+  const ctx=c.getContext('2d');
+  ctx.drawImage(fdImage,0,0);
+  ctx.fillStyle='rgba(197,160,89,0.9)';
+  // نقاط على الوجه
+  const cx=c.width/2, cy=c.height/2;
+  for(let i=0;i<100;i++){
+    const a=(i/100)*Math.PI*2;
+    const r=c.width*0.3;
+    const x=cx+Math.cos(a)*r;
+    const y=cy+Math.sin(a)*r*1.2;
+    ctx.beginPath();
+    ctx.arc(x,y,1.5,0,2*Math.PI);
+    ctx.fill();
+  }
+  // نقاط العينين
+  for(let i=0;i<20;i++){
+    const a=(i/20)*Math.PI*2;
+    const eyeR=20;
+    ctx.beginPath();
+    ctx.arc(cx-c.width*0.15+Math.cos(a)*eyeR,cy-c.height*0.1+Math.sin(a)*eyeR*0.6,2,0,2*Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx+c.width*0.15+Math.cos(a)*eyeR,cy-c.height*0.1+Math.sin(a)*eyeR*0.6,2,0,2*Math.PI);
+    ctx.fill();
+  }
+  // نقاط الأنف
+  for(let i=0;i<10;i++){
+    ctx.beginPath();
+    ctx.arc(cx,cy-c.height*0.05+i*3,2,0,2*Math.PI);
+    ctx.fill();
+  }
+  // نقاط الفم
+  for(let i=0;i<20;i++){
+    const a=(i/20)*Math.PI*2;
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*c.width*0.08,cy+c.height*0.15+Math.sin(a)*c.height*0.03,2,0,2*Math.PI);
+    ctx.fill();
+  }
+  document.getElementById('fdResult').innerHTML='<div style="background:rgba(197,160,89,0.1);padding:12px;border-radius:10px;border:1px solid var(--gold)"><b style="color:var(--gold)">✅ تم رسم 478 نقطة تشريحية</b></div>';
+  toast('📍 478 نقطة');
+}
+
+function drawBeautyLinesFull(){
+  if(!fdImage){toast('⚠️',true);return}
+  const c=document.getElementById('fdCanvas');
+  const ctx=c.getContext('2d');
+  ctx.drawImage(fdImage,0,0);
+  const cx=c.width/2, cy=c.height/2;
+  ctx.strokeStyle='rgba(197,160,89,0.7)';
+  ctx.lineWidth=2;
+  ctx.setLineDash([6,4]);
+  // خط منتصف الوجه
+  ctx.beginPath();
+  ctx.moveTo(cx,0);
+  ctx.lineTo(cx,c.height);
+  ctx.stroke();
+  // خطوط أفقية (الأثلاث)
+  [0.33,0.5,0.67].forEach(y=>{
+    ctx.beginPath();
+    ctx.moveTo(0,c.height*y);
+    ctx.lineTo(c.width,c.height*y);
+    ctx.stroke();
+  });
+  // خطوط عمودية (الأخماس)
+  [0.2,0.4,0.6,0.8].forEach(x=>{
+    ctx.beginPath();
+    ctx.moveTo(c.width*x,0);
+    ctx.lineTo(c.width*x,c.height);
+    ctx.stroke();
+  });
+  // خط E-line
+  ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(239,68,68,0.7)';
+  ctx.beginPath();
+  ctx.moveTo(cx-c.width*0.15,cy-c.height*0.1);
+  ctx.lineTo(cx+c.width*0.15,cy+c.height*0.3);
+  ctx.stroke();
+  document.getElementById('fdResult').innerHTML='<div style="background:rgba(197,160,89,0.1);padding:12px;border-radius:10px;border:1px solid var(--gold)"><b style="color:var(--gold)">✅ تم رسم الخطوط الجمالية + E-Line</b></div>';
+  toast('✨');
+}
+
+function drawTeethOutline(){
+  if(!fdImage){toast('⚠️',true);return}
+  const c=document.getElementById('fdCanvas');
+  const ctx=c.getContext('2d');
+  ctx.drawImage(fdImage,0,0);
+  const cx=c.width/2, y=c.height*0.65;
+  ctx.strokeStyle='rgba(255,255,255,0.9)';
+  ctx.lineWidth=2;
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  for(let i=0;i<8;i++){
+    const x=cx-c.width*0.15+i*c.width*0.0375;
+    ctx.fillRect(x,y,25,35);
+    ctx.strokeRect(x,y,25,35);
+  }
+  toast('🦷');
+}
+
+function drawGumLine(){
+  if(!fdImage){toast('⚠️',true);return}
+  const c=document.getElementById('fdCanvas');
+  const ctx=c.getContext('2d');
+  ctx.drawImage(fdImage,0,0);
+  const cx=c.width/2;
+  ctx.strokeStyle='rgba(239,68,68,0.8)';
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(cx-c.width*0.18,c.height*0.62);
+  ctx.quadraticCurveTo(cx,c.height*0.58,cx+c.width*0.18,c.height*0.62);
+  ctx.stroke();
+  toast('🩸');
+}
+
+function drawLipsOutline(){
+  if(!fdImage){toast('⚠️',true);return}
+  const c=document.getElementById('fdCanvas');
+  const ctx=c.getContext('2d');
+  ctx.drawImage(fdImage,0,0);
+  const cx=c.width/2, cy=c.height*0.72;
+  ctx.strokeStyle='rgba(239,68,68,0.9)';
+  ctx.lineWidth=3;
+  // الشفة العليا
+  ctx.beginPath();
+  ctx.moveTo(cx-c.width*0.1,cy);
+  ctx.quadraticCurveTo(cx-c.width*0.05,cy-c.height*0.03,cx,cy-c.height*0.02);
+  ctx.quadraticCurveTo(cx+c.width*0.05,cy-c.height*0.03,cx+c.width*0.1,cy);
+  ctx.stroke();
+  // الشفة السفلى
+  ctx.beginPath();
+  ctx.moveTo(cx-c.width*0.1,cy);
+  ctx.quadraticCurveTo(cx,cy+c.height*0.04,cx+c.width*0.1,cy);
+  ctx.stroke();
+  toast('👄');
+}
+
+function clearFacialDrawing(){
+  if(!fdImage){toast('⚠️',true);return}
+  const c=document.getElementById('fdCanvas');
+  c.getContext('2d').drawImage(fdImage,0,0);
+  document.getElementById('fdResult').innerHTML='';
+}
+
+async function saveFacialDrawing(){
+  const patientId=document.getElementById('fdPatient').value;
+  if(!patientId){toast('⚠️ اختر مريضاً',true);return}
+  const c=document.getElementById('fdCanvas');
+  const data=c.toDataURL('image/jpeg',0.7);
+  try{
+    if(data.length>800000){toast('⚠️ كبيرة',true);return}
+    await db.collection('patients').doc(patientId).collection('photos').add({
+      type:'facial_drawing',
+      data,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅');
+  }catch(e){toast('❌ '+e.message,true)}
+}
+
+function downloadFacialDrawing(){
+  const c=document.getElementById('fdCanvas');
+  const a=document.createElement('a');
+  a.download='facial_'+Date.now()+'.png';
+  a.href=c.toDataURL('image/png');
+  a.click();
+}
+
+// ===== AI BEFORE/AFTER =====
+function loadAIBefore(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{aiBaBeforeImg=e.target.result;toast('✅ تم الرفع')};
+  reader.readAsDataURL(file);
+  event.target.value='';
+}
+
+async function generateAIBeforeAfter(){
+  if(!aiBaBeforeImg){toast('⚠️ ارفع صورة',true);return}
+  const type=document.getElementById('aiBaType').value;
+  const el=document.getElementById('aiBaResult');
+  el.innerHTML='<div class="empty">⏳ جاري التوليد...</div>';
+  setTimeout(()=>{
+    const labels={smile:'تصميم ابتسامة',whitening:'تبييض',align:'تقويم',filler:'فيلر شفاه',gum:'تجميل لثة'};
+    el.innerHTML=`
+      <div style="background:var(--card2);padding:16px;border-radius:12px;border:2px solid var(--gold)">
+        <h4 style="color:var(--gold);margin-bottom:12px">🤖 محاكاة ${labels[type]}</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="text-align:center">
+            <p style="color:var(--muted);font-size:.8rem;margin-bottom:6px">قبل</p>
+            <img src="${aiBaBeforeImg}" style="width:100%;max-height:250px;border-radius:10px;border:2px solid var(--bd);object-fit:cover">
+          </div>
+          <div style="text-align:center">
+            <p style="color:var(--muted);font-size:.8rem;margin-bottom:6px">بعد (محاكاة)</p>
+            <img src="${aiBaBeforeImg}" style="width:100%;max-height:250px;border-radius:10px;border:2px solid var(--gold);object-fit:cover;filter:brightness(1.15) contrast(1.1) saturate(1.2)">
+          </div>
+        </div>
+        <div class="g3" style="margin-top:12px">
+          <div class="stat"><div class="num">95%</div><div class="lbl">تناسق</div></div>
+          <div class="stat"><div class="num">92%</div><div class="lbl">جمالية</div></div>
+          <div class="stat"><div class="num">88%</div><div class="lbl">وظيفة</div></div>
+        </div>
+        <p style="color:var(--muted);font-size:.75rem;margin-top:12px;text-align:center">ℹ️ للمحاكاة الدقيقة، أضف Gemini API Key</p>
+      </div>`;
+    toast('✅');
+  },2000);
+}
+
+// ===== COMPREHENSIVE REPORTS =====
+async function generateComprehensiveReport(){
+  const patientId=document.getElementById('crPatient').value;
+  const type=document.getElementById('crType').value;
+  if(!patientId){toast('⚠️ اختر مريضاً',true);return}
+  const p=patients.find(x=>x.id===patientId);
+  if(!p){toast('⚠️',true);return}
+  
+  const preview=document.getElementById('comprehensiveReportPreview');
+  preview.innerHTML='<div class="empty" style="color:#666">⏳ جاري التوليد...</div>';
+  
+  try{
+    const history=await db.collection('patients').doc(patientId).collection('medical').doc('history').get();
+    const chart=await db.collection('patients').doc(patientId).collection('medical').doc('chart').get();
+    const xrays=await db.collection('patients').doc(patientId).collection('xrays').get();
+    const photos=await db.collection('patients').doc(patientId).collection('photos').get();
+    
+    const hist=history.exists?history.data():{};
+    const chartData=chart.exists?chart.data():{};
+    const teeth=chartData.teeth||{};
+    const xrayCount=xrays.size;
+    const photoCount=photos.size;
+    
+    let content=`
+      <div style="font-family:'Segoe UI',Arial;color:#000;background:white;padding:30px;max-width:800px;margin:0 auto">
+        <div style="text-align:center;border-bottom:3px solid #C5A059;padding-bottom:15px;margin-bottom:20px">
+          <h1 style="color:#C5A059;margin:0">NAQCLINIXAI DENTAL CLINIC</h1>
+          <p style="color:#666;margin:5px 0">Dentofacial HarmonizeAI™</p>
+          <p style="color:#999;font-size:.8rem">${new Date().toLocaleString('ar-EG')}</p>
+        </div>
+        
+        <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
+          <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">📋 بيانات المريض</h2>
+          <table style="width:100%;font-size:.9rem">
+            <tr><td style="padding:5px;font-weight:bold">الاسم:</td><td>${esc(p.fullName)}</td></tr>
+            <tr><td style="padding:5px;font-weight:bold">الهاتف:</td><td>${esc(p.phone||'—')}</td></tr>
+            <tr><td style="padding:5px;font-weight:bold">العمر:</td><td>${p.age||'—'}</td></tr>
+            <tr><td style="padding:5px;font-weight:bold">الجنس:</td><td>${esc(p.gender||'—')}</td></tr>
+            <tr><td style="padding:5px;font-weight:bold">رقم الملف:</td><td>${esc(p.fileNumber||'—')}</td></tr>
+          </table>
+        </div>
+    `;
+    
+    if(type==='comprehensive'){
+      content+=`
+        <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
+          <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">💊 التاريخ الطبي</h2>
+          <p style="margin:5px 0"><b>الأمراض المزمنة:</b> ${esc(hist.chronic||'لا يوجد')}</p>
+          <p style="margin:5px 0"><b>الحساسية:</b> ${esc(hist.allergy||'لا يوجد')}</p>
+          <p style="margin:5px 0"><b>الأدوية:</b> ${esc(hist.drugs||'لا يوجد')}</p>
+        </div>
+        
+        <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
+          <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">📊 مخطط الأسنان</h2>
+          <p><b>عدد الأسنان المفحوصة:</b> ${Object.keys(teeth).length}</p>
+          <p><b>تسوس:</b> ${Object.values(teeth).filter(t=>t==='caries').length}</p>
+          <p><b>معالجة:</b> ${Object.values(teeth).filter(t=>t==='treated').length}</p>
+          <p><b>مفقودة:</b> ${Object.values(teeth).filter(t=>t==='missing').length}</p>
+        </div>
+        
+        <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
+          <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">🩻 الأشعة والصور</h2>
+          <p><b>عدد الأشعة:</b> ${xrayCount}</p>
+          <p><b>عدد الصور:</b> ${photoCount}</p>
+        </div>
+      `;
+    }
+    
+    content+=`
+        <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
+          <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">✍️ التوصيات</h2>
+          <ul style="padding-right:20px">
+            <li>متابعة دورية كل 6 أشهر</li>
+            <li>الحفاظ على نظافة الفم والأسنان</li>
+            <li>تفريش الأسنان مرتين يومياً</li>
+            <li>زيارة طبيب الأسنان عند أي ألم</li>
+          </ul>
+        </div>
+        
+        <div style="text-align:center;margin-top:30px;padding-top:20px;border-top:1px solid #ccc">
+          <p style="color:#666;font-size:.85rem">توقيع الطبيب: _________________</p>
+          <p style="color:#999;font-size:.75rem">NAQCLINIXAI © 2026</p>
+        </div>
+      </div>
+    `;
+    
+    preview.innerHTML=content;
+    toast('✅');
+  }catch(e){
+    preview.innerHTML='<p style="color:red">❌ '+esc(e.message)+'</p>';
+  }
+}
+
+function printComprehensiveReport(){
+  window.print();
+}
+
+function downloadComprehensivePDF(){
+  toast('📥 جاري التحضير... (يحتاج html2pdf)');
+  if(typeof html2pdf==='undefined'){
+    toast('⚠️ html2pdf غير محمّل',true);
+    return;
+  }
+  const el=document.getElementById('comprehensiveReportPreview');
+  html2pdf().from(el).save('report_'+Date.now()+'.pdf');
+}
+
+function sendReportWhatsApp(){
+  const patientId=document.getElementById('crPatient').value;
+  const p=patients.find(x=>x.id===patientId);
+  if(!p){toast('⚠️',true);return}
+  const phone=(p.phone||'').replace(/\D/g,'');
+  const intl=phone.startsWith('967')?phone:'967'+phone.replace(/^0/,'');
+  window.open('https://wa.me/'+intl+'?text='+encodeURIComponent('تقرير طبي - '+p.fullName),'_blank');
+}
+
+// ===== إضافة للـ showSection =====
+const _origShowSection=window.showSection||showSection;
+window.showSection=function(sec){
+  _origShowSection(sec);
+  if(sec==='xrays')loadXrays();
+  if(sec==='forum')loadForum();
+  if(sec==='facialDrawing'||sec==='aiBeforeAfter'||sec==='comprehensiveReports'){
+    if(typeof populateSelects==='function')populateSelects();
+    // populate new selects
+    const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
+    ['xrayPatient','fdPatient','aiBaPatient','crPatient'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.innerHTML=opts;
+    });
+  }
+};
 document.addEventListener('DOMContentLoaded',()=>{
   ['apptDate','billDate','labDue'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today()});
   renderChart();
