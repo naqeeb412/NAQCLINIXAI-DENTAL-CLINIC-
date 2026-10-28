@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔍 NAQCLINIXAI - تشخيص</title>
+<style>
+body{background:#0A0A0A;color:#f1f1f1;font-family:Tahoma,Arial;padding:20px;line-height:1.8;font-size:16px}
+.box{background:#111827;border:1px solid #C5A059;border-radius:12px;padding:16px;margin:10px 0}
+.ok{color:#10b981;font-weight:bold}
+.err{color:#ef4444;font-weight:bold}
+.warn{color:#f59e0b;font-weight:bold}
+h1{color:#C5A059;font-size:1.2rem;text-align:center}
+h2{color:#C5A059;font-size:1rem;margin-bottom:8px}
+button{background:#C5A059;color:#0A0A0A;border:none;padding:12px 20px;border-radius:10px;font-weight:bold;font-size:1rem;width:100%;margin:6px 0;cursor:pointer}
+pre{background:#000;padding:10px;border-radius:8px;overflow-x:auto;font-size:12px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<h1>🔍 صفحة التشخيص</h1>
+<p style="text-align:center;color:#94a3b8;font-size:0.85rem">هذه الصفحة تخبرك بالضبط ما المشكلة</p>
+
+<!-- 1. فحص JavaScript -->
+<div class="box">
+  <h2>1️⃣ JavaScript</h2>
+  <div id="js-status">⏳ جاري الفحص...</div>
+</div>
+
+<!-- 2. فحص تحميل SDK -->
+<div class="box">
+  <h2>2️⃣ Firebase SDK</h2>
+  <div id="sdk-status">⏳ جاري الفحص...</div>
+</div>
+
+<!-- 3. فحص التهيئة -->
+<div class="box">
+  <h2>3️⃣ تهيئة Firebase</h2>
+  <div id="init-status">⏳ جاري الفحص...</div>
+</div>
+
+<!-- 4. فحص الاتصال -->
+<div class="box">
+  <h2>4️⃣ الاتصال بالإنترنت</h2>
+  <div id="net-status">⏳ جاري الفحص...</div>
+</div>
+
+<!-- 5. اختبار فعلي -->
+<div class="box">
+  <h2>5️⃣ اختبار الدخول الفعلي</h2>
+  <button onclick="testGuestLogin()">👤 اختبار دخول ضيف</button>
+  <button onclick="testEmailLogin()">📧 اختبار تسجيل الدخول</button>
+  <div id="login-result" style="margin-top:10px"></div>
+</div>
+
+<!-- 6. عرض الأخطاء -->
+<div class="box">
+  <h2>6️⃣ أخطاء JavaScript</h2>
+  <div id="errors">لا أخطاء ✅</div>
+</div>
+
+<!-- تحميل Firebase من jsdelivr -->
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+// تسجيل الأخطاء
+const errors = [];
+window.onerror = function(msg, url, line) {
+  errors.push(msg + ' (السطر ' + line + ')');
+  document.getElementById('errors').innerHTML = '<span class="err">❌ ' + errors.join('<br>') + '</span>';
+};
+
+// 1. فحص JavaScript
+document.getElementById('js-status').innerHTML = 
+  '<span class="ok">✅ JavaScript يعمل</span><br>' +
+  '<span style="color:#94a3b8;font-size:0.8rem">المتصفح: ' + navigator.userAgent.substring(0, 50) + '...</span>';
+
+// 2. فحص SDK
+if (typeof firebase === 'undefined') {
+  document.getElementById('sdk-status').innerHTML = 
+    '<span class="err">❌ Firebase SDK لم يُحمَّل!</span><br>' +
+    '<span style="color:#f59e0b">السبب: jsdelivr محجوب أو الشبكة تمنعه</span><br>' +
+    '<button onclick="tryUnpkg()">🔄 جرب unpkg بدلاً منه</button>';
+} else {
+  document.getElementById('sdk-status').innerHTML = 
+    '<span class="ok">✅ Firebase SDK محمّل</span><br>' +
+    '<span style="color:#94a3b8;font-size:0.8rem">الإصدار: ' + (firebase.SDK_VERSION || 'غير معروف') + '</span>';
+}
+
+// 3. تهيئة Firebase
+try {
+  firebase.initializeApp({
+    apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
+    authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
+    projectId: "naqclinixai-dental-clinic",
+    storageBucket: "naqclinixai-dental-clinic.firebasestorage.app",
+    messagingSenderId: "796796158387",
+    appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
+  });
+  document.getElementById('init-status').innerHTML = 
+    '<span class="ok">✅ Firebase مهيأ</span><br>' +
+    '<span style="color:#94a3b8;font-size:0.8rem">Project: naqclinixai-dental-clinic</span>';
+} catch(e) {
+  document.getElementById('init-status').innerHTML = 
+    '<span class="err">❌ فشل التهيئة: ' + e.message + '</span>';
+}
+
+// 4. الاتصال
+fetch('https://www.google.com', {mode:'no-cors'})
+  .then(() => {
+    document.getElementById('net-status').innerHTML = '<span class="ok">✅ الإنترنت يعمل</span>';
+  })
+  .catch(() => {
+    document.getElementById('net-status').innerHTML = '<span class="err">❌ لا يوجد اتصال</span>';
+  });
+
+// 5. اختبار ضيف
+async function testGuestLogin() {
+  const r = document.getElementById('login-result');
+  r.innerHTML = '<span class="warn">⏳ جاري المحاولة...</span>';
+  try {
+    const cred = await firebase.auth().signInAnonymously();
+    r.innerHTML = '<span class="ok">✅ نجح الدخول!</span><br>UID: ' + cred.user.uid;
+    await firebase.auth().signOut();
+  } catch(e) {
+    r.innerHTML = '<span class="err">❌ فشل: ' + e.code + '</span><br>' + e.message;
+    if (e.code === 'auth/operation-not-allowed') {
+      r.innerHTML += '<br><br><span style="color:#f59e0b">👆 يجب تفعيل "Anonymous" في Firebase Console</span>';
+    }
+  }
+}
+
+// 6. اختبار بريد
+async function testEmailLogin() {
+  const r = document.getElementById('login-result');
+  r.innerHTML = '<span class="warn">⏳ جاري المحاولة...</span>';
+  try {
+    // محاولة دخول وهمية (لتشخيص الأخطاء فقط)
+    await firebase.auth().signInWithEmailAndPassword('test@test.com', 'test123');
+  } catch(e) {
+    let msg = '<span class="err">❌ ' + e.code + '</span><br>' + e.message;
+    if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+      msg += '<br><br><span class="ok">✅ هذا متوقع — Email/Password مفعّل!</span>';
+    }
+    if (e.code === 'auth/operation-not-allowed') {
+      msg += '<br><br><span style="color:#f59e0b">👆 يجب تفعيل "Email/Password" في Firebase Console</span>';
+    }
+    r.innerHTML = msg;
+  }
+}
+
+// تحميل بديل
+function tryUnpkg() {
+  document.getElementById('sdk-status').innerHTML = '<span class="warn">⏳ جاري تجربة unpkg...</span>';
+  const scripts = [
+    'https://unpkg.com/firebase@9.22.0/firebase-app-compat.js',
+    'https://unpkg.com/firebase@9.22.0/firebase-auth-compat.js',
+    'https://unpkg.com/firebase@9.22.0/firebase-firestore-compat.js'
+  ];
+  let loaded = 0;
+  scripts.forEach(src => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => {
+      loaded++;
+      if (loaded === 3) {
+        document.getElementById('sdk-status').innerHTML = '<span class="ok">✅ محمّل من unpkg!</span>';
+        location.reload();
+      }
+    };
+    s.onerror = () => {
+      document.getElementById('sdk-status').innerHTML = '<span class="err">❌ unpkg أيضاً محجوب</span>';
+    };
+    document.head.appendChild(s);
+  });
+}
+
+console.log('✅ صفحة التشخيص جاهزة');
+</script>
+
+</body>
+</html>
