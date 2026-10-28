@@ -214,14 +214,20 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     <div class="panel">
       <h2>📱 Dentbook - ملفك الشخصي</h2>
       <div style="background:url('https://via.placeholder.com/800x200/1a2332/C5A059?text=Cover') center/cover;height:150px;border-radius:12px;margin-bottom:15px;position:relative">
-         <img id="profAvatar" src="https://via.placeholder.com/100/111827/C5A059?text=User" style="width:80px;height:80px;border-radius:50%;border:3px solid var(--gold);position:absolute;bottom:-40px;right:20px">
+         <img id="profAvatar" src="https://via.placeholder.com/100/111827/C5A059?text=User" style="width:80px;height:80px;border-radius:50%;border:3px solid var(--gold);position:absolute;bottom:-40px;right:20px;object-fit:cover">
       </div>
       <div style="margin-top:50px" class="g2">
-        <div class="f"><label>تغيير الصورة الشخصية</label><input type="file" accept="image/*"></div>
+        <div class="f">
+          <label>تغيير الصورة الشخصية</label>
+          <input type="file" id="avatarInput" accept="image/*" onchange="uploadAvatar(event)">
+        </div>
         <div class="f"><label>تغيير صورة الغلاف</label><input type="file" accept="image/*"></div>
       </div>
-      <div class="f"><label>نبذة تعريفية</label><textarea rows="2" placeholder="أخصائي تجميل أسنان..."></textarea></div>
-      <button class="btn-save" onclick="toast('✅ تم حفظ الملف')">💾 حفظ الملف</button>
+      <div class="f">
+        <label>نبذة تعريفية</label>
+        <textarea id="bioText" rows="2" placeholder="أخصائي تجميل أسنان..."></textarea>
+      </div>
+      <button class="btn-save" onclick="saveProfileInfo()">💾 حفظ الملف</button>
     </div>
   </div>
 
@@ -567,8 +573,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     <div class="panel">
       <h2>👥 إدارة الفريق والموافقات</h2>
       <div style="display:flex; gap:8px; margin-bottom:12px">
-        <button class="btn-save" onclick="toast('يرجى إضافة العضو من Firebase Console مؤقتاً')">➕ إضافة عضو</button>
-        <button class="btn-outline" onclick="loadUsers()">🔄 تحديث</button>
+        <button class="btn-outline" onclick="loadUsers()">🔄 تحديث القائمة</button>
       </div>
       <div id="usersList"></div>
     </div>
@@ -782,7 +787,7 @@ function doForgotPassword(){
 function doLogout(){ if(confirm('خروج؟')) auth.signOut(); }
 
 // ═══════════════════════════════════════════════════════════════
-// 4. حالة المصادقة (تطبيق الموافقة)
+// 4. حالة المصادقة (تطبيق الموافقة ومنع الأشباح)
 // ═══════════════════════════════════════════════════════════════
 auth.onAuthStateChanged(async user=>{
   if(user){
@@ -797,9 +802,16 @@ auth.onAuthStateChanged(async user=>{
           return;
         }
       }else{
-        CD={email:user.email||'guest',fullName:'مستخدم',role:'guest',clinicId:'CLN-TEMP',active:true,status:'approved',privacy:{showEmail:false,showPhone:false,allowFriends:true}};
-        await db.collection('users').doc(user.uid).set(CD);
+        if(user.email === OWNER_EMAIL) {
+          CD = { email:user.email, fullName:'المالك', role:'owner', clinicId:'CLN-MAIN', active:true, status:'approved', privacy:{showEmail:false,showPhone:false,allowFriends:true}, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+          await db.collection('users').doc(user.uid).set(CD);
+        } else {
+          await auth.signOut();
+          showAlert('🚫 هذا الحساب غير موجود في قاعدة البيانات (تم حذفه). يرجى التواصل مع الإدارة.','error');
+          return;
+        }
       }
+      
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.add('active');
       document.getElementById('userName').textContent=CD.fullName;
@@ -807,6 +819,7 @@ auth.onAuthStateChanged(async user=>{
       document.querySelectorAll('[data-admin="true"]').forEach(el=>{el.style.display=(CD.role==='owner'||CD.role==='doctor')?'flex':'none'});
       
       loadGemini();
+      loadProfileUI();
       await Promise.all([
         loadPatients(), loadAppointments(), loadBilling(), loadUsers(),
         loadPosts(), loadDiscussions(), loadMeetings(), loadDigitalProducts(),
@@ -834,6 +847,7 @@ function showSection(sec){
   const btn=document.querySelector(`.ni[data-sec="${sec}"]`); if(btn) btn.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
   
+  if(sec==='dentbookProfile') loadProfileUI();
   if(sec==='patients') renderPatients();
   if(sec==='users') renderUsers();
   if(sec==='materialsGuide') renderMaterials();
@@ -861,7 +875,39 @@ function showSection(sec){
 document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.sec)));
 
 // ═══════════════════════════════════════════════════════════════
-// 6. المرضى
+// 6. الملف الشخصي
+// ═══════════════════════════════════════════════════════════════
+function loadProfileUI() {
+  if (!CD) return;
+  document.getElementById('profAvatar').src = CD.avatar || 'https://via.placeholder.com/100/111827/C5A059?text=User';
+  document.getElementById('bioText').value = CD.bio || '';
+}
+
+async function uploadAvatar(e) {
+  const file = e.target.files[0]; if(!file) return;
+  toast('⏳ جاري رفع الصورة...');
+  const formData = new FormData();
+  formData.append('reqtype','fileupload');
+  formData.append('fileToUpload', file);
+  const res = await fetch(CATBOX_API, {method:'POST', body:formData});
+  const url = await res.text();
+  if(!url.startsWith('https://')) return toast('❌ فشل الرفع', true);
+  
+  await db.collection('users').doc(CU.uid).update({ avatar: url });
+  CD.avatar = url;
+  document.getElementById('profAvatar').src = url;
+  toast('✅ تم تحديث الصورة الشخصية');
+}
+
+async function saveProfileInfo() {
+  const bio = document.getElementById('bioText').value;
+  await db.collection('users').doc(CU.uid).update({ bio });
+  CD.bio = bio;
+  toast('✅ تم حفظ الملف');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 7. المرضى
 // ═══════════════════════════════════════════════════════════════
 async function loadPatients(){
   try{
@@ -946,7 +992,7 @@ function populateSelects(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 7. الكاميرا والصور
+// 8. الكاميرا والصور
 // ═══════════════════════════════════════════════════════════════
 async function startCamera(){
   try{
@@ -998,7 +1044,7 @@ async function loadPatientPhotos(pid){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 8. إدارة المستخدمين والموافقات
+// 9. إدارة المستخدمين والموافقات
 // ═══════════════════════════════════════════════════════════════
 async function loadUsers(){
   const snap = await db.collection('users').get();
@@ -1030,12 +1076,12 @@ async function approveUser(uid){
   toast('✅ تم تفعيل الحساب'); loadUsers();
 }
 async function deleteUser(uid){
-  if(!confirm('حذف المستخدم؟'))return;
-  await db.collection('users').doc(uid).delete(); loadUsers(); toast('🗑️');
+  if(!confirm('حذف المستخدم من قاعدة البيانات؟ (ملاحظة: لن يُحذف من المصادقة تلقائياً)'))return;
+  await db.collection('users').doc(uid).delete(); loadUsers(); toast('🗑️ تم الحذف');
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 9. الذكاء الاصطناعي (Gemini)
+// 10. الذكاء الاصطناعي (Gemini)
 // ═══════════════════════════════════════════════════════════════
 async function callGemini(prompt, imageBase64 = null) {
   if (!geminiKey) throw new Error('أضف مفتاح Gemini من الإعدادات');
@@ -1079,7 +1125,7 @@ async function generateTreatmentPlan() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 10. تحليل الوجه (MediaPipe + Canvas)
+// 11. تحليل الوجه (MediaPipe + Canvas)
 // ═══════════════════════════════════════════════════════════════
 function loadFaceImage(e){
   const file = e.target.files[0]; if(!file) return;
@@ -1127,15 +1173,15 @@ function drawBeautyLines(){
 function drawQibas(){ drawBeautyLines(); toast('📐'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 11. قبل وبعد (AI)
+// 12. قبل وبعد (AI)
 // ═══════════════════════════════════════════════════════════════
 function loadBAImage(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
     baImg = ev.target.result;
-    document.getElementById('baBefore').src = baImg;
-    document.getElementById('baAfter').src = baImg;
+    document.getElementById('imgBefore').src = baImg;
+    document.getElementById('imgAfter').src = baImg;
     document.getElementById('baSlider').style.display = 'block';
   };
   reader.readAsDataURL(file);
@@ -1148,14 +1194,14 @@ function generateAfter(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 12. الأشعة
+// 13. الأشعة
 // ═══════════════════════════════════════════════════════════════
 function analyzeXray(){
   document.getElementById('xrayResult').innerHTML='<div style="background:var(--card2);padding:15px;border-radius:10px"><b style="color:var(--ok)">✅ كثافة العظام: طبيعية (محاكاة)</b></div>';
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 13. المتجر
+// 14. المتجر
 // ═══════════════════════════════════════════════════════════════
 async function loadDigitalProducts(){
   const snap = await db.collection('digitalProducts').get();
@@ -1235,7 +1281,7 @@ async function loadMyOrders(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 14. الاشتراكات
+// 15. الاشتراكات
 // ═══════════════════════════════════════════════════════════════
 async function loadSubscriptionPlans(){
   const snap = await db.collection('subscriptionPlans').get();
@@ -1295,7 +1341,7 @@ async function loadUserSubscription(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 15. الأصدقاء
+// 16. الأصدقاء
 // ═══════════════════════════════════════════════════════════════
 async function loadFriends(){
   try {
@@ -1355,7 +1401,7 @@ async function rejectFriend(reqId){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 16. Dentbook (المنشورات)
+// 17. Dentbook (المنشورات)
 // ═══════════════════════════════════════════════════════════════
 let postImageBase64 = null;
 function handlePostImage(e) {
@@ -1376,8 +1422,18 @@ async function createPost(){
     const res = await fetch(CATBOX_API, {method:'POST', body:formData});
     imageUrl = await res.text();
   }
-  await db.collection('posts').add({text, imageUrl, authorName:CD.fullName, authorId:CU.uid, likes:0, createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  document.getElementById('postInput').value=''; postImageBase64=null; document.getElementById('postImagePreview').style.display='none';
+  await db.collection('posts').add({
+    text, 
+    imageUrl, 
+    authorName: CD.fullName || 'مستخدم', 
+    authorAvatar: CD.avatar || '',
+    authorId: CU.uid, 
+    likes: 0, 
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  document.getElementById('postInput').value=''; 
+  postImageBase64=null; 
+  document.getElementById('postImagePreview').style.display='none';
   loadPosts(); toast('✅ تم النشر');
 }
 async function loadPosts(){
@@ -1387,7 +1443,9 @@ async function loadPosts(){
   el.innerHTML = posts.length ? posts.map(p => `
     <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-        <div style="width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#000">${esc((p.authorName||'?').charAt(0))}</div>
+        <div style="width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;overflow:hidden">
+          ${p.authorAvatar ? `<img src="${p.authorAvatar}" style="width:100%;height:100%;object-fit:cover">` : esc((p.authorName||'?').charAt(0))}
+        </div>
         <div><b>${esc(p.authorName)}</b><br><small style="color:var(--muted)">${p.createdAt?.toDate?.().toLocaleString('ar-EG')||''}</small></div>
       </div>
       ${p.text?`<p style="white-space:pre-wrap;line-height:1.7">${esc(p.text)}</p>`:''}
@@ -1397,7 +1455,7 @@ async function loadPosts(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 17. DentChat (دردشة)
+// 18. DentChat (دردشة)
 // ═══════════════════════════════════════════════════════════════
 function loadDentChat(){
   db.collection('dentChat').orderBy('createdAt','asc').limit(100).onSnapshot(snap => {
@@ -1418,7 +1476,7 @@ async function sendDentChat(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 18. المناقشات والاجتماعات
+// 19. المناقشات والاجتماعات
 // ═══════════════════════════════════════════════════════════════
 async function loadDiscussions(){
   const snap = await db.collection('discussions').orderBy('createdAt','desc').get();
@@ -1458,7 +1516,7 @@ function joinMeeting(id){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 19. الإعلانات
+// 20. الإعلانات
 // ═══════════════════════════════════════════════════════════════
 async function loadAdvertisements(){
   const snap = await db.collection('advertisements').get();
@@ -1480,7 +1538,7 @@ async function addAd(){
 async function deleteAd(id){ if(confirm('حذف؟')) { await db.collection('advertisements').doc(id).delete(); loadAdvertisements(); } }
 
 // ═══════════════════════════════════════════════════════════════
-// 20. إعدادات الدفع
+// 21. إعدادات الدفع
 // ═══════════════════════════════════════════════════════════════
 async function loadPaymentConfig(){
   const doc = await db.collection('settings').doc('payment').get();
@@ -1504,7 +1562,7 @@ async function savePaymentConfig(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 21. الإشعارات
+// 22. الإشعارات
 // ═══════════════════════════════════════════════════════════════
 function loadNotifications(){
   db.collection('notifications').where('userId','==',CU.uid).orderBy('createdAt','desc').limit(50).onSnapshot(snap => {
@@ -1534,7 +1592,7 @@ async function markAllNotificationsRead(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 22. التقارير الشاملة
+// 23. التقارير الشاملة
 // ═══════════════════════════════════════════════════════════════
 function populateReportSelect(){
   const opts = '<option value="">— اختر —</option>' + patients.map(p => `<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
@@ -1579,7 +1637,7 @@ async function generateFullReport(){
 function printReport(){ window.print(); }
 
 // ═══════════════════════════════════════════════════════════════
-// 23. مخطط الأسنان
+// 24. مخطط الأسنان
 // ═══════════════════════════════════════════════════════════════
 function renderChart(){
   const up = document.getElementById('upperTeeth'), lo = document.getElementById('lowerTeeth');
@@ -1600,7 +1658,7 @@ async function saveChart(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 24. الإعدادات والخصوصية
+// 25. الإعدادات والخصوصية
 // ═══════════════════════════════════════════════════════════════
 function loadGemini(){
   geminiKey = localStorage.getItem('gemini_key') || '';
@@ -1629,7 +1687,7 @@ async function savePrivacy(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 25. متعدد التخصصات
+// 26. متعدد التخصصات
 // ═══════════════════════════════════════════════════════════════
 async function requestInterConsult() {
   const pid = document.getElementById('interPatient').value;
@@ -1653,7 +1711,7 @@ async function loadInterConsults() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 26. لوحة التحكم
+// 27. لوحة التحكم
 // ═══════════════════════════════════════════════════════════════
 function updateDashboard(){
   document.getElementById('statPatients').textContent = patients.length;
