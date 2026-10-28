@@ -210,26 +210,46 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   </div>
 
   <!-- 2. Dentbook Profile -->
-  <div class="sec" id="sec-dentbookProfile">
-    <div class="panel">
-      <h2>📱 Dentbook - ملفك الشخصي</h2>
-      <div style="background:url('https://via.placeholder.com/800x200/1a2332/C5A059?text=Cover') center/cover;height:150px;border-radius:12px;margin-bottom:15px;position:relative">
-         <img id="profAvatar" src="https://via.placeholder.com/100/111827/C5A059?text=User" style="width:80px;height:80px;border-radius:50%;border:3px solid var(--gold);position:absolute;bottom:-40px;right:20px;object-fit:cover">
-      </div>
-      <div style="margin-top:50px" class="g2">
-        <div class="f">
-          <label>تغيير الصورة الشخصية</label>
-          <input type="file" id="avatarInput" accept="image/*" onchange="uploadAvatar(event)">
-        </div>
-        <div class="f"><label>تغيير صورة الغلاف</label><input type="file" accept="image/*"></div>
+<div class="sec" id="sec-dentbookProfile">
+  <div class="panel">
+    <h2>📱 Dentbook - ملفك الشخصي</h2>
+    
+    <!-- الغلاف -->
+    <div id="profCover" style="background:linear-gradient(135deg,#1a2332,#0d1830);background-size:cover;background-position:center;height:150px;border-radius:12px;margin-bottom:15px;position:relative;border:1px solid var(--bd);overflow:hidden">
+       <div style="position:absolute;inset:0;background:rgba(0,0,0,0.15)"></div>
+       <div style="position:absolute;bottom:10px;left:15px;background:rgba(0,0,0,0.6);color:var(--gold);padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer" onclick="document.getElementById('coverInput').click()">
+         🖼️ تغيير الغلاف
+       </div>
+    </div>
+    
+    <!-- الصورة الشخصية -->
+    <div style="position:relative;margin-top:-45px;margin-right:20px;width:90px;height:90px;z-index:5">
+      <img id="profAvatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a2332' width='100' height='100'/><circle cx='50' cy='40' r='16' fill='%23C5A059'/><ellipse cx='50' cy='90' rx='25' ry='20' fill='%23C5A059'/></svg>" style="width:100%;height:100%;border-radius:50%;border:3px solid var(--gold);object-fit:cover;background:var(--card2);cursor:pointer" onclick="document.getElementById('avatarInput').click()">
+    </div>
+    
+    <!-- حقول الرفع (مخفية) -->
+    <input type="file" id="avatarInput" accept="image/*" onchange="uploadAvatar(event)" style="display:none">
+    <input type="file" id="coverInput" accept="image/*" onchange="uploadCover(event)" style="display:none">
+    
+    <div style="margin-top:15px" class="g2">
+      <div class="f">
+        <label>👤 الصورة الشخصية</label>
+        <button class="btn-outline" onclick="document.getElementById('avatarInput').click()" style="width:100%;padding:11px">📷 رفع صورة شخصية</button>
       </div>
       <div class="f">
-        <label>نبذة تعريفية</label>
-        <textarea id="bioText" rows="2" placeholder="أخصائي تجميل أسنان..."></textarea>
+        <label>🖼️ صورة الغلاف</label>
+        <button class="btn-outline" onclick="document.getElementById('coverInput').click()" style="width:100%;padding:11px">📷 رفع غلاف</button>
       </div>
-      <button class="btn-save" onclick="saveProfileInfo()">💾 حفظ الملف</button>
     </div>
+    
+    <div class="f">
+      <label>📝 نبذة تعريفية</label>
+      <textarea id="bioText" rows="3" placeholder="أخصائي تجميل أسنان... خبرة 10 سنوات"></textarea>
+    </div>
+    
+    <button class="btn-save" onclick="saveProfileInfo()" style="width:100%">💾 حفظ الملف</button>
   </div>
+</div>
 
   <!-- 3. المرضى -->
   <div class="sec" id="sec-patients">
@@ -879,8 +899,27 @@ document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click'
 // ═══════════════════════════════════════════════════════════════
 function loadProfileUI() {
   if (!CD) return;
-  document.getElementById('profAvatar').src = CD.avatar || 'https://via.placeholder.com/100/111827/C5A059?text=User';
-  document.getElementById('bioText').value = CD.bio || '';
+  
+  // الصورة الشخصية
+  const avatar = document.getElementById('profAvatar');
+  if (avatar) {
+    avatar.src = CD.avatar || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a2332' width='100' height='100'/><circle cx='50' cy='40' r='16' fill='%23C5A059'/><ellipse cx='50' cy='90' rx='25' ry='20' fill='%23C5A059'/></svg>";
+  }
+  
+  // الغلاف
+  const cover = document.getElementById('profCover');
+  if (cover && CD.cover) {
+    cover.style.backgroundImage = `url('${CD.cover}')`;
+  }
+  
+  // النبذة
+  const bio = document.getElementById('bioText');
+  if (bio) bio.value = CD.bio || '';
+  
+  // الخصوصية
+  if(document.getElementById('privEmail')) document.getElementById('privEmail').checked = CD.privacy?.showEmail || false;
+  if(document.getElementById('privPhone')) document.getElementById('privPhone').checked = CD.privacy?.showPhone || false;
+  if(document.getElementById('privFriends')) document.getElementById('privFriends').checked = CD.privacy?.allowFriends !== false;
 }
 
 async function uploadAvatar(e) {
@@ -893,6 +932,29 @@ async function uploadAvatar(e) {
   const url = await res.text();
   if(!url.startsWith('https://')) return toast('❌ فشل الرفع', true);
   
+  async function uploadCover(e) {
+  const file = e.target.files[0]; 
+  if(!file) return;
+  if(file.size > 5*1024*1024) return toast('❌ الصورة أكبر من 5MB', true);
+  
+  toast('⏳ جاري رفع الغلاف...');
+  try {
+    const formData = new FormData();
+    formData.append('reqtype','fileupload');
+    formData.append('fileToUpload', file);
+    const res = await fetch(CATBOX_API, {method:'POST', body:formData});
+    const url = await res.text();
+    if(!url.startsWith('https://')) throw new Error('فشل الرفع');
+    
+    await db.collection('users').doc(CU.uid).update({ cover: url });
+    CD.cover = url;
+    document.getElementById('profCover').style.backgroundImage = `url('${url}')`;
+    toast('✅ تم تحديث الغلاف');
+  } catch(e) { 
+    toast('❌ ' + e.message, true); 
+  }
+}
+
   await db.collection('users').doc(CU.uid).update({ avatar: url });
   CD.avatar = url;
   document.getElementById('profAvatar').src = url;
