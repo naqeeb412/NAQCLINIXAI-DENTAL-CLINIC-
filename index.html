@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>NAQCLINIXAI Dental Clinic</title>
+<script>
+window.onerror=function(m,u,l,c,e){
+  var d=document.createElement('div');
+  d.style.cssText='background:#ef4444;color:#fff;padding:15px;font-family:monospace;font-size:13px;direction:ltr;text-align:left;position:fixed;top:0;left:0;right:0;z-index:999999;line-height:1.6;border-bottom:3px solid #000';
+  d.innerHTML='<b>❌ ERROR (Line '+l+':'+c+'):</b><br>'+m;
+  document.body.appendChild(d);
+};
+</script>
 <meta name="theme-color" content="#C5A059"><script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-app-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-firestore-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -1363,13 +1371,12 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const OWNER_EMAIL = 'naqclinixai@gmail.com';
 
-let CU=null, CD=null, patients=[], appointments=[], lab=[], specialists=[], billing=[];
-let charts={}, faceMesh=null, threeInit=false;
-let selectedTeeth=[], toothState={}, dsdImg=null, smileImg=null;
-let allUsers=[], notificationsUnsubscribe=null;
-let cameraStream=null, selectedPhotoType='frontal', lastCapturedImage=null;
-let postImageFile=null, dentbookUnsubscribe=null, chatUnsubscribe=null, chatTargetsLoaded=false, filesUnsubscribe=null;
-
+var CU=null, CD=null, patients=[], appointments=[], lab=[], specialists=[], billing=[];
+var charts={}, faceMesh=null, threeInit=false;
+var selectedTeeth=[], toothState={}, dsdImg=null, smileImg=null;
+var allUsers=[], notificationsUnsubscribe=null;
+var cameraStream=null, selectedPhotoType='frontal', lastCapturedImage=null;
+var postImageFile=null, dentbookUnsubscribe=null, chatUnsubscribe=null, chatTargetsLoaded=false, filesUnsubscribe=null;
 function toast(m,err){const t=document.getElementById('toast');t.textContent=m;t.classList.toggle('err',!!err);t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function today(){return new Date().toISOString().slice(0,10)}
