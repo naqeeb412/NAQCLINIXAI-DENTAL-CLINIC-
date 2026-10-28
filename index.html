@@ -1512,7 +1512,8 @@ auth.onAuthStateChanged(async user=>{
       if(CD.active===false){await auth.signOut();toast('🚫 الحساب معطل',true);return}
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.add('active');
-      document.getElementById('userName').textContent=CD.fullName;
+const userNameEl = document.getElementById('userName');
+if(userNameEl) userNameEl.textContent = CD.fullName;      document.getElementById('userName').textContent=CD.fullName;
       document.getElementById('clinicInfo').innerHTML=CD.clinicName?`🏥 ${esc(CD.clinicName)} • كود: <b>${esc(CD.clinicId||'')}</b>`:'الحساب: '+(CD.role==='owner'?'👑 مالك':CD.role||'');
       await Promise.all([loadPatients(),loadAppointments(),loadLab(),loadSpecialists(),loadBilling()]);
       updateDashboard();
