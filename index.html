@@ -181,6 +181,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     <button class="ni active" data-sec="dashboard"><span class="ic">🏥</span>لوحة التحكم</button>
     <div class="ns">ملف المريض</div>
     <button class="ni" data-sec="patients"><span class="ic">👥</span>المرضى</button>
+    <button class="ni" data-sec="photography"><span class="ic">📸</span>التصوير</button>
     <button class="ni" data-sec="history"><span class="ic">💊</span>التاريخ الطبي</button>
     <button class="ni" data-sec="chart"><span class="ic">📊</span>مخطط الأسنان</button>
     <button class="ni" data-sec="appointments"><span class="ic">🗓️</span>المواعيد</button>
@@ -191,6 +192,8 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     <button class="ni" data-sec="dsdStudio"><span class="ic">🎨</span>DSD Studio</button>
     <button class="ni" data-sec="ceph"><span class="ic">📐</span>السيفالومترية</button>
     <button class="ni" data-sec="aiDiagnosis"><span class="ic">🧠</span>التشخيص AI</button>
+<div class="ns">التواصل</div>
+<button class="ni" data-sec="notifications"><span class="ic">🔔</span>الإشعارات <span id="notifBadge" style="background:var(--err);color:#fff;border-radius:10px;padding:1px 8px;font-size:0.6rem;margin-right:auto;display:none">0</span></button>
     <div class="ns">الإنتاج</div>
     <button class="ni" data-sec="cadcam"><span class="ic">⚙️</span>CAD/CAM 3D</button>
     <button class="ni" data-sec="smileDesign"><span class="ic">😁</span>تصميم الابتسامة</button>
@@ -241,6 +244,76 @@ input[type=range]{width:100%;accent-color:var(--gold)}
         <div id="patientsList"></div>
       </div>
     </div>
+    
+    <div class="sec" id="sec-photography">
+  <div class="panel">
+    <h2>📸 استوديو التصوير</h2>
+    <div class="desc">تصوير احترافي للمريض + تخزين سحابي</div>
+    
+    <div class="sec" id="sec-notifications">
+  <div class="panel">
+    <h2>🔔 الإشعارات</h2>
+    <div class="desc">جميع التنبيهات والرسائل</div>
+    
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn-save" onclick="markAllRead()">✅ قراءة الكل</button>
+      <button class="btn-outline" onclick="loadNotifications()">🔄 تحديث</button>
+      <button class="btn-danger" style="padding:8px 16px;border-radius:10px;border:none;color:#fff;font-weight:700;font-family:inherit" onclick="clearReadNotifications()">🗑️ مسح المقروءة</button>
+    </div>
+    
+    <div id="notificationsList" style="max-height:600px;overflow-y:auto">
+      <div class="empty">⏳ جارٍ التحميل...</div>
+    </div>
+  </div>
+</div>
+
+    <div class="f" style="margin-bottom:12px">
+      <label>المريض</label>
+      <select id="photoPatient" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></select>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn-save" onclick="startCamera()" id="btnStartCam">🎥 تشغيل الكاميرا</button>
+      <button class="btn-outline" onclick="stopCamera()" id="btnStopCam" style="display:none">⏹️ إيقاف</button>
+      <button class="btn-save" onclick="capturePhoto()" id="btnCapture" style="display:none">📷 التقاط</button>
+      <button class="btn-outline" onclick="document.getElementById('photoFileUpload').click()">📁 رفع من الملفات</button>
+      <input type="file" id="photoFileUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+    </div>
+
+    <div id="cameraContainer" style="display:none;background:#000;border-radius:12px;overflow:hidden;margin-bottom:12px">
+      <video id="cameraVideo" autoplay playsinline style="width:100%;max-height:400px;display:block"></video>
+    </div>
+
+    <div id="photoTypeSelector" style="display:none;margin-bottom:12px;background:var(--card2);padding:12px;border-radius:12px;border:1px solid var(--bd)">
+      <label style="display:block;font-size:0.82rem;color:var(--muted);margin-bottom:8px">نوع الصورة:</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-outline photo-type-btn" data-type="frontal" onclick="selectPhotoType('frontal')">الوجه الأمامي</button>
+        <button class="btn-outline photo-type-btn" data-type="lateral" onclick="selectPhotoType('lateral')">الوجه الجانبي</button>
+        <button class="btn-outline photo-type-btn" data-type="smile" onclick="selectPhotoType('smile')">الابتسامة</button>
+        <button class="btn-outline photo-type-btn" data-type="upper" onclick="selectPhotoType('upper')">الفك العلوي</button>
+        <button class="btn-outline photo-type-btn" data-type="lower" onclick="selectPhotoType('lower')">الفك السفلي</button>
+        <button class="btn-outline photo-type-btn" data-type="tissue" onclick="selectPhotoType('tissue')">الأنسجة</button>
+        <button class="btn-outline photo-type-btn" data-type="portrait" onclick="selectPhotoType('portrait')">شخصية</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:10px">📁 صور المريض</h3>
+      <div id="patientPhotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
+        <div class="empty" style="grid-column:1/-1">اختر مريضاً لعرض صوره</div>
+      </div>
+    </div>
+
+    <div id="lastCapture" style="display:none;margin-top:12px;padding:12px;background:var(--card2);border-radius:12px;border:2px solid var(--gold);text-align:center">
+      <div style="color:var(--gold);font-weight:700;margin-bottom:8px">📸 آخر صورة ملتقطة</div>
+      <img id="lastCaptureImg" style="max-width:100%;max-height:300px;border-radius:10px">
+      <div style="margin-top:10px">
+        <button class="btn-save" onclick="saveLastPhoto()">💾 حفظ الصورة</button>
+        <button class="btn-danger" onclick="discardLastPhoto()" style="padding:8px 16px;border-radius:10px;border:none;color:#fff;font-weight:700;font-family:inherit">🗑️ مسح</button>
+      </div>
+    </div>
+  </div>
+</div>
 
     <div class="sec" id="sec-history">
       <div class="panel">
@@ -732,7 +805,8 @@ try{
       updateDashboard();
       fillSettings();
       setTimeout(()=>{initThree();drawFacePlaceholder();drawDSDPlaceholder();initCompareSlider();},300);
-      toast('✅ مرحباً '+CD.fullName);
+    setupNotifListener();
+  toast('✅ مرحباً '+CD.fullName);
     }catch(e){console.error(e);toast('❌ '+e.message,true)}
   }else{
     CU=null;CD=null;
@@ -753,6 +827,12 @@ function showSection(sec){
   if(sec==='patients')renderPatients();
   if(sec==='team')renderTeam();
   if(sec==='users')loadUsers();
+  if(sec==='notifications')loadNotifications();
+  if(sec==='photography'){
+  populateSelects();
+  const pid = document.getElementById('photoPatient')?.value;
+  if(pid) loadPatientPhotos(pid);
+}
   if(sec==='subscriptions')renderSub();
   if(sec==='cadcam')setTimeout(initThree,200);
 }
@@ -829,7 +909,7 @@ async function openPatient(id){
 
 function populateSelects(){
   const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
-  ['apptPatient','billPatient','facePatient','aiPatient','reportPatient','labPatient'].forEach(id=>{
+['apptPatient','billPatient','facePatient','aiPatient','reportPatient','labPatient','photoPatient'].forEach
     const el=document.getElementById(id);
     if(el)el.innerHTML=opts;
   });
@@ -1592,6 +1672,346 @@ document.addEventListener('DOMContentLoaded',()=>{
   ['apptDate','billDate','labDue'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today()});
   renderChart();
 });
+
+// ============ PHOTOGRAPHY ============
+let cameraStream = null;
+let selectedPhotoType = 'frontal';
+let lastCapturedImage = null;
+
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, 
+      audio: false 
+    });
+    cameraStream = stream;
+    const video = document.getElementById('cameraVideo');
+    video.srcObject = stream;
+    await video.play();
+    
+    document.getElementById('cameraContainer').style.display = 'block';
+    document.getElementById('photoTypeSelector').style.display = 'block';
+    document.getElementById('btnStartCam').style.display = 'none';
+    document.getElementById('btnStopCam').style.display = 'inline-flex';
+    document.getElementById('btnCapture').style.display = 'inline-flex';
+    toast('📷 الكاميرا جاهزة');
+  } catch (e) {
+    toast('❌ ' + (e.name === 'NotAllowedError' ? 'تم رفض إذن الكاميرا' : e.message), true);
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  document.getElementById('cameraContainer').style.display = 'none';
+  document.getElementById('btnStartCam').style.display = 'inline-flex';
+  document.getElementById('btnStopCam').style.display = 'none';
+  document.getElementById('btnCapture').style.display = 'none';
+  document.getElementById('photoTypeSelector').style.display = 'none';
+}
+
+function selectPhotoType(type) {
+  selectedPhotoType = type;
+  document.querySelectorAll('.photo-type-btn').forEach(b => b.classList.remove('active', 'btn-save'));
+  const btn = document.querySelector(`.photo-type-btn[data-type="${type}"]`);
+  if (btn) { btn.classList.remove('btn-outline'); btn.classList.add('btn-save'); }
+  toast('📸 نوع الصورة: ' + photoTypeLabel(type));
+}
+
+function photoTypeLabel(t) {
+  return { frontal: 'الوجه الأمامي', lateral: 'الوجه الجانبي', smile: 'الابتسامة', upper: 'الفك العلوي', lower: 'الفك السفلي', tissue: 'الأنسجة', portrait: 'شخصية' }[t] || t;
+}
+
+function capturePhoto() {
+  const video = document.getElementById('cameraVideo');
+  if (!video.srcObject) { toast('⚠️ الكاميرا غير نشطة', true); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 1280;
+  canvas.height = video.videoHeight || 720;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  showLastCapture(dataUrl);
+  toast('📸 تم الالتقاط — احفظ الصورة');
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('⚠️ الصورة أكبر من 5MB', true); return; }
+  const reader = new FileReader();
+  reader.onload = ev => showLastCapture(ev.target.result);
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function showLastCapture(dataUrl) {
+  lastCapturedImage = dataUrl;
+  document.getElementById('lastCapture').style.display = 'block';
+  document.getElementById('lastCaptureImg').src = dataUrl;
+  document.getElementById('lastCapture').scrollIntoView({ behavior: 'smooth' });
+}
+
+function discardLastPhoto() {
+  lastCapturedImage = null;
+  document.getElementById('lastCapture').style.display = 'none';
+}
+
+async function saveLastPhoto() {
+  if (!lastCapturedImage) { toast('⚠️ لا توجد صورة', true); return; }
+  const patientId = document.getElementById('photoPatient').value;
+  if (!patientId) { toast('⚠️ اختر مريضاً أولاً', true); return; }
+  
+  try {
+    toast('⏳ جارٍ الحفظ...');
+    
+    // Convert base64 to blob
+    const response = await fetch(lastCapturedImage);
+    const blob = await response.blob();
+    
+    // Upload to Firebase Storage
+    const path = `patients/${patientId}/photos/${selectedPhotoType}_${Date.now()}.jpg`;
+    const storageRef = firebase.storage().ref(path);
+    const snapshot = await storageRef.put(blob);
+    const url = await snapshot.ref.getDownloadURL();
+    
+    // Save URL to Firestore
+    const photoDoc = db.collection('patients').doc(patientId).collection('photos').doc(selectedPhotoType);
+    await photoDoc.set({
+      type: selectedPhotoType,
+      url: url,
+      path: path,
+      uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      uploadedBy: CU.uid
+    }, { merge: true });
+    
+    toast('✅ تم حفظ الصورة: ' + photoTypeLabel(selectedPhotoType));
+    discardLastPhoto();
+    await loadPatientPhotos(patientId);
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  }
+}
+
+async function loadPatientPhotos(patientId) {
+  const grid = document.getElementById('patientPhotosGrid');
+  if (!grid) return;
+  
+  if (!patientId) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">اختر مريضاً لعرض صوره</div>';
+    return;
+  }
+  
+  grid.innerHTML = '<div class="empty" style="grid-column:1/-1">⏳ جارٍ التحميل...</div>';
+  
+  try {
+    const snap = await db.collection('patients').doc(patientId).collection('photos').get();
+    const photos = {};
+    snap.forEach(d => { photos[d.id] = d.data(); });
+    
+    const types = ['frontal', 'lateral', 'smile', 'upper', 'lower', 'tissue', 'portrait'];
+    grid.innerHTML = types.map(t => {
+      const p = photos[t];
+      if (p) {
+        return `
+          <div style="position:relative;background:var(--card2);border:1px solid var(--bd);border-radius:10px;overflow:hidden">
+            <img src="${esc(p.url)}" style="width:100%;height:100px;object-fit:cover;display:block" onclick="window.open('${esc(p.url)}','_blank')">
+            <div style="padding:6px;text-align:center;font-size:0.7rem;color:var(--muted)">${photoTypeLabel(t)}</div>
+            <button onclick="deletePatientPhoto('${patientId}', '${t}')" style="position:absolute;top:4px;left:4px;background:rgba(239,68,68,0.9);border:none;color:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px">✕</button>
+          </div>
+        `;
+      }
+      return `
+        <div style="background:var(--card2);border:2px dashed var(--bd);border-radius:10px;height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:0.7rem">
+          <div style="font-size:1.5rem;opacity:0.4">📷</div>
+          <div>${photoTypeLabel(t)}</div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;color:var(--err)">❌ ' + esc(e.message) + '</div>';
+  }
+}
+
+async function deletePatientPhoto(patientId, type) {
+  if (!confirm('حذف هذه الصورة؟')) return;
+  try {
+    const doc = await db.collection('patients').doc(patientId).collection('photos').doc(type).get();
+    if (doc.exists && doc.data().path) {
+      await firebase.storage().ref(doc.data().path).delete().catch(() => {});
+    }
+    await db.collection('patients').doc(patientId).collection('photos').doc(type).delete();
+    toast('🗑️ تم الحذف');
+    await loadPatientPhotos(patientId);
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  }
+}
+
+// Load photos when patient is selected
+document.addEventListener('change', e => {
+  if (e.target.id === 'photoPatient') {
+    loadPatientPhotos(e.target.value);
+  }
+});
+
+// ============ NOTIFICATIONS ============
+let notificationsUnsubscribe = null;
+
+async function loadNotifications() {
+  const el = document.getElementById('notificationsList');
+  if (!el) return;
+  el.innerHTML = '<div class="empty">⏳ جارٍ التحميل...</div>';
+  
+  try {
+    const snap = await db.collection('notifications')
+      .where('recipientId', '==', CU.uid)
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+      .get();
+    
+    const notifs = [];
+    snap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+    
+    if (!notifs.length) {
+      el.innerHTML = '<div class="empty"><div class="ic">🔕</div>لا توجد إشعارات</div>';
+      updateNotifBadge(0);
+      return;
+    }
+    
+    const unreadCount = notifs.filter(n => !n.read).length;
+    updateNotifBadge(unreadCount);
+    
+    el.innerHTML = notifs.map(n => {
+      const time = n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleString('ar-EG') : 'الآن';
+      const icon = { appointment: '📅', payment: '💰', lab: '🧪', patient: '👤', system: '⚙️', message: '💬' }[n.type] || '🔔';
+      return `
+        <div style="background:${n.read ? 'var(--card2)' : 'rgba(197,160,89,0.08)'};border:1px solid ${n.read ? 'var(--bd)' : 'var(--gold)'};border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+          <div style="font-size:1.5rem">${icon}</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:0.85rem;margin-bottom:4px">${esc(n.title || 'إشعار')}</div>
+            <div style="color:var(--muted);font-size:0.78rem;line-height:1.5">${esc(n.body || '')}</div>
+            <div style="color:var(--muted);font-size:0.65rem;margin-top:6px">${time}</div>
+          </div>
+          ${!n.read ? `<button onclick="markRead('${n.id}')" class="btn-outline" style="padding:4px 8px;font-size:0.65rem;white-space:nowrap">تم</button>` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    if (e.code === 'failed-precondition') {
+      el.innerHTML = '<div class="empty" style="color:var(--warn)">⚠️ يحتاج فهرس Firestore. افتح Console لإنشاء الفهرس.</div>';
+    } else {
+      el.innerHTML = '<div class="empty" style="color:var(--err)">❌ ' + esc(e.message) + '</div>';
+    }
+  }
+}
+
+function updateNotifBadge(count) {
+  const badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 99 ? '99+' : count;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+async function markRead(id) {
+  try {
+    await db.collection('notifications').doc(id).update({ 
+      read: true, 
+      readAt: firebase.firestore.FieldValue.serverTimestamp() 
+    });
+    await loadNotifications();
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  }
+}
+
+async function markAllRead() {
+  try {
+    const snap = await db.collection('notifications')
+      .where('recipientId', '==', CU.uid)
+      .where('read', '==', false)
+      .get();
+    
+    if (snap.empty) { toast('لا توجد إشعارات غير مقروءة'); return; }
+    
+    const batch = db.batch();
+    snap.forEach(d => batch.update(d.ref, { 
+      read: true, 
+      readAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }));
+    await batch.commit();
+    
+    toast('✅ تم قراءة ' + snap.size + ' إشعار');
+    await loadNotifications();
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  }
+}
+
+async function clearReadNotifications() {
+  if (!confirm('مسح جميع الإشعارات المقروءة؟')) return;
+  try {
+    const snap = await db.collection('notifications')
+      .where('recipientId', '==', CU.uid)
+      .where('read', '==', true)
+      .get();
+    
+    if (snap.empty) { toast('لا توجد إشعارات مقروءة'); return; }
+    
+    const batch = db.batch();
+    snap.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    
+    toast('🗑️ تم مسح ' + snap.size + ' إشعار');
+    await loadNotifications();
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  }
+}
+
+// Helper: send notification to a user
+async function sendNotification(recipientId, title, body, type = 'system') {
+  try {
+    await db.collection('notifications').add({
+      recipientId,
+      title,
+      body,
+      type,
+      read: false,
+      createdBy: CU.uid,
+      createdByName: CD.fullName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) {
+    console.warn('sendNotification:', e);
+  }
+}
+
+// Setup real-time listener for badge
+function setupNotifListener() {
+  if (notificationsUnsubscribe) notificationsUnsubscribe();
+  if (!CU) return;
+  
+  try {
+    notificationsUnsubscribe = db.collection('notifications')
+      .where('recipientId', '==', CU.uid)
+      .where('read', '==', false)
+      .onSnapshot(snap => {
+        updateNotifBadge(snap.size);
+        if (document.getElementById('sec-notifications')?.classList.contains('active')) {
+          loadNotifications();
+        }
+      }, err => console.warn('notif listener:', err));
+  } catch (e) {
+    console.warn('setupNotifListener:', e);
+  }
+}
 </script>
 </body>
 </html>
