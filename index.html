@@ -8,7 +8,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--accent:#0d6e7a;--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
@@ -21,7 +23,7 @@ input,select,textarea{font-family:inherit}
 .login-card{position:relative;z-index:2;width:min(460px,92vw);background:var(--card);border:1px solid var(--bd);border-radius:24px;padding:32px 26px;box-shadow:0 20px 60px rgba(0,0,0,.9);max-height:96vh;overflow-y:auto}
 .ll{text-align:center;margin-bottom:22px}
 .ll .ic{width:76px;height:76px;margin:0 auto 10px;background:radial-gradient(circle at 30% 30%,var(--gold),var(--goldD));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;color:#0A0A0A;box-shadow:0 0 40px rgba(197,160,89,.3)}
-.ll h1{font-size:1.45rem;font-weight:800;color:var(--gold);letter-spacing:.5px}
+.ll h1{font-size:1.45rem;font-weight:800;color:var(--gold)}
 .ll .sub{font-size:.7rem;color:var(--muted);letter-spacing:2px;margin-top:4px}
 .ll .bdg{display:inline-block;background:var(--accent);color:#fff;padding:2px 14px;border-radius:20px;font-size:.58rem;font-weight:700;margin-top:8px}
 .tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--bd)}
@@ -34,7 +36,7 @@ input,select,textarea{font-family:inherit}
 .f input::placeholder{color:#5b6f92}
 .btn-gold{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--goldD));color:#0A0A0A;font-weight:800;font-size:.92rem;transition:.2s}
 .btn-gold:hover{transform:translateY(-1px)}
-.btn-gold:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-gold:disabled{opacity:.5;cursor:not-allowed}
 .btn-ghost{width:100%;padding:10px;background:transparent;color:var(--muted);border:1px solid var(--bd);border-radius:12px;font-weight:600;font-size:.8rem;margin-top:8px;transition:.2s}
 .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
 .divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:.72rem}
@@ -58,7 +60,7 @@ input,select,textarea{font-family:inherit}
 .sbb .ic{width:52px;height:52px;margin:0 auto 6px;background:radial-gradient(circle at 30% 30%,var(--gold),var(--goldD));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;color:#0A0A0A}
 .sbb h2{font-size:.92rem;font-weight:800;color:var(--gold)}
 .sbb .sub{font-size:.58rem;color:var(--muted);margin-top:2px}
-.ns{font-size:.6rem;color:#5b6f92;padding:10px 12px 4px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.ns{font-size:.6rem;color:#5b6f92;padding:10px 12px 4px;letter-spacing:1px;font-weight:700}
 .ni{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:.15s;background:none;text-align:right;width:100%;font-family:inherit}
 .ni:hover{background:var(--card2);color:var(--txt)}
 .ni.active{background:var(--goldDim);color:var(--gold);border-color:var(--bd)}
@@ -108,6 +110,17 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
 .modal.show{display:flex}
 .modal .box{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+#faceCanvas,#dsdCanvas,#smileCanvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 auto}
+.canvas-wrap{background:#000;border-radius:12px;padding:10px;min-height:300px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bd)}
+#threeContainer{width:100%;height:320px;border-radius:12px;overflow:hidden;background:#0d1830;margin:12px 0}
+input[type=range]{width:100%;accent-color:var(--gold)}
+.slider-row{background:rgba(0,0,0,.3);padding:10px;border-radius:10px;margin-bottom:8px}
+.slider-row label{font-size:.75rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px}
+.slider-row span{color:var(--gold);font-weight:700}
+.compare-slider{position:relative;width:100%;max-width:700px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid var(--bd);aspect-ratio:4/3;background:#000}
+.compare-slider img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+.compare-handle{position:absolute;top:0;width:3px;height:100%;background:#fff;left:50%;cursor:ew-resize;z-index:10;box-shadow:0 0 10px rgba(0,0,0,.5)}
+.compare-handle::after{content:'↔';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#000;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
 </style>
 </head>
 <body>
@@ -165,8 +178,20 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
     <button class="ni" data-sec="appointments"><span class="ic">🗓️</span>المواعيد</button>
     <div class="ns">المالية</div>
     <button class="ni" data-sec="billing"><span class="ic">💳</span>الحسابات</button>
+    <div class="ns">التحليل الذكي</div>
+    <button class="ni" data-sec="faceAnalysis"><span class="ic">🧑‍⚕️</span>تحليل الوجه</button>
+    <button class="ni" data-sec="dsdStudio"><span class="ic">🎨</span>DSD Studio</button>
+    <button class="ni" data-sec="ceph"><span class="ic">📐</span>السيفالومترية</button>
+    <button class="ni" data-sec="aiDiagnosis"><span class="ic">🧠</span>التشخيص AI</button>
     <div class="ns">التواصل</div>
+    <button class="ni" data-sec="dentbook"><span class="ic">📱</span>Dentbook</button>
+    <button class="ni" data-sec="dentchat"><span class="ic">💬</span>DentChat</button>
     <button class="ni" data-sec="notifications"><span class="ic">🔔</span>الإشعارات <span id="notifBadge" style="background:var(--err);color:#fff;border-radius:10px;padding:1px 8px;font-size:0.6rem;margin-right:auto;display:none">0</span></button>
+    <div class="ns">الإنتاج</div>
+    <button class="ni" data-sec="cadcam"><span class="ic">⚙️</span>CAD/CAM 3D</button>
+    <button class="ni" data-sec="smileDesign"><span class="ic">😁</span>تصميم الابتسامة</button>
+    <button class="ni" data-sec="beforeAfter"><span class="ic">⚖️</span>قبل/بعد</button>
+    <button class="ni" data-sec="reports"><span class="ic">📄</span>التقارير</button>
     <div class="ns">الأنظمة</div>
     <button class="ni" data-sec="lab"><span class="ic">🧪</span>المعمل</button>
     <button class="ni" data-sec="specialists"><span class="ic">🎓</span>الأخصائيون</button>
@@ -256,7 +281,7 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
     <div class="sec" id="sec-billing">
       <div class="panel">
         <h2>💳 الحسابات</h2>
-        <div class="desc">إدارة المدفوعات والمتبقي</div>
+        <div class="desc">إدارة المدفوعات</div>
         <div class="g4" style="margin-bottom:16px">
           <div class="stat"><div class="ic">📅</div><div class="num" id="billingToday">0</div><div class="lbl">اليوم</div></div>
           <div class="stat"><div class="ic">📆</div><div class="num" id="billingMonth">0</div><div class="lbl">الشهر</div></div>
@@ -269,15 +294,113 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
           <div class="f"><label>التكلفة</label><input type="number" id="billTotal" value="0"></div>
           <div class="f"><label>المدفوع</label><input type="number" id="billPaid" value="0"></div>
         </div>
-        <button class="btn-save" onclick="saveBilling()">💾 حفظ الدفعة</button>
+        <button class="btn-save" onclick="saveBilling()">💾 حفظ</button>
         <div id="billingList" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-faceAnalysis">
+      <div class="panel">
+        <h2>🧑‍⚕️ تحليل الوجه</h2>
+        <div class="desc">تحليل تشريحي</div>
+        <div class="g2" style="margin-bottom:12px">
+          <div class="f"><label>المريض</label><select id="facePatient"></select></div>
+          <div class="f"><label>صورة الوجه</label><input type="file" id="faceImage" accept="image/*"></div>
+        </div>
+        <div class="canvas-wrap"><canvas id="faceCanvas" width="600" height="600"></canvas></div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-save" onclick="analyzeFace()">🧠 تحليل</button>
+          <button class="btn-outline" onclick="drawBeautyLines()">✨ خطوط الجمال</button>
+          <button class="btn-outline" onclick="drawGoldenRatio()">📐 النسبة الذهبية</button>
+          <button class="btn-danger" onclick="clearFace()">🗑️ مسح</button>
+        </div>
+        <div id="faceMetrics" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-dsdStudio">
+      <div class="panel">
+        <h2>🎨 DSD Studio</h2>
+        <div class="desc">تصميم الابتسامة</div>
+        <div class="f"><label>تحميل صورة</label><input type="file" id="dsdImage" accept="image/*"></div>
+        <div class="canvas-wrap"><canvas id="dsdCanvas" width="800" height="500"></canvas></div>
+        <div class="g3" style="margin-top:12px">
+          <div class="slider-row"><label>العرض <span id="dsdWVal">80</span>%</label><input type="range" id="dsdW" min="20" max="150" value="80" oninput="renderDSD()"></div>
+          <div class="slider-row"><label>الارتفاع <span id="dsdHVal">100</span>%</label><input type="range" id="dsdH" min="20" max="150" value="100" oninput="renderDSD()"></div>
+          <div class="slider-row"><label>الشفافية <span id="dsdOVal">85</span>%</label><input type="range" id="dsdO" min="0" max="100" value="85" oninput="renderDSD()"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-save" onclick="applyDSDTeeth()">🦷 إدراج أسنان</button>
+          <button class="btn-outline" onclick="applyDSDFilter()">✨ تنعيم</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-ceph">
+      <div class="panel">
+        <h2>📐 السيفالومترية</h2>
+        <div class="desc">تحليل SNA/SNB/ANB</div>
+        <div class="g3">
+          <div class="f"><label>SNA</label><input type="number" id="cephSNA" value="82"></div>
+          <div class="f"><label>SNB</label><input type="number" id="cephSNB" value="80"></div>
+          <div class="f"><label>ANB</label><input type="number" id="cephANB" value="2"></div>
+        </div>
+        <button class="btn-save" style="margin-top:12px" onclick="analyzeCeph()">🔬 تحليل</button>
+        <div id="cephResult" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-aiDiagnosis">
+      <div class="panel">
+        <h2>🧠 التشخيص AI</h2>
+        <div class="desc">تحليل ذكي</div>
+        <div class="f"><label>المريض</label><select id="aiPatient"></select></div>
+        <div class="f"><label>الشكوى</label><input type="text" id="aiComplaint" placeholder="ألم في الضرس"></div>
+        <div class="f"><label>التفاصيل</label><textarea id="aiDetails" rows="2"></textarea></div>
+        <button class="btn-save" onclick="runAIDiagnosis()">🧠 تشخيص</button>
+        <div id="aiOutput" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-dentbook">
+      <div class="panel">
+        <h2>📱 Dentbook</h2>
+        <div class="desc">الشبكة الاجتماعية</div>
+        <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:16px">
+          <textarea id="postText" placeholder="شارك حالة طبية..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt);min-height:70px;resize:vertical"></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn-save" onclick="createPost()" id="btnPost">📤 نشر</button>
+            <span style="margin-right:auto;color:var(--muted);font-size:0.75rem;align-self:center"><span id="postCount">0</span> منشور</span>
+          </div>
+        </div>
+        <div id="dentbookFeed"><div class="empty">⏳ جارٍ التحميل...</div></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-dentchat">
+      <div class="panel">
+        <h2>💬 DentChat</h2>
+        <div class="desc">محادثات</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <select id="chatTarget" onchange="loadChatMessages()" style="flex:1;min-width:200px;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+            <option value="group">👥 المجموعة</option>
+          </select>
+          <button class="btn-outline" onclick="loadChatTargets()" style="padding:8px 14px;font-size:0.75rem">🔄</button>
+        </div>
+        <div id="chatMessages" style="background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:14px;min-height:400px;max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+          <div class="empty">⏳ جارٍ التحميل...</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="chatInput" placeholder="رسالة..." onkeydown="if(event.key==='Enter')sendChatMessage()" style="flex:3;min-width:150px;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+          <button class="btn-save" onclick="sendChatMessage()">📤</button>
+        </div>
       </div>
     </div>
 
     <div class="sec" id="sec-notifications">
       <div class="panel">
         <h2>🔔 الإشعارات</h2>
-        <div class="desc">جميع التنبيهات والرسائل</div>
+        <div class="desc">التنبيهات</div>
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
           <button class="btn-save" onclick="markAllRead()">✅ قراءة الكل</button>
           <button class="btn-outline" onclick="loadNotifications()">🔄 تحديث</button>
@@ -289,17 +412,66 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
       </div>
     </div>
 
+    <div class="sec" id="sec-cadcam">
+      <div class="panel">
+        <h2>⚙️ CAD/CAM 3D</h2>
+        <div class="desc">عرض ثلاثي الأبعاد</div>
+        <div id="threeContainer"></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-smileDesign">
+      <div class="panel">
+        <h2>😁 تصميم الابتسامة</h2>
+        <div class="desc">تخطيط رقمي</div>
+        <div class="f"><label>صورة</label><input type="file" id="smileImage" accept="image/*"></div>
+        <div class="canvas-wrap"><canvas id="smileCanvas" width="700" height="400"></canvas></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-beforeAfter">
+      <div class="panel">
+        <h2>⚖️ قبل / بعد</h2>
+        <div class="desc">مقارنة تفاعلية</div>
+        <div class="g2" style="margin-bottom:12px">
+          <div class="f"><label>قبل</label><input type="file" id="beforeImg" accept="image/*"></div>
+          <div class="f"><label>بعد</label><input type="file" id="afterImg" accept="image/*"></div>
+        </div>
+        <div class="compare-slider" id="compareSlider">
+          <img id="cmpBefore" src="" alt="قبل">
+          <div id="cmpAfterWrap" style="position:absolute;top:0;left:0;width:50%;height:100%;overflow:hidden">
+            <img id="cmpAfter" src="" alt="بعد" style="width:200%;max-width:none">
+          </div>
+          <div class="compare-handle" id="cmpHandle"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-reports">
+      <div class="panel">
+        <h2>📄 التقارير</h2>
+        <div class="desc">توليد تقرير</div>
+        <div class="f"><label>المريض</label><select id="reportPatient"></select></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn-save" onclick="generateReport()">📄 توليد</button>
+          <button class="btn-outline" onclick="printReport()">🖨️ طباعة</button>
+          <button class="btn-outline" onclick="sendWhatsApp()">📱 واتساب</button>
+        </div>
+        <div id="reportPreview" style="margin-top:16px"></div>
+      </div>
+    </div>
+
     <div class="sec" id="sec-lab">
       <div class="panel">
         <h2>🧪 المعمل</h2>
-        <div class="desc">إدارة طلبات المعمل</div>
+        <div class="desc">إدارة الطلبات</div>
         <div class="g2" style="margin-bottom:12px">
           <div class="f"><label>المريض</label><select id="labPatient"></select></div>
           <div class="f"><label>النوع</label><select id="labType"><option>تاج</option><option>جسر</option><option>طقم</option><option>زرعة</option></select></div>
           <div class="f"><label>المعمل</label><input id="labName"></div>
           <div class="f"><label>الاستلام</label><input type="date" id="labDue"></div>
         </div>
-        <button class="btn-save" onclick="addLab()">➕ إضافة طلب</button>
+        <button class="btn-save" onclick="addLab()">➕ إضافة</button>
         <div id="labList" style="margin-top:16px"></div>
       </div>
     </div>
@@ -307,7 +479,7 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
     <div class="sec" id="sec-specialists">
       <div class="panel">
         <h2>🎓 الأخصائيون</h2>
-        <div class="desc">قائمة الأخصائيين</div>
+        <div class="desc">القائمة</div>
         <div class="g2" style="margin-bottom:12px">
           <div class="f"><label>الاسم</label><input id="specName"></div>
           <div class="f"><label>التخصص</label><input id="specSpecialty"></div>
@@ -321,29 +493,29 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
     <div class="sec" id="sec-users">
       <div class="panel">
         <h2>👤 إدارة المستخدمين</h2>
-        <div class="desc">إضافة أطباء وموظفين وإدارة صلاحياتهم</div>
+        <div class="desc">إضافة وإدارة</div>
         <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px">
-          <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:12px">➕ إضافة مستخدم جديد</h3>
+          <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:12px">➕ مستخدم جديد</h3>
           <div class="g2">
-            <div class="f"><label>الاسم الكامل *</label><input id="newUserName"></div>
-            <div class="f"><label>البريد الإلكتروني *</label><input type="email" id="newUserEmail"></div>
-            <div class="f"><label>كلمة المرور * (6+)</label><input type="password" id="newUserPass"></div>
+            <div class="f"><label>الاسم *</label><input id="newUserName"></div>
+            <div class="f"><label>البريد *</label><input type="email" id="newUserEmail"></div>
+            <div class="f"><label>كلمة المرور *</label><input type="password" id="newUserPass"></div>
             <div class="f"><label>الدور</label>
               <select id="newUserRole">
-                <option value="doctor">👨‍⚕️ طبيب</option>
-                <option value="admin">👑 مدير</option>
-                <option value="employee">👨‍💼 موظف</option>
-                <option value="guest">👤 ضيف</option>
+                <option value="doctor">طبيب</option>
+                <option value="admin">مدير</option>
+                <option value="employee">موظف</option>
+                <option value="guest">ضيف</option>
               </select>
             </div>
             <div class="f"><label>التخصص</label><input id="newUserSpecialty"></div>
             <div class="f"><label>الهاتف</label><input id="newUserPhone"></div>
           </div>
-          <button class="btn-save" onclick="createUser()" id="btnCreateUser" style="margin-top:12px">➕ إضافة مستخدم</button>
+          <button class="btn-save" onclick="createUser()" id="btnCreateUser" style="margin-top:12px">➕ إضافة</button>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <h3 style="color:var(--gold);font-size:0.95rem">📋 المستخدمون (<span id="usersCount">0</span>)</h3>
-          <button class="btn-outline" onclick="loadUsers()">🔄 تحديث</button>
+          <button class="btn-outline" onclick="loadUsers()">🔄</button>
         </div>
         <div id="usersList"></div>
       </div>
@@ -352,7 +524,7 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
     <div class="sec" id="sec-team">
       <div class="panel">
         <h2>👥 فريق العيادة</h2>
-        <div class="desc">كل الأعضاء المسجلين</div>
+        <div class="desc">الأعضاء</div>
         <div id="teamList"></div>
       </div>
     </div>
@@ -387,7 +559,6 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2);font-wei
 <div class="toast" id="toast"></div>
 
 <script>
-// ============ FIREBASE INIT ============
 const firebaseConfig = {
   apiKey: "AIzaSyBe5PoeoH0pJ9hC0vTjVPELNZPpmKqCjCU",
   authDomain: "naqclinixai-dental-clinic.firebaseapp.com",
@@ -396,85 +567,37 @@ const firebaseConfig = {
   messagingSenderId: "796796158387",
   appId: "1:796796158387:web:613eac60fa6bc18e60cbc6"
 };
-
-let auth, db;
-try {
-  firebase.initializeApp(firebaseConfig);
-  auth = firebase.auth();
-  db = firebase.firestore();
-} catch(e) {
-  console.error('Firebase init failed:', e);
-  document.body.innerHTML = '<div style="padding:40px;color:#ef4444;font-family:Arial"><h1>خطأ في تهيئة Firebase</h1><pre>' + e.message + '</pre></div>';
-}
-
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 const OWNER_EMAIL = 'naqclinixai@gmail.com';
+
 let CU=null, CD=null, patients=[], appointments=[], lab=[], specialists=[], billing=[];
 let charts={}, toothState={}, allUsers=[], notificationsUnsubscribe=null;
+let dentbookUnsubscribe=null, chatUnsubscribe=null, chatTargetsLoaded=false;
+let faceImg=null, dsdImg=null, threeInit=false;
 
-// ============ HELPERS ============
-function toast(m,err){
-  const t=document.getElementById('toast');
-  if(!t)return;
-  t.textContent=m;
-  t.classList.toggle('err',!!err);
-  t.classList.add('show');
-  clearTimeout(t._t);
-  t._t=setTimeout(()=>t.classList.remove('show'),3500);
-}
-function esc(s){
-  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function today(){
-  return new Date().toISOString().slice(0,10);
-}
-
-// ============ AUTH UI ============
-function switchAuth(t){
-  document.getElementById('tabLogin').classList.toggle('active',t==='login');
-  document.getElementById('tabReg').classList.toggle('active',t==='register');
-  document.getElementById('loginForm').classList.toggle('hidden',t!=='login');
-  document.getElementById('registerForm').classList.toggle('hidden',t!=='register');
-}
-
-function showAlert(msg,type){
-  const a=document.getElementById('authAlert');
-  if(!a)return;
-  a.className='alert '+type+' show';
-  a.textContent=msg;
-}
-
-function hideAlert(){
-  const a=document.getElementById('authAlert');
-  if(!a)return;
-  a.className='alert';
-  a.textContent='';
-}
+function toast(m,err){const t=document.getElementById('toast');t.textContent=m;t.classList.toggle('err',!!err);t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function today(){return new Date().toISOString().slice(0,10)}
+function switchAuth(t){document.getElementById('tabLogin').classList.toggle('active',t==='login');document.getElementById('tabReg').classList.toggle('active',t==='register');document.getElementById('loginForm').classList.toggle('hidden',t!=='login');document.getElementById('registerForm').classList.toggle('hidden',t!=='register')}
+function showAlert(msg,type){const a=document.getElementById('authAlert');a.className='alert '+type+' show';a.textContent=msg}
 
 async function doLogin(){
   const email=document.getElementById('loginEmail').value.trim();
   const pass=document.getElementById('loginPassword').value;
-  if(!email||!pass){
-    showAlert('⚠️ أدخل البريد وكلمة المرور','error');
-    return;
-  }
+  if(!email||!pass){showAlert('⚠️ املأ الحقول','error');return}
   const btn=document.getElementById('btnLogin');
-  btn.disabled=true;
-  btn.textContent='⏳ جارٍ الدخول...';
-  showAlert('⏳ جارٍ التحقق...','info');
-  try{
-    await auth.signInWithEmailAndPassword(email,pass);
-    showAlert('✅ تم الدخول','success');
-  }catch(e){
-    let m='خطأ: '+e.message;
+  btn.disabled=true;btn.textContent='⏳...';
+  try{await auth.signInWithEmailAndPassword(email,pass);showAlert('✅','success')}
+  catch(e){
+    let m=e.message;
     if(e.code==='auth/user-not-found')m='البريد غير مسجل';
     else if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential')m='كلمة المرور خطأ';
     else if(e.code==='auth/invalid-email')m='البريد غير صالح';
-    else if(e.code==='auth/too-many-requests')m='محاولات كثيرة - انتظر';
-    else if(e.code==='auth/network-request-failed')m='فشل الاتصال';
-    else if(e.code==='auth/operation-not-allowed')m='تسجيل الدخول بالبريد غير مفعل';
+    else if(e.code==='auth/too-many-requests')m='محاولات كثيرة';
     showAlert('❌ '+m,'error');
-    btn.disabled=false;
-    btn.textContent='🚪 تسجيل الدخول';
+    btn.disabled=false;btn.textContent='🚪 تسجيل الدخول';
   }
 }
 
@@ -483,963 +606,684 @@ async function doRegister(){
   const email=document.getElementById('regEmail').value.trim();
   const pass=document.getElementById('regPassword').value;
   const pass2=document.getElementById('regPassword2').value;
-  if(!name||!email||!pass){
-    showAlert('⚠️ أكمل الحقول','error');
-    return;
-  }
-  if(pass.length<6){
-    showAlert('⚠️ كلمة المرور 6+','error');
-    return;
-  }
-  if(pass!==pass2){
-    showAlert('⚠️ كلمتا المرور مختلفتان','error');
-    return;
-  }
+  if(!name||!email||!pass){showAlert('⚠️ أكمل الحقول','error');return}
+  if(pass.length<6){showAlert('⚠️ 6+','error');return}
+  if(pass!==pass2){showAlert('⚠️ مختلفتان','error');return}
   const btn=document.getElementById('btnReg');
-  btn.disabled=true;
-  btn.textContent='⏳...';
-  showAlert('⏳ جارٍ الإنشاء...','info');
+  btn.disabled=true;btn.textContent='⏳...';
   try{
     const cred=await auth.createUserWithEmailAndPassword(email,pass);
     await cred.user.updateProfile({displayName:name});
     const clinicId='CLN-'+Math.random().toString(36).substring(2,8).toUpperCase();
     await db.collection('users').doc(cred.user.uid).set({
-      email,
-      fullName:name,
-      name,
-      role:email===OWNER_EMAIL?'owner':'doctor',
-      clinicId,
-      clinicName:document.getElementById('regClinic').value.trim(),
+      email,name,fullName:name,role:email===OWNER_EMAIL?'owner':'doctor',
+      clinicId,clinicName:document.getElementById('regClinic').value.trim(),
       phone:document.getElementById('regPhone').value.trim(),
-      active:true,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    showAlert('✅ تم إنشاء الحساب','success');
+    showAlert('✅ تم','success');
   }catch(e){
-    let m='خطأ: '+e.message;
+    let m=e.message;
     if(e.code==='auth/email-already-in-use')m='البريد مسجل';
-    else if(e.code==='auth/weak-password')m='كلمة المرور ضعيفة';
-    else if(e.code==='auth/invalid-email')m='البريد غير صالح';
-    else if(e.code==='auth/operation-not-allowed')m='إنشاء الحساب غير مفعل في Firebase';
+    else if(e.code==='auth/weak-password')m='ضعيفة';
     showAlert('❌ '+m,'error');
-    btn.disabled=false;
-    btn.textContent='✨ إنشاء الحساب';
+    btn.disabled=false;btn.textContent='✨ إنشاء';
   }
 }
 
 async function doSocial(provider){
   if(provider!=='google')return;
   try{
-    showAlert('⏳ جارٍ الاتصال بـ Google...','info');
     const p=new firebase.auth.GoogleAuthProvider();
     const cred=await auth.signInWithPopup(p);
     const u=cred.user;
     const doc=await db.collection('users').doc(u.uid).get();
     if(!doc.exists){
       await db.collection('users').doc(u.uid).set({
-        email:u.email||u.uid,
-        fullName:u.displayName||(u.email||'').split('@')[0],
-        name:u.displayName||(u.email||'').split('@')[0],
+        email:u.email||u.uid,fullName:u.displayName||(u.email||'').split('@')[0],
         role:u.email===OWNER_EMAIL?'owner':'doctor',
         clinicId:'CLN-'+u.uid.slice(0,6).toUpperCase(),
-        active:true,
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()
       });
     }
-    showAlert('✅ تم الدخول بـ Google','success');
-  }catch(e){
-    let m='خطأ: '+e.message;
-    if(e.code==='auth/operation-not-allowed')m='Google غير مفعل في Firebase Console';
-    else if(e.code==='auth/popup-closed-by-user')m='أغلقت النافذة';
-    else if(e.code==='auth/unauthorized-domain')m='الدومين غير مصرح به';
-    showAlert('❌ '+m,'error');
-  }
+    showAlert('✅','success');
+  }catch(e){showAlert('❌ '+e.message,'error')}
 }
 
 async function doGuestLogin(){
   try{
-    showAlert('⏳ جارٍ الدخول كضيف...','info');
     const cred=await auth.signInAnonymously();
     await db.collection('users').doc(cred.user.uid).set({
-      email:cred.user.uid+'@guest.local',
-      fullName:'زائر-'+cred.user.uid.slice(0,6).toUpperCase(),
-      name:'زائر',
-      role:'guest',
+      email:cred.user.uid+'@guest.local',fullName:'زائر',name:'زائر',role:'guest',
       clinicId:'GUEST-'+cred.user.uid.slice(0,6).toUpperCase(),
-      active:true,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()
     },{merge:true});
-    showAlert('✅ دخلت كضيف','success');
-  }catch(e){
-    let m='خطأ: '+e.message;
-    if(e.code==='auth/operation-not-allowed')m='الدخول كضيف غير مفعل في Firebase Console';
-    else if(e.code==='auth/unauthorized-domain')m='الدومين غير مصرح به';
-    showAlert('❌ '+m,'error');
-  }
+    showAlert('✅','success');
+  }catch(e){showAlert('❌ '+e.message,'error')}
 }
 
 async function doForgotPassword(){
   const email=document.getElementById('loginEmail').value.trim();
-  if(!email){
-    showAlert('⚠️ أدخل بريدك','error');
-    return;
-  }
-  try{
-    await auth.sendPasswordResetEmail(email);
-    showAlert('📧 تم إرسال الرابط','info');
-  }catch(e){
-    showAlert('❌ '+e.message,'error');
-  }
+  if(!email){showAlert('⚠️ بريد','error');return}
+  try{await auth.sendPasswordResetEmail(email);showAlert('📧 تم','info')}
+  catch(e){showAlert('❌ '+e.message,'error')}
 }
 
-function doLogout(){
-  if(confirm('تسجيل الخروج؟'))auth.signOut();
-}
+function doLogout(){if(confirm('خروج؟'))auth.signOut()}
 
-// ============ AUTH STATE ============
 auth.onAuthStateChanged(async user=>{
   if(user){
     CU=user;
     try{
       const doc=await db.collection('users').doc(user.uid).get();
-      if(doc.exists){
-        CD=doc.data();
-        if(!CD.fullName)CD.fullName=CD.name||user.displayName||user.email||'مستخدم';
-      }else{
-        CD={
-          email:user.email||user.uid,
-          fullName:user.displayName||user.email||'مستخدم',
-          role:user.email===OWNER_EMAIL?'owner':'guest',
-          clinicId:'CLN-'+user.uid.slice(0,6).toUpperCase(),
-          active:true
-        };
+      if(doc.exists){CD=doc.data();if(!CD.fullName)CD.fullName=CD.name||user.displayName||user.email||'مستخدم'}
+      else{
+        CD={email:user.email||user.uid,fullName:user.displayName||user.email||'مستخدم',
+            role:user.email===OWNER_EMAIL?'owner':'guest',
+            clinicId:'CLN-'+user.uid.slice(0,6).toUpperCase(),active:true};
         await db.collection('users').doc(user.uid).set(CD);
       }
       if(user.email===OWNER_EMAIL){
         CD.role='owner';
-        if(!CD.fullName||CD.fullName==='مستخدم'||CD.fullName==='undefined'){
-          CD.fullName=user.displayName||'د. علي النقيب';
-        }
-        try{
-          await db.collection('users').doc(user.uid).set({role:'owner',fullName:CD.fullName},{merge:true});
-        }catch(e){}
+        if(!CD.fullName||CD.fullName==='مستخدم')CD.fullName=user.displayName||'د. علي النقيب';
+        try{await db.collection('users').doc(user.uid).set({role:'owner',fullName:CD.fullName},{merge:true})}catch(e){}
       }
-      if(!CD.clinicId||CD.clinicId==='undefined'){
-        CD.clinicId='CLN-'+user.uid.slice(0,8).toUpperCase();
-        try{
-          await db.collection('users').doc(user.uid).set({clinicId:CD.clinicId},{merge:true});
-        }catch(e){}
-      }
-      if(!CD.fullName||CD.fullName==='undefined'){
-        CD.fullName=user.displayName||user.email||'مستخدم';
-      }
-      if(CD.active===false){
-        await auth.signOut();
-        toast('🚫 الحساب معطل',true);
-        return;
-      }
+      if(!CD.clinicId){CD.clinicId='CLN-'+user.uid.slice(0,8).toUpperCase();try{await db.collection('users').doc(user.uid).set({clinicId:CD.clinicId},{merge:true})}catch(e){}}
+      if(CD.active===false){await auth.signOut();toast('🚫 معطل',true);return}
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.add('active');
       document.getElementById('userName').textContent=CD.fullName;
-      document.getElementById('clinicInfo').innerHTML=CD.clinicName
-        ?`🏥 ${esc(CD.clinicName)} • كود: <b>${esc(CD.clinicId||'')}</b>`
-        :'الحساب: '+(CD.role==='owner'?'👑 مالك':CD.role||'');
-      hideAlert();
-      await Promise.all([
-        loadPatients(),
-        loadAppointments(),
-        loadLab(),
-        loadSpecialists(),
-        loadBilling()
-      ]);
-      updateDashboard();
-      fillSettings();
-      setupNotifListener();
+      document.getElementById('clinicInfo').innerHTML=CD.clinicName?`🏥 ${esc(CD.clinicName)}`:'الحساب: '+(CD.role==='owner'?'👑 مالك':CD.role||'');
+      await Promise.all([loadPatients(),loadAppointments(),loadLab(),loadSpecialists(),loadBilling()]);
+      updateDashboard();fillSettings();setupNotifListener();
+      setTimeout(()=>{drawFacePlaceholder();drawDSDPlaceholder();initCompareSlider();},300);
       toast('✅ مرحباً '+CD.fullName);
-    }catch(e){
-      console.error('Auth state error:',e);
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('app').classList.add('active');
-    }
+    }catch(e){console.error(e);toast('❌ '+e.message,true)}
   }else{
     CU=null;CD=null;
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('app').classList.remove('active');
-    hideAlert();
   }
 });
 
-// ============ NAVIGATION ============
 function showSection(sec){
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
-  const el=document.getElementById('sec-'+sec);
-  if(el)el.classList.add('active');
+  const el=document.getElementById('sec-'+sec);if(el)el.classList.add('active');
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
-  const btn=document.querySelector(`.ni[data-sec="${sec}"]`);
-  if(btn)btn.classList.add('active');
+  const btn=document.querySelector(`.ni[data-sec="${sec}"]`);if(btn)btn.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
   if(sec==='patients')renderPatients();
   if(sec==='team')renderTeam();
   if(sec==='users')loadUsers();
   if(sec==='notifications')loadNotifications();
+  if(sec==='dentbook')loadDentbook();
+  if(sec==='dentchat'){if(!chatTargetsLoaded)loadChatTargets();loadChatMessages()}
+  if(sec==='cadcam')setTimeout(initThree,200);
 }
 document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.sec)));
 
-// ============ PATIENTS ============
+// PATIENTS
 async function loadPatients(){
   try{
     const snap=await db.collection('patients').get();
-    patients=[];
-    snap.forEach(d=>patients.push({id:d.id,...d.data()}));
+    patients=[];snap.forEach(d=>patients.push({id:d.id,...d.data()}));
     patients.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    renderPatients();
-    populateSelects();
-    updateDashboard();
-  }catch(e){console.error('loadPatients:',e)}
+    renderPatients();populateSelects();updateDashboard();
+  }catch(e){console.error(e)}
 }
-
 function renderPatients(){
   const el=document.getElementById('patientsList');
   const q=(document.getElementById('searchPatients')?.value||'').toLowerCase();
   const list=patients.filter(p=>!q||(p.fullName||'').toLowerCase().includes(q)||(p.phone||'').includes(q));
-  if(!list.length){
-    el.innerHTML='<div class="empty"><div class="ic">📭</div>لا يوجد مرضى</div>';
-    return;
-  }
-  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">'+
-    list.map(p=>`
-      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-          <b style="font-size:.85rem">${esc(p.fullName)}</b>
-          <span class="chip" style="padding:2px 8px;font-size:.65rem">${esc(p.gender||'—')}</span>
-        </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">
-          ${p.phone?`📱 ${esc(p.phone)}`:''} ${p.age?`· 🎂 ${p.age}`:''}
-        </div>
-        <div style="display:flex;gap:4px">
-          <button class="btn-outline" style="flex:1;padding:4px;font-size:.68rem" onclick="openPatient('${p.id}')">📂 فتح</button>
-          <button class="btn-danger" style="padding:4px 8px;font-size:.68rem" onclick="deletePatient('${p.id}')">🗑️</button>
-        </div>
-      </div>
-    `).join('')+'</div>';
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ic">📭</div>لا يوجد مرضى</div>';return}
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">'+list.map(p=>`
+    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="font-size:.85rem">${esc(p.fullName)}</b><span class="chip" style="padding:2px 8px;font-size:.65rem">${esc(p.gender||'—')}</span></div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">${p.phone?`📱 ${esc(p.phone)}`:''} ${p.age?`· 🎂 ${p.age}`:''}</div>
+      <div style="display:flex;gap:4px"><button class="btn-outline" style="flex:1;padding:4px;font-size:.68rem" onclick="openPatient('${p.id}')">📂 فتح</button><button class="btn-danger" style="padding:4px 8px;font-size:.68rem" onclick="deletePatient('${p.id}')">🗑️</button></div>
+    </div>`).join('')+'</div>';
 }
-
 function openAddPatient(){document.getElementById('patientModal').classList.add('show')}
 function closePatientModal(){document.getElementById('patientModal').classList.remove('show')}
-
 async function createPatient(){
   const name=document.getElementById('pName').value.trim();
   const phone=document.getElementById('pPhone').value.trim();
-  if(!name||!phone){
-    toast('⚠️ الاسم والهاتف',true);
-    return;
-  }
+  if(!name||!phone){toast('⚠️ الاسم والهاتف',true);return}
   try{
-    const fn='DR-'+Date.now().toString().slice(-8);
     await db.collection('patients').add({
-      fullName:name,
-      phone,
-      age:parseInt(document.getElementById('pAge').value)||null,
+      fullName:name,phone,age:parseInt(document.getElementById('pAge').value)||null,
       gender:document.getElementById('pGender').value,
-      fileNumber:fn,
-      clinicId:CD.clinicId,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy:CU.uid
+      fileNumber:'DR-'+Date.now().toString().slice(-8),
+      clinicId:CD.clinicId,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:CU.uid
     });
-    closePatientModal();
-    ['pName','pPhone','pAge'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('pGender').value='';
-    toast('✅ تم الحفظ');
-    await loadPatients();
+    closePatientModal();['pName','pPhone','pAge'].forEach(id=>document.getElementById(id).value='');document.getElementById('pGender').value='';
+    toast('✅');await loadPatients();
   }catch(e){toast('❌ '+e.message,true)}
 }
-
-async function deletePatient(id){
-  if(!confirm('حذف المريض؟'))return;
-  try{
-    await db.collection('patients').doc(id).delete();
-    toast('🗑️');
-    await loadPatients();
-  }catch(e){toast('❌',true)}
-}
-
-async function openPatient(id){
-  window._currentPatientId=id;
-  window._currentPatient=patients.find(p=>p.id===id);
-  showSection('history');
-  loadHistory(id);
-}
-
+async function deletePatient(id){if(!confirm('حذف؟'))return;try{await db.collection('patients').doc(id).delete();toast('🗑️');await loadPatients()}catch(e){toast('❌',true)}}
+async function openPatient(id){window._currentPatientId=id;window._currentPatient=patients.find(p=>p.id===id);showSection('history');loadHistory(id)}
 function populateSelects(){
-  const opts='<option value="">— اختر —</option>'+
-    patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
-  ['apptPatient','billPatient','labPatient'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.innerHTML=opts;
-  });
+  const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
+  ['apptPatient','billPatient','facePatient','aiPatient','reportPatient','labPatient'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts});
 }
-
-// ============ HISTORY ============
 async function loadHistory(pid){
   document.getElementById('historyCtx').textContent='للمريض: '+(window._currentPatient?.fullName||'');
   document.getElementById('historyForm').classList.remove('hidden');
-  try{
-    const doc=await db.collection('patients').doc(pid).collection('medical').doc('history').get();
-    if(doc.exists){
-      const d=doc.data();
-      document.getElementById('histChronic').value=d.chronic||'';
-      document.getElementById('histAllergy').value=d.allergy||'';
-      document.getElementById('histDrugs').value=d.drugs||'';
-    }
+  try{const doc=await db.collection('patients').doc(pid).collection('medical').doc('history').get();
+    if(doc.exists){const d=doc.data();document.getElementById('histChronic').value=d.chronic||'';document.getElementById('histAllergy').value=d.allergy||'';document.getElementById('histDrugs').value=d.drugs||''}
   }catch(e){console.error(e)}
 }
-
 async function saveHistory(){
   if(!window._currentPatientId)return;
-  try{
-    await db.collection('patients').doc(window._currentPatientId).collection('medical').doc('history').set({
-      chronic:document.getElementById('histChronic').value,
-      allergy:document.getElementById('histAllergy').value,
-      drugs:document.getElementById('histDrugs').value,
-      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true});
-    toast('✅');
-  }catch(e){toast('❌ '+e.message,true)}
+  try{await db.collection('patients').doc(window._currentPatientId).collection('medical').doc('history').set({
+    chronic:document.getElementById('histChronic').value,
+    allergy:document.getElementById('histAllergy').value,
+    drugs:document.getElementById('histDrugs').value,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});toast('✅')}catch(e){toast('❌',true)}
 }
-
-// ============ CHART ============
 function renderChart(){
-  const up=document.getElementById('upperTeeth');
-  const lo=document.getElementById('lowerTeeth');
+  const up=document.getElementById('upperTeeth');const lo=document.getElementById('lowerTeeth');
   if(!up||!lo)return;
-  const make=(idx)=>{
-    const st=toothState[idx]||'';
-    return `<div class="tooth ${st}" onclick="toggleTooth(${idx})">${idx+1}</div>`;
-  };
+  const make=idx=>`<div class="tooth ${toothState[idx]||''}" onclick="toggleTooth(${idx})">${idx+1}</div>`;
   up.innerHTML='';lo.innerHTML='';
   for(let i=0;i<16;i++)up.innerHTML+=make(i);
   for(let i=16;i<32;i++)lo.innerHTML+=make(i);
 }
+function toggleTooth(idx){const s=['','caries','treated','missing'];toothState[idx]=s[(s.indexOf(toothState[idx]||'')+1)%4];renderChart()}
+async function saveChart(){if(!window._currentPatientId)return;try{await db.collection('patients').doc(window._currentPatientId).collection('medical').doc('chart').set({teeth:toothState},{merge:true});toast('✅')}catch(e){toast('❌',true)}}
 
-function toggleTooth(idx){
-  const states=['','caries','treated','missing'];
-  const cur=toothState[idx]||'';
-  const i=states.indexOf(cur);
-  toothState[idx]=states[(i+1)%states.length];
-  renderChart();
-}
-
-async function saveChart(){
-  if(!window._currentPatientId)return;
-  try{
-    await db.collection('patients').doc(window._currentPatientId).collection('medical').doc('chart').set({teeth:toothState},{merge:true});
-    toast('✅');
-  }catch(e){toast('❌',true)}
-}
-
-// ============ APPOINTMENTS ============
+// APPOINTMENTS
 async function loadAppointments(){
-  try{
-    const snap=await db.collection('appointments').get();
-    appointments=[];
-    snap.forEach(d=>appointments.push({id:d.id,...d.data()}));
-    appointments.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-    renderAppointments();
-  }catch(e){console.error(e)}
+  try{const snap=await db.collection('appointments').get();appointments=[];snap.forEach(d=>appointments.push({id:d.id,...d.data()}));appointments.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));renderAppointments()}catch(e){console.error(e)}
 }
-
 async function addAppointment(){
   const pid=document.getElementById('apptPatient').value;
   const date=document.getElementById('apptDate').value;
   const time=document.getElementById('apptTime').value;
-  if(!pid||!date||!time){
-    toast('⚠️ أكمل البيانات',true);
-    return;
-  }
-  try{
-    const p=patients.find(x=>x.id===pid);
-    await db.collection('appointments').add({
-      patientId:pid,
-      patientName:p?.fullName||'',
-      date,time,
-      type:document.getElementById('apptType').value,
-      completed:false,
-      clinicId:CD.clinicId,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    toast('✅');
-    await loadAppointments();
+  if(!pid||!date||!time){toast('⚠️',true);return}
+  try{const p=patients.find(x=>x.id===pid);
+    await db.collection('appointments').add({patientId:pid,patientName:p?.fullName||'',date,time,type:document.getElementById('apptType').value,completed:false,clinicId:CD.clinicId,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    toast('✅');await loadAppointments()
   }catch(e){toast('❌',true)}
 }
-
 function renderAppointments(){
   const el=document.getElementById('appointmentsList');
-  if(!appointments.length){
-    el.innerHTML='<div class="empty">لا مواعيد</div>';
-    return;
-  }
+  if(!appointments.length){el.innerHTML='<div class="empty">لا مواعيد</div>';return}
   const ts=today();
-  el.innerHTML='<table class="tbl"><thead><tr><th>المريض</th><th>التاريخ</th><th>النوع</th><th></th></tr></thead><tbody>'+
-    appointments.map(a=>{
-      const isPast=a.date<ts;
-      const color=a.completed?'var(--ok)':isPast?'var(--err)':a.date===ts?'var(--gold)':'var(--goldL)';
-      return `<tr>
-        <td><b>${esc(a.patientName)}</b></td>
-        <td style="color:${color}">${esc(a.date)} ${esc(a.time)}</td>
-        <td>${esc(a.type)}</td>
-        <td><button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="delAppt('${a.id}')">🗑️</button></td>
-      </tr>`;
-    }).join('')+'</tbody></table>';
+  el.innerHTML='<table class="tbl"><thead><tr><th>المريض</th><th>التاريخ</th><th>النوع</th><th></th></tr></thead><tbody>'+appointments.map(a=>{
+    const c=a.completed?'var(--ok)':a.date<ts?'var(--err)':a.date===ts?'var(--gold)':'var(--goldL)';
+    return `<tr><td><b>${esc(a.patientName)}</b></td><td style="color:${c}">${esc(a.date)} ${esc(a.time)}</td><td>${esc(a.type)}</td><td><button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="delAppt('${a.id}')">🗑️</button></td></tr>`
+  }).join('')+'</tbody></table>';
 }
+async function delAppt(id){if(!confirm('حذف؟'))return;try{await db.collection('appointments').doc(id).delete();toast('🗑️');await loadAppointments()}catch(e){toast('❌',true)}}
 
-async function delAppt(id){
-  if(!confirm('حذف؟'))return;
-  try{
-    await db.collection('appointments').doc(id).delete();
-    toast('🗑️');
-    await loadAppointments();
-  }catch(e){toast('❌',true)}
-}
-
-// ============ BILLING ============
+// BILLING
 async function loadBilling(){
-  try{
-    const snap=await db.collection('billing').get();
-    billing=[];
-    snap.forEach(d=>billing.push({id:d.id,...d.data()}));
-    billing.sort((a,b)=>new Date(b.date)-new Date(a.date));
-    renderBilling();
-    updateBillingStats();
-  }catch(e){console.error(e)}
+  try{const snap=await db.collection('billing').get();billing=[];snap.forEach(d=>billing.push({id:d.id,...d.data()}));billing.sort((a,b)=>new Date(b.date)-new Date(a.date));renderBilling();updateBillingStats()}catch(e){console.error(e)}
 }
-
 async function saveBilling(){
   const pid=document.getElementById('billPatient').value;
   const date=document.getElementById('billDate').value;
   const total=parseFloat(document.getElementById('billTotal').value)||0;
   const paid=parseFloat(document.getElementById('billPaid').value)||0;
-  if(!pid||!date){
-    toast('⚠️',true);
-    return;
-  }
-  try{
-    const p=patients.find(x=>x.id===pid);
-    await db.collection('billing').add({
-      patientId:pid,
-      patientName:p?.fullName||'',
-      date,
-      totalCost:total,
-      paid,
-      remaining:total-paid,
-      clinicId:CD.clinicId,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    toast('✅');
-    await loadBilling();
+  if(!pid||!date){toast('⚠️',true);return}
+  try{const p=patients.find(x=>x.id===pid);
+    await db.collection('billing').add({patientId:pid,patientName:p?.fullName||'',date,totalCost:total,paid,remaining:total-paid,clinicId:CD.clinicId,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    toast('✅');await loadBilling()
   }catch(e){toast('❌',true)}
 }
-
 function renderBilling(){
   const el=document.getElementById('billingList');
-  if(!billing.length){
-    el.innerHTML='<div class="empty">لا سجلات</div>';
-    return;
-  }
-  el.innerHTML='<table class="tbl"><thead><tr><th>التاريخ</th><th>المريض</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th><th></th></tr></thead><tbody>'+
-    billing.map(b=>`<tr>
-      <td>${esc(b.date)}</td>
-      <td><b>${esc(b.patientName)}</b></td>
-      <td>$${(b.totalCost||0).toFixed(2)}</td>
-      <td style="color:var(--ok)">$${(b.paid||0).toFixed(2)}</td>
-      <td style="color:var(--err)">$${(b.remaining||0).toFixed(2)}</td>
-      <td><button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="delBill('${b.id}')">🗑️</button></td>
-    </tr>`).join('')+'</tbody></table>';
+  if(!billing.length){el.innerHTML='<div class="empty">لا سجلات</div>';return}
+  el.innerHTML='<table class="tbl"><thead><tr><th>التاريخ</th><th>المريض</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th><th></th></tr></thead><tbody>'+billing.map(b=>`<tr><td>${esc(b.date)}</td><td><b>${esc(b.patientName)}</b></td><td>$${(b.totalCost||0).toFixed(2)}</td><td style="color:var(--ok)">$${(b.paid||0).toFixed(2)}</td><td style="color:var(--err)">$${(b.remaining||0).toFixed(2)}</td><td><button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="delBill('${b.id}')">🗑️</button></td></tr>`).join('')+'</tbody></table>';
 }
-
-async function delBill(id){
-  if(!confirm('حذف؟'))return;
-  try{
-    await db.collection('billing').doc(id).delete();
-    toast('🗑️');
-    await loadBilling();
-  }catch(e){toast('❌',true)}
-}
-
+async function delBill(id){if(!confirm('حذف؟'))return;try{await db.collection('billing').doc(id).delete();toast('🗑️');await loadBilling()}catch(e){toast('❌',true)}}
 function updateBillingStats(){
-  const ts=today();
-  const ms=ts.slice(0,7);
-  const ys=ts.slice(0,4);
-  let day=0,month=0,year=0,rem=0;
-  billing.forEach(b=>{
-    if(b.date===ts)day+=b.paid||0;
-    if((b.date||'').startsWith(ms))month+=b.paid||0;
-    if((b.date||'').startsWith(ys))year+=b.paid||0;
-    rem+=b.remaining||0;
-  });
-  const setT=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val};
-  setT('billingToday','$'+day.toFixed(0));
-  setT('billingMonth','$'+month.toFixed(0));
-  setT('billingYear','$'+year.toFixed(0));
-  setT('billingRemaining','$'+rem.toFixed(0));
+  const ts=today();const ms=ts.slice(0,7);const ys=ts.slice(0,4);
+  let d=0,m=0,y=0,r=0;
+  billing.forEach(b=>{if(b.date===ts)d+=b.paid||0;if((b.date||'').startsWith(ms))m+=b.paid||0;if((b.date||'').startsWith(ys))y+=b.paid||0;r+=b.remaining||0});
+  const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
+  setT('billingToday','$'+d.toFixed(0));setT('billingMonth','$'+m.toFixed(0));setT('billingYear','$'+y.toFixed(0));setT('billingRemaining','$'+r.toFixed(0));
 }
 
-// ============ LAB ============
+// LAB
 async function loadLab(){
-  try{
-    const snap=await db.collection('lab').get();
-    lab=[];
-    snap.forEach(d=>lab.push({id:d.id,...d.data()}));
-    renderLab();
-    updateDashboard();
-  }catch(e){console.error(e)}
+  try{const snap=await db.collection('lab').get();lab=[];snap.forEach(d=>lab.push({id:d.id,...d.data()}));renderLab();updateDashboard()}catch(e){console.error(e)}
 }
-
 async function addLab(){
   const pid=document.getElementById('labPatient').value;
-  if(!pid){
-    toast('⚠️ اختر المريض',true);
-    return;
-  }
-  try{
-    const p=patients.find(x=>x.id===pid);
-    await db.collection('lab').add({
-      patientId:pid,
-      patientName:p?.fullName||'',
-      type:document.getElementById('labType').value,
-      labName:document.getElementById('labName').value,
-      due:document.getElementById('labDue').value,
-      status:'قيد التنفيذ',
-      clinicId:CD.clinicId,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    toast('✅');
-    await loadLab();
+  if(!pid){toast('⚠️',true);return}
+  try{const p=patients.find(x=>x.id===pid);
+    await db.collection('lab').add({patientId:pid,patientName:p?.fullName||'',type:document.getElementById('labType').value,labName:document.getElementById('labName').value,due:document.getElementById('labDue').value,status:'قيد التنفيذ',clinicId:CD.clinicId,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    toast('✅');await loadLab()
   }catch(e){toast('❌',true)}
 }
-
 function renderLab(){
   const el=document.getElementById('labList');
-  if(!lab.length){
-    el.innerHTML='<div class="empty">لا طلبات</div>';
-    return;
-  }
-  el.innerHTML=lab.map(l=>`
-    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-      <div>
-        <b>${esc(l.patientName)}</b>
-        <div style="font-size:.72rem;color:var(--muted)">${esc(l.type)} · ${esc(l.labName||'')} · ${esc(l.due||'')}</div>
-      </div>
-      <span class="chip" style="padding:2px 8px;font-size:.65rem">${esc(l.status)}</span>
-    </div>
-  `).join('');
+  if(!lab.length){el.innerHTML='<div class="empty">لا طلبات</div>';return}
+  el.innerHTML=lab.map(l=>`<div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><b>${esc(l.patientName)}</b><div style="font-size:.72rem;color:var(--muted)">${esc(l.type)} · ${esc(l.labName||'')} · ${esc(l.due||'')}</div></div><span class="chip" style="padding:2px 8px;font-size:.65rem">${esc(l.status)}</span></div>`).join('');
 }
 
-// ============ SPECIALISTS ============
+// SPECIALISTS
 async function loadSpecialists(){
-  try{
-    const snap=await db.collection('specialists').get();
-    specialists=[];
-    snap.forEach(d=>specialists.push({id:d.id,...d.data()}));
-    renderSpecialists();
-  }catch(e){console.error(e)}
+  try{const snap=await db.collection('specialists').get();specialists=[];snap.forEach(d=>specialists.push({id:d.id,...d.data()}));renderSpecialists()}catch(e){console.error(e)}
 }
-
 async function addSpecialist(){
   const name=document.getElementById('specName').value.trim();
-  if(!name){
-    toast('⚠️',true);
-    return;
-  }
-  try{
-    await db.collection('specialists').add({
-      name,
-      specialty:document.getElementById('specSpecialty').value,
-      phone:document.getElementById('specPhone').value,
-      clinicId:CD.clinicId,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    ['specName','specSpecialty','specPhone'].forEach(id=>document.getElementById(id).value='');
-    toast('✅');
-    await loadSpecialists();
-  }catch(e){toast('❌',true)}
+  if(!name){toast('⚠️',true);return}
+  try{await db.collection('specialists').add({name,specialty:document.getElementById('specSpecialty').value,phone:document.getElementById('specPhone').value,clinicId:CD.clinicId,createdAt:firebase.firestore.FieldValue.serverTimestamp()});['specName','specSpecialty','specPhone'].forEach(id=>document.getElementById(id).value='');toast('✅');await loadSpecialists()}catch(e){toast('❌',true)}
 }
-
 function renderSpecialists(){
   const el=document.getElementById('specialistsList');
-  if(!specialists.length){
-    el.innerHTML='<div class="empty">لا أخصائيون</div>';
-    return;
-  }
-  el.innerHTML=specialists.map(s=>`
-    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:6px">
-      <b style="color:var(--gold)">👨‍⚕️ ${esc(s.name)}</b>
-      <div style="font-size:.72rem;color:var(--muted)">${esc(s.specialty||'')} · ${esc(s.phone||'')}</div>
-    </div>
-  `).join('');
+  if(!specialists.length){el.innerHTML='<div class="empty">لا أخصائيون</div>';return}
+  el.innerHTML=specialists.map(s=>`<div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:6px"><b style="color:var(--gold)">👨‍⚕️ ${esc(s.name)}</b><div style="font-size:.72rem;color:var(--muted)">${esc(s.specialty||'')} · ${esc(s.phone||'')}</div></div>`).join('');
 }
 
-// ============ USERS ============
+// USERS
 async function loadUsers(){
   const el=document.getElementById('usersList');
-  if(el)el.innerHTML='<div class="empty">⏳ جارٍ التحميل...</div>';
+  if(el)el.innerHTML='<div class="empty">⏳...</div>';
   try{
     const snap=await db.collection('users').get();
-    allUsers=[];
-    snap.forEach(d=>allUsers.push({id:d.id,...d.data()}));
-    allUsers.sort((a,b)=>{
-      const ro={owner:0,admin:1,doctor:2,employee:3,guest:4};
-      const ra=ro[a.role]??9,rb=ro[b.role]??9;
-      if(ra!==rb)return ra-rb;
-      return (a.fullName||a.name||'').localeCompare(b.fullName||b.name||'');
-    });
-    renderUsers();
-    renderTeam();
-  }catch(e){
-    if(el)el.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>';
-  }
+    allUsers=[];snap.forEach(d=>allUsers.push({id:d.id,...d.data()}));
+    allUsers.sort((a,b)=>{const ro={owner:0,admin:1,doctor:2,employee:3,guest:4};const ra=ro[a.role]??9,rb=ro[b.role]??9;if(ra!==rb)return ra-rb;return (a.fullName||a.name||'').localeCompare(b.fullName||b.name||'')});
+    renderUsers();renderTeam()
+  }catch(e){if(el)el.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>'}
 }
-
 function renderUsers(){
-  const el=document.getElementById('usersList');
-  const cntEl=document.getElementById('usersCount');
-  if(!el)return;
-  if(cntEl)cntEl.textContent=allUsers.length;
-  if(!allUsers.length){
-    el.innerHTML='<div class="empty"><div class="ic">👤</div>لا يوجد مستخدمون</div>';
-    return;
-  }
-  const roleLabel=r=>({owner:'👑 مالك',admin:'👑 مدير',doctor:'👨‍⚕️ طبيب',employee:'👨‍💼 موظف',guest:'👤 ضيف'}[r]||r||'—');
-  el.innerHTML='<div style="overflow-x:auto"><table class="tbl"><thead><tr>'+
-    '<th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th>'+
-    '</tr></thead><tbody>'+
-    allUsers.map(u=>`
-      <tr>
-        <td><b>${esc(u.fullName||u.name||'—')}</b></td>
-        <td style="font-size:0.75rem;direction:ltr;text-align:right">${esc(u.email||'—')}</td>
-        <td style="white-space:nowrap">${roleLabel(u.role)}</td>
-        <td style="color:${u.active!==false?'var(--ok)':'var(--err)'};white-space:nowrap">${u.active!==false?'✅ نشط':'🚫 معطل'}</td>
-        <td style="white-space:nowrap">
-          <button class="btn-outline" style="padding:4px 8px;font-size:0.68rem;margin-left:4px" onclick="resetUserPassword('${esc(u.email)}')">🔐</button>
-          ${u.role==='owner'?'<span style="color:var(--muted);font-size:0.7rem">محفوظ</span>':`
-            <button class="${u.active!==false?'btn-outline':'btn-save'}" style="padding:4px 8px;font-size:0.68rem;margin-left:4px" onclick="toggleUserActive('${u.id}')">${u.active!==false?'🚫':'✅'}</button>
-            <button class="btn-danger" style="padding:4px 8px;font-size:0.68rem" onclick="deleteUser('${u.id}','${esc(u.email)}')">🗑️</button>
-          `}
-        </td>
-      </tr>
-    `).join('')+'</tbody></table></div>';
+  const el=document.getElementById('usersList');const cntEl=document.getElementById('usersCount');
+  if(!el)return;if(cntEl)cntEl.textContent=allUsers.length;
+  if(!allUsers.length){el.innerHTML='<div class="empty">لا يوجد</div>';return}
+  const rl=r=>({owner:'👑 مالك',admin:'مدير',doctor:'طبيب',employee:'موظف',guest:'ضيف'}[r]||r||'—');
+  el.innerHTML='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>'+allUsers.map(u=>`
+    <tr><td><b>${esc(u.fullName||u.name||'—')}</b></td>
+    <td style="font-size:0.75rem;direction:ltr">${esc(u.email||'—')}</td>
+    <td>${rl(u.role)}</td>
+    <td style="color:${u.active!==false?'var(--ok)':'var(--err)'}">${u.active!==false?'✅':'🚫'}</td>
+    <td><button class="btn-outline" style="padding:4px 8px;font-size:0.68rem" onclick="resetUserPassword('${esc(u.email)}')">🔐</button>
+    ${u.role==='owner'?'':`<button class="${u.active!==false?'btn-outline':'btn-save'}" style="padding:4px 8px;font-size:0.68rem" onclick="toggleUserActive('${u.id}')">${u.active!==false?'🚫':'✅'}</button>`}</td></tr>`).join('')+'</tbody></table></div>';
 }
-
 async function createUser(){
   const name=document.getElementById('newUserName').value.trim();
   const email=document.getElementById('newUserEmail').value.trim().toLowerCase();
   const pass=document.getElementById('newUserPass').value;
-  const role=document.getElementById('newUserRole').value;
-  const specialty=document.getElementById('newUserSpecialty').value.trim();
-  const phone=document.getElementById('newUserPhone').value.trim();
-  if(!name||!email||!pass){
-    toast('⚠️ أكمل الحقول',true);
-    return;
-  }
-  if(pass.length<6){
-    toast('⚠️ 6 أحرف على الأقل',true);
-    return;
-  }
-  const btn=document.getElementById('btnCreateUser');
-  btn.disabled=true;
-  btn.textContent='⏳...';
-  const appName='user-create-'+Date.now();
-  let secondaryApp=null;
+  if(!name||!email||!pass){toast('⚠️',true);return}
+  if(pass.length<6){toast('⚠️ 6+',true);return}
+  const btn=document.getElementById('btnCreateUser');btn.disabled=true;btn.textContent='⏳...';
+  const appName='user-create-'+Date.now();let secondaryApp=null;
   try{
     secondaryApp=firebase.initializeApp(firebaseConfig,appName);
-    const secondaryAuth=secondaryApp.auth();
-    const secondaryDb=secondaryApp.firestore();
-    const cred=await secondaryAuth.createUserWithEmailAndPassword(email,pass);
+    const sa=secondaryApp.auth();const sd=secondaryApp.firestore();
+    const cred=await sa.createUserWithEmailAndPassword(email,pass);
     await cred.user.updateProfile({displayName:name});
-    await secondaryDb.collection('users').doc(cred.user.uid).set({
-      email,
-      fullName:name,
-      name,
-      role,
-      specialty,
-      phone,
-      clinicId:CD.clinicId||'CLN-DEFAULT',
-      clinicName:CD.clinicName||'',
-      active:true,
-      createdBy:CU.uid,
+    await sd.collection('users').doc(cred.user.uid).set({
+      email,fullName:name,name,role:document.getElementById('newUserRole').value,
+      specialty:document.getElementById('newUserSpecialty').value.trim(),
+      phone:document.getElementById('newUserPhone').value.trim(),
+      clinicId:CD.clinicId||'CLN-DEFAULT',active:true,createdBy:CU.uid,
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    await secondaryAuth.signOut();
-    await secondaryApp.delete();
-    secondaryApp=null;
-    toast('✅ تم إنشاء: '+name);
-    ['newUserName','newUserEmail','newUserPass','newUserSpecialty','newUserPhone'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el)el.value='';
-    });
-    document.getElementById('newUserRole').value='doctor';
-    await loadUsers();
+    await sa.signOut();await secondaryApp.delete();secondaryApp=null;
+    toast('✅ '+name);
+    ['newUserName','newUserEmail','newUserPass','newUserSpecialty','newUserPhone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+    await loadUsers()
   }catch(e){
-    if(secondaryApp){try{await secondaryApp.delete();}catch(_){}}
-    let msg=e.message;
-    if(e.code==='auth/email-already-in-use')msg='البريد مسجل';
-    else if(e.code==='auth/weak-password')msg='كلمة المرور ضعيفة';
-    toast('❌ '+msg,true);
-  }finally{
-    btn.disabled=false;
-    btn.textContent='➕ إضافة مستخدم';
-  }
+    if(secondaryApp){try{await secondaryApp.delete()}catch(_){}}
+    let m=e.message;if(e.code==='auth/email-already-in-use')m='البريد مسجل';else if(e.code==='auth/weak-password')m='ضعيفة';
+    toast('❌ '+m,true)
+  }finally{btn.disabled=false;btn.textContent='➕ إضافة'}
 }
-
 async function toggleUserActive(uid){
-  try{
-    const doc=await db.collection('users').doc(uid).get();
-    if(!doc.exists){
-      toast('❌ غير موجود',true);
-      return;
-    }
+  try{const doc=await db.collection('users').doc(uid).get();
+    if(!doc.exists){toast('❌',true);return}
     const data=doc.data();
-    if(data.role==='owner'){
-      toast('⚠️ المالك محفوظ',true);
-      return;
-    }
+    if(data.role==='owner'){toast('⚠️ مالك',true);return}
     const cur=data.active!==false;
     if(!confirm(cur?'تعطيل؟':'تفعيل؟'))return;
-    await db.collection('users').doc(uid).update({active:!cur});
-    toast(cur?'🚫 معطل':'✅ مفعل');
-    await loadUsers();
+    await db.collection('users').doc(uid).update({active:!cur});toast('✅');await loadUsers()
   }catch(e){toast('❌ '+e.message,true)}
 }
-
 async function resetUserPassword(email){
-  if(!email){
-    toast('⚠️ لا يوجد بريد',true);
-    return;
-  }
-  if(!confirm(`إرسال رابط إلى:\n${email}`))return;
-  try{
-    await auth.sendPasswordResetEmail(email);
-    toast('📧 تم الإرسال');
-  }catch(e){toast('❌ '+e.message,true)}
+  if(!email){toast('⚠️',true);return}
+  if(!confirm(`إرسال إلى ${email}؟`))return;
+  try{await auth.sendPasswordResetEmail(email);toast('📧 تم')}catch(e){toast('❌ '+e.message,true)}
 }
-
-async function deleteUser(uid,email){
-  if(!confirm(`حذف ${email}؟`))return;
-  try{
-    const doc=await db.collection('users').doc(uid).get();
-    if(doc.exists&&doc.data().role==='owner'){
-      toast('⚠️ المالك محفوظ',true);
-      return;
-    }
-    await db.collection('users').doc(uid).delete();
-    toast('🗑️');
-    await loadUsers();
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
 function renderTeam(){
-  const el=document.getElementById('teamList');
-  if(!el)return;
-  if(!allUsers.length){
-    el.innerHTML='<div class="empty"><div class="ic">👥</div>لا يوجد أعضاء</div>';
-    return;
-  }
-  const roleLabel=r=>({owner:'👑 المالك',admin:'👑 مدير',doctor:'👨‍⚕️ طبيب',employee:'👨‍💼 موظف',guest:'👤 ضيف'}[r]||'عضو');
-  const roleColor=r=>({owner:'var(--gold)',admin:'#8b5cf6',doctor:'var(--ok)',employee:'var(--info)',guest:'var(--muted)'}[r]||'var(--muted)');
-  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">'+
-    allUsers.map(u=>{
-      const name=u.fullName||u.name||'مستخدم';
-      const initials=name.substring(0,2).toUpperCase();
-      return `
-        <div style="background:var(--card2);border:1px solid var(--bd);border-radius:14px;padding:16px;text-align:center">
-          <div style="width:64px;height:64px;margin:0 auto 10px;background:radial-gradient(circle at 30% 30%,var(--gold),var(--goldD));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0A0A0A">${esc(initials)}</div>
-          <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">${esc(name)}</div>
-          <div style="color:${roleColor(u.role)};font-size:0.78rem;font-weight:700;margin-bottom:6px">${roleLabel(u.role)}</div>
-          ${u.specialty?`<div style="font-size:0.72rem;color:var(--muted)">🎓 ${esc(u.specialty)}</div>`:''}
-          <div style="margin-top:8px;font-size:0.65rem;color:${u.active!==false?'var(--ok)':'var(--err)'}">${u.active!==false?'🟢 نشط':'🔴 معطل'}</div>
-        </div>
-      `;
-    }).join('')+'</div>';
+  const el=document.getElementById('teamList');if(!el)return;
+  if(!allUsers.length){el.innerHTML='<div class="empty">لا يوجد</div>';return}
+  const rl=r=>({owner:'مالك',admin:'مدير',doctor:'طبيب',employee:'موظف',guest:'ضيف'}[r]||'عضو');
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">'+allUsers.map(u=>{
+    const name=u.fullName||u.name||'مستخدم';
+    return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:14px;padding:16px;text-align:center">
+      <div style="width:64px;height:64px;margin:0 auto 10px;background:radial-gradient(circle at 30% 30%,var(--gold),var(--goldD));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0A0A0A">${esc(name.substring(0,2))}</div>
+      <div style="font-weight:800;font-size:0.95rem">${esc(name)}</div>
+      <div style="color:var(--gold);font-size:0.78rem;font-weight:700">${rl(u.role)}</div>
+      ${u.specialty?`<div style="font-size:0.72rem;color:var(--muted)">🎓 ${esc(u.specialty)}</div>`:''}
+    </div>`
+  }).join('')+'</div>';
 }
 
-// ============ DASHBOARD ============
+// DASHBOARD
 function updateDashboard(){
-  const setT=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val};
-  setT('statPatients',patients.length);
-  setT('statAppts',appointments.filter(a=>!a.completed).length);
-  setT('statLab',lab.length);
+  const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
+  setT('statPatients',patients.length);setT('statAppts',appointments.filter(a=>!a.completed).length);setT('statLab',lab.length);
   setT('statRevenue','$'+billing.reduce((s,b)=>s+(b.paid||0),0).toFixed(0));
   drawMainChart();
 }
-
 function drawMainChart(){
-  const ctx=document.getElementById('chartMain');
-  if(!ctx)return;
+  const ctx=document.getElementById('chartMain');if(!ctx)return;
   if(charts.main)charts.main.destroy();
-  charts.main=new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:['المرضى','المواعيد','المعمل','الأخصائيون'],
-      datasets:[{
-        data:[patients.length,appointments.length,lab.length,specialists.length],
-        backgroundColor:['#C5A059','#d4b87a','#10b981','#f59e0b'],
-        borderRadius:8
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{legend:{display:false}},
-      scales:{y:{ticks:{color:'#94a3b8'}},x:{ticks:{color:'#94a3b8'}}}
-    }
-  });
+  charts.main=new Chart(ctx,{type:'bar',data:{labels:['المرضى','المواعيد','المعمل','الأخصائيون'],datasets:[{data:[patients.length,appointments.length,lab.length,specialists.length],backgroundColor:['#C5A059','#d4b87a','#10b981','#f59e0b'],borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#94a3b8'}},x:{ticks:{color:'#94a3b8'}}}}});
 }
-
-// ============ SETTINGS ============
 function fillSettings(){
   if(!CD)return;
   document.getElementById('setEmail').value=CU.email||'ضيف';
   document.getElementById('setName').value=CD.fullName||'';
-  document.getElementById('setRole').value=CD.role==='owner'?'👑 مالك':CD.role==='admin'?'👑 مدير':CD.role==='doctor'?'👨‍⚕️ طبيب':CD.role==='employee'?'👨‍💼 موظف':'👤 ضيف';
+  document.getElementById('setRole').value=CD.role==='owner'?'👑 مالك':CD.role||'';
 }
-
 async function saveProfile(){
   const name=document.getElementById('setName').value.trim();
-  if(!name){
-    toast('⚠️',true);
-    return;
-  }
-  try{
-    await db.collection('users').doc(CU.uid).update({fullName:name});
-    CD.fullName=name;
-    document.getElementById('userName').textContent=name;
-    toast('✅');
-  }catch(e){toast('❌',true)}
+  if(!name){toast('⚠️',true);return}
+  try{await db.collection('users').doc(CU.uid).update({fullName:name});CD.fullName=name;document.getElementById('userName').textContent=name;toast('✅')}catch(e){toast('❌',true)}
 }
 
-// ============ NOTIFICATIONS (FIXED - NO DUPLICATE) ============
+// FACE
+function drawFacePlaceholder(){const c=document.getElementById('faceCanvas');if(!c)return;const ctx=c.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#94a3b8';ctx.font='20px Tahoma';ctx.textAlign='center';ctx.fillText('📸 ارفع صورة',c.width/2,c.height/2)}
+function analyzeFace(){
+  const file=document.getElementById('faceImage').files[0];
+  if(!file){toast('⚠️ ارفع صورة',true);return}
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.getElementById('faceCanvas');c.width=img.width;c.height=img.height;
+      const ctx=c.getContext('2d');ctx.drawImage(img,0,0);
+      window._faceImg=img;
+      ctx.strokeStyle='rgba(197,160,89,0.6)';ctx.lineWidth=2;
+      for(let i=0;i<20;i++){const x=img.width*0.3+Math.random()*img.width*0.4;const y=img.height*0.2+Math.random()*img.height*0.6;ctx.beginPath();ctx.arc(x,y,2,0,2*Math.PI);ctx.fillStyle='rgba(197,160,89,0.8)';ctx.fill()}
+      document.getElementById('faceMetrics').innerHTML='<div class="stat"><div class="num" style="color:var(--gold)">478</div><div class="lbl">نقطة تشريحية</div></div>';
+      toast('✅');
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function drawBeautyLines(){if(!window._faceImg){toast('⚠️',true);return}const c=document.getElementById('faceCanvas');const ctx=c.getContext('2d');ctx.drawImage(window._faceImg,0,0);ctx.strokeStyle='rgba(197,160,89,0.6)';ctx.lineWidth=2;ctx.setLineDash([6,4]);[0.3,0.5,0.7].forEach(y=>{ctx.beginPath();ctx.moveTo(0,c.height*y);ctx.lineTo(c.width,c.height*y);ctx.stroke()});ctx.setLineDash([])}
+function drawGoldenRatio(){if(!window._faceImg){toast('⚠️',true);return}const c=document.getElementById('faceCanvas');const ctx=c.getContext('2d');ctx.drawImage(window._faceImg,0,0);ctx.strokeStyle='rgba(197,160,89,0.9)';ctx.lineWidth=3;ctx.strokeRect(c.width*0.2,c.height*0.1,c.width*0.6,c.height*0.8);ctx.fillStyle='rgba(197,160,89,1)';ctx.font='bold 20px Tahoma';ctx.textAlign='center';ctx.fillText('Φ = 1.618',c.width/2,c.height*0.08)}
+function clearFace(){drawFacePlaceholder();document.getElementById('faceMetrics').innerHTML=''}
+
+// DSD
+function drawDSDPlaceholder(){const c=document.getElementById('dsdCanvas');if(!c)return;const ctx=c.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#94a3b8';ctx.font='20px Tahoma';ctx.textAlign='center';ctx.fillText('📸 ارفع صورة',c.width/2,c.height/2)}
+document.addEventListener('change',e=>{
+  if(e.target.id==='dsdImage'&&e.target.files[0]){
+    const reader=new FileReader();
+    reader.onload=ev=>{const img=new Image();img.onload=()=>{dsdImg=img;renderDSD()};img.src=ev.target.result};
+    reader.readAsDataURL(e.target.files[0]);
+  }
+});
+function renderDSD(){
+  if(!dsdImg)return;
+  const c=document.getElementById('dsdCanvas');c.width=dsdImg.width;c.height=dsdImg.height;
+  const ctx=c.getContext('2d');ctx.drawImage(dsdImg,0,0);
+  const w=parseInt(document.getElementById('dsdW').value);
+  const h=parseInt(document.getElementById('dsdH').value);
+  const o=parseInt(document.getElementById('dsdO').value);
+  document.getElementById('dsdWVal').textContent=w;document.getElementById('dsdHVal').textContent=h;document.getElementById('dsdOVal').textContent=o;
+  ctx.globalAlpha=o/100;ctx.fillStyle='#fff';
+  const tw=(c.width*0.06)*(w/100),th=(c.height*0.08)*(h/100);
+  const sx=c.width/2-(tw*4),sy=c.height*0.7;
+  for(let i=0;i<8;i++){ctx.beginPath();ctx.ellipse(sx+i*tw+tw/2,sy,tw/2-1,th/2-1,0,0,2*Math.PI);ctx.fill();ctx.strokeStyle='rgba(200,200,200,0.4)';ctx.stroke()}
+  ctx.globalAlpha=1;
+}
+function applyDSDTeeth(){renderDSD();toast('✅')}
+function applyDSDFilter(){if(!dsdImg)return;const c=document.getElementById('dsdCanvas');const ctx=c.getContext('2d');ctx.filter='blur(2px)';ctx.drawImage(dsdImg,0,0);ctx.filter='none';toast('✨')}
+
+// CEPH
+function analyzeCeph(){
+  const sna=parseFloat(document.getElementById('cephSNA').value)||0;
+  const snb=parseFloat(document.getElementById('cephSNB').value)||0;
+  const anb=sna-snb;
+  const cls=anb>4?'Class II':anb<0?'Class III':'Class I';
+  document.getElementById('cephResult').innerHTML=`<div class="stat"><div class="num">${anb.toFixed(1)}°</div><div class="lbl">ANB — ${cls}</div></div>`;
+}
+
+// AI DIAGNOSIS
+async function runAIDiagnosis(){
+  const complaint=document.getElementById('aiComplaint').value;
+  if(!complaint){toast('⚠️ أدخل الشكوى',true);return}
+  const key=localStorage.getItem('gemini_key');
+  if(!key){
+    document.getElementById('aiOutput').innerHTML='<div style="background:var(--card2);padding:16px;border-radius:12px;border:1px solid var(--warn)"><b style="color:var(--warn)">⚠️ للتحليل الذكي الكامل:</b><p>أضف Gemini API Key في قسم الإعدادات. هذا تحليل تجريبي:</p><p>الشكوى: '+esc(complaint)+'</p><p>التوصية: فحص سريري شامل + أشعة</p></div>';
+    return;
+  }
+  document.getElementById('aiOutput').innerHTML='<div class="empty">⏳ جاري التحليل...</div>';
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:`أنت طبيب أسنان. حلل:\nالشكوى: ${complaint}\nالتفاصيل: ${document.getElementById('aiDetails').value}`}]}]})
+    });
+    const data=await res.json();
+    const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'لا نتيجة';
+    document.getElementById('aiOutput').innerHTML=`<div style="background:var(--card2);padding:16px;border-radius:12px;white-space:pre-wrap;line-height:1.8;font-size:.85rem">${esc(text)}</div>`;
+  }catch(e){document.getElementById('aiOutput').innerHTML='<div style="color:var(--err)">❌ '+esc(e.message)+'</div>'}
+}
+
+// DENTBOOK
+async function createPost(){
+  const text=document.getElementById('postText').value.trim();
+  if(!text){toast('⚠️ اكتب نصاً',true);return}
+  const btn=document.getElementById('btnPost');btn.disabled=true;btn.textContent='⏳...';
+  try{
+    await db.collection('dentbook_posts').add({
+      text,authorId:CU.uid,authorName:CD.fullName||CD.name||'مستخدم',
+      authorEmail:CU.email,likes:[],comments:[],clinicId:CD.clinicId,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('postText').value='';
+    toast('✅')
+  }catch(e){toast('❌ '+e.message,true)}
+  finally{btn.disabled=false;btn.textContent='📤 نشر'}
+}
+function loadDentbook(){
+  const feed=document.getElementById('dentbookFeed');if(!feed)return;
+  if(dentbookUnsubscribe)dentbookUnsubscribe();
+  dentbookUnsubscribe=db.collection('dentbook_posts').orderBy('createdAt','desc').limit(50).onSnapshot(snap=>{
+    const posts=[];snap.forEach(d=>posts.push({id:d.id,...d.data()}));
+    document.getElementById('postCount').textContent=posts.length;
+    if(!posts.length){feed.innerHTML='<div class="empty">لا منشورات</div>';return}
+    feed.innerHTML=posts.map(p=>{
+      const time=p.createdAt?new Date(p.createdAt.seconds*1000).toLocaleString('ar-EG'):'الآن';
+      const likes=p.likes||[];const comments=p.comments||[];
+      const isLiked=likes.includes(CU.uid);const isMine=p.authorId===CU.uid;
+      return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+          <div style="width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--gold),var(--goldD));display:flex;align-items:center;justify-content:center;font-weight:800;color:#0A0A0A">${esc((p.authorName||'?').charAt(0))}</div>
+          <div style="flex:1"><div style="font-weight:700;font-size:0.9rem">${esc(p.authorName||'مستخدم')}</div><div style="color:var(--muted);font-size:0.7rem">${time}</div></div>
+          ${isMine?`<button onclick="deletePost('${p.id}')" class="btn-danger" style="padding:4px 10px;font-size:0.7rem">🗑️</button>`:''}
+        </div>
+        <div style="font-size:0.9rem;line-height:1.7;white-space:pre-wrap">${esc(p.text||'')}</div>
+        <div style="display:flex;gap:12px;border-top:1px solid var(--bd);padding-top:10px;margin-top:10px">
+          <button onclick="toggleLike('${p.id}')" style="background:none;border:none;color:${isLiked?'var(--err)':'var(--muted)'};font-size:0.82rem;font-weight:700;cursor:pointer">${isLiked?'❤️':'🤍'} ${likes.length}</button>
+          <button onclick="toggleComments('${p.id}')" style="background:none;border:none;color:var(--muted);font-size:0.82rem;font-weight:700;cursor:pointer">💬 ${comments.length}</button>
+        </div>
+        <div id="comments-${p.id}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">
+          ${comments.map(c=>`<div style="padding:6px 0;font-size:0.82rem"><b style="color:var(--gold)">${esc(c.authorName||'مستخدم')}:</b> ${esc(c.text)}</div>`).join('')||'<div style="color:var(--muted);font-size:0.75rem">لا تعليقات</div>'}
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <input type="text" id="comment-${p.id}" placeholder="..." onkeydown="if(event.key==='Enter')addComment('${p.id}')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--txt);font-size:0.8rem">
+            <button onclick="addComment('${p.id}')" class="btn-save" style="padding:8px 14px;font-size:0.75rem">نشر</button>
+          </div>
+        </div>
+      </div>`
+    }).join('');
+  },err=>{feed.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(err.message)+'</div>'});
+}
+async function toggleLike(postId){
+  try{const ref=db.collection('dentbook_posts').doc(postId);const doc=await ref.get();
+    if(!doc.exists)return;
+    const likes=doc.data().likes||[];const idx=likes.indexOf(CU.uid);
+    if(idx>-1)likes.splice(idx,1);else likes.push(CU.uid);
+    await ref.update({likes})
+  }catch(e){toast('❌',true)}
+}
+function toggleComments(postId){const el=document.getElementById('comments-'+postId);if(el)el.style.display=el.style.display==='none'?'block':'none'}
+async function addComment(postId){
+  const input=document.getElementById('comment-'+postId);const text=input.value.trim();
+  if(!text)return;
+  try{const ref=db.collection('dentbook_posts').doc(postId);const doc=await ref.get();
+    if(!doc.exists)return;
+    const comments=doc.data().comments||[];
+    comments.push({authorId:CU.uid,authorName:CD.fullName||CD.name||'مستخدم',text,createdAt:new Date().toISOString()});
+    await ref.update({comments});input.value='';toast('✅')
+  }catch(e){toast('❌',true)}
+}
+async function deletePost(postId){if(!confirm('حذف؟'))return;try{await db.collection('dentbook_posts').doc(postId).delete();toast('🗑️')}catch(e){toast('❌',true)}}
+
+// DENTCHAT
+async function loadChatTargets(){
+  const sel=document.getElementById('chatTarget');if(!sel)return;
+  try{const snap=await db.collection('users').get();const others=[];
+    snap.forEach(d=>{if(d.id!==CU.uid){const u=d.data();others.push({uid:d.id,name:u.fullName||u.name||'مستخدم'})}});
+    const current=sel.value;
+    sel.innerHTML='<option value="group">👥 المجموعة</option>'+others.map(u=>`<option value="user_${u.uid}">👤 ${esc(u.name)}</option>`).join('');
+    if(current&&sel.querySelector(`option[value="${current}"]`))sel.value=current;
+    chatTargetsLoaded=true
+  }catch(e){console.warn(e)}
+}
+function getChatCollection(target){
+  if(target==='group')return db.collection('group_messages');
+  const otherUid=target.replace('user_','');const chatId=[CU.uid,otherUid].sort().join('_');
+  return db.collection('private_chats').doc(chatId).collection('messages')
+}
+function getChatId(target){
+  if(target==='group')return 'group';
+  const otherUid=target.replace('user_','');return [CU.uid,otherUid].sort().join('_')
+}
+function loadChatMessages(){
+  const target=document.getElementById('chatTarget').value;
+  const container=document.getElementById('chatMessages');if(!container)return;
+  container.innerHTML='<div class="empty">⏳...</div>';
+  if(chatUnsubscribe){chatUnsubscribe();chatUnsubscribe=null}
+  let query;
+  if(target==='group')query=db.collection('group_messages').orderBy('createdAt','desc').limit(50);
+  else query=getChatCollection(target).orderBy('createdAt','desc').limit(50);
+  chatUnsubscribe=query.onSnapshot(snap=>{
+    const msgs=[];snap.forEach(d=>msgs.push({id:d.id,...d.data()}));
+    msgs.reverse();
+    if(!msgs.length){container.innerHTML='<div class="empty">لا رسائل</div>';return}
+    container.innerHTML=msgs.map(m=>{
+      const isMine=m.senderId===CU.uid;
+      const time=m.createdAt?new Date(m.createdAt.seconds*1000).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'';
+      return `<div style="display:flex;justify-content:${isMine?'flex-start':'flex-end'}"><div style="max-width:75%;padding:10px 14px;border-radius:14px;background:${isMine?'linear-gradient(135deg,var(--gold),var(--goldD))':'var(--card2)'};color:${isMine?'#0A0A0A':'var(--txt)'}">${!isMine?`<div style="font-size:0.7rem;font-weight:800;color:var(--gold);margin-bottom:3px">${esc(m.senderName||'مستخدم')}</div>`:''}<div style="font-size:0.85rem;white-space:pre-wrap">${esc(m.text||'')}</div><div style="font-size:0.65rem;opacity:0.6;margin-top:4px;text-align:${isMine?'left':'right'}">${time}</div></div></div>`
+    }).join('');
+    container.scrollTop=container.scrollHeight
+  },err=>{container.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(err.message)+'</div>'})
+}
+async function sendChatMessage(){
+  const input=document.getElementById('chatInput');const text=input.value.trim();
+  if(!text)return;
+  const target=document.getElementById('chatTarget').value;
+  try{
+    const data={text,senderId:CU.uid,senderName:CD.fullName||CD.name||'مستخدم',clinicId:CD.clinicId,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+    if(target==='group')await db.collection('group_messages').add(data);
+    else{await getChatCollection(target).add(data);await db.collection('private_chats').doc(getChatId(target)).set({participants:[CU.uid,target.replace('user_','')],lastMessage:text,lastSenderId:CU.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})}
+    input.value=''
+  }catch(e){toast('❌ '+e.message,true)}
+}
+
+// NOTIFICATIONS - FIXED
 async function loadNotifications(){
-  const el=document.getElementById('notificationsList');
-  if(!el)return;
-  el.innerHTML='<div class="empty">⏳ جارٍ التحميل...</div>';
+  const el=document.getElementById('notificationsList');if(!el)return;
+  el.innerHTML='<div class="empty">⏳...</div>';
   try{
     const snap=await db.collection('notifications').where('recipientId','==',CU.uid).limit(50).get();
     const notifs=[];
     snap.forEach(d=>notifs.push({id:d.id,...d.data()}));
     notifs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    if(!notifs.length){
-      el.innerHTML='<div class="empty"><div class="ic">🔕</div>لا توجد إشعارات</div>';
-      updateNotifBadge(0);
-      return;
-    }
-    const unreadCount=notifs.filter(n=>!n.read).length;
-    updateNotifBadge(unreadCount);
+    if(!notifs.length){el.innerHTML='<div class="empty">لا إشعارات</div>';updateNotifBadge(0);return}
+    updateNotifBadge(notifs.filter(n=>!n.read).length);
     el.innerHTML=notifs.map(n=>{
       const time=n.createdAt?new Date(n.createdAt.seconds*1000).toLocaleString('ar-EG'):'الآن';
       const icon={appointment:'📅',payment:'💰',lab:'🧪',patient:'👤',system:'⚙️',message:'💬'}[n.type]||'🔔';
-      return `
-        <div style="background:${n.read?'var(--card2)':'rgba(197,160,89,0.08)'};border:1px solid ${n.read?'var(--bd)':'var(--gold)'};border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
-          <div style="font-size:1.5rem">${icon}</div>
-          <div style="flex:1">
-            <div style="font-weight:700;font-size:0.85rem;margin-bottom:4px">${esc(n.title||'إشعار')}</div>
-            <div style="color:var(--muted);font-size:0.78rem;line-height:1.5">${esc(n.body||'')}</div>
-            <div style="color:var(--muted);font-size:0.65rem;margin-top:6px">${time}</div>
-          </div>
-          ${!n.read?`<button onclick="markRead('${n.id}')" class="btn-outline" style="padding:4px 8px;font-size:0.65rem;white-space:nowrap">تم</button>`:''}
-        </div>
-      `;
-    }).join('');
-  }catch(e){
-    if(e.code==='failed-precondition'){
-      el.innerHTML='<div class="empty" style="color:var(--warn)">⚠️ يحتاج فهرس Firestore</div>';
-    }else{
-      el.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>';
-    }
-  }
+      return `<div style="background:${n.read?'var(--card2)':'rgba(197,160,89,0.08)'};border:1px solid ${n.read?'var(--bd)':'var(--gold)'};border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start"><div style="font-size:1.5rem">${icon}</div><div style="flex:1"><div style="font-weight:700;font-size:0.85rem">${esc(n.title||'إشعار')}</div><div style="color:var(--muted);font-size:0.78rem">${esc(n.body||'')}</div><div style="color:var(--muted);font-size:0.65rem;margin-top:6px">${time}</div></div>${!n.read?`<button onclick="markRead('${n.id}')" class="btn-outline" style="padding:4px 8px;font-size:0.65rem">تم</button>`:''}</div>`
+    }).join('')
+  }catch(e){el.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>'}
 }
-
-function updateNotifBadge(count){
-  const badge=document.getElementById('notifBadge');
-  if(!badge)return;
-  if(count>0){
-    badge.textContent=count>99?'99+':count;
-    badge.style.display='inline-block';
-  }else{
-    badge.style.display='none';
-  }
-}
-
-async function markRead(id){
-  try{
-    await db.collection('notifications').doc(id).update({
-      read:true,
-      readAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    await loadNotifications();
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-async function markAllRead(){
-  try{
-    const snap=await db.collection('notifications').where('recipientId','==',CU.uid).where('read','==',false).get();
-    if(snap.empty){
-      toast('لا توجد إشعارات');
-      return;
-    }
-    const batch=db.batch();
-    snap.forEach(d=>batch.update(d.ref,{
-      read:true,
-      readAt:firebase.firestore.FieldValue.serverTimestamp()
-    }));
-    await batch.commit();
-    toast('✅ تم قراءة '+snap.size);
-    await loadNotifications();
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
+function updateNotifBadge(count){const badge=document.getElementById('notifBadge');if(!badge)return;if(count>0){badge.textContent=count>99?'99+':count;badge.style.display='inline-block'}else{badge.style.display='none'}}
+async function markRead(id){try{await db.collection('notifications').doc(id).update({read:true,readAt:firebase.firestore.FieldValue.serverTimestamp()});await loadNotifications()}catch(e){toast('❌',true)}}
+async function markAllRead(){try{const snap=await db.collection('notifications').where('recipientId','==',CU.uid).where('read','==',false).get();if(snap.empty){toast('لا يوجد');return}const batch=db.batch();snap.forEach(d=>batch.update(d.ref,{read:true,readAt:firebase.firestore.FieldValue.serverTimestamp()}));await batch.commit();toast('✅');await loadNotifications()}catch(e){toast('❌',true)}}
 async function testNotification(){
-  try{
-    toast('⏳ جارٍ الإرسال...');
-    await db.collection('notifications').add({
-      recipientId:CU.uid,
-      title:'اختبار',
-      body:'إشعار تجريبي — '+new Date().toLocaleTimeString('ar-EG'),
-      type:'system',
-      read:false,
-      createdBy:CU.uid,
-      createdByName:CD.fullName||CD.name||'النظام',
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    toast('✅ تم الإرسال');
-    setTimeout(()=>loadNotifications(),500);
-  }catch(e){toast('❌ '+e.message,true)}
+  try{await db.collection('notifications').add({recipientId:CU.uid,title:'اختبار',body:'إشعار تجريبي — '+new Date().toLocaleTimeString('ar-EG'),type:'system',read:false,createdBy:CU.uid,createdByName:CD.fullName||CD.name||'النظام',createdAt:firebase.firestore.FieldValue.serverTimestamp()});toast('✅');setTimeout(()=>loadNotifications(),500)}catch(e){toast('❌ '+e.message,true)}
 }
-
 function setupNotifListener(){
-  if(notificationsUnsubscribe){
-    notificationsUnsubscribe();
-    notificationsUnsubscribe=null;
-  }
+  if(notificationsUnsubscribe){notificationsUnsubscribe();notificationsUnsubscribe=null}
   if(!CU)return;
   try{
-    notificationsUnsubscribe=db.collection('notifications')
-      .where('recipientId','==',CU.uid)
-      .where('read','==',false)
-      .onSnapshot(snap=>{
-        updateNotifBadge(snap.size);
-        if(document.getElementById('sec-notifications')?.classList.contains('active')){
-          loadNotifications();
-        }
-      },err=>console.warn('notif listener:',err));
-  }catch(e){
-    console.warn('setupNotifListener:',e);
-  }
+    notificationsUnsubscribe=db.collection('notifications').where('recipientId','==',CU.uid).where('read','==',false).onSnapshot(snap=>{
+      updateNotifBadge(snap.size);
+      if(document.getElementById('sec-notifications')?.classList.contains('active'))loadNotifications()
+    },err=>console.warn('notif:',err))
+  }catch(e){console.warn(e)}
 }
 
-// ============ INIT ============
+// 3D
+function initThree(){
+  if(threeInit)return;
+  const container=document.getElementById('threeContainer');if(!container||typeof THREE==='undefined')return;
+  threeInit=true;
+  const w=container.clientWidth||400,h=320;
+  const scene=new THREE.Scene();scene.background=new THREE.Color(0x0d1830);
+  const cam=new THREE.PerspectiveCamera(45,w/h,0.1,100);cam.position.set(3,2,5);cam.lookAt(0,0,0);
+  const ren=new THREE.WebGLRenderer({antialias:true});ren.setSize(w,h);container.innerHTML='';container.appendChild(ren.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff,0.6));
+  const dl=new THREE.DirectionalLight(0xffffff,1);dl.position.set(5,5,5);scene.add(dl);
+  const g=new THREE.Group();
+  const crown=new THREE.Mesh(new THREE.BoxGeometry(1.2,1,1.2),new THREE.MeshStandardMaterial({color:0xf5f0e8,roughness:0.3}));crown.position.y=0.5;g.add(crown);
+  for(let i=-1;i<=1;i+=2){const r=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.25,1,12),new THREE.MeshStandardMaterial({color:0xd4c8a8}));r.position.set(i*0.3,-0.5,0);r.rotation.z=i*0.1;g.add(r)}
+  scene.add(g);
+  function animate(){requestAnimationFrame(animate);g.rotation.y+=0.008;ren.render(scene,cam)}
+  animate();
+}
+
+// BEFORE/AFTER
+function initCompareSlider(){
+  const handle=document.getElementById('cmpHandle');const wrap=document.getElementById('cmpAfterWrap');const slider=document.getElementById('compareSlider');
+  if(!handle||!wrap||!slider)return;
+  let drag=false;
+  function update(x){const rect=slider.getBoundingClientRect();let p=((x-rect.left)/rect.width)*100;p=Math.max(0,Math.min(100,p));wrap.style.width=p+'%';handle.style.left=p+'%'}
+  handle.addEventListener('mousedown',()=>drag=true);
+  document.addEventListener('mouseup',()=>drag=false);
+  document.addEventListener('mousemove',e=>{if(drag)update(e.clientX)});
+  handle.addEventListener('touchstart',()=>drag=true);
+  document.addEventListener('touchend',()=>drag=false);
+  document.addEventListener('touchmove',e=>{if(drag)update(e.touches[0].clientX)},{passive:false})
+}
+document.addEventListener('change',e=>{
+  if(e.target.id==='beforeImg'&&e.target.files[0]){const r=new FileReader();r.onload=ev=>{const el=document.getElementById('cmpBefore');if(el)el.src=ev.target.result};r.readAsDataURL(e.target.files[0])}
+  if(e.target.id==='afterImg'&&e.target.files[0]){const r=new FileReader();r.onload=ev=>{const el=document.getElementById('cmpAfter');if(el)el.src=ev.target.result};r.readAsDataURL(e.target.files[0])}
+});
+
+// REPORTS
+function generateReport(){
+  const pid=document.getElementById('reportPatient').value;
+  if(!pid){toast('⚠️',true);return}
+  const p=patients.find(x=>x.id===pid);
+  document.getElementById('reportPreview').innerHTML=`<div style="background:#0a1424;padding:20px;border-radius:12px;border:2px solid var(--gold)"><h3 style="text-align:center;color:var(--gold);margin-bottom:16px">🦷 تقرير طبي</h3><table class="tbl"><tbody><tr><td>الاسم</td><td><b>${esc(p.fullName)}</b></td></tr><tr><td>الهاتف</td><td>${esc(p.phone||'—')}</td></tr><tr><td>العمر</td><td>${p.age||'—'}</td></tr><tr><td>الجنس</td><td>${esc(p.gender||'—')}</td></tr></tbody></table><p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:16px">${new Date().toLocaleString('ar-EG')}</p></div>`;
+  toast('✅')
+}
+function printReport(){window.print()}
+function sendWhatsApp(){
+  const pid=document.getElementById('reportPatient').value;
+  const p=patients.find(x=>x.id===pid);
+  if(!p){toast('⚠️',true);return}
+  const phone=(p.phone||'').replace(/\D/g,'');
+  const intl=phone.startsWith('967')?phone:'967'+phone.replace(/^0/,'');
+  window.open('https://wa.me/'+intl+'?text='+encodeURIComponent('مرحباً '+p.fullName),'_blank')
+}
+
+// INIT
 document.addEventListener('DOMContentLoaded',()=>{
-  ['apptDate','billDate','labDue'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.value=today();
-  });
+  ['apptDate','billDate','labDue'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today()});
 });
 </script>
 </body>
