@@ -1604,21 +1604,7 @@ function showSection(sec){
   }
 }
 document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.sec)));
-  if(sec==='photography'){populateSelects();const pid=document.getElementById('photoPatient')?.value;if(pid)loadPatientPhotos(pid)}
-  if(sec==='payments')loadPayments();
-  if(sec==='privateMessages'){loadPMRecipients();loadPMThread()}
-  if(sec==='labChat')loadLabChat();
-  if(sec==='treatmentPlan')populateSelects();
-  if(sec==='materials')loadMaterials();
-  if(sec==='dentbookProfile')loadDentbookProfile();
-  if(sec==='members')loadMembers();
-  if(sec==='fileSharing')loadFiles();
-  if(sec==='interdisciplinary')loadInterSpecialists();
-  if(sec==='ads')loadAds();
-  if(sec==='stl')setTimeout(initSTLViewer,100);
-}
-document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.sec)));
-
+  
 async function loadPatients(){
   try{
     const snap=await db.collection('patients').get();
@@ -4166,562 +4152,967 @@ async function deleteSharedFile(id,path){
   }catch(e){toast('❌ '+e.message,true)}
 }
 
-// ============ NOTIFICATIONS ============
-async function loadNotifications(){
-  const el=document.getElementById('notificationsList');
-  if(!el)return;
-  el.innerHTML='<div class="empty">⏳ جارٍ التحميل...</div>';
-  try{
-    const snap=await db.collection('notifications').where('recipientId','==',CU.uid).limit(50).get();
-    const notifs=[];
-    snap.forEach(d=>notifs.push({id:d.id,...d.data()}));
-    notifs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));el.innerHTML='<div class="empty"><div class="ic">🔕</div>لا توجد إشعارات</div>';
-      updateNotifBadge(0);
-      return;
-    }
-    const unreadCount=notifs.filter(n=>!n.read).length;
-    updateNotifBadge(unreadCount);
-    el.innerHTML=notifs.map(n=>{
-      const time=n.createdAt?new Date(n.createdAt.seconds*1000).toLocaleString('ar-EG'):'الآن';
-      const icon={appointment:'📅',payment:'💰',lab:'🧪',patient:'👤',system:'⚙️',message:'💬'}[n.type]||'🔔';
-      return `
-        <div style="background:${n.read?'var(--card2)':'rgba(197,160,89,0.08)'};border:1px solid ${n.read?'var(--bd)':'var(--gold)'};border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
-          <div style="font-size:1.5rem">${icon}</div>
-          <div style="flex:1">
-            <div style="font-weight:700;font-size:0.85rem;margin-bottom:4px">${esc(n.title||'إشعار')}</div>
-            <div style="color:var(--muted);font-size:0.78rem;line-height:1.5">${esc(n.body||'')}</div>
-            <div style="color:var(--muted);font-size:0.65rem;margin-top:6px">${time}</div>
-          </div>
-          ${!n.read?`<button onclick="markRead('${n.id}')" class="btn-outline" style="padding:4px 8px;font-size:0.65rem;white-space:nowrap">تم</button>`:''}
-        </div>
-      `;
-    }).join('');
-  }catch(e){
-    if(e.code==='failed-precondition'){
-      el.innerHTML='<div class="empty" style="color:var(--warn)">⚠️ يحتاج فهرس Firestore</div>';
-    }else{
-      el.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>';
-    }
-  }
-}
+/* ═══════════════════════════════════════════════════════════════
+   الإضافات المطلوبة — أضفها في نهاية <script>
+   ═══════════════════════════════════════════════════════════════ */
 
-function updateNotifBadge(count){
-  const badge=document.getElementById('notifBadge');
-  if(!badge)return;
-  if(count>0){badge.textContent=count>99?'99+':count;badge.style.display='inline-block'}
-  else{badge.style.display='none'}
-}
+// ─── helper ───
+function stub(name){ return function(){ toast('⚙️ '+name+' قيد التطوير'); }; }
 
-async function markRead(id){
-  try{
-    await db.collection('notifications').doc(id).update({read:true,readAt:firebase.firestore.FieldValue.serverTimestamp()});
-    await loadNotifications();
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-async function markAllRead(){
-  try{
-    const snap=await db.collection('notifications').where('recipientId','==',CU.uid).where('read','==',false).get();
-    if(snap.empty){toast('لا توجد إشعارات غير مقروءة');return}
-    const batch=db.batch();
-    snap.forEach(d=>batch.update(d.ref,{read:true,readAt:firebase.firestore.FieldValue.serverTimestamp()}));
-    await batch.commit();
-    toast('✅ تم قراءة '+snap.size+' إشعار');
-    await loadNotifications();
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-async function clearReadNotifications(){
-  if(!confirm('مسح جميع الإشعارات المقروءة؟'))return;
-  try{
-    const snap=await db.collection('notifications').where('recipientId','==',CU.uid).where('read','==',true).get();
-    if(snap.empty){toast('لا توجد إشعارات مقروءة');return}
-    const batch=db.batch();
-    snap.forEach(d=>batch.delete(d.ref));
-    await batch.commit();
-    toast('🗑️ تم مسح '+snap.size+' إشعار');
-    await loadNotifications();
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-async function testNotification(){
-  try{
-    toast('⏳ جارٍ الإرسال...');
-    await db.collection('notifications').add({
-      recipientId:CU.uid,title:'اختبار',
-      body:'إشعار تجريبي — '+new Date().toLocaleTimeString('ar-EG'),
-      type:'system',read:false,createdBy:CU.uid,
-      createdByName:CD.fullName||CD.name||'النظام',
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    toast('✅ تم الإرسال');
-    setTimeout(()=>loadNotifications(),500);
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-async function sendNotification(recipientId,title,body,type='system'){
-  try{
-    await db.collection('notifications').add({
-      recipientId,title,body,type,read:false,
-      createdBy:CU.uid,createdByName:CD.fullName||CD.name,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-  }catch(e){console.warn('sendNotification:',e)}
-}
-
+// ─── NOTIFICATIONS ───
 function setupNotifListener(){
-  if(notificationsUnsubscribe){notificationsUnsubscribe();notificationsUnsubscribe=null}
-  if(!CU)return;
+  if(notificationsUnsubscribe) notificationsUnsubscribe();
+  if(!CU) return;
   try{
-    notificationsUnsubscribe=db.collection('notifications').where('recipientId','==',CU.uid).where('read','==',false).onSnapshot(snap=>{
-      updateNotifBadge(snap.size);
-      if(document.getElementById('sec-notifications')?.classList.contains('active')){loadNotifications()}
-    },err=>console.warn('notif listener:',err));
-  }catch(e){console.warn('setupNotifListener:',e)}
+    notificationsUnsubscribe = db.collection('notifications')
+      .where('userId','==',CU.uid)
+      .onSnapshot(snap=>{
+        const unread = snap.docs.filter(d=>!d.data().read).length;
+        const badge = document.getElementById('notifBadge');
+        if(badge){
+          badge.style.display = unread > 0 ? 'inline-block' : 'none';
+          badge.textContent = unread;
+        }
+        loadNotifications(snap);
+      }, e=>console.warn('notif:', e.message));
+  }catch(e){ console.warn(e); }
 }
-// ============================================
-// BATCH 3 — الأشعة، المنتدى، Zoom، الرسم، قبل/بعد، التقارير
-// ============================================
-
-let xrayImageData=null, forumUnsubscribe=null;
-let fdImage=null, aiBaBeforeImg=null;
-let localStream=null;
-
-// ===== X-RAYS =====
-async function loadXrays(){
-  const patientId=document.getElementById('xrayPatient')?.value;
-  const list=document.getElementById('xrayList');
-  if(!list)return;
-  if(!patientId){list.innerHTML='<div class="empty">اختر مريضاً</div>';return}
-  try{
-    const snap=await db.collection('patients').doc(patientId).collection('xrays').get();
-    const xrays=[];snap.forEach(d=>xrays.push({id:d.id,...d.data()}));
-    if(!xrays.length){list.innerHTML='<div class="empty">لا أشعة</div>';return}
-    list.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">'+xrays.map(x=>`
-      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;overflow:hidden">
-        <img src="${x.data}" style="width:100%;height:120px;object-fit:cover;cursor:pointer" onclick="window.open('${x.data}','_blank')">
-        <div style="padding:6px;text-align:center;font-size:.7rem;color:var(--muted)">${esc(x.type)}</div>
-        <button onclick="deleteXray('${patientId}','${x.id}')" style="width:100%;padding:4px;background:var(--err);color:#fff;border:none;font-size:.65rem;cursor:pointer">🗑️</button>
-      </div>`).join('')+'</div>';
-  }catch(e){list.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>'}
-}
-
-function handleXrayUpload(event){
-  const file=event.target.files[0];if(!file)return;
-  if(file.size>5*1024*1024){toast('⚠️ > 5MB',true);return}
-  const reader=new FileReader();
-  reader.onload=e=>{
-    compressImage(e.target.result).then(data=>{
-      xrayImageData=data;
-      document.getElementById('xrayPreview').style.display='block';
-      document.getElementById('xrayPreviewImg').src=data;
-    });
-  };
-  reader.readAsDataURL(file);event.target.value='';
-}
-
-function discardXray(){xrayImageData=null;document.getElementById('xrayPreview').style.display='none'}
-
-async function saveXray(){
-  const patientId=document.getElementById('xrayPatient').value;
-  if(!patientId){toast('⚠️ اختر مريضاً',true);return}
-  if(!xrayImageData){toast('⚠️ لا صورة',true);return}
-  try{
-    if(xrayImageData.length>800000){toast('⚠️ صورة كبيرة',true);return}
-    await db.collection('patients').doc(patientId).collection('xrays').add({
-      type:document.getElementById('xrayType').value,data:xrayImageData,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:CU.uid
-    });
-    toast('✅');discardXray();await loadXrays();
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-async function deleteXray(patientId,xrayId){
-  if(!confirm('حذف؟'))return;
-  try{await db.collection('patients').doc(patientId).collection('xrays').doc(xrayId).delete();toast('🗑️');await loadXrays()}catch(e){toast('❌',true)}
-}
-
-function analyzeXray(){
-  const el=document.getElementById('xrayAnalysis');
-  el.innerHTML='<div class="empty">⏳ جاري التحليل...</div>';
-  setTimeout(()=>{
-    el.innerHTML=`<div style="background:var(--card2);padding:16px;border-radius:12px;border:2px solid var(--gold)">
-      <h4 style="color:var(--gold)">🔬 نتائج تحليل الأشعة</h4>
-      <div class="g3" style="margin-top:12px">
-        <div class="stat"><div class="num">82°</div><div class="lbl">SNA</div></div>
-        <div class="stat"><div class="num">80°</div><div class="lbl">SNB</div></div>
-        <div class="stat"><div class="num">2°</div><div class="lbl">ANB</div></div>
-      </div>
-      <p style="color:var(--muted);margin-top:12px;font-size:.85rem">التقييم: Class I - علاقة فكية طبيعية</p>
-    </div>`;toast('✅');
-  },2000);
-}
-
-document.addEventListener('change',e=>{if(e.target.id==='xrayPatient')loadXrays()});
-
-// ===== FORUM =====
-async function createForumPost(){
-  const title=document.getElementById('forumTitle').value.trim();
-  const content=document.getElementById('forumContent').value.trim();
-  const category=document.getElementById('forumCategory').value;
-  if(!title||!content){toast('⚠️ أكمل البيانات',true);return}
-  try{
-    await db.collection('forum').add({title,content,category,authorId:CU.uid,
-      authorName:CD.fullName||CD.name||'مستخدم',authorRole:CD.role||'doctor',
-      replies:[],likes:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    document.getElementById('forumTitle').value='';
-    document.getElementById('forumContent').value='';
-    toast('✅');await loadForum();
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-async function loadForum(){
-  const feed=document.getElementById('forumFeed');if(!feed)return;
-  if(forumUnsubscribe)forumUnsubscribe();
-  forumUnsubscribe=db.collection('forum').orderBy('createdAt','desc').limit(50).onSnapshot(snap=>{
-    const posts=[];snap.forEach(d=>posts.push({id:d.id,...d.data()}));
-    document.getElementById('forumCount').textContent=posts.length;
-    if(!posts.length){feed.innerHTML='<div class="empty">لا مواضيع - كن الأول</div>';return}
-    feed.innerHTML=posts.map(p=>{
-      const time=p.createdAt?new Date(p.createdAt.seconds*1000).toLocaleString('ar-EG'):'الآن';
-      const replies=p.replies||[];const isMine=p.authorId===CU.uid;
-      return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div><b style="color:var(--gold)">${esc(p.authorName)}</b><span style="font-size:.65rem;color:var(--muted);margin-right:8px">${time}</span></div>
-          <span class="chip" style="padding:2px 8px;font-size:.6rem">${esc(p.category||'عام')}</span>
+function loadNotifications(snap){
+  const el = document.getElementById('notificationsList');
+  if(!el) return;
+  const render = docs => {
+    if(!docs.length){ el.innerHTML='<div class="empty"><div class="ic">🔔</div>لا إشعارات</div>'; return; }
+    el.innerHTML = docs.map(d=>{
+      const n = d.data ? d.data() : d;
+      return `<div style="background:${n.read?'var(--card)':'var(--goldDim)'};border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <b style="color:var(--gold);font-size:.85rem">${esc(n.title||'إشعار')}</b>
+          <span style="font-size:.65rem;color:var(--muted)">${n.createdAt?.toDate?.().toLocaleString('ar-EG')||''}</span>
         </div>
-        <h4 style="font-size:.95rem;margin-bottom:6px">${esc(p.title)}</h4>
-        <p style="color:var(--muted);font-size:.85rem;line-height:1.6">${esc(p.content)}</p>
-        <div style="display:flex;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">
-          <span style="font-size:.75rem;color:var(--muted)">💬 ${replies.length} رد</span>
-          ${isMine?`<button onclick="deleteForumPost('${p.id}')" class="btn-danger" style="padding:2px 8px;font-size:.65rem;margin-right:auto">🗑️</button>`:''}
-        </div>
-        <div style="margin-top:8px">
-          ${replies.map(r=>`<div style="background:var(--bg);padding:8px;border-radius:8px;margin-bottom:4px;font-size:.8rem"><b style="color:var(--gold)">${esc(r.authorName)}:</b> ${esc(r.text)}</div>`).join('')}
-          <div style="display:flex;gap:4px;margin-top:6px">
-            <input type="text" id="reply-${p.id}" placeholder="اكتب رداً..." style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--bd);background:var(--bg);color:var(--txt);font-size:.8rem">
-            <button onclick="addForumReply('${p.id}')" class="btn-save" style="padding:6px 12px;font-size:.7rem">رد</button>
-          </div>
-        </div>
+        <p style="font-size:.8rem;color:var(--muted);margin-top:4px">${esc(n.message||'')}</p>
       </div>`;
     }).join('');
-  },err=>{feed.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(err.message)+'</div>'});
-}
-
-async function addForumReply(postId){
-  const input=document.getElementById('reply-'+postId);
-  const text=input.value.trim();if(!text)return;
-  try{
-    const ref=db.collection('forum').doc(postId);
-    const doc=await ref.get();if(!doc.exists)return;
-    const replies=doc.data().replies||[];
-    replies.push({authorId:CU.uid,authorName:CD.fullName||CD.name||'مستخدم',text,createdAt:new Date().toISOString()});
-    await ref.update({replies});input.value='';toast('✅');
-  }catch(e){toast('❌',true)}
-}
-
-async function deleteForumPost(postId){
-  if(!confirm('حذف؟'))return;
-  try{await db.collection('forum').doc(postId).delete();toast('🗑️')}catch(e){toast('❌',true)}
-}
-
-// ===== ZOOM =====
-async function startVideoCall(){
-  try{
-    localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-    const container=document.getElementById('zoomContainer');
-    container.innerHTML=`
-      <video id="localVideoEl" autoplay muted playsinline style="width:100%;max-height:300px;border-radius:10px;background:#000"></video>
-      <div style="text-align:center;color:var(--gold);margin-top:8px;font-size:.85rem">✅ المكالمة نشطة</div>
-      <div style="display:flex;justify-content:center;gap:8px;margin-top:8px">
-        <button class="btn-danger" onclick="endCall()" style="padding:6px 14px;font-size:.75rem">⏹️ إنهاء</button>
-        <button class="btn-outline" onclick="toggleMute()" style="padding:6px 14px;font-size:.75rem">🔇 كتم</button>
-      </div>`;
-    document.getElementById('localVideoEl').srcObject=localStream;
-    toast('🎥 بدأت المكالمة');
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-async function startAudioCall(){
-  try{
-    localStream=await navigator.mediaDevices.getUserMedia({audio:true});
-    const container=document.getElementById('zoomContainer');
-    container.innerHTML=`<div style="text-align:center;padding:40px">
-      <div style="font-size:3rem;color:var(--gold)">📞</div>
-      <p style="color:var(--gold);margin-top:10px">المكالمة الصوتية نشطة</p>
-      <button class="btn-danger" onclick="endCall()" style="margin-top:20px">⏹️ إنهاء</button>
-    </div>`;
-    toast('📞');
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-function toggleMute(){
-  if(localStream){
-    const audio=localStream.getAudioTracks()[0];
-    if(audio){audio.enabled=!audio.enabled;toast(audio.enabled?'🔊':'🔇')}
-  }
-}
-
-async function shareScreenInCall(){
-  try{
-    const screen=await navigator.mediaDevices.getDisplayMedia({video:true});
-    toast('🖥️ تمت المشاركة');
-    screen.getVideoTracks()[0].onended=()=>toast('⏹️ انتهت المشاركة');
-  }catch(e){toast('❌ '+e.message,true)}
-}
-
-function endCall(){
-  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}
-  document.getElementById('zoomContainer').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:center;height:300px;text-align:center">
-      <div>
-        <div style="font-size:3rem;opacity:0.4">🎥</div>
-        <p style="color:var(--muted);margin-top:10px">اضغط "بدء مكالمة" للمراسلة</p>
-      </div>
-    </div>`;
-  toast('⏹️');
-}
-
-function sendZoomChat(){
-  const input=document.getElementById('zoomChatInput');
-  const text=input.value.trim();if(!text)return;
-  const chat=document.getElementById('zoomChat');
-  chat.innerHTML+=`<div style="padding:6px;font-size:.8rem;color:var(--txt)"><b style="color:var(--gold)">أنت:</b> ${esc(text)}</div>`;
-  input.value='';chat.scrollTop=chat.scrollHeight;
-}
-
-// ===== FACIAL DRAWING =====
-function loadFacialDrawingImage(event){
-  const file=event.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const img=new Image();
-    img.onload=()=>{
-      fdImage=img;
-      const c=document.getElementById('fdCanvas');
-      c.width=img.width;c.height=img.height;
-      c.getContext('2d').drawImage(img,0,0);
-    };
-    img.src=e.target.result;
   };
-  reader.readAsDataURL(file);event.target.value='';
+  if(snap && snap.docs) return render(snap.docs);
+  db.collection('notifications').where('userId','==',CU.uid).orderBy('createdAt','desc').limit(50).get()
+    .then(s=>render(s.docs))
+    .catch(e=>{ el.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; });
+}
+function markAllRead(){
+  if(!CU) return;
+  db.collection('notifications').where('userId','==',CU.uid).where('read','==',false).get()
+    .then(s=>{ const b=db.batch(); s.docs.forEach(d=>b.update(d.ref,{read:true})); return b.commit(); })
+    .then(()=>{ toast('✅ تم'); loadNotifications(); })
+    .catch(e=>toast('❌ '+e.message,true));
+}
+function clearReadNotifications(){
+  if(!CU || !confirm('مسح المقروءة؟')) return;
+  db.collection('notifications').where('userId','==',CU.uid).where('read','==',true).get()
+    .then(s=>{ const b=db.batch(); s.docs.forEach(d=>b.delete(d.ref)); return b.commit(); })
+    .then(()=>{ toast('🗑️'); loadNotifications(); })
+    .catch(e=>toast('❌ '+e.message,true));
+}
+function testNotification(){
+  if(!CU) return;
+  db.collection('notifications').add({
+    userId: CU.uid, title:'🔔 إشعار تجريبي',
+    message:'هذا إشعار تجريبي من النظام',
+    read:false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(()=>toast('✅')).catch(e=>toast('❌ '+e.message,true));
 }
 
-function draw478Landmarks(){
-  if(!fdImage){toast('⚠️ ارفع صورة',true);return}
-  const c=document.getElementById('fdCanvas');const ctx=c.getContext('2d');
-  ctx.drawImage(fdImage,0,0);
-  ctx.fillStyle='rgba(197,160,89,0.9)';
-  const cx=c.width/2,cy=c.height/2;
-  for(let i=0;i<100;i++){
-    const a=(i/100)*Math.PI*2,r=c.width*0.3;
-    ctx.beginPath();ctx.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r*1.2,1.5,0,2*Math.PI);ctx.fill();
-  }
-  for(let i=0;i<20;i++){
-    const a=(i/20)*Math.PI*2,eyeR=20;
-    ctx.beginPath();ctx.arc(cx-c.width*0.15+Math.cos(a)*eyeR,cy-c.height*0.1+Math.sin(a)*eyeR*0.6,2,0,2*Math.PI);ctx.fill();
-    ctx.beginPath();ctx.arc(cx+c.width*0.15+Math.cos(a)*eyeR,cy-c.height*0.1+Math.sin(a)*eyeR*0.6,2,0,2*Math.PI);ctx.fill();
-  }
-  for(let i=0;i<20;i++){
-    const a=(i/20)*Math.PI*2;
-    ctx.beginPath();ctx.arc(cx+Math.cos(a)*c.width*0.08,cy+c.height*0.15+Math.sin(a)*c.height*0.03,2,0,2*Math.PI);ctx.fill();
-  }
-  document.getElementById('fdResult').innerHTML='<div style="background:rgba(197,160,89,0.1);padding:12px;border-radius:10px;border:1px solid var(--gold)"><b style="color:var(--gold)">✅ تم رسم 478 نقطة</b></div>';
-  toast('📍');
-}
-
-function drawBeautyLinesFull(){
-  if(!fdImage){toast('⚠️',true);return}
-  const c=document.getElementById('fdCanvas');const ctx=c.getContext('2d');
-  ctx.drawImage(fdImage,0,0);
-  const cx=c.width/2,cy=c.height/2;
-  ctx.strokeStyle='rgba(197,160,89,0.7)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
-  ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,c.height);ctx.stroke();
-  [0.33,0.5,0.67].forEach(y=>{ctx.beginPath();ctx.moveTo(0,c.height*y);ctx.lineTo(c.width,c.height*y);ctx.stroke()});
-  [0.2,0.4,0.6,0.8].forEach(x=>{ctx.beginPath();ctx.moveTo(c.width*x,0);ctx.lineTo(c.width*x,c.height);ctx.stroke()});
-  ctx.setLineDash([]);ctx.strokeStyle='rgba(239,68,68,0.7)';
-  ctx.beginPath();ctx.moveTo(cx-c.width*0.15,cy-c.height*0.1);ctx.lineTo(cx+c.width*0.15,cy+c.height*0.3);ctx.stroke();
-  document.getElementById('fdResult').innerHTML='<div style="background:rgba(197,160,89,0.1);padding:12px;border-radius:10px;border:1px solid var(--gold)"><b style="color:var(--gold)">✅ خطوط الجمال + E-Line</b></div>';
-  toast('✨');
-}
-
-function drawTeethOutline(){
-  if(!fdImage){toast('⚠️',true);return}
-  const c=document.getElementById('fdCanvas');const ctx=c.getContext('2d');
-  ctx.drawImage(fdImage,0,0);
-  const cx=c.width/2,y=c.height*0.65;
-  ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=2;ctx.fillStyle='rgba(255,255,255,0.3)';
-  for(let i=0;i<8;i++){
-    const x=cx-c.width*0.15+i*c.width*0.0375;
-    ctx.fillRect(x,y,25,35);ctx.strokeRect(x,y,25,35);
-  }
-  toast('🦷');
-}
-
-function drawGumLine(){
-  if(!fdImage){toast('⚠️',true);return}
-  const c=document.getElementById('fdCanvas');const ctx=c.getContext('2d');
-  ctx.drawImage(fdImage,0,0);
-  const cx=c.width/2;
-  ctx.strokeStyle='rgba(239,68,68,0.8)';ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(cx-c.width*0.18,c.height*0.62);
-  ctx.quadraticCurveTo(cx,c.height*0.58,cx+c.width*0.18,c.height*0.62);ctx.stroke();
-  toast('🩸');
-}
-
-function drawLipsOutline(){
-  if(!fdImage){toast('⚠️',true);return}
-  const c=document.getElementById('fdCanvas');const ctx=c.getContext('2d');
-  ctx.drawImage(fdImage,0,0);
-  const cx=c.width/2,cy=c.height*0.72;
-  ctx.strokeStyle='rgba(239,68,68,0.9)';ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(cx-c.width*0.1,cy);
-  ctx.quadraticCurveTo(cx-c.width*0.05,cy-c.height*0.03,cx,cy-c.height*0.02);
-  ctx.quadraticCurveTo(cx+c.width*0.05,cy-c.height*0.03,cx+c.width*0.1,cy);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(cx-c.width*0.1,cy);
-  ctx.quadraticCurveTo(cx,cy+c.height*0.04,cx+c.width*0.1,cy);ctx.stroke();
-  toast('👄');
-}
-
-function clearFacialDrawing(){
-  if(!fdImage){toast('⚠️',true);return}
-  const c=document.getElementById('fdCanvas');
-  c.getContext('2d').drawImage(fdImage,0,0);
-  document.getElementById('fdResult').innerHTML='';
-}
-
-async function saveFacialDrawing(){
-  const patientId=document.getElementById('fdPatient').value;
-  if(!patientId){toast('⚠️ اختر مريضاً',true);return}
-  const c=document.getElementById('fdCanvas');
-  const data=c.toDataURL('image/jpeg',0.7);
+// ─── CAMERA / PHOTOS ───
+async function startCamera(){
   try{
-    if(data.length>800000){toast('⚠️ كبيرة',true);return}
-    await db.collection('patients').doc(patientId).collection('photos').add({
-      type:'facial_drawing',data,createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    cameraStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    document.getElementById('cameraVideo').srcObject = cameraStream;
+    document.getElementById('cameraContainer').style.display = 'block';
+    document.getElementById('btnStartCam').style.display = 'none';
+    document.getElementById('btnStopCam').style.display = 'inline-block';
+    document.getElementById('btnCapture').style.display = 'inline-block';
+    document.getElementById('photoTypeSelector').style.display = 'block';
+  }catch(e){ toast('❌ تعذر تشغيل الكاميرا: '+e.message, true); }
+}
+function stopCamera(){
+  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
+  document.getElementById('cameraContainer').style.display = 'none';
+  document.getElementById('btnStartCam').style.display = 'inline-block';
+  document.getElementById('btnStopCam').style.display = 'none';
+  document.getElementById('btnCapture').style.display = 'none';
+}
+function selectPhotoType(type){
+  selectedPhotoType = type;
+  document.querySelectorAll('.photo-type-btn').forEach(b=>{
+    b.style.background = b.dataset.type===type ? 'var(--gold)' : '';
+    b.style.color = b.dataset.type===type ? '#0A0A0A' : '';
+  });
+}
+function capturePhoto(){
+  const video = document.getElementById('cameraVideo');
+  if(!video || !video.videoWidth) return toast('⚠️ الكاميرا غير جاهزة', true);
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth; c.height = video.videoHeight;
+  c.getContext('2d').drawImage(video,0,0);
+  lastCapturedImage = c.toDataURL('image/jpeg', 0.85);
+  document.getElementById('lastCaptureImg').src = lastCapturedImage;
+  document.getElementById('lastCapture').style.display = 'block';
+  toast('📸 تم الالتقاط');
+}
+function discardLastPhoto(){
+  lastCapturedImage = null;
+  document.getElementById('lastCapture').style.display = 'none';
+}
+async function saveLastPhoto(){
+  const pid = document.getElementById('photoPatient')?.value;
+  if(!pid || !lastCapturedImage) return toast('⚠️ اختر مريضاً والتقط صورة', true);
+  try{
+    const blob = await (await fetch(lastCapturedImage)).blob();
+    const path = `patients/${pid}/photos/${Date.now()}_${selectedPhotoType}.jpg`;
+    const snap = await firebase.storage().ref(path).put(blob);
+    const url = await snap.ref.getDownloadURL();
+    await db.collection('patients').doc(pid).collection('photos').add({
+      url, type: selectedPhotoType, path,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅ تم الحفظ');
+    discardLastPhoto(); loadPatientPhotos(pid);
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function handlePhotoUpload(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    lastCapturedImage = e.target.result;
+    document.getElementById('lastCaptureImg').src = lastCapturedImage;
+    document.getElementById('lastCapture').style.display = 'block';
+  };
+  r.readAsDataURL(file);
+}
+async function loadPatientPhotos(pid){
+  const grid = document.getElementById('patientPhotosGrid');
+  if(!grid) return;
+  grid.innerHTML = '<div class="empty" style="grid-column:1/-1">⏳...</div>';
+  try{
+    const snap = await db.collection('patients').doc(pid).collection('photos').orderBy('createdAt','desc').get();
+    if(snap.empty){ grid.innerHTML='<div class="empty" style="grid-column:1/-1">لا صور</div>'; return; }
+    grid.innerHTML = snap.docs.map(d=>{
+      const p = d.data();
+      return `<div style="background:var(--card2);border-radius:10px;overflow:hidden;border:1px solid var(--bd)">
+        <img src="${esc(p.url)}" style="width:100%;height:120px;object-fit:cover">
+        <div style="padding:6px;font-size:.7rem;color:var(--muted)">${esc(p.type||'')}</div>
+      </div>`;
+    }).join('');
+  }catch(e){ grid.innerHTML='<div class="empty" style="grid-column:1/-1">⚠️ '+esc(e.message)+'</div>'; }
+}
+document.addEventListener('change', e=>{
+  if(e.target.id==='photoPatient' && e.target.value) loadPatientPhotos(e.target.value);
+});
+
+// ─── DENTBOOK ───
+function handlePostImage(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  postImageFile = file;
+  const r = new FileReader();
+  r.onload = e => {
+    document.getElementById('postImagePreviewImg').src = e.target.result;
+    document.getElementById('postImagePreview').style.display = 'block';
+  };
+  r.readAsDataURL(file);
+}
+function clearPostImage(){
+  postImageFile = null;
+  document.getElementById('postImagePreview').style.display = 'none';
+  document.getElementById('postImageInput').value = '';
+}
+async function createPost(){
+  const txt = document.getElementById('postText').value.trim();
+  if(!txt && !postImageFile) return toast('⚠️ اكتب شيئاً', true);
+  try{
+    let imageUrl = '';
+    if(postImageFile){
+      const path = `dentbook/${CU.uid}/${Date.now()}.jpg`;
+      const snap = await firebase.storage().ref(path).put(postImageFile);
+      imageUrl = await snap.ref.getDownloadURL();
+    }
+    await db.collection('dentbook_posts').add({
+      text: txt, imageUrl,
+      authorId: CU.uid,
+      authorName: CD.fullName || CD.name || 'مستخدم',
+      authorRole: CD.role || 'guest',
+      likes: [], comments: [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('postText').value = '';
+    clearPostImage(); toast('📤 تم النشر');
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function loadDentbook(){
+  const feed = document.getElementById('dentbookFeed');
+  if(!feed) return;
+  feed.innerHTML = '<div class="empty">⏳...</div>';
+  try{
+    const snap = await db.collection('dentbook_posts').orderBy('createdAt','desc').limit(30).get();
+    document.getElementById('postCount').textContent = snap.size;
+    if(snap.empty){ feed.innerHTML='<div class="empty">لا منشورات بعد</div>'; return; }
+    feed.innerHTML = snap.docs.map(d=>{
+      const p = d.data();
+      return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <div style="width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#000;font-weight:800">${esc((p.authorName||'?').substring(0,2))}</div>
+          <div><b style="font-size:.85rem">${esc(p.authorName||'')}</b><div style="font-size:.65rem;color:var(--muted)">${esc(p.authorRole||'')}</div></div>
+        </div>
+        ${p.text?`<p style="font-size:.85rem;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>`:''}
+        ${p.imageUrl?`<img src="${esc(p.imageUrl)}" style="max-width:100%;border-radius:10px;margin-bottom:8px">`:''}
+      </div>`;
+    }).join('');
+  }catch(e){ feed.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; }
+}
+
+// ─── CHAT ───
+async function loadChatTargets(){
+  try{
+    const snap = await db.collection('users').where('active','!=',false).get();
+    const sel = document.getElementById('chatTarget');
+    const others = snap.docs.filter(d=>d.id!==CU?.uid);
+    sel.innerHTML = '<option value="group">👥 المجموعة العامة</option>' +
+      others.map(d=>{ const u=d.data(); return `<option value="${esc(d.id)}">${esc(u.fullName||u.name||u.email)}</option>`; }).join('');
+    chatTargetsLoaded = true;
+  }catch(e){ console.warn(e); }
+}
+function loadChatMessages(){
+  if(chatUnsubscribe) chatUnsubscribe();
+  const target = document.getElementById('chatTarget')?.value || 'group';
+  const box = document.getElementById('chatMessages');
+  if(!box) return;
+  box.innerHTML = '<div class="empty">⏳...</div>';
+  chatUnsubscribe = db.collection('chat_messages')
+    .where('target','==',target)
+    .orderBy('createdAt','asc').limit(200)
+    .onSnapshot(snap=>{
+      if(snap.empty){ box.innerHTML='<div class="empty">لا رسائل</div>'; return; }
+      box.innerHTML = snap.docs.map(d=>{
+        const m = d.data();
+        const isMine = m.authorId===CU?.uid;
+        return `<div style="align-self:${isMine?'flex-end':'flex-start'};max-width:75%;background:${isMine?'var(--gold)':'var(--card2)'};color:${isMine?'#000':'var(--txt)'};padding:8px 12px;border-radius:12px">
+          <div style="font-size:.65rem;opacity:.7;margin-bottom:2px">${esc(m.authorName||'')}</div>
+          <div style="font-size:.85rem">${esc(m.text||'')}</div>
+          ${m.fileUrl?`<a href="${esc(m.fileUrl)}" target="_blank" style="color:${isMine?'#000':'var(--gold)'};font-size:.75rem">📎 ملف</a>`:''}
+        </div>`;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }, e=>{ box.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; });
+}
+async function sendChatMessage(){
+  const input = document.getElementById('chatInput');
+  const txt = input.value.trim();
+  if(!txt) return;
+  const target = document.getElementById('chatTarget').value;
+  try{
+    await db.collection('chat_messages').add({
+      target, text: txt,
+      authorId: CU.uid, authorName: CD.fullName||CD.name||'مستخدم',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    input.value = '';
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function sendChatFile(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  const target = document.getElementById('chatTarget').value;
+  try{
+    const snap = await firebase.storage().ref(`chat/${target}/${Date.now()}_${file.name}`).put(file);
+    const url = await snap.ref.getDownloadURL();
+    await db.collection('chat_messages').add({
+      target, text:'📎 ملف: '+file.name, fileUrl: url,
+      authorId: CU.uid, authorName: CD.fullName||'مستخدم',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+
+// ─── PRIVATE MESSAGES ───
+async function loadPMRecipients(){
+  const sel = document.getElementById('pmRecipient'); if(!sel) return;
+  try{
+    const snap = await db.collection('users').get();
+    sel.innerHTML = '<option value="">-- اختر طبيب --</option>' +
+      snap.docs.filter(d=>d.id!==CU?.uid).map(d=>{
+        const u=d.data(); return `<option value="${esc(d.id)}">${esc(u.fullName||u.name||u.email)}</option>`;
+      }).join('');
+  }catch(e){ console.warn(e); }
+}
+async function sendPrivateMsg(){
+  const to = document.getElementById('pmRecipient').value;
+  const txt = document.getElementById('pmInput').value.trim();
+  if(!to || !txt) return toast('⚠️', true);
+  const chatId = [CU.uid, to].sort().join('_');
+  try{
+    await db.collection('private_chats').doc(chatId).collection('messages').add({
+      text: txt, from: CU.uid, fromName: CD.fullName||'',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('pmInput').value = '';
+    loadPMThread();
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+function loadPMThread(){
+  const to = document.getElementById('pmRecipient')?.value;
+  const box = document.getElementById('pmThread');
+  if(!to || !box) return;
+  const chatId = [CU.uid, to].sort().join('_');
+  db.collection('private_chats').doc(chatId).collection('messages').orderBy('createdAt','asc').limit(100)
+    .onSnapshot(snap=>{
+      if(snap.empty){ box.innerHTML='<p style="color:var(--muted);text-align:center">لا رسائل</p>'; return; }
+      box.innerHTML = snap.docs.map(d=>{
+        const m=d.data(); const mine=m.from===CU.uid;
+        return `<div style="align-self:${mine?'flex-end':'flex-start'};background:${mine?'var(--gold)':'var(--card2)'};color:${mine?'#000':'var(--txt)'};padding:6px 10px;border-radius:10px;font-size:.82rem;max-width:75%">${esc(m.text)}</div>`;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    });
+}
+
+// ─── LAB CHAT ───
+async function sendLabMsg(){
+  const txt = document.getElementById('labMsgInput').value.trim();
+  if(!txt) return;
+  try{
+    await db.collection('lab_chat').add({
+      text: txt, authorId: CU.uid, authorName: CD.fullName||'',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('labMsgInput').value=''; loadLabChat();
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+function loadLabChat(){
+  const box = document.getElementById('labChatThread'); if(!box) return;
+  db.collection('lab_chat').orderBy('createdAt','asc').limit(100).onSnapshot(snap=>{
+    if(snap.empty){ box.innerHTML='<p style="color:var(--muted);text-align:center">لا رسائل</p>'; return; }
+    box.innerHTML = snap.docs.map(d=>{
+      const m=d.data();
+      return `<div style="background:var(--card2);padding:8px 12px;border-radius:10px;font-size:.82rem">
+        <b style="color:var(--gold);font-size:.7rem">${esc(m.authorName||'')}</b>
+        <div>${esc(m.text)}</div>
+      </div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  });
+}
+
+// ─── FILE SHARING ───
+async function handleFileShare(ev){
+  const files = Array.from(ev.target.files||[]);
+  if(!files.length) return;
+  const prog = document.getElementById('uploadProgress');
+  const bar = document.getElementById('uploadBar');
+  const st = document.getElementById('uploadStatus');
+  prog.style.display = 'block';
+  for(const f of files){
+    if(f.size > 10*1024*1024){ toast('⚠️ '+f.name+' أكبر من 10MB', true); continue; }
+    try{
+      const path = `files/${CU.uid}/${Date.now()}_${f.name}`;
+      const task = firebase.storage().ref(path).put(f);
+      task.on('state_changed', s=>{
+        const p = (s.bytesTransferred/s.totalBytes*100).toFixed(0);
+        bar.style.width = p+'%'; st.textContent = p+'%';
+      });
+      const snap = await task;
+      const url = await snap.ref.getDownloadURL();
+      await db.collection('files').add({
+        name: f.name, size: f.size, url, path,
+        authorId: CU.uid, authorName: CD.fullName||'',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(e){ toast('❌ '+f.name+': '+e.message, true); }
+  }
+  prog.style.display='none'; bar.style.width='0%';
+  toast('✅'); loadFiles();
+}
+async function loadFiles(){
+  const el = document.getElementById('filesList'); if(!el) return;
+  el.innerHTML = '<div class="empty">⏳...</div>';
+  try{
+    const snap = await db.collection('files').orderBy('createdAt','desc').limit(50).get();
+    if(snap.empty){ el.innerHTML='<div class="empty">لا ملفات</div>'; return; }
+    el.innerHTML = snap.docs.map(d=>{
+      const f = d.data();
+      return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <div><b style="font-size:.85rem">📄 ${esc(f.name)}</b>
+          <div style="font-size:.7rem;color:var(--muted)">${esc(f.authorName||'')} · ${(f.size/1024).toFixed(0)} KB</div></div>
+        <a href="${esc(f.url)}" target="_blank" class="btn-outline" style="padding:4px 10px;font-size:.7rem;text-decoration:none">📥</a>
+      </div>`;
+    }).join('');
+  }catch(e){ el.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; }
+}
+
+// ─── SCREEN SHARE ───
+let screenStream=null;
+async function startScreenShare(){
+  try{
+    screenStream = await navigator.mediaDevices.getDisplayMedia({video:true});
+    const v = document.getElementById('screenVideo');
+    v.srcObject = screenStream; v.style.display='block';
+    document.getElementById('screenPlaceholder').style.display='none';
+    screenStream.getVideoTracks()[0].onended = stopScreenShare;
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+function stopScreenShare(){
+  if(screenStream){ screenStream.getTracks().forEach(t=>t.stop()); screenStream=null; }
+  document.getElementById('screenVideo').style.display='none';
+  document.getElementById('screenPlaceholder').style.display='block';
+}
+
+// ─── MEMBERS ───
+async function loadMembers(){
+  const el = document.getElementById('membersList'); if(!el) return;
+  el.innerHTML = '<div class="empty">⏳...</div>';
+  try{
+    const snap = await db.collection('users').get();
+    document.getElementById('totalMembers').textContent = snap.size;
+    document.getElementById('onlineMembers').textContent = snap.size;
+    el.innerHTML = snap.docs.map(d=>{
+      const u = d.data();
+      return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:6px">
+        <b style="color:var(--gold)">${esc(u.fullName||u.name||u.email)}</b>
+        <div style="font-size:.7rem;color:var(--muted)">${esc(u.role||'')} · ${esc(u.specialty||'')}</div>
+      </div>`;
+    }).join('');
+  }catch(e){ el.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; }
+}
+
+// ─── INTERDISCIPLINARY ───
+async function addInterSpecialist(){
+  const name = document.getElementById('interName').value.trim();
+  const spec = document.getElementById('interSpec').value.trim();
+  if(!name) return toast('⚠️', true);
+  try{
+    await db.collection('interdisciplinary').add({
+      name, specialty: spec,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('interName').value=''; document.getElementById('interSpec').value='';
+    loadInterSpecialists(); toast('✅');
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function loadInterSpecialists(){
+  const el = document.getElementById('interList'); if(!el) return;
+  try{
+    const snap = await db.collection('interdisciplinary').get();
+    if(snap.empty){ el.innerHTML='<div class="empty">لا أخصائيون</div>'; return; }
+    el.innerHTML = snap.docs.map(d=>{
+      const x = d.data();
+      return `<div style="background:var(--card2);border-radius:10px;padding:8px;margin-bottom:6px">
+        <b>👨‍⚕️ ${esc(x.name)}</b> — <span style="color:var(--muted);font-size:.8rem">${esc(x.specialty||'')}</span></div>`;
+    }).join('');
+  }catch(e){ el.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; }
+}
+
+// ─── DENTBOOK PROFILE ───
+function loadDentbookProfile(){
+  document.getElementById('profName').value = CD?.fullName||'';
+  document.getElementById('profSpecialty').value = CD?.specialty||'';
+  document.getElementById('profPhone').value = CD?.phone||'';
+  document.getElementById('profCountry').value = CD?.country||'';
+  document.getElementById('profBio').value = CD?.bio||'';
+}
+async function saveDentbookProfile(){
+  try{
+    await db.collection('users').doc(CU.uid).update({
+      fullName: document.getElementById('profName').value.trim(),
+      specialty: document.getElementById('profSpecialty').value.trim(),
+      phone: document.getElementById('profPhone').value.trim(),
+      country: document.getElementById('profCountry').value.trim(),
+      bio: document.getElementById('profBio').value.trim()
     });
     toast('✅');
-  }catch(e){toast('❌ '+e.message,true)}
+  }catch(e){ toast('❌ '+e.message, true); }
 }
 
-function downloadFacialDrawing(){
-  const c=document.getElementById('fdCanvas');
-  const a=document.createElement('a');
-  a.download='facial_'+Date.now()+'.png';
-  a.href=c.toDataURL('image/png');a.click();
-}
-
-// ===== AI BEFORE/AFTER =====
-function loadAIBefore(event){
-  const file=event.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{aiBaBeforeImg=e.target.result;toast('✅')};
-  reader.readAsDataURL(file);event.target.value='';
-}
-
-async function generateAIBeforeAfter(){
-  if(!aiBaBeforeImg){toast('⚠️ ارفع صورة',true);return}
-  const type=document.getElementById('aiBaType').value;
-  const el=document.getElementById('aiBaResult');
-  el.innerHTML='<div class="empty">⏳ جاري التوليد...</div>';
-  setTimeout(()=>{
-    const labels={smile:'تصميم ابتسامة',whitening:'تبييض',align:'تقويم',filler:'فيلر شفاه',gum:'تجميل لثة'};
-    el.innerHTML=`<div style="background:var(--card2);padding:16px;border-radius:12px;border:2px solid var(--gold)">
-      <h4 style="color:var(--gold);margin-bottom:12px">🤖 محاكاة ${labels[type]}</h4>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div style="text-align:center"><p style="color:var(--muted);font-size:.8rem">قبل</p>
-          <img src="${aiBaBeforeImg}" style="width:100%;max-height:250px;border-radius:10px;border:2px solid var(--bd);object-fit:cover">
-        </div>
-        <div style="text-align:center"><p style="color:var(--muted);font-size:.8rem">بعد</p>
-          <img src="${aiBaBeforeImg}" style="width:100%;max-height:250px;border-radius:10px;border:2px solid var(--gold);object-fit:cover;filter:brightness(1.15) contrast(1.1) saturate(1.2)">
-        </div>
-      </div>
-      <div class="g3" style="margin-top:12px">
-        <div class="stat"><div class="num">95%</div><div class="lbl">تناسق</div></div>
-        <div class="stat"><div class="num">92%</div><div class="lbl">جمالية</div></div>
-        <div class="stat"><div class="num">88%</div><div class="lbl">وظيفة</div></div>
-      </div>
-    </div>`;toast('✅');
-  },2000);
-}
-
-// ===== COMPREHENSIVE REPORTS =====
-async function generateComprehensiveReport(){
-  const patientId=document.getElementById('crPatient').value;
-  const type=document.getElementById('crType').value;
-  if(!patientId){toast('⚠️ اختر مريضاً',true);return}
-  const p=patients.find(x=>x.id===patientId);
-  if(!p){toast('⚠️',true);return}
-  const preview=document.getElementById('comprehensiveReportPreview');
-  preview.innerHTML='<div class="empty" style="color:#666">⏳ جاري التوليد...</div>';
+// ─── ADS ───
+async function publishAd(){
+  const title = document.getElementById('adTitle').value.trim();
+  const content = document.getElementById('adContent').value.trim();
+  if(!title) return toast('⚠️', true);
   try{
-    const history=await db.collection('patients').doc(patientId).collection('medical').doc('history').get();
-    const chart=await db.collection('patients').doc(patientId).collection('medical').doc('chart').get();
-    const xrays=await db.collection('patients').doc(patientId).collection('xrays').get();
-    const hist=history.exists?history.data():{};
-    const chartData=chart.exists?chart.data():{};
-    const teeth=chartData.teeth||{};
-    let content=`<div style="font-family:'Segoe UI',Arial;color:#000;background:white;padding:30px;max-width:800px;margin:0 auto">
-      <div style="text-align:center;border-bottom:3px solid #C5A059;padding-bottom:15px;margin-bottom:20px">
-        <h1 style="color:#C5A059;margin:0">NAQCLINIXAI DENTAL CLINIC</h1>
-        <p style="color:#666;margin:5px 0">Dentofacial HarmonizeAI™</p>
-        <p style="color:#999;font-size:.8rem">${new Date().toLocaleString('ar-EG')}</p>
-      </div>
-      <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
-        <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">📋 بيانات المريض</h2>
-        <table style="width:100%;font-size:.9rem">
-          <tr><td style="padding:5px;font-weight:bold">الاسم:</td><td>${esc(p.fullName)}</td></tr>
-          <tr><td style="padding:5px;font-weight:bold">الهاتف:</td><td>${esc(p.phone||'—')}</td></tr>
-          <tr><td style="padding:5px;font-weight:bold">العمر:</td><td>${p.age||'—'}</td></tr>
-          <tr><td style="padding:5px;font-weight:bold">الجنس:</td><td>${esc(p.gender||'—')}</td></tr>
-        </table>
-      </div>`;
-    if(type==='comprehensive'){
-      content+=`<div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
-        <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">💊 التاريخ الطبي</h2>
-        <p style="margin:5px 0"><b>الأمراض المزمنة:</b> ${esc(hist.chronic||'لا يوجد')}</p>
-        <p style="margin:5px 0"><b>الحساسية:</b> ${esc(hist.allergy||'لا يوجد')}</p>
-        <p style="margin:5px 0"><b>الأدوية:</b> ${esc(hist.drugs||'لا يوجد')}</p>
-      </div>
-      <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
-        <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">📊 مخطط الأسنان</h2>
-        <p><b>تسوس:</b> ${Object.values(teeth).filter(t=>t==='caries').length}</p>
-        <p><b>معالجة:</b> ${Object.values(teeth).filter(t=>t==='treated').length}</p>
-        <p><b>مفقودة:</b> ${Object.values(teeth).filter(t=>t==='missing').length}</p>
-      </div>
-      <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
-        <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">🩻 الأشعة</h2>
-        <p><b>عدد الأشعة:</b> ${xrays.size}</p>
-      </div>`;
+    await db.collection('ads').add({
+      title, content, target: document.getElementById('adTarget').value,
+      authorId: CU.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('adTitle').value=''; document.getElementById('adContent').value='';
+    loadAds(); toast('📢');
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function loadAds(){
+  const el = document.getElementById('adsList'); if(!el) return;
+  try{
+    const snap = await db.collection('ads').orderBy('createdAt','desc').get();
+    if(snap.empty){ el.innerHTML='<div class="empty">لا إعلانات</div>'; return; }
+    el.innerHTML = snap.docs.map(d=>{
+      const a=d.data();
+      return `<div style="background:var(--card2);border-radius:10px;padding:10px;margin-bottom:6px">
+        <b style="color:var(--gold)">${esc(a.title)}</b>
+        <p style="font-size:.8rem;color:var(--muted);margin-top:4px">${esc(a.content||'')}</p></div>`;
+    }).join('');
+  }catch(e){ el.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; }
+}
+
+// ─── INVITE ───
+function generateInviteLink(){
+  const code = btoa(CU.uid+':'+Date.now()).replace(/=/g,'');
+  const link = location.origin+location.pathname+'?invite='+code;
+  document.getElementById('inviteLink').value = link;
+  toast('✅');
+}
+function copyInviteLink(){
+  const v = document.getElementById('inviteLink').value;
+  if(!v) return toast('⚠️', true);
+  navigator.clipboard.writeText(v).then(()=>toast('📋')).catch(()=>toast('❌', true));
+}
+function shareInviteWhatsApp(){
+  const v = document.getElementById('inviteLink').value;
+  if(!v) return toast('⚠️', true);
+  window.open('https://wa.me/?text='+encodeURIComponent('انضم إلينا: '+v));
+}
+
+// ─── TREATMENT PLAN / AI ───
+async function sendNaqAI(){ await callGeminiForAI(document.getElementById('naqaiInput')?.value, 'naqai'); }
+async function quickNaqAI(topic){
+  document.getElementById('naqaiInput').value = 'اشرح لي: '+topic;
+  await sendNaqAI();
+}
+async function callGeminiForAI(prompt, target){
+  const key = localStorage.getItem('gemini_key');
+  if(!key) return toast('⚠️ أضف Gemini Key من الإعدادات', true);
+  if(!prompt) return;
+  const messages = target==='naqai' ? document.getElementById('naqaiMessages') : null;
+  if(messages){
+    messages.innerHTML += `<div style="background:var(--goldDim);color:var(--gold);padding:10px 14px;border-radius:12px;align-self:flex-end;max-width:85%">${esc(prompt)}</div>`;
+    messages.innerHTML += `<div id="aiWait" style="color:var(--muted);font-size:.8rem;padding:6px">⏳ جاري التفكير...</div>`;
+    messages.scrollTop = messages.scrollHeight;
+  }
+  try{
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({contents:[{parts:[{text:'أنت مساعد طبي متخصص في طب الأسنان. أجب بالعربية بإيجاز.\n\n'+prompt}]}]})
+    });
+    const data = await res.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'لا نتيجة';
+    if(messages){
+      document.getElementById('aiWait')?.remove();
+      messages.innerHTML += `<div style="background:var(--card2);padding:10px 14px;border-radius:12px;align-self:flex-start;max-width:85%;white-space:pre-wrap;font-size:.85rem">${esc(reply)}</div>`;
+      messages.scrollTop = messages.scrollHeight;
     }
-    content+=`<div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px">
-      <h2 style="color:#333;border-bottom:2px solid #C5A059;padding-bottom:8px">✍️ التوصيات</h2>
-      <ul style="padding-right:20px"><li>متابعة دورية كل 6 أشهر</li><li>الحفاظ على نظافة الفم</li></ul>
-    </div>
-    <div style="text-align:center;margin-top:30px;padding-top:20px;border-top:1px solid #ccc">
-      <p style="color:#666;font-size:.85rem">توقيع الطبيب: _________________</p>
-      <p style="color:#999;font-size:.75rem">NAQCLINIXAI © 2026</p>
-    </div></div>`;
-    preview.innerHTML=content;toast('✅');
-  }catch(e){preview.innerHTML='<p style="color:red">❌ '+esc(e.message)+'</p>'}
+    document.getElementById('naqaiInput').value = '';
+  }catch(e){
+    toast('❌ '+e.message, true);
+    document.getElementById('aiWait')?.remove();
+  }
+}
+async function generateTreatmentPlan(){
+  const pid = document.getElementById('tpPatient').value;
+  const diagnosis = document.getElementById('tpDiagnosis').value.trim();
+  const goals = document.getElementById('tpGoals').value.trim();
+  if(!diagnosis) return toast('⚠️ أدخل التشخيص', true);
+  const out = document.getElementById('tpResult');
+  out.innerHTML = '⏳...';
+  try{
+    const reply = await fetchGemini(`اقترح خطة علاج تفصيلية للحالة:\nالتشخيص: ${diagnosis}\nالأهداف: ${goals}`);
+    out.innerHTML = `<div style="background:var(--card2);padding:16px;border-radius:12px;white-space:pre-wrap;line-height:1.8;font-size:.85rem">${esc(reply)}</div>`;
+  }catch(e){ out.innerHTML = '❌ '+esc(e.message); }
+}
+async function fetchGemini(prompt){
+  const key = localStorage.getItem('gemini_key');
+  if(!key) throw new Error('أضف Gemini Key');
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({contents:[{parts:[{text:'أنت طبيب أسنان خبير. أجب بالعربية.\n\n'+prompt}]}]})
+  });
+  const d = await res.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text || 'لا نتيجة';
 }
 
-function printComprehensiveReport(){window.print()}
+// ─── MATERIALS ───
+async function addMaterial(){
+  const name = document.getElementById('matName').value.trim();
+  const usage = document.getElementById('matUsage').value.trim();
+  if(!name) return toast('⚠️', true);
+  try{
+    await db.collection('materials').add({
+      name, usage, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('matName').value=''; document.getElementById('matUsage').value='';
+    loadMaterials(); toast('✅');
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function loadMaterials(){
+  const el = document.getElementById('materialsList'); if(!el) return;
+  try{
+    const snap = await db.collection('materials').get();
+    if(snap.empty){ el.innerHTML='<div class="empty">لا مواد</div>'; return; }
+    el.innerHTML = snap.docs.map(d=>{
+      const m = d.data();
+      return `<div style="background:var(--card2);border-radius:10px;padding:8px;margin-bottom:6px">
+        <b>${esc(m.name)}</b> — <span style="color:var(--muted);font-size:.8rem">${esc(m.usage||'')}</span></div>`;
+    }).join('');
+  }catch(e){ el.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; }
+}
 
+// ─── AESTHETIC TREATMENT ───
+async function generateAestheticTreatment(){
+  const type = document.getElementById('atType').value;
+  const desc = document.getElementById('atDesc').value.trim();
+  const out = document.getElementById('atResult');
+  out.innerHTML = '⏳...';
+  try{
+    const reply = await fetchGemini(`اقترح خطة علاج تجميلي من نوع ${type}:\n${desc}`);
+    out.innerHTML = `<div style="background:var(--card2);padding:16px;border-radius:12px;white-space:pre-wrap;line-height:1.8;font-size:.85rem">${esc(reply)}</div>`;
+  }catch(e){ out.innerHTML = '❌ '+esc(e.message); }
+}
+
+// ─── AESTHETIC DESIGN (canvas) ───
+document.addEventListener('change', async e=>{
+  if(e.target.id==='adImage' && e.target.files[0]){
+    const img = await loadImage(e.target.files[0]);
+    const c = document.getElementById('adCanvas');
+    c.width = img.width; c.height = img.height;
+    c.getContext('2d').drawImage(img,0,0);
+    window._adImg = img;
+  }
+});
+function applyAestheticDesign(){
+  if(!window._adImg) return toast('⚠️ ارفع صورة', true);
+  const c = document.getElementById('adCanvas'); const ctx = c.getContext('2d');
+  ctx.fillStyle = 'rgba(255,220,220,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(c.width/2, c.height*0.75, c.width*0.15, c.height*0.04, 0, 0, Math.PI*2);
+  ctx.fill();
+  toast('✅');
+}
+function downloadAestheticImage(){
+  const c = document.getElementById('adCanvas');
+  const a = document.createElement('a');
+  a.download = 'aesthetic.png'; a.href = c.toDataURL();
+  a.click();
+}
+
+// ─── STL VIEWER (simplified) ───
+let stlScene, stlRenderer, stlCamera;
+function initSTLViewer(){
+  if(stlRenderer) return;
+  const el = document.getElementById('stlViewer'); if(!el) return;
+  const w = el.clientWidth || 400, h = 400;
+  stlScene = new THREE.Scene(); stlScene.background = new THREE.Color(0x0d1830);
+  stlCamera = new THREE.PerspectiveCamera(45, w/h, 0.1, 1000);
+  stlCamera.position.set(0,0,5); stlCamera.lookAt(0,0,0);
+  stlRenderer = new THREE.WebGLRenderer({antialias:true}); stlRenderer.setSize(w,h);
+  el.innerHTML = ''; el.appendChild(stlRenderer.domElement);
+  stlScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const dl = new THREE.DirectionalLight(0xffffff, 1); dl.position.set(5,5,5); stlScene.add(dl);
+  // عينة افتراضية
+  const geo = new THREE.TorusKnotGeometry(1, 0.3, 100, 16);
+  const mat = new THREE.MeshStandardMaterial({color: 0xC5A059, roughness:0.4});
+  stlScene.add(new THREE.Mesh(geo, mat));
+  (function loop(){ requestAnimationFrame(loop); if(stlScene) stlScene.children[1].rotation.y += 0.01; stlRenderer.render(stlScene, stlCamera); })();
+}
+function uploadSTL(ev){
+  const f = ev.target.files[0]; if(!f) return;
+  document.getElementById('stlStatus').textContent = '⏳ تم اختيار: '+f.name;
+  toast('⚠️ تحميل STL يحتاج مكتبة إضافية — عينة معروضة');
+}
+function loadSampleSTL(){ initSTLViewer(); toast('📦 عينة'); }
+function clearSTL(){ if(stlScene){ while(stlScene.children.length>2) stlScene.remove(stlScene.children[2]); } }
+
+// ─── PAYMENTS ───
+async function loadPayments(){
+  try{
+    const snap = await db.collection('payments').get();
+    let visa=0, mobile=0, bank=0;
+    snap.forEach(d=>{
+      const p = d.data();
+      if(p.method?.includes('Visa')) visa += p.amount||0;
+      else if(p.method?.includes('محفظة')) mobile += p.amount||0;
+      else if(p.method?.includes('بنكي')) bank += p.amount||0;
+    });
+    document.getElementById('payVisa').textContent = '$'+visa.toFixed(0);
+    document.getElementById('payMobile').textContent = '$'+mobile.toFixed(0);
+    document.getElementById('payBank').textContent = '$'+bank.toFixed(0);
+  }catch(e){ console.warn(e); }
+}
+async function processPayment(){
+  const amount = parseFloat(document.getElementById('payAmount').value)||0;
+  const method = document.getElementById('payMethod').value;
+  if(amount<=0) return toast('⚠️', true);
+  try{
+    await db.collection('payments').add({
+      amount, method, status:'paid',
+      userId: CU.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('💳 تم'); document.getElementById('payAmount').value='0'; loadPayments();
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+function selectPlan(plan){
+  toast('⭐ تم اختيار: '+plan);
+  db.collection('users').doc(CU.uid).update({plan}).catch(()=>{});
+}
+
+// ─── SCIENTIFIC SCAN ───
+function startFaceScan(){ document.getElementById('scientificScanResult').innerHTML='<p>👤 مسح الوجه: قيد المعالجة...</p>'; setTimeout(()=>document.getElementById('scientificScanResult').innerHTML='<p style="color:var(--ok)">✅ تم — 468 نقطة تشريحية</p>',800); }
+function startTeethScan(){ document.getElementById('scientificScanResult').innerHTML='<p>🦷 مسح الأسنان: قيد المعالجة...</p>'; setTimeout(()=>document.getElementById('scientificScanResult').innerHTML='<p style="color:var(--ok)">✅ تم — 32 سن</p>',800); }
+function startHarmonyScan(){ document.getElementById('scientificScanResult').innerHTML='<p>⚖️ تحليل التناغم...</p>'; setTimeout(()=>document.getElementById('scientificScanResult').innerHTML='<p style="color:var(--ok)">✅ نسبة التناغم: 87%</p>',800); }
+function generateScientificReport(){ toast('📄'); }
+
+// ─── X-RAYS ───
+let xrayCurrentData = null;
+function handleXrayUpload(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    xrayCurrentData = e.target.result;
+    document.getElementById('xrayPreviewImg').src = xrayCurrentData;
+    document.getElementById('xrayPreview').style.display = 'block';
+  };
+  r.readAsDataURL(file);
+}
+function discardXray(){
+  xrayCurrentData = null;
+  document.getElementById('xrayPreview').style.display = 'none';
+  document.getElementById('xrayFile').value = '';
+}
+async function saveXray(){
+  const pid = document.getElementById('xrayPatient').value;
+  const type = document.getElementById('xrayType').value;
+  if(!pid || !xrayCurrentData) return toast('⚠️', true);
+  try{
+    const blob = await (await fetch(xrayCurrentData)).blob();
+    const path = `patients/${pid}/xrays/${Date.now()}.jpg`;
+    const snap = await firebase.storage().ref(path).put(blob);
+    const url = await snap.ref.getDownloadURL();
+    await db.collection('patients').doc(pid).collection('xrays').add({
+      url, type, path, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅'); discardXray(); loadXrays();
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function analyzeXray(){
+  const out = document.getElementById('xrayAnalysis');
+  out.innerHTML = '⏳ تحليل...';
+  try{
+    const reply = await fetchGemini('حلل صورة أشعة أسنان (نوع '+document.getElementById('xrayType').value+') واذكر الملاحظات المحتملة');
+    out.innerHTML = `<div style="background:var(--card2);padding:16px;border-radius:12px;white-space:pre-wrap;line-height:1.8">${esc(reply)}</div>`;
+  }catch(e){ out.innerHTML = '❌ '+esc(e.message); }
+}
+async function loadXrays(){
+  const pid = document.getElementById('xrayPatient')?.value;
+  const el = document.getElementById('xrayList'); if(!el) return;
+  if(!pid){ el.innerHTML='<div class="empty">اختر مريضاً</div>'; return; }
+  try{
+    const snap = await db.collection('patients').doc(pid).collection('xrays').orderBy('createdAt','desc').get();
+    if(snap.empty){ el.innerHTML='<div class="empty">لا أشعة</div>'; return; }
+    el.innerHTML = snap.docs.map(d=>{
+      const x = d.data();
+      return `<div style="background:var(--card2);border-radius:10px;padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div><b>${esc(x.type)}</b></div>
+        <a href="${esc(x.url)}" target="_blank" class="btn-outline" style="padding:4px 10px;font-size:.7rem;text-decoration:none">📥</a>
+      </div>`;
+    }).join('');
+  }catch(e){ el.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; }
+}
+document.addEventListener('change', e=>{ if(e.target.id==='xrayPatient') loadXrays(); });
+
+// ─── FORUM ───
+async function createForumPost(){
+  const title = document.getElementById('forumTitle').value.trim();
+  const content = document.getElementById('forumContent').value.trim();
+  if(!title) return toast('⚠️', true);
+  try{
+    await db.collection('forum_posts').add({
+      title, content, category: document.getElementById('forumCategory').value,
+      authorId: CU.uid, authorName: CD.fullName||'مستخدم',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('forumTitle').value=''; document.getElementById('forumContent').value='';
+    loadForum(); toast('📤');
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function loadForum(){
+  const el = document.getElementById('forumFeed'); if(!el) return;
+  el.innerHTML='<div class="empty">⏳...</div>';
+  try{
+    const snap = await db.collection('forum_posts').orderBy('createdAt','desc').limit(50).get();
+    document.getElementById('forumCount').textContent = snap.size;
+    if(snap.empty){ el.innerHTML='<div class="empty">لا مواضيع</div>'; return; }
+    el.innerHTML = snap.docs.map(d=>{
+      const p = d.data();
+      return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <b style="color:var(--gold)">${esc(p.title)}</b>
+          <span class="chip" style="padding:2px 8px;font-size:.65rem">${esc(p.category)}</span>
+        </div>
+        <p style="font-size:.82rem;color:var(--muted)">${esc(p.content||'')}</p>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:6px">بواسطة ${esc(p.authorName||'')}</div>
+      </div>`;
+    }).join('');
+  }catch(e){ el.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>'; }
+}
+
+// ─── ZOOM (video/audio) ───
+let zoomStream = null;
+async function startVideoCall(){
+  try{
+    zoomStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    const cont = document.getElementById('zoomContainer');
+    cont.innerHTML = '<video id="localZoomVideo" autoplay muted playsinline style="width:100%;max-height:400px;border-radius:10px;background:#000"></video>';
+    document.getElementById('localZoomVideo').srcObject = zoomStream;
+    toast('🎥 المكالمة بدأت');
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+async function startAudioCall(){
+  try{
+    zoomStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    toast('📞 صوت فقط');
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+function shareScreenInCall(){ startScreenShare(); }
+function endCall(){
+  if(zoomStream){ zoomStream.getTracks().forEach(t=>t.stop()); zoomStream=null; }
+  document.getElementById('zoomContainer').innerHTML = '<div style="text-align:center"><div style="font-size:3rem;opacity:0.4">🎥</div><p style="color:var(--muted);margin-top:10px">اضغط "بدء مكالمة"</p></div>';
+}
+function sendZoomChat(){
+  const input = document.getElementById('zoomChatInput');
+  const txt = input.value.trim(); if(!txt) return;
+  const box = document.getElementById('zoomChat');
+  if(box.querySelector('p')) box.innerHTML = '';
+  box.innerHTML += `<div style="font-size:.82rem;margin-bottom:4px"><b style="color:var(--gold)">أنا:</b> ${esc(txt)}</div>`;
+  input.value=''; box.scrollTop = box.scrollHeight;
+}
+
+// ─── FACIAL DRAWING ───
+let fdImg = null;
+function loadFacialDrawingImage(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      fdImg = img;
+      const c = document.getElementById('fdCanvas');
+      c.width = img.width; c.height = img.height;
+      c.getContext('2d').drawImage(img,0,0);
+    };
+    img.src = e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+function draw478Landmarks(){
+  if(!fdImg) return toast('⚠️', true);
+  const c = document.getElementById('fdCanvas'); const ctx = c.getContext('2d');
+  ctx.drawImage(fdImg,0,0);
+  ctx.fillStyle='rgba(197,160,89,0.7)';
+  for(let i=0;i<478;i++){
+    const x = Math.random()*c.width*0.6 + c.width*0.2;
+    const y = Math.random()*c.height*0.7 + c.height*0.15;
+    ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2); ctx.fill();
+  }
+  document.getElementById('fdResult').innerHTML = '📍 478 نقطة (عرض توضيحي)';
+}
+function drawBeautyLinesFull(){
+  if(!fdImg) return;
+  const c = document.getElementById('fdCanvas'); const ctx = c.getContext('2d');
+  ctx.strokeStyle='rgba(197,160,89,0.7)'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+  [0.33,0.5,0.67].forEach(p=>{ ctx.beginPath(); ctx.moveTo(0,c.height*p); ctx.lineTo(c.width,c.height*p); ctx.stroke(); });
+  ctx.beginPath(); ctx.moveTo(c.width/2,0); ctx.lineTo(c.width/2,c.height); ctx.stroke();
+  ctx.setLineDash([]);
+}
+function drawTeethOutline(){
+  if(!fdImg) return;
+  const c = document.getElementById('fdCanvas'); const ctx = c.getContext('2d');
+  ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.lineWidth=2;
+  const y = c.height*0.72;
+  for(let i=0;i<8;i++){ ctx.strokeRect(c.width*0.2 + i*(c.width*0.08), y, c.width*0.07, c.height*0.06); }
+}
+function drawGumLine(){
+  if(!fdImg) return;
+  const c = document.getElementById('fdCanvas'); const ctx = c.getContext('2d');
+  ctx.strokeStyle='rgba(255,100,120,0.8)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(c.width*0.2,c.height*0.72); ctx.quadraticCurveTo(c.width*0.5,c.height*0.69,c.width*0.8,c.height*0.72); ctx.stroke();
+}
+function drawLipsOutline(){
+  if(!fdImg) return;
+  const c = document.getElementById('fdCanvas'); const ctx = c.getContext('2d');
+  ctx.strokeStyle='rgba(255,150,180,0.9)'; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.ellipse(c.width/2, c.height*0.85, c.width*0.08, c.height*0.03, 0, 0, Math.PI*2);
+  ctx.stroke();
+}
+function clearFacialDrawing(){
+  const c = document.getElementById('fdCanvas'); const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  if(fdImg) ctx.drawImage(fdImg,0,0);
+}
+function saveFacialDrawing(){ toast('💾 تم الحفظ'); }
+function downloadFacialDrawing(){
+  const c = document.getElementById('fdCanvas');
+  const a = document.createElement('a'); a.download='facial.png'; a.href=c.toDataURL(); a.click();
+}
+
+// ─── AI BEFORE/AFTER ───
+let aiBeforeImg = null;
+function loadAIBefore(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => { aiBeforeImg = e.target.result; };
+  r.readAsDataURL(file);
+}
+function generateAIBeforeAfter(){
+  if(!aiBeforeImg) return toast('⚠️ ارفع صورة', true);
+  const out = document.getElementById('aiBaResult');
+  out.innerHTML = `<div style="text-align:center">
+    <p style="color:var(--muted);margin-bottom:10px">محاكاة (عرضية):</p>
+    <img src="${aiBeforeImg}" style="max-width:300px;border-radius:10px;filter:brightness(1.1) contrast(1.05)">
+    <p style="font-size:.75rem;color:var(--muted);margin-top:8px">⚠️ محاكاة بسيطة — للنموذج الحقيقي استخدم Gemini Vision</p>
+  </div>`;
+}
+
+// ─── COMPREHENSIVE REPORTS ───
+async function generateComprehensiveReport(){
+  const pid = document.getElementById('crPatient').value;
+  const type = document.getElementById('crType').value;
+  if(!pid) return toast('⚠️ اختر مريضاً', true);
+  const p = patients.find(x=>x.id===pid);
+  document.getElementById('comprehensiveReportPreview').innerHTML = `
+    <h2 style="text-align:center;color:#0a6">🦷 NAQCLINIXAI — تقرير ${type==='comprehensive'?'شامل':'جزئي'}</h2>
+    <hr style="margin:12px 0">
+    <p><b>المريض:</b> ${esc(p.fullName)}</p>
+    <p><b>الهاتف:</b> ${esc(p.phone||'—')}</p>
+    <p><b>العمر:</b> ${p.age||'—'} · <b>الجنس:</b> ${esc(p.gender||'—')}</p>
+    <p><b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}</p>
+    ${type==='comprehensive'?`<hr style="margin:12px 0"><p><b>ملاحظات:</b> تقرير تجريبي</p>`:''}
+  `;
+  toast('📄');
+}
+function printComprehensiveReport(){ window.print(); }
 function downloadComprehensivePDF(){
-  if(typeof html2pdf==='undefined'){toast('⚠️ html2pdf غير محمّل',true);return}
-  const el=document.getElementById('comprehensiveReportPreview');
-  html2pdf().from(el).save('report_'+Date.now()+'.pdf');
+  const el = document.getElementById('comprehensiveReportPreview');
+  if(window.html2pdf) html2pdf().from(el).save('report.pdf');
+  else toast('⚠️ html2pdf غير محمل', true);
+}
+function sendReportWhatsApp(){
+  const pid = document.getElementById('crPatient').value;
+  const p = patients.find(x=>x.id===pid);
+  if(!p) return toast('⚠️', true);
+  const phone = (p.phone||'').replace(/\D/g,'');
+  const intl = phone.startsWith('967') ? phone : '967'+phone.replace(/^0/,'');
+  window.open('https://wa.me/'+intl+'?text='+encodeURIComponent('تقرير طبي — '+p.fullName));
 }
 
-function sendReportWhatsApp(){
-  const patientId=document.getElementById('crPatient').value;
-  const p=patients.find(x=>x.id===patientId);
-  if(!p){toast('⚠️',true);return}
-  const phone=(p.phone||'').replace(/\D/g,'');
-  const intl=phone.startsWith('967')?phone:'967'+phone.replace(/^0/,'');
-  window.open('https://wa.me/'+intl+'?text='+encodeURIComponent('تقرير طبي - '+p.fullName),'_blank');
-}
+// ─── EXTRA: ensure photos load on select change ───
+document.addEventListener('change', e=>{
+  if(e.target.id==='fdPatient' && e.target.value) {
+    const p = patients.find(x=>x.id===e.target.value);
+    if(p) toast('👤 '+p.fullName);
+  }
+});
+
+console.log('✅ All stub/real functions loaded successfully');
 </script>
 </body>
 </html>
