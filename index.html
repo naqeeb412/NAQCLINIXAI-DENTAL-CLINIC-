@@ -8,18 +8,18 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-:root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--harvard:#7a0010;--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
+:root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--accent:#0d6e7a;--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
 body{background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--gold);border-radius:10px}
 button{cursor:pointer;font-family:inherit}
 input,select,textarea{font-family:inherit}
 .hidden{display:none!important}
-/* LOGIN */
 #loginScreen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 20%,#0f172a 0%,#0a0a0a 70%);padding:20px;overflow-y:auto}
 #loginScreen::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(197,160,89,.06) 1px,transparent 1px);background-size:32px 32px}
 .login-card{position:relative;z-index:2;width:min(460px,92vw);background:var(--card);border:1px solid var(--bd);border-radius:24px;padding:32px 26px;box-shadow:0 20px 60px rgba(0,0,0,.9);max-height:96vh;overflow-y:auto}
@@ -28,14 +28,14 @@ input,select,textarea{font-family:inherit}
 @keyframes lp{0%{transform:scale(1)}100%{transform:scale(1.03);box-shadow:0 0 45px rgba(197,160,89,.5)}}
 .ll h1{font-size:1.45rem;font-weight:800;color:var(--gold);letter-spacing:.5px}
 .ll .sub{font-size:.7rem;color:var(--muted);letter-spacing:2px;margin-top:4px}
-.ll .bdg{display:inline-block;background:var(--harvard);color:#fff;padding:2px 14px;border-radius:20px;font-size:.58rem;font-weight:700;margin-top:8px}
+.ll .bdg{display:inline-block;background:var(--accent);color:#fff;padding:2px 14px;border-radius:20px;font-size:.58rem;font-weight:700;margin-top:8px}
 .tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--bd)}
 .tab{flex:1;padding:10px;background:none;border:none;color:var(--muted);font-weight:700;font-size:.85rem;border-bottom:2px solid transparent;transition:.2s}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 .f{margin-bottom:12px}
 .f label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:5px;font-weight:600}
-.f input,.f select{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--bd);background:rgba(255,255,255,.03);color:var(--txt);font-size:.9rem;outline:none;transition:.2s}
-.f input:focus,.f select:focus{border-color:var(--gold);background:rgba(197,160,89,.05)}
+.f input,.f select,.f textarea{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--bd);background:rgba(255,255,255,.03);color:var(--txt);font-size:.9rem;outline:none;transition:.2s}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--gold);background:rgba(197,160,89,.05)}
 .f input::placeholder{color:#5b6f92}
 .btn-gold{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--goldD));color:#0A0A0A;font-weight:800;font-size:.92rem;transition:.2s}
 .btn-gold:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(197,160,89,.3)}
@@ -55,7 +55,6 @@ input,select,textarea{font-family:inherit}
 .alert.success{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.3)}
 .alert.info{background:rgba(197,160,89,.12);color:var(--goldL);border:1px solid var(--bd)}
 .lf{text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--bd);font-size:.7rem;color:var(--muted)}
-/* APP */
 #app{display:none;min-height:100vh}
 #app.active{display:flex}
 #sidebar{width:260px;background:var(--card);border-left:1px solid var(--bd);height:100vh;position:sticky;top:0;padding:16px 10px;overflow-y:auto;flex-shrink:0;z-index:100;transition:transform .3s}
@@ -136,7 +135,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
       <div class="ic">🦷</div>
       <h1>NAQCLINIXAI</h1>
       <div class="sub">DENTAL CLINIC</div>
-      <div class="bdg">Harvard Protocol</div>
+      <div class="bdg">AI Clinical System</div>
     </div>
     <div class="tabs">
       <button class="tab active" id="tabLogin" onclick="switchAuth('login')">🔑 دخول</button>
@@ -166,7 +165,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
       <button class="bsoc" onclick="doSocial('github')"><span>⚫</span> GitHub</button>
       <button class="bsoc guest" onclick="doGuestLogin()">👤 دخول كضيف</button>
     </div>
-    <div class="lf">© 2026 NAQCLINIXAI Dental Clinic<br>Powered by Firebase · Harvard Protocol</div>
+    <div class="lf">© 2026 NAQCLINIXAI Dental Clinic<br>Powered by Firebase · AI Clinical System</div>
   </div>
 </div>
 
@@ -192,8 +191,8 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     <button class="ni" data-sec="dsdStudio"><span class="ic">🎨</span>DSD Studio</button>
     <button class="ni" data-sec="ceph"><span class="ic">📐</span>السيفالومترية</button>
     <button class="ni" data-sec="aiDiagnosis"><span class="ic">🧠</span>التشخيص AI</button>
-<div class="ns">التواصل</div>
-<button class="ni" data-sec="notifications"><span class="ic">🔔</span>الإشعارات <span id="notifBadge" style="background:var(--err);color:#fff;border-radius:10px;padding:1px 8px;font-size:0.6rem;margin-right:auto;display:none">0</span></button>
+    <div class="ns">التواصل</div>
+    <button class="ni" data-sec="notifications"><span class="ic">🔔</span>الإشعارات <span id="notifBadge" style="background:var(--err);color:#fff;border-radius:10px;padding:1px 8px;font-size:0.6rem;margin-right:auto;display:none">0</span></button>
     <div class="ns">الإنتاج</div>
     <button class="ni" data-sec="cadcam"><span class="ic">⚙️</span>CAD/CAM 3D</button>
     <button class="ni" data-sec="smileDesign"><span class="ic">😁</span>تصميم الابتسامة</button>
@@ -202,8 +201,8 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     <div class="ns">الأنظمة</div>
     <button class="ni" data-sec="lab"><span class="ic">🧪</span>المعمل</button>
     <button class="ni" data-sec="specialists"><span class="ic">🎓</span>الأخصائيون</button>
-<button class="ni" data-sec="users"><span class="ic">👤</span>إدارة المستخدمين</button>
-<button class="ni" data-sec="team"><span class="ic">👥</span>الفريق</button>
+    <button class="ni" data-sec="users"><span class="ic">👤</span>إدارة المستخدمين</button>
+    <button class="ni" data-sec="team"><span class="ic">👥</span>الفريق</button>
     <div class="ns">الاشتراكات</div>
     <button class="ni" data-sec="subscriptions"><span class="ic">⭐</span>الاشتراكات</button>
     <div class="ns"></div>
@@ -244,85 +243,62 @@ input[type=range]{width:100%;accent-color:var(--gold)}
         <div id="patientsList"></div>
       </div>
     </div>
-    
+
     <div class="sec" id="sec-photography">
-  <div class="panel">
-    <h2>📸 استوديو التصوير</h2>
-    <div class="desc">تصوير احترافي للمريض + تخزين سحابي</div>
-    
-    <div class="sec" id="sec-notifications">
-  <div class="panel">
-    <h2>🔔 الإشعارات</h2>
-    <div class="desc">جميع التنبيهات والرسائل</div>
-    
-    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="btn-save" onclick="markAllRead()">✅ قراءة الكل</button>
-      <button class="btn-outline" onclick="loadNotifications()">🔄 تحديث</button>
-      <button class="btn-danger" style="padding:8px 16px;border-radius:10px;border:none;color:#fff;font-weight:700;font-family:inherit" onclick="clearReadNotifications()">🗑️ مسح المقروءة</button>
-    </div>
-    
-    <div id="notificationsList" style="max-height:600px;overflow-y:auto">
-      <div class="empty">⏳ جارٍ التحميل...</div>
-    </div>
-  </div>
-</div>
-
-    <div class="f" style="margin-bottom:12px">
-      <label>المريض</label>
-      <select id="photoPatient" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></select>
-    </div>
-
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-      <button class="btn-save" onclick="startCamera()" id="btnStartCam">🎥 تشغيل الكاميرا</button>
-      <button class="btn-outline" onclick="stopCamera()" id="btnStopCam" style="display:none">⏹️ إيقاف</button>
-      <button class="btn-save" onclick="capturePhoto()" id="btnCapture" style="display:none">📷 التقاط</button>
-      <button class="btn-outline" onclick="document.getElementById('photoFileUpload').click()">📁 رفع من الملفات</button>
-      <input type="file" id="photoFileUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
-    </div>
-
-    <div id="cameraContainer" style="display:none;background:#000;border-radius:12px;overflow:hidden;margin-bottom:12px">
-      <video id="cameraVideo" autoplay playsinline style="width:100%;max-height:400px;display:block"></video>
-    </div>
-
-    <div id="photoTypeSelector" style="display:none;margin-bottom:12px;background:var(--card2);padding:12px;border-radius:12px;border:1px solid var(--bd)">
-      <label style="display:block;font-size:0.82rem;color:var(--muted);margin-bottom:8px">نوع الصورة:</label>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn-outline photo-type-btn" data-type="frontal" onclick="selectPhotoType('frontal')">الوجه الأمامي</button>
-        <button class="btn-outline photo-type-btn" data-type="lateral" onclick="selectPhotoType('lateral')">الوجه الجانبي</button>
-        <button class="btn-outline photo-type-btn" data-type="smile" onclick="selectPhotoType('smile')">الابتسامة</button>
-        <button class="btn-outline photo-type-btn" data-type="upper" onclick="selectPhotoType('upper')">الفك العلوي</button>
-        <button class="btn-outline photo-type-btn" data-type="lower" onclick="selectPhotoType('lower')">الفك السفلي</button>
-        <button class="btn-outline photo-type-btn" data-type="tissue" onclick="selectPhotoType('tissue')">الأنسجة</button>
-        <button class="btn-outline photo-type-btn" data-type="portrait" onclick="selectPhotoType('portrait')">شخصية</button>
+      <div class="panel">
+        <h2>📸 استوديو التصوير</h2>
+        <div class="desc">تصوير احترافي للمريض + تخزين سحابي</div>
+        <div class="f" style="margin-bottom:12px">
+          <label>المريض</label>
+          <select id="photoPatient"></select>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+          <button class="btn-save" onclick="startCamera()" id="btnStartCam">🎥 تشغيل الكاميرا</button>
+          <button class="btn-outline" onclick="stopCamera()" id="btnStopCam" style="display:none">⏹️ إيقاف</button>
+          <button class="btn-save" onclick="capturePhoto()" id="btnCapture" style="display:none">📷 التقاط</button>
+          <button class="btn-outline" onclick="document.getElementById('photoFileUpload').click()">📁 رفع من الملفات</button>
+          <input type="file" id="photoFileUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+        </div>
+        <div id="cameraContainer" style="display:none;background:#000;border-radius:12px;overflow:hidden;margin-bottom:12px">
+          <video id="cameraVideo" autoplay playsinline style="width:100%;max-height:400px;display:block"></video>
+        </div>
+        <div id="photoTypeSelector" style="display:none;margin-bottom:12px;background:var(--card2);padding:12px;border-radius:12px;border:1px solid var(--bd)">
+          <label style="display:block;font-size:0.82rem;color:var(--muted);margin-bottom:8px">نوع الصورة:</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn-outline photo-type-btn" data-type="frontal" onclick="selectPhotoType('frontal')">الوجه الأمامي</button>
+            <button class="btn-outline photo-type-btn" data-type="lateral" onclick="selectPhotoType('lateral')">الوجه الجانبي</button>
+            <button class="btn-outline photo-type-btn" data-type="smile" onclick="selectPhotoType('smile')">الابتسامة</button>
+            <button class="btn-outline photo-type-btn" data-type="upper" onclick="selectPhotoType('upper')">الفك العلوي</button>
+            <button class="btn-outline photo-type-btn" data-type="lower" onclick="selectPhotoType('lower')">الفك السفلي</button>
+            <button class="btn-outline photo-type-btn" data-type="tissue" onclick="selectPhotoType('tissue')">الأنسجة</button>
+            <button class="btn-outline photo-type-btn" data-type="portrait" onclick="selectPhotoType('portrait')">شخصية</button>
+          </div>
+        </div>
+        <div style="margin-bottom:16px">
+          <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:10px">📁 صور المريض</h3>
+          <div id="patientPhotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
+            <div class="empty" style="grid-column:1/-1">اختر مريضاً لعرض صوره</div>
+          </div>
+        </div>
+        <div id="lastCapture" style="display:none;margin-top:12px;padding:12px;background:var(--card2);border-radius:12px;border:2px solid var(--gold);text-align:center">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:8px">📸 آخر صورة ملتقطة</div>
+          <img id="lastCaptureImg" style="max-width:100%;max-height:300px;border-radius:10px">
+          <div style="margin-top:10px">
+            <button class="btn-save" onclick="saveLastPhoto()">💾 حفظ الصورة</button>
+            <button class="btn-danger" onclick="discardLastPhoto()">🗑️ مسح</button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div style="margin-bottom:16px">
-      <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:10px">📁 صور المريض</h3>
-      <div id="patientPhotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
-        <div class="empty" style="grid-column:1/-1">اختر مريضاً لعرض صوره</div>
-      </div>
-    </div>
-
-    <div id="lastCapture" style="display:none;margin-top:12px;padding:12px;background:var(--card2);border-radius:12px;border:2px solid var(--gold);text-align:center">
-      <div style="color:var(--gold);font-weight:700;margin-bottom:8px">📸 آخر صورة ملتقطة</div>
-      <img id="lastCaptureImg" style="max-width:100%;max-height:300px;border-radius:10px">
-      <div style="margin-top:10px">
-        <button class="btn-save" onclick="saveLastPhoto()">💾 حفظ الصورة</button>
-        <button class="btn-danger" onclick="discardLastPhoto()" style="padding:8px 16px;border-radius:10px;border:none;color:#fff;font-weight:700;font-family:inherit">🗑️ مسح</button>
-      </div>
-    </div>
-  </div>
-</div>
 
     <div class="sec" id="sec-history">
       <div class="panel">
         <h2>💊 التاريخ الطبي</h2>
         <div class="desc" id="historyCtx">اختر مريضاً أولاً</div>
         <div id="historyForm" class="hidden">
-          <div class="f"><label>الأمراض المزمنة</label><textarea id="histChronic" rows="2" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></textarea></div>
-          <div class="f"><label>الحساسية</label><textarea id="histAllergy" rows="2" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></textarea></div>
-          <div class="f"><label>الأدوية</label><textarea id="histDrugs" rows="2" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></textarea></div>
+          <div class="f"><label>الأمراض المزمنة</label><textarea id="histChronic" rows="2"></textarea></div>
+          <div class="f"><label>الحساسية</label><textarea id="histAllergy" rows="2"></textarea></div>
+          <div class="f"><label>الأدوية</label><textarea id="histDrugs" rows="2"></textarea></div>
           <button class="btn-save" onclick="saveHistory()">💾 حفظ</button>
         </div>
       </div>
@@ -347,10 +323,10 @@ input[type=range]{width:100%;accent-color:var(--gold)}
         <h2>🗓️ المواعيد</h2>
         <div class="desc">حجز وإدارة المواعيد</div>
         <div class="g2" style="margin-bottom:12px">
-          <div class="f"><label>المريض</label><select id="apptPatient" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></select></div>
-          <div class="f"><label>التاريخ</label><input type="date" id="apptDate" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>الوقت</label><input type="time" id="apptTime" value="10:00" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>النوع</label><select id="apptType" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"><option>فحص</option><option>حشو</option><option>تنظيف</option><option>خلع</option><option>تقويم</option><option>زراعة</option></select></div>
+          <div class="f"><label>المريض</label><select id="apptPatient"></select></div>
+          <div class="f"><label>التاريخ</label><input type="date" id="apptDate"></div>
+          <div class="f"><label>الوقت</label><input type="time" id="apptTime" value="10:00"></div>
+          <div class="f"><label>النوع</label><select id="apptType"><option>فحص</option><option>حشو</option><option>تنظيف</option><option>خلع</option><option>تقويم</option><option>زراعة</option></select></div>
         </div>
         <button class="btn-save" onclick="addAppointment()">➕ حجز موعد</button>
         <div id="appointmentsList" style="margin-top:16px"></div>
@@ -368,10 +344,10 @@ input[type=range]{width:100%;accent-color:var(--gold)}
           <div class="stat"><div class="ic">💰</div><div class="num" id="billingRemaining" style="color:var(--err)">0</div><div class="lbl">متبقي</div></div>
         </div>
         <div class="g2" style="margin-bottom:12px">
-          <div class="f"><label>المريض</label><select id="billPatient" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></select></div>
-          <div class="f"><label>التاريخ</label><input type="date" id="billDate" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>التكلفة</label><input type="number" id="billTotal" value="0" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>المدفوع</label><input type="number" id="billPaid" value="0" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+          <div class="f"><label>المريض</label><select id="billPatient"></select></div>
+          <div class="f"><label>التاريخ</label><input type="date" id="billDate"></div>
+          <div class="f"><label>التكلفة</label><input type="number" id="billTotal" value="0"></div>
+          <div class="f"><label>المدفوع</label><input type="number" id="billPaid" value="0"></div>
         </div>
         <button class="btn-save" onclick="saveBilling()">💾 حفظ الدفعة</button>
         <div id="billingList" style="margin-top:16px"></div>
@@ -381,14 +357,14 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     <div class="sec" id="sec-faceAnalysis">
       <div class="panel">
         <h2>🧑‍⚕️ تحليل الوجه 468 نقطة</h2>
-        <div class="desc">تحليل تشريحي دقيق عبر MediaPipe</div>
+        <div class="desc">تحليل تشريحي دقيق</div>
         <div class="g2" style="margin-bottom:12px">
-          <div class="f"><label>المريض</label><select id="facePatient" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></select></div>
-          <div class="f"><label>صورة الوجه</label><input type="file" id="faceImage" accept="image/*" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+          <div class="f"><label>المريض</label><select id="facePatient"></select></div>
+          <div class="f"><label>صورة الوجه</label><input type="file" id="faceImage" accept="image/*"></div>
         </div>
         <div class="canvas-wrap"><canvas id="faceCanvas" width="600" height="600"></canvas></div>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-save" onclick="analyzeFace()">🧠 تحليل 468 نقطة</button>
+          <button class="btn-save" onclick="analyzeFace()">🧠 تحليل</button>
           <button class="btn-outline" onclick="drawBeautyLines()">✨ خطوط الجمال</button>
           <button class="btn-outline" onclick="drawGoldenRatio()">📐 النسبة الذهبية</button>
           <button class="btn-danger" onclick="clearFace()">🗑️ مسح</button>
@@ -399,9 +375,9 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 
     <div class="sec" id="sec-dsdStudio">
       <div class="panel">
-        <h2>🎨 DSD Studio - تصميم الابتسامة</h2>
+        <h2>🎨 DSD Studio</h2>
         <div class="desc">تصميم رقمي مع تحكم كامل</div>
-        <div class="f"><label>تحميل صورة</label><input type="file" id="dsdImage" accept="image/*" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+        <div class="f"><label>تحميل صورة</label><input type="file" id="dsdImage" accept="image/*"></div>
         <div class="canvas-wrap"><canvas id="dsdCanvas" width="800" height="500"></canvas></div>
         <div class="g3" style="margin-top:12px">
           <div class="slider-row"><label>العرض <span id="dsdWVal">80</span>%</label><input type="range" id="dsdW" min="20" max="150" value="80" oninput="renderDSD()"></div>
@@ -420,9 +396,9 @@ input[type=range]{width:100%;accent-color:var(--gold)}
         <h2>📐 السيفالومترية</h2>
         <div class="desc">تحليل SNA/SNB/ANB</div>
         <div class="g3">
-          <div class="f"><label>SNA (طبيعي 82°)</label><input type="number" id="cephSNA" value="82" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>SNB (طبيعي 80°)</label><input type="number" id="cephSNB" value="80" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>ANB (طبيعي 2°)</label><input type="number" id="cephANB" value="2" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+          <div class="f"><label>SNA (82°)</label><input type="number" id="cephSNA" value="82"></div>
+          <div class="f"><label>SNB (80°)</label><input type="number" id="cephSNB" value="80"></div>
+          <div class="f"><label>ANB (2°)</label><input type="number" id="cephANB" value="2"></div>
         </div>
         <button class="btn-save" style="margin-top:12px" onclick="analyzeCeph()">🔬 تحليل</button>
         <div id="cephResult" style="margin-top:16px"></div>
@@ -433,11 +409,27 @@ input[type=range]{width:100%;accent-color:var(--gold)}
       <div class="panel">
         <h2>🧠 التشخيص AI</h2>
         <div class="desc">تحليل ذكي عبر Gemini</div>
-        <div class="f"><label>المريض</label><select id="aiPatient" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></select></div>
-        <div class="f"><label>الشكوى</label><input type="text" id="aiComplaint" placeholder="ألم في الضرس" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-        <div class="f"><label>التفاصيل</label><textarea id="aiDetails" rows="2" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></textarea></div>
+        <div class="f"><label>المريض</label><select id="aiPatient"></select></div>
+        <div class="f"><label>الشكوى</label><input type="text" id="aiComplaint" placeholder="ألم في الضرس"></div>
+        <div class="f"><label>التفاصيل</label><textarea id="aiDetails" rows="2"></textarea></div>
         <button class="btn-save" onclick="runAIDiagnosis()">🧠 تشخيص</button>
         <div id="aiOutput" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-notifications">
+      <div class="panel">
+        <h2>🔔 الإشعارات</h2>
+        <div class="desc">جميع التنبيهات والرسائل</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn-save" onclick="markAllRead()">✅ قراءة الكل</button>
+          <button class="btn-outline" onclick="loadNotifications()">🔄 تحديث</button>
+          <button class="btn-danger" onclick="clearReadNotifications()">🗑️ مسح المقروءة</button>
+          <button class="btn-outline" onclick="testNotification()" style="border-color:var(--gold);color:var(--gold)">🧪 اختبار</button>
+        </div>
+        <div id="notificationsList" style="max-height:600px;overflow-y:auto">
+          <div class="empty">⏳ جارٍ التحميل...</div>
+        </div>
       </div>
     </div>
 
@@ -457,7 +449,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
       <div class="panel">
         <h2>😁 تصميم الابتسامة</h2>
         <div class="desc">تخطيط رقمي</div>
-        <div class="f"><label>صورة</label><input type="file" id="smileImage" accept="image/*" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+        <div class="f"><label>صورة</label><input type="file" id="smileImage" accept="image/*"></div>
         <div class="canvas-wrap"><canvas id="smileCanvas" width="700" height="400"></canvas></div>
       </div>
     </div>
@@ -467,8 +459,8 @@ input[type=range]{width:100%;accent-color:var(--gold)}
         <h2>⚖️ قبل / بعد</h2>
         <div class="desc">مقارنة تفاعلية</div>
         <div class="g2" style="margin-bottom:12px">
-          <div class="f"><label>قبل</label><input type="file" id="beforeImg" accept="image/*" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>بعد</label><input type="file" id="afterImg" accept="image/*" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+          <div class="f"><label>قبل</label><input type="file" id="beforeImg" accept="image/*"></div>
+          <div class="f"><label>بعد</label><input type="file" id="afterImg" accept="image/*"></div>
         </div>
         <div class="compare-slider" id="compareSlider">
           <img id="cmpBefore" src="" alt="قبل">
@@ -484,7 +476,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
       <div class="panel">
         <h2>📄 التقارير</h2>
         <div class="desc">توليد تقرير شامل</div>
-        <div class="f"><label>المريض</label><select id="reportPatient" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></select></div>
+        <div class="f"><label>المريض</label><select id="reportPatient"></select></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
           <button class="btn-save" onclick="generateReport()">📄 توليد</button>
           <button class="btn-outline" onclick="printReport()">🖨️ طباعة</button>
@@ -499,10 +491,10 @@ input[type=range]{width:100%;accent-color:var(--gold)}
         <h2>🧪 المعمل</h2>
         <div class="desc">إدارة طلبات المعمل</div>
         <div class="g2" style="margin-bottom:12px">
-          <div class="f"><label>المريض</label><select id="labPatient" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></select></div>
-          <div class="f"><label>النوع</label><select id="labType" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"><option>تاج</option><option>جسر</option><option>طقم</option><option>زرعة</option></select></div>
-          <div class="f"><label>المعمل</label><input id="labName" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>الاستلام</label><input type="date" id="labDue" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+          <div class="f"><label>المريض</label><select id="labPatient"></select></div>
+          <div class="f"><label>النوع</label><select id="labType"><option>تاج</option><option>جسر</option><option>طقم</option><option>زرعة</option></select></div>
+          <div class="f"><label>المعمل</label><input id="labName"></div>
+          <div class="f"><label>الاستلام</label><input type="date" id="labDue"></div>
         </div>
         <button class="btn-save" onclick="addLab()">➕ إضافة طلب</button>
         <div id="labList" style="margin-top:16px"></div>
@@ -514,9 +506,9 @@ input[type=range]{width:100%;accent-color:var(--gold)}
         <h2>🎓 الأخصائيون</h2>
         <div class="desc">قائمة الأخصائيين</div>
         <div class="g2" style="margin-bottom:12px">
-          <div class="f"><label>الاسم</label><input id="specName" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>التخصص</label><input id="specSpecialty" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-          <div class="f"><label>الهاتف</label><input id="specPhone" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+          <div class="f"><label>الاسم</label><input id="specName"></div>
+          <div class="f"><label>التخصص</label><input id="specSpecialty"></div>
+          <div class="f"><label>الهاتف</label><input id="specPhone"></div>
         </div>
         <button class="btn-save" onclick="addSpecialist()">➕ إضافة</button>
         <div id="specialistsList" style="margin-top:16px"></div>
@@ -524,61 +516,43 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     </div>
 
     <div class="sec" id="sec-users">
-  <div class="panel">
-    <h2>👤 إدارة المستخدمين</h2>
-    <div class="desc">إضافة أطباء وموظفين وإدارة صلاحياتهم</div>
-    
-    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px">
-      <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:12px">➕ إضافة مستخدم جديد</h3>
-      <div class="g2">
-        <div class="f">
-          <label>الاسم الكامل *</label>
-          <input id="newUserName" placeholder="د. أحمد محمد" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
+      <div class="panel">
+        <h2>👤 إدارة المستخدمين</h2>
+        <div class="desc">إضافة أطباء وموظفين وإدارة صلاحياتهم</div>
+        <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px">
+          <h3 style="color:var(--gold);font-size:0.95rem;margin-bottom:12px">➕ إضافة مستخدم جديد</h3>
+          <div class="g2">
+            <div class="f"><label>الاسم الكامل *</label><input id="newUserName" placeholder="د. أحمد محمد"></div>
+            <div class="f"><label>البريد الإلكتروني *</label><input type="email" id="newUserEmail" placeholder="user@clinic.com"></div>
+            <div class="f"><label>كلمة المرور * (6+)</label><input type="password" id="newUserPass" placeholder="••••••••"></div>
+            <div class="f"><label>الدور</label>
+              <select id="newUserRole">
+                <option value="doctor">👨‍⚕️ طبيب</option>
+                <option value="admin">👑 مدير</option>
+                <option value="employee">👨‍💼 موظف</option>
+                <option value="guest">👤 ضيف</option>
+              </select>
+            </div>
+            <div class="f"><label>التخصص</label><input id="newUserSpecialty" placeholder="تقويم / جراحة / أطفال"></div>
+            <div class="f"><label>الهاتف</label><input id="newUserPhone" placeholder="777xxxxxx"></div>
+          </div>
+          <button class="btn-save" onclick="createUser()" id="btnCreateUser" style="margin-top:12px">➕ إضافة مستخدم</button>
         </div>
-        <div class="f">
-          <label>البريد الإلكتروني *</label>
-          <input type="email" id="newUserEmail" placeholder="user@clinic.com" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <h3 style="color:var(--gold);font-size:0.95rem">📋 المستخدمون الحاليون (<span id="usersCount">0</span>)</h3>
+          <button class="btn-outline" onclick="loadUsers()">🔄 تحديث</button>
         </div>
-        <div class="f">
-          <label>كلمة المرور الأولية * (6+)</label>
-          <input type="password" id="newUserPass" placeholder="••••••••" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
-        </div>
-        <div class="f">
-          <label>الدور</label>
-          <select id="newUserRole" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
-            <option value="doctor">👨‍⚕️ طبيب</option>
-            <option value="admin">👑 مدير</option>
-            <option value="employee">👨‍💼 موظف</option>
-            <option value="guest">👤 ضيف</option>
-          </select>
-        </div>
-        <div class="f">
-          <label>التخصص</label>
-          <input id="newUserSpecialty" placeholder="تقويم / جراحة / أطفال..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
-        </div>
-        <div class="f">
-          <label>الهاتف</label>
-          <input id="newUserPhone" placeholder="777xxxxxx" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--txt)">
-        </div>
+        <div id="usersList"></div>
       </div>
-      <button class="btn-save" onclick="createUser()" id="btnCreateUser" style="margin-top:12px">➕ إضافة مستخدم</button>
-    </div>
-    
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <h3 style="color:var(--gold);font-size:0.95rem">📋 المستخدمون الحاليون (<span id="usersCount">0</span>)</h3>
-      <button class="btn-outline" style="padding:6px 14px;font-size:0.75rem" onclick="loadUsers()">🔄 تحديث</button>
-    </div>
-    <div id="usersList"></div>
-  </div>
     </div>
 
-<div class="sec" id="sec-team">
-  <div class="panel">
-    <h2>👥 فريق العيادة</h2>
-    <div class="desc">كل الأعضاء المسجلين في النظام</div>
-    <div id="teamList"></div>
-  </div>
-</div>
+    <div class="sec" id="sec-team">
+      <div class="panel">
+        <h2>👥 فريق العيادة</h2>
+        <div class="desc">كل الأعضاء المسجلين في النظام</div>
+        <div id="teamList"></div>
+      </div>
+    </div>
 
     <div class="sec" id="sec-subscriptions">
       <div class="panel">
@@ -592,11 +566,11 @@ input[type=range]{width:100%;accent-color:var(--gold)}
       <div class="panel">
         <h2>⚙️ الإعدادات</h2>
         <div class="desc">الملف الشخصي و Gemini</div>
-        <div class="f"><label>البريد</label><input id="setEmail" readonly style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--muted)"></div>
-        <div class="f"><label>الاسم</label><input id="setName" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-        <div class="f"><label>الدور</label><input id="setRole" readonly style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--muted)"></div>
+        <div class="f"><label>البريد</label><input id="setEmail" readonly></div>
+        <div class="f"><label>الاسم</label><input id="setName"></div>
+        <div class="f"><label>الدور</label><input id="setRole" readonly></div>
         <button class="btn-save" onclick="saveProfile()">💾 حفظ</button>
-        <div class="f" style="margin-top:16px"><label>🔑 Gemini API Key</label><input type="password" id="geminiKey" placeholder="AIzaSy..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
+        <div class="f" style="margin-top:16px"><label>🔑 Gemini API Key</label><input type="password" id="geminiKey" placeholder="AIzaSy..."></div>
         <button class="btn-save" onclick="saveGemini()">💾 حفظ Gemini</button>
       </div>
     </div>
@@ -606,10 +580,10 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 <div class="modal" id="patientModal">
   <div class="box">
     <h3 style="margin-bottom:16px;color:var(--gold)">➕ مريض جديد</h3>
-    <div class="f"><label>الاسم *</label><input id="pName" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-    <div class="f"><label>الهاتف *</label><input id="pPhone" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-    <div class="f"><label>العمر</label><input type="number" id="pAge" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"></div>
-    <div class="f"><label>الجنس</label><select id="pGender" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)"><option value="">—</option><option>ذكر</option><option>أنثى</option></select></div>
+    <div class="f"><label>الاسم *</label><input id="pName"></div>
+    <div class="f"><label>الهاتف *</label><input id="pPhone"></div>
+    <div class="f"><label>العمر</label><input type="number" id="pAge"></div>
+    <div class="f"><label>الجنس</label><select id="pGender"><option value="">—</option><option>ذكر</option><option>أنثى</option></select></div>
     <div style="display:flex;gap:8px;margin-top:12px">
       <button class="btn-save" style="flex:1" onclick="createPatient()">💾 حفظ</button>
       <button class="btn-outline" onclick="closePatientModal()">إلغاء</button>
@@ -636,6 +610,8 @@ const OWNER_EMAIL = 'naqclinixai@gmail.com';
 let CU=null, CD=null, patients=[], appointments=[], lab=[], specialists=[], billing=[];
 let charts={}, faceMesh=null, threeInit=false;
 let selectedTeeth=[], toothState={}, dsdImg=null, smileImg=null;
+let allUsers=[], notificationsUnsubscribe=null;
+let cameraStream=null, selectedPhotoType='frontal', lastCapturedImage=null;
 
 function toast(m,err){const t=document.getElementById('toast');t.textContent=m;t.classList.toggle('err',!!err);t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -769,30 +745,17 @@ auth.onAuthStateChanged(async user=>{
             clinicId:'GUEST-'+user.uid.slice(0,6).toUpperCase(),active:true};
         await db.collection('users').doc(user.uid).set(CD);
       }
-      // ✅ إجبار المالك على دور owner + اسم صحيح
       if(user.email===OWNER_EMAIL){
         CD.role='owner';
         if(!CD.fullName||CD.fullName==='مستخدم'||CD.fullName==='undefined'){
           CD.fullName=user.displayName||'د. علي النقيب';
         }
-        try{
-          await db.collection('users').doc(user.uid).set(
-            {role:'owner',fullName:CD.fullName},
-            {merge:true}
-          );
-        }catch(e){console.warn('sync owner:',e)}
+        try{await db.collection('users').doc(user.uid).set({role:'owner',fullName:CD.fullName},{merge:true})}catch(e){}
       }
-      // ✅ ضمان وجود clinicId لكل مستخدم
-if(!CD.clinicId||CD.clinicId==='undefined'){
-  CD.clinicId='CLN-'+user.uid.slice(0,8).toUpperCase();
-}
-try{
-  await db.collection('users').doc(user.uid).set(
-    {clinicId:CD.clinicId},
-    {merge:true}
-  );
-}catch(e){console.warn('sync clinicId:',e)}
-      // ✅ احتياطي أخير
+      if(!CD.clinicId||CD.clinicId==='undefined'){
+        CD.clinicId='CLN-'+user.uid.slice(0,8).toUpperCase();
+      }
+      try{await db.collection('users').doc(user.uid).set({clinicId:CD.clinicId},{merge:true})}catch(e){}
       if(!CD.fullName||CD.fullName==='undefined'){
         CD.fullName=user.displayName||user.email||'مستخدم';
       }
@@ -805,8 +768,8 @@ try{
       updateDashboard();
       fillSettings();
       setTimeout(()=>{initThree();drawFacePlaceholder();drawDSDPlaceholder();initCompareSlider();},300);
-    setupNotifListener();
-  toast('✅ مرحباً '+CD.fullName);
+      setupNotifListener();
+      toast('✅ مرحباً '+CD.fullName);
     }catch(e){console.error(e);toast('❌ '+e.message,true)}
   }else{
     CU=null;CD=null;
@@ -823,16 +786,15 @@ function showSection(sec){
   const btn=document.querySelector(`.ni[data-sec="${sec}"]`);
   if(btn)btn.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
-  
   if(sec==='patients')renderPatients();
   if(sec==='team')renderTeam();
   if(sec==='users')loadUsers();
   if(sec==='notifications')loadNotifications();
   if(sec==='photography'){
-  populateSelects();
-  const pid = document.getElementById('photoPatient')?.value;
-  if(pid) loadPatientPhotos(pid);
-}
+    populateSelects();
+    const pid=document.getElementById('photoPatient')?.value;
+    if(pid)loadPatientPhotos(pid);
+  }
   if(sec==='subscriptions')renderSub();
   if(sec==='cadcam')setTimeout(initThree,200);
 }
@@ -909,7 +871,7 @@ async function openPatient(id){
 
 function populateSelects(){
   const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
-['apptPatient','billPatient','facePatient','aiPatient','reportPatient','labPatient','photoPatient'].forEach
+  ['apptPatient','billPatient','facePatient','aiPatient','reportPatient','labPatient','photoPatient'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.innerHTML=opts;
   });
@@ -1143,255 +1105,169 @@ function renderSpecialists(){
     </div>`).join('');
 }
 
-// ============ USER MANAGEMENT ============
-let allUsers = [];
-
-async function loadUsers() {
-  const el = document.getElementById('usersList');
-  if (el) el.innerHTML = '<div class="empty">⏳ جارٍ التحميل...</div>';
-  
-  try {
-    const snap = await db.collection('users').get();
-    allUsers = [];
-    snap.forEach(d => allUsers.push({ id: d.id, ...d.data() }));
-    allUsers.sort((a, b) => {
-      const roleOrder = { owner: 0, admin: 1, doctor: 2, employee: 3, guest: 4 };
-      const ra = roleOrder[a.role] ?? 9;
-      const rb = roleOrder[b.role] ?? 9;
-      if (ra !== rb) return ra - rb;
-      return (a.fullName || a.name || '').localeCompare(b.fullName || b.name || '');
+async function loadUsers(){
+  const el=document.getElementById('usersList');
+  if(el)el.innerHTML='<div class="empty">⏳ جارٍ التحميل...</div>';
+  try{
+    const snap=await db.collection('users').get();
+    allUsers=[];
+    snap.forEach(d=>allUsers.push({id:d.id,...d.data()}));
+    allUsers.sort((a,b)=>{
+      const ro={owner:0,admin:1,doctor:2,employee:3,guest:4};
+      const ra=ro[a.role]??9,rb=ro[b.role]??9;
+      if(ra!==rb)return ra-rb;
+      return (a.fullName||a.name||'').localeCompare(b.fullName||b.name||'');
     });
-    
     renderUsers();
     renderTeam();
-  } catch (e) {
-    if (el) el.innerHTML = '<div class="empty" style="color:var(--err)">❌ ' + esc(e.message) + '</div>';
-    console.error('loadUsers:', e);
+  }catch(e){
+    if(el)el.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>';
   }
 }
 
-function renderUsers() {
-  const el = document.getElementById('usersList');
-  const cntEl = document.getElementById('usersCount');
-  if (!el) return;
-  if (cntEl) cntEl.textContent = allUsers.length;
-  
-  if (!allUsers.length) {
-    el.innerHTML = '<div class="empty"><div class="ic">👤</div>لا يوجد مستخدمون مسجلون</div>';
-    return;
-  }
-  
-  const roleLabel = (r) => ({
-    'owner': '👑 مالك',
-    'admin': '👑 مدير',
-    'doctor': '👨‍⚕️ طبيب',
-    'employee': '👨‍💼 موظف',
-    'guest': '👤 ضيف'
-  }[r] || r || '—');
-  
-  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr>' +
-    '<th>الاسم</th><th>البريد</th><th>الدور</th><th>التخصص</th><th>الهاتف</th><th>الحالة</th><th>إجراءات</th>' +
-    '</tr></thead><tbody>' +
-    allUsers.map(u => `
+function renderUsers(){
+  const el=document.getElementById('usersList');
+  const cntEl=document.getElementById('usersCount');
+  if(!el)return;
+  if(cntEl)cntEl.textContent=allUsers.length;
+  if(!allUsers.length){el.innerHTML='<div class="empty"><div class="ic">👤</div>لا يوجد مستخدمون</div>';return}
+  const roleLabel=r=>({owner:'👑 مالك',admin:'👑 مدير',doctor:'👨‍⚕️ طبيب',employee:'👨‍💼 موظف',guest:'👤 ضيف'}[r]||r||'—');
+  el.innerHTML='<div style="overflow-x:auto"><table class="tbl"><thead><tr>'+
+    '<th>الاسم</th><th>البريد</th><th>الدور</th><th>التخصص</th><th>الهاتف</th><th>الحالة</th><th>إجراءات</th>'+
+    '</tr></thead><tbody>'+
+    allUsers.map(u=>`
       <tr>
-        <td><b>${esc(u.fullName || u.name || '—')}</b></td>
-        <td style="font-size:0.75rem;direction:ltr;text-align:right">${esc(u.email || '—')}</td>
+        <td><b>${esc(u.fullName||u.name||'—')}</b></td>
+        <td style="font-size:0.75rem;direction:ltr;text-align:right">${esc(u.email||'—')}</td>
         <td style="white-space:nowrap">${roleLabel(u.role)}</td>
-        <td>${esc(u.specialty || '—')}</td>
-        <td style="direction:ltr;text-align:right">${esc(u.phone || '—')}</td>
-        <td style="color:${u.active !== false ? 'var(--ok)' : 'var(--err)'};white-space:nowrap">
-          ${u.active !== false ? '✅ نشط' : '🚫 معطل'}
+        <td>${esc(u.specialty||'—')}</td>
+        <td style="direction:ltr;text-align:right">${esc(u.phone||'—')}</td>
+        <td style="color:${u.active!==false?'var(--ok)':'var(--err)'};white-space:nowrap">
+          ${u.active!==false?'✅ نشط':'🚫 معطل'}
         </td>
         <td style="white-space:nowrap">
-          <button class="btn-outline" style="padding:4px 8px;font-size:0.68rem;margin-left:4px" onclick="resetUserPassword('${esc(u.email)}')" title="إرسال رابط إعادة كلمة المرور">🔐</button>
-          ${u.role === 'owner' ? '<span style="color:var(--muted);font-size:0.7rem">محفوظ</span>' : `
-          <button class="${u.active !== false ? 'btn-outline' : 'btn-save'}" style="padding:4px 8px;font-size:0.68rem;margin-left:4px" onclick="toggleUserActive('${u.id}')" title="${u.active !== false ? 'تعطيل' : 'تفعيل'}">${u.active !== false ? '🚫' : '✅'}</button>
-          <button class="btn-danger" style="padding:4px 8px;font-size:0.68rem" onclick="deleteUser('${u.id}', '${esc(u.email)}')" title="حذف">🗑️</button>
+          <button class="btn-outline" style="padding:4px 8px;font-size:0.68rem;margin-left:4px" onclick="resetUserPassword('${esc(u.email)}')" title="إعادة كلمة المرور">🔐</button>
+          ${u.role==='owner'?'<span style="color:var(--muted);font-size:0.7rem">محفوظ</span>':`
+          <button class="${u.active!==false?'btn-outline':'btn-save'}" style="padding:4px 8px;font-size:0.68rem;margin-left:4px" onclick="toggleUserActive('${u.id}')">${u.active!==false?'🚫':'✅'}</button>
+          <button class="btn-danger" style="padding:4px 8px;font-size:0.68rem" onclick="deleteUser('${u.id}','${esc(u.email)}')">🗑️</button>
           `}
         </td>
       </tr>
-    `).join('') +
-    '</tbody></table></div>';
+    `).join('')+'</tbody></table></div>';
 }
 
-async function createUser() {
-  const name = document.getElementById('newUserName').value.trim();
-  const email = document.getElementById('newUserEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('newUserPass').value;
-  const role = document.getElementById('newUserRole').value;
-  const specialty = document.getElementById('newUserSpecialty').value.trim();
-  const phone = document.getElementById('newUserPhone').value.trim();
-  
-  if (!name || !email || !pass) {
-    toast('⚠️ أكمل الحقول المطلوبة', true);
-    return;
-  }
-  if (pass.length < 6) {
-    toast('⚠️ كلمة المرور 6 أحرف على الأقل', true);
-    return;
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    toast('⚠️ البريد الإلكتروني غير صالح', true);
-    return;
-  }
-  
-  const btn = document.getElementById('btnCreateUser');
-  btn.disabled = true;
-  btn.textContent = '⏳ جارٍ الإنشاء...';
-  
-  // Use a secondary Firebase app so admin stays logged in
-  const appName = 'user-create-' + Date.now();
-  let secondaryApp = null;
-  
-  try {
-    secondaryApp = firebase.initializeApp(firebaseConfig, appName);
-    const secondaryAuth = secondaryApp.auth();
-    const secondaryDb = secondaryApp.firestore();
-    
-    // Create user in Firebase Auth
-    const cred = await secondaryAuth.createUserWithEmailAndPassword(email, pass);
-    await cred.user.updateProfile({ displayName: name });
-    
-    // Save user doc using secondary app (auth.uid == new user)
+async function createUser(){
+  const name=document.getElementById('newUserName').value.trim();
+  const email=document.getElementById('newUserEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('newUserPass').value;
+  const role=document.getElementById('newUserRole').value;
+  const specialty=document.getElementById('newUserSpecialty').value.trim();
+  const phone=document.getElementById('newUserPhone').value.trim();
+  if(!name||!email||!pass){toast('⚠️ أكمل الحقول المطلوبة',true);return}
+  if(pass.length<6){toast('⚠️ كلمة المرور 6+',true);return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('⚠️ بريد غير صالح',true);return}
+  const btn=document.getElementById('btnCreateUser');
+  btn.disabled=true;btn.textContent='⏳ جارٍ الإنشاء...';
+  const appName='user-create-'+Date.now();
+  let secondaryApp=null;
+  try{
+    secondaryApp=firebase.initializeApp(firebaseConfig,appName);
+    const secondaryAuth=secondaryApp.auth();
+    const secondaryDb=secondaryApp.firestore();
+    const cred=await secondaryAuth.createUserWithEmailAndPassword(email,pass);
+    await cred.user.updateProfile({displayName:name});
     await secondaryDb.collection('users').doc(cred.user.uid).set({
-      email: email,
-      fullName: name,
-      name: name,
-      role: role,
-      specialty: specialty,
-      phone: phone,
-      clinicId: CD.clinicId || 'CLN-DEFAULT',
-      clinicName: CD.clinicName || '',
-      active: true,
-      createdBy: CU.uid,
-      createdByName: CD.fullName || CD.name,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      email,fullName:name,name,role,specialty,phone,
+      clinicId:CD.clinicId||'CLN-DEFAULT',
+      clinicName:CD.clinicName||'',
+      active:true,createdBy:CU.uid,createdByName:CD.fullName||CD.name,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    
-    // Cleanup
     await secondaryAuth.signOut();
     await secondaryApp.delete();
-    secondaryApp = null;
-    
-    toast('✅ تم إنشاء الحساب: ' + name);
-    
-    // Clear form
-    ['newUserName','newUserEmail','newUserPass','newUserSpecialty','newUserPhone'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
+    secondaryApp=null;
+    toast('✅ تم إنشاء الحساب: '+name);
+    ['newUserName','newUserEmail','newUserPass','newUserSpecialty','newUserPhone'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.value='';
     });
-    document.getElementById('newUserRole').value = 'doctor';
-    
+    document.getElementById('newUserRole').value='doctor';
     await loadUsers();
-  } catch (e) {
-    if (secondaryApp) {
-      try { await secondaryApp.delete(); } catch(_) {}
-    }
-    let msg = e.message;
-    if (e.code === 'auth/email-already-in-use') msg = 'البريد مسجل بالفعل في Firebase Auth';
-    else if (e.code === 'auth/weak-password') msg = 'كلمة المرور ضعيفة جداً';
-    else if (e.code === 'auth/invalid-email') msg = 'البريد الإلكتروني غير صالح';
-    else if (e.code === 'permission-denied') msg = 'صلاحيات Firestore غير كافية — تحقق من Rules';
-    else if (e.code === 'auth/operation-not-allowed') msg = 'Email/Password غير مفعّل في Firebase Console';
-    toast('❌ ' + msg, true);
-    console.error('createUser:', e);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '➕ إضافة مستخدم';
+  }catch(e){
+    if(secondaryApp){try{await secondaryApp.delete();}catch(_){}}
+    let msg=e.message;
+    if(e.code==='auth/email-already-in-use')msg='البريد مسجل';
+    else if(e.code==='auth/weak-password')msg='كلمة المرور ضعيفة';
+    else if(e.code==='permission-denied')msg='صلاحيات Firestore غير كافية';
+    toast('❌ '+msg,true);
+  }finally{
+    btn.disabled=false;btn.textContent='➕ إضافة مستخدم';
   }
 }
 
-async function toggleUserActive(uid) {
-  try {
-    const doc = await db.collection('users').doc(uid).get();
-    if (!doc.exists) { toast('❌ المستخدم غير موجود', true); return; }
-    const data = doc.data();
-    if (data.role === 'owner') { toast('⚠️ لا يمكن تعطيل المالك', true); return; }
-    const currentActive = data.active !== false;
-    if (!confirm(currentActive ? 'تعطيل هذا الحساب؟ لن يستطيع الدخول بعد الآن.' : 'تفعيل الحساب؟')) return;
-    await db.collection('users').doc(uid).update({ active: !currentActive });
-    toast(currentActive ? '🚫 تم تعطيل الحساب' : '✅ تم تفعيل الحساب');
+async function toggleUserActive(uid){
+  try{
+    const doc=await db.collection('users').doc(uid).get();
+    if(!doc.exists){toast('❌ المستخدم غير موجود',true);return}
+    const data=doc.data();
+    if(data.role==='owner'){toast('⚠️ لا يمكن تعطيل المالك',true);return}
+    const cur=data.active!==false;
+    if(!confirm(cur?'تعطيل هذا الحساب؟':'تفعيل الحساب؟'))return;
+    await db.collection('users').doc(uid).update({active:!cur});
+    toast(cur?'🚫 تم التعطيل':'✅ تم التفعيل');
     await loadUsers();
-  } catch (e) {
-    toast('❌ ' + e.message, true);
-  }
+  }catch(e){toast('❌ '+e.message,true)}
 }
 
-async function resetUserPassword(email) {
-  if (!email) { toast('⚠️ لا يوجد بريد', true); return; }
-  if (!confirm(`إرسال رابط إعادة تعيين كلمة المرور إلى:\n${email}`)) return;
-  try {
+async function resetUserPassword(email){
+  if(!email){toast('⚠️ لا يوجد بريد',true);return}
+  if(!confirm(`إرسال رابط إعادة كلمة المرور إلى:\n${email}`))return;
+  try{
     await auth.sendPasswordResetEmail(email);
-    toast('📧 تم إرسال الرابط إلى ' + email);
-  } catch (e) {
-    let msg = e.message;
-    if (e.code === 'auth/user-not-found') msg = 'البريد غير مسجل في Firebase Auth';
-    toast('❌ ' + msg, true);
+    toast('📧 تم إرسال الرابط إلى '+email);
+  }catch(e){
+    let msg=e.message;
+    if(e.code==='auth/user-not-found')msg='البريد غير مسجل';
+    toast('❌ '+msg,true);
   }
 }
 
-async function deleteUser(uid, email) {
-  if (!confirm(`⚠️ حذف الحساب من Firestore؟\n${email}\n\nملاحظة: حساب Firebase Auth يبقى موجوداً (لأسباب أمنية).`)) return;
-  try {
-    const doc = await db.collection('users').doc(uid).get();
-    if (doc.exists && doc.data().role === 'owner') {
-      toast('⚠️ لا يمكن حذف المالك', true);
-      return;
-    }
+async function deleteUser(uid,email){
+  if(!confirm(`⚠️ حذف الحساب من Firestore؟\n${email}`))return;
+  try{
+    const doc=await db.collection('users').doc(uid).get();
+    if(doc.exists&&doc.data().role==='owner'){toast('⚠️ لا يمكن حذف المالك',true);return}
     await db.collection('users').doc(uid).delete();
-    toast('🗑️ تم حذف المستخدم من قاعدة البيانات');
+    toast('🗑️ تم الحذف');
     await loadUsers();
-  } catch (e) {
-    toast('❌ ' + e.message, true);
-  }
+  }catch(e){toast('❌ '+e.message,true)}
 }
 
-// ============ TEAM RENDERING ============
-function renderTeam() {
-  const el = document.getElementById('teamList');
-  if (!el) return;
-  
-  if (!allUsers.length) {
-    el.innerHTML = '<div class="empty"><div class="ic">👥</div>لا يوجد أعضاء في الفريق بعد</div>';
-    return;
-  }
-  
-  const roleLabel = (r) => ({
-    'owner': '👑 المالك',
-    'admin': '👑 مدير',
-    'doctor': '👨‍⚕️ طبيب',
-    'employee': '👨‍💼 موظف',
-    'guest': '👤 ضيف'
-  }[r] || 'عضو');
-  
-  const roleColor = (r) => ({
-    'owner': 'var(--gold)',
-    'admin': '#8b5cf6',
-    'doctor': 'var(--ok)',
-    'employee': 'var(--info)',
-    'guest': 'var(--muted)'
-  }[r] || 'var(--muted)');
-  
-  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">' +
-    allUsers.map(u => {
-      const name = u.fullName || u.name || 'مستخدم';
-      const initials = name.substring(0, 2).toUpperCase();
+function renderTeam(){
+  const el=document.getElementById('teamList');
+  if(!el)return;
+  if(!allUsers.length){el.innerHTML='<div class="empty"><div class="ic">👥</div>لا يوجد أعضاء</div>';return}
+  const roleLabel=r=>({owner:'👑 المالك',admin:'👑 مدير',doctor:'👨‍⚕️ طبيب',employee:'👨‍💼 موظف',guest:'👤 ضيف'}[r]||'عضو');
+  const roleColor=r=>({owner:'var(--gold)',admin:'#8b5cf6',doctor:'var(--ok)',employee:'var(--info)',guest:'var(--muted)'}[r]||'var(--muted)');
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">'+
+    allUsers.map(u=>{
+      const name=u.fullName||u.name||'مستخدم';
+      const initials=name.substring(0,2).toUpperCase();
       return `
         <div style="background:var(--card2);border:1px solid var(--bd);border-radius:14px;padding:16px;text-align:center">
           <div style="width:64px;height:64px;margin:0 auto 10px;background:radial-gradient(circle at 30% 30%,var(--gold),var(--goldD));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0A0A0A">${esc(initials)}</div>
           <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">${esc(name)}</div>
           <div style="color:${roleColor(u.role)};font-size:0.78rem;font-weight:700;margin-bottom:6px">${roleLabel(u.role)}</div>
-          ${u.specialty ? `<div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">🎓 ${esc(u.specialty)}</div>` : ''}
-          ${u.phone ? `<div style="font-size:0.72rem;color:var(--muted);direction:ltr">📱 ${esc(u.phone)}</div>` : ''}
-          ${u.clinicName ? `<div style="font-size:0.65rem;color:var(--muted);margin-top:6px">🏥 ${esc(u.clinicName)}</div>` : ''}
-          <div style="margin-top:8px;font-size:0.65rem;color:${u.active !== false ? 'var(--ok)' : 'var(--err)'}">
-            ${u.active !== false ? '🟢 نشط' : '🔴 معطل'}
+          ${u.specialty?`<div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">🎓 ${esc(u.specialty)}</div>`:''}
+          ${u.phone?`<div style="font-size:0.72rem;color:var(--muted);direction:ltr">📱 ${esc(u.phone)}</div>`:''}
+          <div style="margin-top:8px;font-size:0.65rem;color:${u.active!==false?'var(--ok)':'var(--err)'}">
+            ${u.active!==false?'🟢 نشط':'🔴 معطل'}
           </div>
         </div>
       `;
-    }).join('') +
-    '</div>';
-  }
+    }).join('')+'</div>';
+}
+
 function renderSub(){
   const el=document.getElementById('subInfo');
   el.innerHTML=`<div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;text-align:center">
@@ -1450,7 +1326,6 @@ function saveGemini(){
   toast('✅');
 }
 
-// FACE ANALYSIS
 function drawFacePlaceholder(){
   const c=document.getElementById('faceCanvas');
   const ctx=c.getContext('2d');
@@ -1524,7 +1399,6 @@ function drawGoldenRatio(){
 
 function clearFace(){drawFacePlaceholder();document.getElementById('faceMetrics').innerHTML=''}
 
-// DSD
 function drawDSDPlaceholder(){
   const c=document.getElementById('dsdCanvas');
   const ctx=c.getContext('2d');
@@ -1566,7 +1440,6 @@ function renderDSD(){
 function applyDSDTeeth(){renderDSD();toast('✅ تم إدراج الأسنان')}
 function applyDSDFilter(){if(!dsdImg)return;const c=document.getElementById('dsdCanvas');const ctx=c.getContext('2d');ctx.filter='blur(2px)';ctx.drawImage(dsdImg,0,0);ctx.filter='none';toast('✨')}
 
-// CEPH
 function analyzeCeph(){
   const sna=parseFloat(document.getElementById('cephSNA').value)||0;
   const snb=parseFloat(document.getElementById('cephSNB').value)||0;
@@ -1575,7 +1448,6 @@ function analyzeCeph(){
   document.getElementById('cephResult').innerHTML=`<div class="stat"><div class="num">${anb.toFixed(1)}°</div><div class="lbl">ANB — ${cls}</div></div>`;
 }
 
-// AI
 async function runAIDiagnosis(){
   const key=localStorage.getItem('gemini_key');
   if(!key){toast('⚠️ أضف Gemini Key من الإعدادات',true);return}
@@ -1593,7 +1465,6 @@ async function runAIDiagnosis(){
   }catch(e){document.getElementById('aiOutput').innerHTML='<div style="color:var(--err)">❌ '+esc(e.message)+'</div>'}
 }
 
-// 3D
 function initThree(){
   if(threeInit)return;
   const container=document.getElementById('threeContainer');
@@ -1614,7 +1485,6 @@ function initThree(){
   animate();
 }
 
-// BEFORE/AFTER
 function initCompareSlider(){
   const handle=document.getElementById('cmpHandle');
   const wrap=document.getElementById('cmpAfterWrap');
@@ -1639,7 +1509,6 @@ document.addEventListener('change',e=>{
   if(e.target.id==='afterImg'&&e.target.files[0]){const r=new FileReader();r.onload=ev=>document.getElementById('cmpAfter').src=ev.target.result;r.readAsDataURL(e.target.files[0])}
 });
 
-// REPORTS
 function generateReport(){
   const pid=document.getElementById('reportPatient').value;
   if(!pid){toast('⚠️ اختر المريض',true);return}
@@ -1673,153 +1542,129 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderChart();
 });
 
-// ============ PHOTOGRAPHY ============
-let cameraStream = null;
-let selectedPhotoType = 'frontal';
-let lastCapturedImage = null;
-
-async function startCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, 
-      audio: false 
+async function startCamera(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},
+      audio:false
     });
-    cameraStream = stream;
-    const video = document.getElementById('cameraVideo');
-    video.srcObject = stream;
+    cameraStream=stream;
+    const video=document.getElementById('cameraVideo');
+    video.srcObject=stream;
     await video.play();
-    
-    document.getElementById('cameraContainer').style.display = 'block';
-    document.getElementById('photoTypeSelector').style.display = 'block';
-    document.getElementById('btnStartCam').style.display = 'none';
-    document.getElementById('btnStopCam').style.display = 'inline-flex';
-    document.getElementById('btnCapture').style.display = 'inline-flex';
+    document.getElementById('cameraContainer').style.display='block';
+    document.getElementById('photoTypeSelector').style.display='block';
+    document.getElementById('btnStartCam').style.display='none';
+    document.getElementById('btnStopCam').style.display='inline-flex';
+    document.getElementById('btnCapture').style.display='inline-flex';
     toast('📷 الكاميرا جاهزة');
-  } catch (e) {
-    toast('❌ ' + (e.name === 'NotAllowedError' ? 'تم رفض إذن الكاميرا' : e.message), true);
-  }
+  }catch(e){toast('❌ '+(e.name==='NotAllowedError'?'تم رفض إذن الكاميرا':e.message),true)}
 }
 
-function stopCamera() {
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(t => t.stop());
-    cameraStream = null;
-  }
-  document.getElementById('cameraContainer').style.display = 'none';
-  document.getElementById('btnStartCam').style.display = 'inline-flex';
-  document.getElementById('btnStopCam').style.display = 'none';
-  document.getElementById('btnCapture').style.display = 'none';
-  document.getElementById('photoTypeSelector').style.display = 'none';
+function stopCamera(){
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}
+  document.getElementById('cameraContainer').style.display='none';
+  document.getElementById('btnStartCam').style.display='inline-flex';
+  document.getElementById('btnStopCam').style.display='none';
+  document.getElementById('btnCapture').style.display='none';
+  document.getElementById('photoTypeSelector').style.display='none';
 }
 
-function selectPhotoType(type) {
-  selectedPhotoType = type;
-  document.querySelectorAll('.photo-type-btn').forEach(b => b.classList.remove('active', 'btn-save'));
-  const btn = document.querySelector(`.photo-type-btn[data-type="${type}"]`);
-  if (btn) { btn.classList.remove('btn-outline'); btn.classList.add('btn-save'); }
-  toast('📸 نوع الصورة: ' + photoTypeLabel(type));
+function selectPhotoType(type){
+  selectedPhotoType=type;
+  document.querySelectorAll('.photo-type-btn').forEach(b=>{
+    b.classList.remove('active','btn-save');
+    b.classList.add('btn-outline');
+  });
+  const btn=document.querySelector(`.photo-type-btn[data-type="${type}"]`);
+  if(btn){btn.classList.remove('btn-outline');btn.classList.add('btn-save')}
+  toast('📸 نوع الصورة: '+photoTypeLabel(type));
 }
 
-function photoTypeLabel(t) {
-  return { frontal: 'الوجه الأمامي', lateral: 'الوجه الجانبي', smile: 'الابتسامة', upper: 'الفك العلوي', lower: 'الفك السفلي', tissue: 'الأنسجة', portrait: 'شخصية' }[t] || t;
+function photoTypeLabel(t){
+  return {frontal:'الوجه الأمامي',lateral:'الوجه الجانبي',smile:'الابتسامة',upper:'الفك العلوي',lower:'الفك السفلي',tissue:'الأنسجة',portrait:'شخصية'}[t]||t;
 }
 
-function capturePhoto() {
-  const video = document.getElementById('cameraVideo');
-  if (!video.srcObject) { toast('⚠️ الكاميرا غير نشطة', true); return; }
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth || 1280;
-  canvas.height = video.videoHeight || 720;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+function capturePhoto(){
+  const video=document.getElementById('cameraVideo');
+  if(!video.srcObject){toast('⚠️ الكاميرا غير نشطة',true);return}
+  const canvas=document.createElement('canvas');
+  canvas.width=video.videoWidth||1280;
+  canvas.height=video.videoHeight||720;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(video,0,0);
+  const dataUrl=canvas.toDataURL('image/jpeg',0.85);
   showLastCapture(dataUrl);
-  toast('📸 تم الالتقاط — احفظ الصورة');
+  toast('📸 تم الالتقاط');
 }
 
-function handlePhotoUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { toast('⚠️ الصورة أكبر من 5MB', true); return; }
-  const reader = new FileReader();
-  reader.onload = ev => showLastCapture(ev.target.result);
+function handlePhotoUpload(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){toast('⚠️ الصورة > 5MB',true);return}
+  const reader=new FileReader();
+  reader.onload=ev=>showLastCapture(ev.target.result);
   reader.readAsDataURL(file);
-  e.target.value = '';
+  e.target.value='';
 }
 
-function showLastCapture(dataUrl) {
-  lastCapturedImage = dataUrl;
-  document.getElementById('lastCapture').style.display = 'block';
-  document.getElementById('lastCaptureImg').src = dataUrl;
-  document.getElementById('lastCapture').scrollIntoView({ behavior: 'smooth' });
+function showLastCapture(dataUrl){
+  lastCapturedImage=dataUrl;
+  document.getElementById('lastCapture').style.display='block';
+  document.getElementById('lastCaptureImg').src=dataUrl;
+  document.getElementById('lastCapture').scrollIntoView({behavior:'smooth'});
 }
 
-function discardLastPhoto() {
-  lastCapturedImage = null;
-  document.getElementById('lastCapture').style.display = 'none';
+function discardLastPhoto(){
+  lastCapturedImage=null;
+  document.getElementById('lastCapture').style.display='none';
 }
 
-async function saveLastPhoto() {
-  if (!lastCapturedImage) { toast('⚠️ لا توجد صورة', true); return; }
-  const patientId = document.getElementById('photoPatient').value;
-  if (!patientId) { toast('⚠️ اختر مريضاً أولاً', true); return; }
-  
-  try {
+async function saveLastPhoto(){
+  if(!lastCapturedImage){toast('⚠️ لا توجد صورة',true);return}
+  const patientId=document.getElementById('photoPatient').value;
+  if(!patientId){toast('⚠️ اختر مريضاً أولاً',true);return}
+  try{
     toast('⏳ جارٍ الحفظ...');
-    
-    // Convert base64 to blob
-    const response = await fetch(lastCapturedImage);
-    const blob = await response.blob();
-    
-    // Upload to Firebase Storage
-    const path = `patients/${patientId}/photos/${selectedPhotoType}_${Date.now()}.jpg`;
-    const storageRef = firebase.storage().ref(path);
-    const snapshot = await storageRef.put(blob);
-    const url = await snapshot.ref.getDownloadURL();
-    
-    // Save URL to Firestore
-    const photoDoc = db.collection('patients').doc(patientId).collection('photos').doc(selectedPhotoType);
+    const response=await fetch(lastCapturedImage);
+    const blob=await response.blob();
+    const path=`patients/${patientId}/photos/${selectedPhotoType}_${Date.now()}.jpg`;
+    const storageRef=firebase.storage().ref(path);
+    const snapshot=await storageRef.put(blob);
+    const url=await snapshot.ref.getDownloadURL();
+    const photoDoc=db.collection('patients').doc(patientId).collection('photos').doc(selectedPhotoType);
     await photoDoc.set({
-      type: selectedPhotoType,
-      url: url,
-      path: path,
-      uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      uploadedBy: CU.uid
-    }, { merge: true });
-    
-    toast('✅ تم حفظ الصورة: ' + photoTypeLabel(selectedPhotoType));
+      type:selectedPhotoType,url,path,
+      uploadedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      uploadedBy:CU.uid
+    },{merge:true});
+    toast('✅ تم الحفظ: '+photoTypeLabel(selectedPhotoType));
     discardLastPhoto();
     await loadPatientPhotos(patientId);
-  } catch (e) {
-    toast('❌ ' + e.message, true);
-  }
+  }catch(e){toast('❌ '+e.message,true)}
 }
 
-async function loadPatientPhotos(patientId) {
-  const grid = document.getElementById('patientPhotosGrid');
-  if (!grid) return;
-  
-  if (!patientId) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">اختر مريضاً لعرض صوره</div>';
+async function loadPatientPhotos(patientId){
+  const grid=document.getElementById('patientPhotosGrid');
+  if(!grid)return;
+  if(!patientId){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1">اختر مريضاً لعرض صوره</div>';
     return;
   }
-  
-  grid.innerHTML = '<div class="empty" style="grid-column:1/-1">⏳ جارٍ التحميل...</div>';
-  
-  try {
-    const snap = await db.collection('patients').doc(patientId).collection('photos').get();
-    const photos = {};
-    snap.forEach(d => { photos[d.id] = d.data(); });
-    
-    const types = ['frontal', 'lateral', 'smile', 'upper', 'lower', 'tissue', 'portrait'];
-    grid.innerHTML = types.map(t => {
-      const p = photos[t];
-      if (p) {
+  grid.innerHTML='<div class="empty" style="grid-column:1/-1">⏳ جارٍ التحميل...</div>';
+  try{
+    const snap=await db.collection('patients').doc(patientId).collection('photos').get();
+    const photos={};
+    snap.forEach(d=>{photos[d.id]=d.data()});
+    const types=['frontal','lateral','smile','upper','lower','tissue','portrait'];
+    grid.innerHTML=types.map(t=>{
+      const p=photos[t];
+      if(p){
         return `
           <div style="position:relative;background:var(--card2);border:1px solid var(--bd);border-radius:10px;overflow:hidden">
             <img src="${esc(p.url)}" style="width:100%;height:100px;object-fit:cover;display:block" onclick="window.open('${esc(p.url)}','_blank')">
             <div style="padding:6px;text-align:center;font-size:0.7rem;color:var(--muted)">${photoTypeLabel(t)}</div>
-            <button onclick="deletePatientPhoto('${patientId}', '${t}')" style="position:absolute;top:4px;left:4px;background:rgba(239,68,68,0.9);border:none;color:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px">✕</button>
+            <button onclick="deletePatientPhoto('${patientId}','${t}')" style="position:absolute;top:4px;left:4px;background:rgba(239,68,68,0.9);border:none;color:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px">✕</button>
           </div>
         `;
       }
@@ -1830,187 +1675,169 @@ async function loadPatientPhotos(patientId) {
         </div>
       `;
     }).join('');
-  } catch (e) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;color:var(--err)">❌ ' + esc(e.message) + '</div>';
+  }catch(e){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1;color:var(--err)">❌ '+esc(e.message)+'</div>';
   }
 }
 
-async function deletePatientPhoto(patientId, type) {
-  if (!confirm('حذف هذه الصورة؟')) return;
-  try {
-    const doc = await db.collection('patients').doc(patientId).collection('photos').doc(type).get();
-    if (doc.exists && doc.data().path) {
-      await firebase.storage().ref(doc.data().path).delete().catch(() => {});
+async function deletePatientPhoto(patientId,type){
+  if(!confirm('حذف هذه الصورة؟'))return;
+  try{
+    const doc=await db.collection('patients').doc(patientId).collection('photos').doc(type).get();
+    if(doc.exists&&doc.data().path){
+      await firebase.storage().ref(doc.data().path).delete().catch(()=>{});
     }
     await db.collection('patients').doc(patientId).collection('photos').doc(type).delete();
     toast('🗑️ تم الحذف');
     await loadPatientPhotos(patientId);
-  } catch (e) {
-    toast('❌ ' + e.message, true);
-  }
+  }catch(e){toast('❌ '+e.message,true)}
 }
 
-// Load photos when patient is selected
-document.addEventListener('change', e => {
-  if (e.target.id === 'photoPatient') {
-    loadPatientPhotos(e.target.value);
-  }
+document.addEventListener('change',e=>{
+  if(e.target.id==='photoPatient'){loadPatientPhotos(e.target.value)}
 });
 
-// ============ NOTIFICATIONS ============
-let notificationsUnsubscribe = null;
-
-async function loadNotifications() {
-  const el = document.getElementById('notificationsList');
-  if (!el) return;
-  el.innerHTML = '<div class="empty">⏳ جارٍ التحميل...</div>';
-  
-  try {
-    const snap = await db.collection('notifications')
-      .where('recipientId', '==', CU.uid)
-      .orderBy('createdAt', 'desc')
+async function loadNotifications(){
+  const el=document.getElementById('notificationsList');
+  if(!el)return;
+  el.innerHTML='<div class="empty">⏳ جارٍ التحميل...</div>';
+  try{
+    const snap=await db.collection('notifications')
+      .where('recipientId','==',CU.uid)
+      .orderBy('createdAt','desc')
       .limit(50)
       .get();
-    
-    const notifs = [];
-    snap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
-    
-    if (!notifs.length) {
-      el.innerHTML = '<div class="empty"><div class="ic">🔕</div>لا توجد إشعارات</div>';
+    const notifs=[];
+    snap.forEach(d=>notifs.push({id:d.id,...d.data()}));
+    if(!notifs.length){
+      el.innerHTML='<div class="empty"><div class="ic">🔕</div>لا توجد إشعارات</div>';
       updateNotifBadge(0);
       return;
     }
-    
-    const unreadCount = notifs.filter(n => !n.read).length;
+    const unreadCount=notifs.filter(n=>!n.read).length;
     updateNotifBadge(unreadCount);
-    
-    el.innerHTML = notifs.map(n => {
-      const time = n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleString('ar-EG') : 'الآن';
-      const icon = { appointment: '📅', payment: '💰', lab: '🧪', patient: '👤', system: '⚙️', message: '💬' }[n.type] || '🔔';
+    el.innerHTML=notifs.map(n=>{
+      const time=n.createdAt?new Date(n.createdAt.seconds*1000).toLocaleString('ar-EG'):'الآن';
+      const icon={appointment:'📅',payment:'💰',lab:'🧪',patient:'👤',system:'⚙️',message:'💬'}[n.type]||'🔔';
       return `
-        <div style="background:${n.read ? 'var(--card2)' : 'rgba(197,160,89,0.08)'};border:1px solid ${n.read ? 'var(--bd)' : 'var(--gold)'};border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+        <div style="background:${n.read?'var(--card2)':'rgba(197,160,89,0.08)'};border:1px solid ${n.read?'var(--bd)':'var(--gold)'};border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
           <div style="font-size:1.5rem">${icon}</div>
           <div style="flex:1">
-            <div style="font-weight:700;font-size:0.85rem;margin-bottom:4px">${esc(n.title || 'إشعار')}</div>
-            <div style="color:var(--muted);font-size:0.78rem;line-height:1.5">${esc(n.body || '')}</div>
+            <div style="font-weight:700;font-size:0.85rem;margin-bottom:4px">${esc(n.title||'إشعار')}</div>
+            <div style="color:var(--muted);font-size:0.78rem;line-height:1.5">${esc(n.body||'')}</div>
             <div style="color:var(--muted);font-size:0.65rem;margin-top:6px">${time}</div>
           </div>
-          ${!n.read ? `<button onclick="markRead('${n.id}')" class="btn-outline" style="padding:4px 8px;font-size:0.65rem;white-space:nowrap">تم</button>` : ''}
+          ${!n.read?`<button onclick="markRead('${n.id}')" class="btn-outline" style="padding:4px 8px;font-size:0.65rem;white-space:nowrap">تم</button>`:''}
         </div>
       `;
     }).join('');
-  } catch (e) {
-    if (e.code === 'failed-precondition') {
-      el.innerHTML = '<div class="empty" style="color:var(--warn)">⚠️ يحتاج فهرس Firestore. افتح Console لإنشاء الفهرس.</div>';
-    } else {
-      el.innerHTML = '<div class="empty" style="color:var(--err)">❌ ' + esc(e.message) + '</div>';
+  }catch(e){
+    if(e.code==='failed-precondition'){
+      el.innerHTML='<div class="empty" style="color:var(--warn)">⚠️ يحتاج فهرس Firestore</div>';
+    }else{
+      el.innerHTML='<div class="empty" style="color:var(--err)">❌ '+esc(e.message)+'</div>';
     }
   }
 }
 
-function updateNotifBadge(count) {
-  const badge = document.getElementById('notifBadge');
-  if (!badge) return;
-  if (count > 0) {
-    badge.textContent = count > 99 ? '99+' : count;
-    badge.style.display = 'inline-block';
-  } else {
-    badge.style.display = 'none';
+function updateNotifBadge(count){
+  const badge=document.getElementById('notifBadge');
+  if(!badge)return;
+  if(count>0){
+    badge.textContent=count>99?'99+':count;
+    badge.style.display='inline-block';
+  }else{
+    badge.style.display='none';
   }
 }
 
-async function markRead(id) {
-  try {
-    await db.collection('notifications').doc(id).update({ 
-      read: true, 
-      readAt: firebase.firestore.FieldValue.serverTimestamp() 
+async function markRead(id){
+  try{
+    await db.collection('notifications').doc(id).update({
+      read:true,
+      readAt:firebase.firestore.FieldValue.serverTimestamp()
     });
     await loadNotifications();
-  } catch (e) {
-    toast('❌ ' + e.message, true);
-  }
+  }catch(e){toast('❌ '+e.message,true)}
 }
 
-async function markAllRead() {
-  try {
-    const snap = await db.collection('notifications')
-      .where('recipientId', '==', CU.uid)
-      .where('read', '==', false)
+async function markAllRead(){
+  try{
+    const snap=await db.collection('notifications')
+      .where('recipientId','==',CU.uid)
+      .where('read','==',false)
       .get();
-    
-    if (snap.empty) { toast('لا توجد إشعارات غير مقروءة'); return; }
-    
-    const batch = db.batch();
-    snap.forEach(d => batch.update(d.ref, { 
-      read: true, 
-      readAt: firebase.firestore.FieldValue.serverTimestamp() 
+    if(snap.empty){toast('لا توجد إشعارات غير مقروءة');return}
+    const batch=db.batch();
+    snap.forEach(d=>batch.update(d.ref,{
+      read:true,
+      readAt:firebase.firestore.FieldValue.serverTimestamp()
     }));
     await batch.commit();
-    
-    toast('✅ تم قراءة ' + snap.size + ' إشعار');
+    toast('✅ تم قراءة '+snap.size+' إشعار');
     await loadNotifications();
-  } catch (e) {
-    toast('❌ ' + e.message, true);
-  }
+  }catch(e){toast('❌ '+e.message,true)}
 }
 
-async function clearReadNotifications() {
-  if (!confirm('مسح جميع الإشعارات المقروءة؟')) return;
-  try {
-    const snap = await db.collection('notifications')
-      .where('recipientId', '==', CU.uid)
-      .where('read', '==', true)
+async function clearReadNotifications(){
+  if(!confirm('مسح جميع الإشعارات المقروءة؟'))return;
+  try{
+    const snap=await db.collection('notifications')
+      .where('recipientId','==',CU.uid)
+      .where('read','==',true)
       .get();
-    
-    if (snap.empty) { toast('لا توجد إشعارات مقروءة'); return; }
-    
-    const batch = db.batch();
-    snap.forEach(d => batch.delete(d.ref));
+    if(snap.empty){toast('لا توجد إشعارات مقروءة');return}
+    const batch=db.batch();
+    snap.forEach(d=>batch.delete(d.ref));
     await batch.commit();
-    
-    toast('🗑️ تم مسح ' + snap.size + ' إشعار');
+    toast('🗑️ تم مسح '+snap.size+' إشعار');
     await loadNotifications();
-  } catch (e) {
-    toast('❌ ' + e.message, true);
-  }
+  }catch(e){toast('❌ '+e.message,true)}
 }
 
-// Helper: send notification to a user
-async function sendNotification(recipientId, title, body, type = 'system') {
-  try {
+async function testNotification(){
+  try{
+    toast('⏳ جارٍ الإرسال...');
     await db.collection('notifications').add({
-      recipientId,
-      title,
-      body,
-      type,
-      read: false,
-      createdBy: CU.uid,
-      createdByName: CD.fullName,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      recipientId:CU.uid,
+      title:'اختبار',
+      body:'إشعار تجريبي — '+new Date().toLocaleTimeString('ar-EG'),
+      type:'system',
+      read:false,
+      createdBy:CU.uid,
+      createdByName:CD.fullName||CD.name||'النظام',
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-  } catch (e) {
-    console.warn('sendNotification:', e);
-  }
+    toast('✅ تم الإرسال');
+    setTimeout(()=>loadNotifications(),500);
+  }catch(e){toast('❌ '+e.message,true)}
 }
 
-// Setup real-time listener for badge
-function setupNotifListener() {
-  if (notificationsUnsubscribe) notificationsUnsubscribe();
-  if (!CU) return;
-  
-  try {
-    notificationsUnsubscribe = db.collection('notifications')
-      .where('recipientId', '==', CU.uid)
-      .where('read', '==', false)
-      .onSnapshot(snap => {
+async function sendNotification(recipientId,title,body,type='system'){
+  try{
+    await db.collection('notifications').add({
+      recipientId,title,body,type,read:false,
+      createdBy:CU.uid,
+      createdByName:CD.fullName||CD.name,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){console.warn('sendNotification:',e)}
+}
+
+function setupNotifListener(){
+  if(notificationsUnsubscribe){notificationsUnsubscribe();notificationsUnsubscribe=null}
+  if(!CU)return;
+  try{
+    notificationsUnsubscribe=db.collection('notifications')
+      .where('recipientId','==',CU.uid)
+      .where('read','==',false)
+      .onSnapshot(snap=>{
         updateNotifBadge(snap.size);
-        if (document.getElementById('sec-notifications')?.classList.contains('active')) {
+        if(document.getElementById('sec-notifications')?.classList.contains('active')){
           loadNotifications();
         }
-      }, err => console.warn('notif listener:', err));
-  } catch (e) {
-    console.warn('setupNotifListener:', e);
-  }
+      },err=>console.warn('notif listener:',err));
+  }catch(e){console.warn('setupNotifListener:',e)}
 }
 </script>
 </body>
