@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#C5A059"><script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-app-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-firestore-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -1519,7 +1520,7 @@ auth.onAuthStateChanged(async user=>{
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.add('active');
 const userNameEl = document.getElementById('userName');
-if(userNameEl) userNameEl.textContent = CD.fullName;      document.getElementById('userName').textContent=CD.fullName;
+if(userNameEl) userNameEl.textContent = CD.fullName;
       document.getElementById('clinicInfo').innerHTML=CD.clinicName?`🏥 ${esc(CD.clinicName)} • كود: <b>${esc(CD.clinicId||'')}</b>`:'الحساب: '+(CD.role==='owner'?'👑 مالك':CD.role||'');
       await Promise.all([loadPatients(),loadAppointments(),loadLab(),loadSpecialists(),loadBilling()]);
       updateDashboard();
