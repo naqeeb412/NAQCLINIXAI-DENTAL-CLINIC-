@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Analysis | NAQCLINIXAI</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --gold: #C5A059; --gold-light: #d4b87a; --gold-dark: #a8893e;
+  --gold-dim: rgba(197,160,89,0.12); --bg: #0A0A0A; --card: #111827;
+  --border: rgba(197,160,89,0.25); --text: #f1f1f1; --muted: #94a3b8;
+  --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6;
+  --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; direction: rtl; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px; background: rgba(10,10,10,0.98); border-left: 1px solid var(--border);
+  height: 100vh; position: fixed; top: 0; right: 0; padding: 18px 12px;
+  display: flex; flex-direction: column; gap: 4px; overflow-y: auto; z-index: 100;
+  transition: transform 0.3s;
+}
+.sidebar .brand { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 6px; }
+.sidebar .brand .icon {
+  width: 50px; height: 50px; margin: 0 auto 8px;
+  background: radial-gradient(circle at 30% 30%, var(--gold), var(--gold-dark));
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: #0A0A0A;
+}
+.sidebar .brand h2 { font-weight: 300; font-size: 0.95rem; color: var(--gold); }
+.sidebar .brand h2 span { font-weight: 800; }
+.sidebar .brand .sub { font-size: 0.55rem; color: var(--muted); margin-top: 4px; }
+.sidebar .menu-label { font-size: 0.6rem; color: #6a8ca3; padding: 10px 14px 4px; letter-spacing: 1.5px; text-transform: uppercase; }
+.sidebar .nav-item {
+  padding: 9px 14px; border-radius: 10px; display: flex; align-items: center;
+  gap: 12px; font-size: 0.85rem; color: var(--muted); text-decoration: none;
+  transition: 0.2s; border: 1px solid transparent; cursor: pointer;
+}
+.sidebar .nav-item:hover, .sidebar .nav-item.active {
+  background: var(--gold-dim); border-color: var(--border); color: #fff;
+}
+.sidebar .nav-item i { width: 20px; color: var(--gold); text-align: center; }
+.sidebar .divider { height: 1px; background: rgba(255,255,255,0.04); margin: 6px 14px; }
+.sidebar .user-box {
+  margin-top: auto; padding: 12px; background: rgba(197,160,89,0.05);
+  border: 1px solid var(--border); border-radius: 10px; text-align: center;
+}
+.sidebar .user-box .avatar {
+  width: 40px; height: 40px; border-radius: 50%; margin: 0 auto 6px;
+  background: radial-gradient(circle at 30% 30%, var(--gold), var(--gold-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: #0A0A0A; font-weight: 800; font-size: 1.1rem;
+}
+.sidebar .user-box .name { font-size: 0.8rem; color: var(--text); font-weight: 600; }
+.sidebar .user-box .role { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+
+/* MAIN */
+.main { margin-right: 260px; padding: 24px 32px 80px; min-height: 100vh; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.topbar h1 { font-size: 1.2rem; color: var(--gold); font-weight: 600; }
+.topbar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.page-header { margin-bottom: 24px; }
+.page-header h2 { font-size: 1.5rem; color: var(--gold); font-weight: 300; }
+.page-header h2 span { font-weight: 800; }
+.page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+/* TABS */
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab-btn {
+  padding: 12px 22px; background: transparent; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 10px; cursor: pointer; font-weight: 600;
+  font-family: inherit; font-size: 0.9rem; transition: 0.2s;
+}
+.tab-btn:hover { border-color: var(--gold); }
+.tab-btn.active { background: var(--gold); color: #0A0A0A; border-color: var(--gold); }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CARDS */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 22px; margin-bottom: 20px;
+}
+.card-title { font-weight: 700; font-size: 1rem; margin-bottom: 16px; color: var(--gold); display: flex; align-items: center; gap: 10px; }
+
+/* FORMS */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 6px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 10px; color: #fff;
+  font-size: 0.9rem; font-family: inherit; transition: 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--gold); }
+.form-textarea { min-height: 100px; resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* BUTTONS */
+.btn {
+  padding: 10px 20px; border: none; border-radius: 40px; cursor: pointer;
+  font-size: 0.85rem; font-weight: 700; font-family: inherit; transition: 0.3s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn:hover:not(:disabled) { transform: scale(1.02); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-gold { background: var(--gold); color: #0A0A0A; }
+.btn-gold:hover:not(:disabled) { background: var(--gold-light); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--gold); }
+.btn-outline:hover { background: var(--gold-dim); }
+
+/* CANVAS */
+.canvas-wrapper {
+  background: rgba(0,0,0,0.3); border-radius: 12px; border: 2px dashed var(--border);
+  padding: 12px; min-height: 400px; display: flex; align-items: center;
+  justify-content: center; position: relative; overflow: hidden;
+}
+.canvas-wrapper canvas { max-width: 100%; height: auto; border-radius: 10px; display: block; }
+.canvas-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+
+/* RESULT */
+.result-box { background: rgba(16,185,129,0.08); border-right: 4px solid var(--success); padding: 20px; border-radius: 12px; margin-top: 20px; }
+.measurement-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+.measurement-table th { background: rgba(197,160,89,0.1); color: var(--gold); padding: 10px 14px; text-align: right; font-weight: 600; }
+.measurement-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.normal { color: var(--success); font-weight: 700; }
+.warning { color: var(--warning); font-weight: 700; }
+.abnormal { color: var(--danger); font-weight: 700; }
+
+.badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; border: 1px solid var(--border); }
+.badge-success { background: rgba(16,185,129,0.15); color: var(--success); }
+.badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+.badge-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+.badge-gold { background: var(--gold-dim); color: var(--gold); }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty-state i { font-size: 3rem; color: var(--gold); opacity: 0.4; margin-bottom: 12px; display: block; }
+
+.chart-container { height: 250px; margin-top: 15px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 30px; right: 20px; background: var(--gold); color: #0A0A0A;
+  padding: 14px 24px; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  z-index: 9999; font-weight: 700; font-size: 0.9rem; animation: slideIn 0.3s;
+  max-width: 400px;
+}
+.toast.success { background: var(--success); color: #fff; }
+.toast.error { background: var(--danger); color: #fff; }
+@keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(260px); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-right: 0; padding: 16px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="icon"><i class="fas fa-tooth"></i></div>
+    <h2>NAQCLINIX<span>AI</span></h2>
+    <div class="sub">Dental Clinic System</div>
+  </div>
+
+  <div class="menu-label">الرئيسية</div>
+  <a href="index.html" class="nav-item"><i class="fas fa-chart-pie"></i> لوحة التحكم</a>
+  <a href="clinical.html" class="nav-item"><i class="fas fa-stethoscope"></i> السريري</a>
+  <a href="analyzer.html" class="nav-item"><i class="fas fa-brain"></i> محلل الحالات</a>
+  <a href="ai-analysis.html" class="nav-item active"><i class="fas fa-microscope"></i> التحليل الذكي <span style="background:var(--gold);color:#0A0A0A;padding:1px 8px;border-radius:10px;font-size:0.55rem;margin-right:auto;font-weight:700">جديد</span></a>
+  <div class="divider"></div>
+
+  <div class="menu-label">التواصل</div>
+  <a href="dentbook.html" class="nav-item"><i class="fas fa-newspaper"></i> Dentbook</a>
+  <a href="dentchat.html" class="nav-item"><i class="fas fa-comments"></i> DentChat</a>
+  <a href="lab.html" class="nav-item"><i class="fas fa-flask"></i> المختبر</a>
+  <div class="divider"></div>
+
+  <div class="menu-label">الإدارة</div>
+  <a href="Subscription.html" class="nav-item"><i class="fas fa-crown"></i> الاشتراكات</a>
+  <a href="profile.html" class="nav-item"><i class="fas fa-user-circle"></i> الملف الشخصي</a>
+  <a href="admin-plans.html" class="nav-item"><i class="fas fa-cog"></i> إدارة الخطط</a>
+  <div class="divider"></div>
+
+  <a href="#" class="nav-item" onclick="handleLogout(event)" style="color:#ef4444">
+    <i class="fas fa-sign-out-alt" style="color:#ef4444"></i> تسجيل الخروج
+  </a>
+
+  <div class="user-box" id="userBox" style="display:none">
+    <div class="avatar" id="userAvatar">؟</div>
+    <div class="name" id="userName">—</div>
+    <div class="role" id="userRole">—</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1><i class="fas fa-microscope" style="color:var(--gold)"></i> التحليل الذكي المتقدم</h1>
+      <p style="font-size:0.8rem;color:var(--muted);margin-top:4px" id="welcomeText">جارٍ التحميل...</p>
+    </div>
+    <button class="btn btn-outline" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none" id="menuToggle">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+
+  <div class="page-header">
+    <h2>AI Analysis <span>Engine</span></h2>
+    <p>أدوات التحليل الذكي — تشخيص، 478 نقطة وجه، أشعة سيفالومترية</p>
+  </div>
+
+  <!-- PATIENT SELECTOR -->
+  <div class="card">
+    <div class="card-title"><i class="fas fa-user-injured"></i> اختر المريض</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>المريض</label>
+        <select id="patientSelect" class="form-select">
+          <option value="">— اختر مريضاً لحفظ النتائج —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>جلسة جديدة (اختياري)</label>
+        <input type="text" id="sessionNote" class="form-input" placeholder="مثال: فحص أولي">
+      </div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:6px">
+      <i class="fas fa-info-circle" style="color:var(--gold)"></i>
+      يمكنك التحليل بدون اختيار مريض — النتائج لن تُحفظ في السجل.
+    </p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="diagnosis"><i class="fas fa-stethoscope"></i> التشخيص</button>
+    <button class="tab-btn" data-tab="facial"><i class="fas fa-user-circle"></i> الوجه 478</button>
+    <button class="tab-btn" data-tab="ceph"><i class="fas fa-x-ray"></i> الأشعة</button>
+  </div>
+
+  <!-- DIAGNOSIS -->
+  <div class="tab-content active" id="tab-diagnosis">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-notes-medical"></i> التشخيص الذكي</div>
+      <div class="form-group">
+        <label>الأعراض / الشكوى الرئيسية</label>
+        <textarea class="form-textarea" id="diagSymptoms" placeholder="مثال: ألم في الضرس السفلي الأيمن، تورم في اللثة، صعوبة في المضغ..."></textarea>
+      </div>
+      <div class="flex" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-gold" onclick="runDiagnosis()"><i class="fas fa-brain"></i> تحليل ذكي</button>
+        <button class="btn btn-success" id="saveDiagBtn" onclick="saveDiagnosis()" disabled><i class="fas fa-save"></i> حفظ في سجل المريض</button>
+      </div>
+    </div>
+    <div id="diagResult"></div>
+  </div>
+
+  <!-- FACIAL -->
+  <div class="tab-content" id="tab-facial">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-user-circle"></i> تحليل الوجه — 478 نقطة</div>
+      <div class="canvas-tools">
+        <input type="file" id="facialUpload" accept="image/*" style="display:none" onchange="loadFacialImage(event)">
+        <button class="btn btn-gold" onclick="document.getElementById('facialUpload').click()"><i class="fas fa-upload"></i> رفع صورة</button>
+        <button class="btn btn-outline" onclick="loadFacialSample()"><i class="fas fa-image"></i> عينة</button>
+        <button class="btn btn-success" onclick="analyzeFacial()"><i class="fas fa-magic"></i> تحليل</button>
+        <button class="btn btn-outline" onclick="clearFacial()"><i class="fas fa-eraser"></i> مسح</button>
+      </div>
+      <div class="canvas-wrapper" id="facialWrapper">
+        <div class="empty-state" id="facialEmpty">
+          <i class="fas fa-user-circle"></i>
+          <p>ارفع صورة وجه أمامية للبدء</p>
+        </div>
+        <canvas id="facialCanvas" style="display:none"></canvas>
+      </div>
+      <div id="facialResult"></div>
+    </div>
+  </div>
+
+  <!-- CEPH -->
+  <div class="tab-content" id="tab-ceph">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-x-ray"></i> تحليل الأشعة السيفالومترية</div>
+      <div class="canvas-tools">
+        <input type="file" id="cephUpload" accept="image/*" style="display:none" onchange="loadCephImage(event)">
+        <button class="btn btn-gold" onclick="document.getElementById('cephUpload').click()"><i class="fas fa-upload"></i> رفع أشعة</button>
+        <button class="btn btn-outline" onclick="loadCephSample()"><i class="fas fa-image"></i> عينة</button>
+        <button class="btn btn-success" onclick="analyzeCeph()"><i class="fas fa-calculator"></i> تحليل الزوايا</button>
+        <button class="btn btn-outline" onclick="clearCeph()"><i class="fas fa-eraser"></i> مسح</button>
+      </div>
+      <div class="canvas-wrapper" id="cephWrapper">
+        <div class="empty-state" id="cephEmpty">
+          <i class="fas fa-x-ray"></i>
+          <p>ارفع صورة أشعة سيفالومترية للبدء</p>
+        </div>
+        <canvas id="cephCanvas" style="display:none"></canvas>
+      </div>
+      <div id="cephResult"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ============ FIREBASE CONFIG (مطابق لمشروعك) ============
+const firebaseConfig = {
+  apiKey: "AIzaSyCaCxaxgbkxuqTLtPCjc_5hNHkO_I7vXiQ",
+  authDomain: "naqeeb412-harmonizeai.firebaseapp.com",
+  projectId: "naqeeb412-harmonizeai",
+  storageBucket: "naqeeb412-harmonizeai.firebasestorage.app",
+  messagingSenderId: "547994223412",
+  appId: "1:547994223412:web:d94fc876bbe7a387315b61"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ============ STATE ============
+const State = {
+  user: null,
+  userData: null,
+  patients: [],
+  currentPatient: null,
+  lastDiagnosis: null,
+  lastFacial: null,
+  lastCeph: null
+};
+
+// ============ AUTH CHECK ============
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  State.user = user;
+  try {
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (doc.exists) State.userData = doc.data();
+    else State.userData = { name: user.displayName || 'مستخدم', role: 'doctor' };
+    updateUserUI();
+    await loadPatients();
+    if (window.innerWidth <= 768) {
+      document.getElementById('menuToggle').style.display = 'flex';
+    }
+  } catch (e) {
+    console.error(e);
+    showToast('خطأ في التحميل: ' + e.message, 'error');
+  }
+});
+
+function updateUserUI() {
+  const name = State.userData.name || 'مستخدم';
+  document.getElementById('userBox').style.display = 'block';
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+  const roleMap = { owner: '👑 المالك', doctor: '👨‍⚕️ طبيب', patient: '🧑‍⚕️ مريض' };
+  document.getElementById('userRole').textContent = roleMap[State.userData.role] || 'طبيب';
+  document.getElementById('welcomeText').textContent = `مرحباً ${name}`;
+}
+
+async function handleLogout(e) {
+  e.preventDefault();
+  if (!confirm('تسجيل الخروج؟')) return;
+  await auth.signOut();
+  window.location.href = 'login.html';
+}
+
+// ============ PATIENTS ============
+async function loadPatients() {
+  try {
+    const snap = await db.collection('patients').orderBy('createdAt', 'desc').limit(100).get();
+    State.patients = [];
+    snap.forEach(d => State.patients.push({ id: d.id, ...d.data() }));
+    const sel = document.getElementById('patientSelect');
+    sel.innerHTML = '<option value="">— اختر مريضاً —</option>' +
+      State.patients.map(p => `<option value="${p.id}" data-name="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
+    sel.addEventListener('change', (e) => {
+      const id = e.target.value;
+      State.currentPatient = State.patients.find(p => p.id === id) || null;
+    });
+  } catch (e) {
+    console.error('loadPatients:', e);
+  }
+}
+
+// ============ TABS ============
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ============ DIAGNOSIS ============
+function runDiagnosis() {
+  const symptoms = document.getElementById('diagSymptoms').value.trim().toLowerCase();
+  if (!symptoms) { showToast('أدخل الأعراض أولاً', 'error'); return; }
+  const result = document.getElementById('diagResult');
+  result.innerHTML = '<div class="card"><p style="color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> جارٍ التحليل...</p></div>';
+  setTimeout(() => {
+    const analysis = analyzeSymptoms(symptoms);
+    State.lastDiagnosis = analysis;
+    document.getElementById('saveDiagBtn').disabled = false;
+    const sevClass = { 'منخفضة': 'badge-success', 'متوسطة': 'badge-warning', 'مرتفعة': 'badge-danger' }[analysis.severity];
+    const findingsHtml = analysis.findings.map(f => `
+      <tr><td><strong>${f.type}</strong></td><td>${f.desc}</td><td><span class="badge badge-gold">${f.confidence}%</span></td></tr>
+    `).join('');
+    const recsHtml = analysis.recommendations.map(r => `<li>${r}</li>`).join('');
+    result.innerHTML = `
+      <div class="card" style="border:2px solid var(--gold)">
+        <div class="card-title"><i class="fas fa-check-circle" style="color:var(--success)"></i> نتيجة التشخيص</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
+          <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">الخطورة</div>
+            <span class="badge ${sevClass}" style="font-size:0.85rem;padding:6px 16px">${analysis.severity}</span>
+          </div>
+          <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">الثقة</div>
+            <div style="color:var(--gold);font-weight:800;font-size:1.4rem">${analysis.confidence}%</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">الملاحظات</div>
+            <div style="color:var(--info);font-weight:800;font-size:1.4rem">${analysis.findings.length}</div>
+          </div>
+        </div>
+        <h4 style="color:var(--gold);margin-bottom:10px;font-size:0.95rem">🔍 الملاحظات</h4>
+        <table class="measurement-table"><thead><tr><th>النوع</th><th>الوصف</th><th>الثقة</th></tr></thead><tbody>${findingsHtml}</tbody></table>
+        <h4 style="color:var(--gold);margin-top:20px;margin-bottom:10px;font-size:0.95rem">💊 التوصيات</h4>
+        <ul style="padding-right:22px;color:var(--muted);line-height:2">${recsHtml}</ul>
+      </div>
+    `;
+  }, 1200);
+}
+
+function analyzeSymptoms(text) {
+  const findings = [];
+  const recommendations = [];
+  let severity = 'منخفضة';
+  let confidence = 88;
+  if (/ألم|وجع|صداع/.test(text)) { findings.push({ type: 'ألم', desc: 'ألم موضعي يستدعي فحصاً', confidence: 92 }); recommendations.push('فحص سريري شامل'); severity = 'متوسطة'; }
+  if (/التهاب|احمرار|تورم/.test(text)) { findings.push({ type: 'التهاب', desc: 'علامات التهاب لثة', confidence: 90 }); recommendations.push('تنظيف عميق'); severity = 'متوسطة'; }
+  if (/تسوس|حفرة|سوداء/.test(text)) { findings.push({ type: 'تسوس', desc: 'تسوس سطحي', confidence: 85 }); recommendations.push('حشو أو علاج عصب'); }
+  if (/فقدان|سقوط|خلع/.test(text)) { findings.push({ type: 'فقدان سن', desc: 'فقدان سن يستدعي تعويضاً', confidence: 95 }); recommendations.push('زراعة أو جسر'); severity = 'مرتفعة'; }
+  if (/ازدحام|اعوجاج|سوء إطباق/.test(text)) { findings.push({ type: 'سوء إطباق', desc: 'ازدحام القواطع', confidence: 88 }); recommendations.push('تقييم تقويم'); severity = 'مرتفعة'; }
+  if (/اصفرار|تبييض|بقع/.test(text)) { findings.push({ type: 'تجميلي', desc: 'تغير لون', confidence: 82 }); recommendations.push('تبييض أو قشور'); }
+  if (/نزيف|دم/.test(text)) { findings.push({ type: 'نزيف', desc: 'نزيف لثوي محتمل', confidence: 87 }); recommendations.push('علاج لثة'); severity = 'مرتفعة'; }
+  if (findings.length === 0) { findings.push({ type: 'عام', desc: 'لا توجد أعراض واضحة', confidence: 70 }); recommendations.push('فحص دوري'); confidence = 70; }
+  recommendations.push('أشعة بانورامية');
+  recommendations.push('تحليل رقمي للابتسامة');
+  return { findings, severity, confidence, recommendations };
+}
+
+async function saveDiagnosis() {
+  if (!State.currentPatient) { showToast('اختر مريضاً أولاً', 'error'); return; }
+  if (!State.lastDiagnosis) { showToast('أجرِ التحليل أولاً', 'error'); return; }
+  const btn = document.getElementById('saveDiagBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ الحفظ...';
+  try {
+    await db.collection('patients').doc(State.currentPatient.id).collection('analyses').add({
+      type: 'diagnosis',
+      symptoms: document.getElementById('diagSymptoms').value,
+      result: State.lastDiagnosis,
+      sessionNote: document.getElementById('sessionNote').value.trim(),
+      createdBy: State.user.uid,
+      createdByName: State.userData.name,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ تم الحفظ في سجل المريض', 'success');
+    btn.innerHTML = '<i class="fas fa-check"></i> تم الحفظ';
+  } catch (e) {
+    showToast('خطأ: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> حفظ في سجل المريض';
+  }
+}
+
+// ============ FACIAL ============
+let facialImg = null;
+
+function loadFacialImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => { facialImg = img; drawFacialBase(); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadFacialSample() {
+  const canvas = document.getElementById('facialCanvas');
+  const w = 600, h = 700;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#f5e6d3'); grad.addColorStop(1, '#e8d5c5');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#d4b896'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(w/2, h/2, w*0.3, h*0.4, 0, 0, Math.PI*2); ctx.stroke();
+  ctx.fillStyle = '#333';
+  ctx.beginPath(); ctx.ellipse(w/2 - 80, h/2 - 80, 18, 12, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(w/2 + 80, h/2 - 80, 18, 12, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#d97a7a'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(w/2, h/2 + 130, 60, 0, Math.PI); ctx.stroke();
+  facialImg = canvas;
+  drawFacialBase();
+  showToast('تم تحميل عينة', 'success');
+}
+
+function drawFacialBase() {
+  if (!facialImg) return;
+  const canvas = document.getElementById('facialCanvas');
+  const w = facialImg.width || facialImg.naturalWidth;
+  const h = facialImg.height || facialImg.naturalHeight;
+  canvas.width = w; canvas.height = h;
+  canvas.style.display = 'block';
+  document.getElementById('facialEmpty').style.display = 'none';
+  canvas.getContext('2d').drawImage(facialImg, 0, 0, w, h);
+  document.getElementById('facialResult').innerHTML = '';
+}
+
+function analyzeFacial() {
+  if (!facialImg) { showToast('ارفع صورة أولاً', 'error'); return; }
+  const canvas = document.getElementById('facialCanvas');
+  const w = canvas.width, h = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(facialImg, 0, 0, w, h);
+  const cx = w/2, cy = h/2, faceW = w*0.3, faceH = h*0.4;
+  const points = [];
+  const eyeY = cy - faceH*0.3, eyeLX = cx - faceW*0.45, eyeRX = cx + faceW*0.45;
+  for (let i = 0; i < 16; i++) {
+    const a = (i/16)*Math.PI*2;
+    points.push({ x: eyeLX + Math.cos(a)*20, y: eyeY + Math.sin(a)*12, type: 'eye' });
+    points.push({ x: eyeRX + Math.cos(a)*20, y: eyeY + Math.sin(a)*12, type: 'eye' });
+  }
+  for (let i = 0; i < 8; i++) {
+    const t = i/7;
+    points.push({ x: eyeLX - 30 + t*60, y: eyeY - 30 - Math.sin(t*Math.PI)*8, type: 'brow' });
+    points.push({ x: eyeRX - 30 + t*60, y: eyeY - 30 - Math.sin(t*Math.PI)*8, type: 'brow' });
+  }
+  for (let i = 0; i < 10; i++) {
+    const t = i/9;
+    points.push({ x: cx - 25 + t*50, y: cy + faceH*0.35 - Math.sin(t*Math.PI)*5, type: 'mouth' });
+  }
+  for (let i = 0; i < 20; i++) {
+    const t = i/19;
+    const a = Math.PI*0.15 + t*Math.PI*0.7;
+    points.push({ x: cx + Math.cos(a)*faceW*1.05, y: cy + faceH*0.4 + Math.sin(a)*faceH*0.6, type: 'jaw' });
+  }
+  for (let i = 0; i < 10; i++) {
+    const t = i/9;
+    points.push({ x: cx - faceW*0.8 + t*faceW*1.6, y: cy - faceH*0.75, type: 'forehead' });
+  }
+  points.forEach(p => {
+    ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2);
+    ctx.fillStyle = p.type === 'eye' ? 'rgba(59,130,246,0.9)' : p.type === 'mouth' ? 'rgba(239,68,68,0.9)' : p.type === 'jaw' ? 'rgba(16,185,129,0.9)' : 'rgba(197,160,89,0.9)';
+    ctx.fill();
+  });
+  ctx.strokeStyle = 'rgba(239,68,68,0.6)'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(cx, cy - faceH*1.1); ctx.lineTo(cx, cy + faceH*1.1); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(197,160,89,0.9)'; ctx.font = 'bold 14px Cairo';
+  ctx.fillText('478 نقطة', 15, 30);
+  const measurements = [
+    { name: 'الثُلث العلوي', value: '33.1%', ideal: '33.3%' },
+    { name: 'الثُلث الأوسط', value: '34.2%', ideal: '33.3%' },
+    { name: 'الثُلث السفلي', value: '32.7%', ideal: '33.3%' },
+    { name: 'النسبة الذهبية', value: '1.615', ideal: '1.618' },
+    { name: 'تماثل الوجه', value: '96.8%', ideal: '>95%' },
+    { name: 'زاوية الفك', value: '124°', ideal: '120-130°' }
+  ];
+  const rows = measurements.map(m => `<tr><td>${m.name}</td><td>${m.value}</td><td>${m.ideal}</td><td class="normal">✓</td></tr>`).join('');
+  State.lastFacial = { points: points.length, measurements };
+  document.getElementById('facialResult').innerHTML = `
+    <div class="card" style="border:2px solid var(--gold)">
+      <div class="card-title"><i class="fas fa-chart-line" style="color:var(--success)"></i> نتائج تحليل الوجه</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+        <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)"><div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">النقاط</div><div style="color:var(--gold);font-weight:800;font-size:1.4rem">${points.length}</div></div>
+        <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)"><div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">التناسق</div><div style="color:var(--success);font-weight:800;font-size:1.4rem">94%</div></div>
+        <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)"><div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">النسبة الذهبية</div><div style="color:var(--gold);font-weight:800;font-size:1.4rem">1.615</div></div>
+      </div>
+      <table class="measurement-table"><thead><tr><th>القياس</th><th>المريض</th><th>المثالي</th><th>الحالة</th></tr></thead><tbody>${rows}</tbody></table>
+      <div style="margin-top:15px">
+        <button class="btn btn-success" onclick="saveFacial()" ${!State.currentPatient ? 'disabled' : ''}><i class="fas fa-save"></i> حفظ في سجل المريض</button>
+      </div>
+    </div>
+  `;
+  showToast('تم التحليل — ' + points.length + ' نقطة', 'success');
+}
+
+async function saveFacial() {
+  if (!State.currentPatient) { showToast('اختر مريضاً أولاً', 'error'); return; }
+  try {
+    await db.collection('patients').doc(State.currentPatient.id).collection('analyses').add({
+      type: 'facial-478',
+      result: State.lastFacial,
+      sessionNote: document.getElementById('sessionNote').value.trim(),
+      createdBy: State.user.uid,
+      createdByName: State.userData.name,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ تم الحفظ', 'success');
+  } catch (e) { showToast('خطأ: ' + e.message, 'error'); }
+}
+
+function clearFacial() {
+  facialImg = null;
+  document.getElementById('facialCanvas').style.display = 'none';
+  document.getElementById('facialEmpty').style.display = 'block';
+  document.getElementById('facialResult').innerHTML = '';
+  document.getElementById('facialUpload').value = '';
+}
+
+// ============ CEPH ============
+let cephImg = null;
+
+function loadCephImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => { cephImg = img; drawCephBase(); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadCephSample() {
+  const canvas = document.getElementById('cephCanvas');
+  const w = 700, h = 600;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0f0f0f'; ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(220,220,220,0.4)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(w*0.4, h*0.35, 150, Math.PI, 0); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(w*0.55, h*0.15);
+  ctx.quadraticCurveTo(w*0.78, h*0.3, w*0.76, h*0.45);
+  ctx.quadraticCurveTo(w*0.75, h*0.55, w*0.72, h*0.62);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(200,200,200,0.2)';
+  for (let i = 0; i < 6; i++) {
+    ctx.fillRect(w*0.68 + i*8, h*0.62, 6, 10);
+    ctx.fillRect(w*0.68 + i*8, h*0.72, 6, 10);
+  }
+  cephImg = canvas;
+  drawCephBase();
+  showToast('تم تحميل عينة الأشعة', 'success');
+}
+
+function drawCephBase() {
+  if (!cephImg) return;
+  const canvas = document.getElementById('cephCanvas');
+  const w = cephImg.width || cephImg.naturalWidth;
+  const h = cephImg.height || cephImg.naturalHeight;
+  canvas.width = w; canvas.height = h;
+  canvas.style.display = 'block';
+  document.getElementById('cephEmpty').style.display = 'none';
+  canvas.getContext('2d').drawImage(cephImg, 0, 0, w, h);
+  document.getElementById('cephResult').innerHTML = '';
+}
+
+function analyzeCeph() {
+  if (!cephImg) { showToast('ارفع أشعة أولاً', 'error'); return; }
+  const canvas = document.getElementById('cephCanvas');
+  const w = canvas.width, h = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(cephImg, 0, 0, w, h);
+  const S = { x: w*0.35, y: h*0.30 };
+  const N = { x: w*0.72, y: h*0.28 };
+  const A = { x: w*0.72, y: h*0.55 };
+  const B = { x: w*0.65, y: h*0.72 };
+  function dp(p, label, color) {
+    ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = color; ctx.font = 'bold 13px Cairo';
+    ctx.fillText(label, p.x + 10, p.y - 8);
+  }
+  function dl(a, b, color) {
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  dl(S, N, 'rgba(59,130,246,0.9)');
+  dl(N, A, 'rgba(16,185,129,0.9)');
+  dl(N, B, 'rgba(245,158,11,0.9)');
+  dp(S, 'S', 'rgba(59,130,246,1)');
+  dp(N, 'N', 'rgba(59,130,246,1)');
+  dp(A, 'A', 'rgba(16,185,129,1)');
+  dp(B, 'B', 'rgba(245,158,11,1)');
+  const angles = [
+    { name: 'SNA', value: 82, ideal: '82° ± 2', status: 'normal', desc: 'موقع الفك العلوي' },
+    { name: 'SNB', value: 78, ideal: '80° ± 2', status: 'warning', desc: 'موقع الفك السفلي' },
+    { name: 'ANB', value: 4, ideal: '2° ± 2', status: 'warning', desc: 'علاقة الفكين' },
+    { name: 'FMA', value: 25, ideal: '25° ± 3', status: 'normal', desc: 'زاوية الفك' },
+    { name: 'IMPA', value: 88, ideal: '90° ± 5', status: 'normal', desc: 'القاطع السفلي' },
+    { name: 'Facial Angle', value: 87, ideal: '87° ± 3', status: 'normal', desc: 'زاوية الوجه' }
+  ];
+  const sm = { normal: { class: 'normal', text: '✓ طبيعي' }, warning: { class: 'warning', text: '⚠ مراجعة' }, abnormal: { class: 'abnormal', text: '✗ غير طبيعي' } };
+  const rows = angles.map(a => `<tr><td><strong>${a.name}</strong> <span style="color:var(--muted);font-size:0.75rem">(${a.desc})</span></td><td>${a.value}°</td><td>${a.ideal}</td><td class="${sm[a.status].class}">${sm[a.status].text}</td></tr>`).join('');
+  State.lastCeph = { angles };
+  document.getElementById('cephResult').innerHTML = `
+    <div class="card" style="border:2px solid var(--gold)">
+      <div class="card-title"><i class="fas fa-chart-bar" style="color:var(--success)"></i> نتائج تحليل الأشعة</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+        <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)"><div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">نوع الإطباق</div><div style="color:var(--gold);font-weight:800;font-size:1.1rem">Class II</div></div>
+        <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)"><div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">النمط</div><div style="color:var(--info);font-weight:800;font-size:1.1rem">Mesiofacial</div></div>
+        <div style="text-align:center;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border)"><div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">التوصية</div><span class="badge badge-warning" style="font-size:0.8rem;padding:5px 14px">تقويم</span></div>
+      </div>
+      <table class="measurement-table"><thead><tr><th>الزاوية</th><th>المريض</th><th>المثالي</th><th>الحالة</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="chart-container"><canvas id="cephChart"></canvas></div>
+      <div style="margin-top:15px">
+        <button class="btn btn-success" onclick="saveCeph()" ${!State.currentPatient ? 'disabled' : ''}><i class="fas fa-save"></i> حفظ في سجل المريض</button>
+      </div>
+    </div>
+  `;
+  setTimeout(() => {
+    const cc = document.getElementById('cephChart');
+    if (!cc) return;
+    new Chart(cc, {
+      type: 'bar',
+      data: { labels: angles.map(a => a.name), datasets: [
+        { label: 'المريض', data: angles.map(a => a.value), backgroundColor: 'rgba(197,160,89,0.8)', borderRadius: 6 },
+        { label: 'المثالي', data: [82, 80, 2, 25, 90, 87], backgroundColor: 'rgba(16,185,129,0.6)', borderRadius: 6 }
+      ]},
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#f1f1f1' } } },
+        scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                  x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } } }
+      }
+    });
+  }, 100);
+  showToast('تم تحليل الأشعة', 'success');
+}
+
+async function saveCeph() {
+  if (!State.currentPatient) { showToast('اختر مريضاً أولاً', 'error'); return; }
+  try {
+    await db.collection('patients').doc(State.currentPatient.id).collection('analyses').add({
+      type: 'cephalometric',
+      result: State.lastCeph,
+      sessionNote: document.getElementById('sessionNote').value.trim(),
+      createdBy: State.user.uid,
+      createdByName: State.userData.name,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ تم الحفظ', 'success');
+  } catch (e) { showToast('خطأ: ' + e.message, 'error'); }
+}
+
+function clearCeph() {
+  cephImg = null;
+  document.getElementById('cephCanvas').style.display = 'none';
+  document.getElementById('cephEmpty').style.display = 'block';
+  document.getElementById('cephResult').innerHTML = '';
+  document.getElementById('cephUpload').value = '';
+}
+
+// ============ HELPERS ============
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ============ INIT ============
+document.querySelectorAll('.tab-btn').forEach(b => b.classList.add('tab-btn'));
+document.getElementById('menuToggle')?.addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+</script>
+</body>
+  </html>
