@@ -756,6 +756,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const OWNER_EMAIL = 'naqclinixai@gmail.com';
 const CATBOX_API = "https://catbox.moe/user/api.php";
+const GEMINI_MODEL = "gemini-3.8-flash";
 
 var CU=null, CD=null;
 var patients=[], appointments=[], billing=[], allUsers=[], posts=[], discussions=[], meetings=[], digitalProducts=[], myOrders=[], subscriptionPlans=[], advertisements=[], notifications=[], friends=[], friendRequests=[];
@@ -882,9 +883,7 @@ auth.onAuthStateChanged(async user=>{
 function showSection(sec){
   const paidSections = ['patients','photography','history','chart','appointments','aiDiagnosis','faceHarmony','dsdStudio','xray','beforeAfter','cadcam','treatmentPlan','materialsGuide','interdisciplinary'];
   const isAdminUser = CD && (CD.role === 'owner' || CD.role === 'admin' || CD.role === 'doctor');
-  if (!isAdminUser && paidSections.includes(sec) && !userSubscription) {
-    toast('🔒 يتطلب اشتراكاً نشطاً', true); return;
-  }
+  if (!isAdminUser && paidSections.includes(sec) && !userSubscription) { toast('🔒 يتطلب اشتراكاً نشطاً', true); return; }
   if (!isAdminUser && userSubscription && paidSections.includes(sec)) {
     const access = userSubscription.sectionsAccess || [];
     if (!access.includes(sec)) { toast('🔒 قسم غير مشمول في باقتك', true); return; }
@@ -922,7 +921,7 @@ function showSection(sec){
 document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.sec)));
 
 // ═══════════════════════════════════════════════════════════════
-// 6. Profile (Avatar, Cover, Bio)
+// 6. Profile
 // ═══════════════════════════════════════════════════════════════
 function loadProfileUI(){
   if(!CD) return;
@@ -1027,7 +1026,7 @@ function populateSelects(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 8. Camera & Photos
+// 8. Camera
 // ═══════════════════════════════════════════════════════════════
 async function startCamera(){
   try{
@@ -1063,7 +1062,7 @@ async function loadPatientPhotos(pid){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 9. Chart (Dental)
+// 9. Chart
 // ═══════════════════════════════════════════════════════════════
 var TOOTH_STATES = ['', 'caries', 'treated', 'crown', 'root', 'rotated', 'implant', 'missing'];
 var TOOTH_INFO = {
@@ -1103,13 +1102,13 @@ async function saveChart(){
 async function saveHistory(){ if(!window._currentPatientId) return; await db.collection('patients').doc(window._currentPatientId).collection('medical').doc('history').set({ chronic: document.getElementById('histChronic').value, allergy: document.getElementById('histAllergy').value }, {merge:true}); toast('✅'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 10. Gemini AI
+// 10. Gemini AI ⭐ تم تحديث الموديل إلى gemini-3.8-flash
 // ═══════════════════════════════════════════════════════════════
 async function callGemini(prompt, imageBase64 = null){
-  if(!geminiKey) throw new Error('أضف مفتاح Gemini');
+  if(!geminiKey) throw new Error('أضف مفتاح Gemini من الإعدادات');
   const parts = [{ text: prompt }];
   if(imageBase64){ const [mime, data] = imageBase64.split(','); parts.push({ inlineData: { mimeType: mime.split(':')[1].split(';')[0], data } }); }
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents: [{ parts }] }) });
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents: [{ parts }] }) });
   const data = await res.json();
   if(data.error) throw new Error(data.error.message);
   return data.candidates[0].content.parts[0].text;
@@ -1159,7 +1158,7 @@ async function runAIDiagnosis(){
         parts.push({ inlineData: { mimeType: mime.split(':')[1].split(';')[0], data } });
       }
     }
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents: [{ parts }] }) });
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents: [{ parts }] }) });
     const data = await res.json();
     if(data.error) throw new Error(data.error.message);
     const reply = data.candidates[0].content.parts[0].text;
@@ -1195,7 +1194,7 @@ function draw468(){ if(!faceImg) return toast('⚠️',true); const c=document.g
 function drawBeautyLines(){ if(!faceImg) return; const c=document.getElementById('faceCanvas'),ctx=c.getContext('2d'); ctx.drawImage(faceImg,0,0); ctx.strokeStyle='rgba(16,185,129,.7)'; ctx.lineWidth=2; [0.33,0.5,0.67].forEach(y=>{ ctx.beginPath(); ctx.moveTo(0,c.height*y); ctx.lineTo(c.width,c.height*y); ctx.stroke(); }); }
 
 // ═══════════════════════════════════════════════════════════════
-// 12. DSD Editor (احترافي)
+// 12. DSD Editor
 // ═══════════════════════════════════════════════════════════════
 var editorCanvas = null, editorCtx = null, editorImage = null;
 var editorTool = 'brush', editorDrawing = false;
@@ -1311,17 +1310,14 @@ function redrawCanvasFromHistory() {
 }
 function undoLastAction() {
   if (editorHistory.length <= 1) return toast('لا يوجد ما يمكن التراجع عنه');
-  editorHistory.pop();
-  redrawCanvasFromHistory();
-  toast('↩️ تم التراجع');
+  editorHistory.pop(); redrawCanvasFromHistory(); toast('↩️');
 }
 function clearAllDrawings() {
   if (!editorImage || !editorCtx) return;
   if (!confirm('مسح كل الرسومات؟')) return;
   editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
   editorCtx.drawImage(editorImage, 0, 0, editorCanvas.width, editorCanvas.height);
-  editorHistory = [editorCanvas.toDataURL()];
-  toast('🗑️');
+  editorHistory = [editorCanvas.toDataURL()]; toast('🗑️');
 }
 function drawBeautyLinesPreset() {
   if (!editorCtx) return;
@@ -1371,7 +1367,7 @@ async function saveDrawingToPatient() {
   const pid = document.getElementById('dsdPatient').value;
   if (!pid) return toast('⚠️ اختر المريض', true);
   if (!editorCanvas) return toast('⚠️ ارفع صورة', true);
-  toast('⏳ جاري الحفظ...');
+  toast('⏳...');
   try {
     const dataUrl = editorCanvas.toDataURL('image/jpeg', 0.85);
     const blob = await (await fetch(dataUrl)).blob();
@@ -1380,7 +1376,7 @@ async function saveDrawingToPatient() {
     const url = await res.text();
     if (!url.startsWith('https://')) throw new Error('فشل الرفع');
     await db.collection('patients').doc(pid).collection('photos').add({ url, type: 'smile_design', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    toast('✅ تم الحفظ');
+    toast('✅');
   } catch (e) { toast('❌ ' + e.message, true); }
 }
 function downloadDrawing() {
@@ -1519,10 +1515,10 @@ function updateToothLight(val) {
   });
 }
 function updateToothScale(val) { if (threeToothGroup) { const s = val / 100; threeToothGroup.scale.set(s, s, s); } }
-function exportSTL() { if (!threeToothGroup) return toast('⚠️', true); toast('📥 جاري التصدير...'); setTimeout(() => toast('✅ تم'), 1500); }
+function exportSTL() { if (!threeToothGroup) return toast('⚠️', true); toast('📥 جاري التصدير...'); setTimeout(() => toast('✅'), 1500); }
 
 // ═══════════════════════════════════════════════════════════════
-// 15. Materials Guide (دليل المواد)
+// 15. Materials Guide
 // ═══════════════════════════════════════════════════════════════
 var MATERIALS_DB = [
   { cat:'restorative', nameAr:'كومبوزيت (حشو تجميلي)', desc:'حشوات تجميلية بلون الأسنان', search:'dental composite resin' },
@@ -1553,8 +1549,7 @@ var MATERIALS_DB = [
 var currentMatFilter = 'all';
 
 function renderMaterials() {
-  const el = document.getElementById('materialsList');
-  if (!el) return;
+  const el = document.getElementById('materialsList'); if (!el) return;
   let list = MATERIALS_DB;
   if (currentMatFilter !== 'all') list = MATERIALS_DB.filter(m => m.cat === currentMatFilter);
   if (!list.length) { el.innerHTML = '<div class="empty">لا نتائج</div>'; return; }
@@ -1587,7 +1582,7 @@ function searchMaterials() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 16. Store (المتجر)
+// 16. Store
 // ═══════════════════════════════════════════════════════════════
 async function loadDigitalProducts(){
   const snap = await db.collection('digitalProducts').get();
@@ -1842,8 +1837,7 @@ function endJitsiMeeting() {
   if (!confirm('إنهاء الاجتماع؟')) return;
   document.getElementById('jitsiFrame').innerHTML = '';
   document.getElementById('activeMeetingContainer').style.display = 'none';
-  activeJitsiRoom = null;
-  toast('⏹️');
+  activeJitsiRoom = null; toast('⏹️');
 }
 function copyMeetLink() { const input = document.getElementById('meetShareLink'); input.select(); document.execCommand('copy'); toast('📋'); }
 function shareMeetWhatsApp() { const link = document.getElementById('meetShareLink').value; window.open(`https://wa.me/?text=${encodeURIComponent('انضم للاجتماع: ' + link)}`, '_blank'); }
@@ -1943,7 +1937,7 @@ async function approveUser(uid){ await db.collection('users').doc(uid).update({s
 async function deleteUser(uid){ if(!confirm('حذف؟'))return; await db.collection('users').doc(uid).delete(); loadUsers(); toast('🗑️'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 28. Dashboard & Appointment
+// 28. Dashboard
 // ═══════════════════════════════════════════════════════════════
 function updateDashboard(){
   document.getElementById('statPatients').textContent = patients.length;
@@ -1974,7 +1968,7 @@ async function savePrivacy(){ await db.collection('users').doc(CU.uid).update({ 
 // ═══════════════════════════════════════════════════════════════
 // 31. Init
 // ═══════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => { console.log('✅ NAQCLINIXAI Pro Loaded'); loadGemini(); });
+document.addEventListener('DOMContentLoaded', () => { console.log('✅ NAQCLINIXAI Pro Loaded — Gemini Model: ' + GEMINI_MODEL); loadGemini(); });
 </script>
 </body>
 </html>
