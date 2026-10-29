@@ -150,6 +150,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <button class="ni" data-sec="history"><span class="ic">💊</span>التاريخ الطبي</button>
   <button class="ni" data-sec="chart"><span class="ic">📊</span>مخطط الأسنان</button>
   <button class="ni" data-sec="appointments"><span class="ic">🗓️</span>المواعيد</button>
+  <button class="ni" data-sec="lab"><span class="ic">🧪</span>المعمل</button>
   <div class="ns">التحليل والتصميم AI</div>
   <button class="ni" data-sec="aiDiagnosis"><span class="ic">🧠</span>التشخيص الذكي</button>
   <button class="ni" data-sec="faceHarmony"><span class="ic">🧑‍⚕️</span>تحليل الوجه</button>
@@ -593,9 +594,54 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div id="meetingsList"></div>
     </div>
   </div>
+ 
+ <div class="sec" id="sec-lab">
+  <div class="panel">
+    <h2>🧪 المعمل</h2>
+    <div class="desc">إدارة طلبات المعمل</div>
 
-  <div class="sec" id="sec-billing"><div class="panel"><h2>💳 الحسابات</h2><div class="empty">جاري التطوير...</div></div></div>
+    <div class="g2">
+      <div class="f"><label>👤 المريض *</label><select id="labPatient"></select></div>
+      <div class="f"><label>🏷️ نوع العمل *</label><select id="labType"><option>تاج</option><option>جسر</option><option>طقم</option><option>زرعة</option><option>فينير</option><option>تقويم</option></select></div>
+      <div class="f"><label>🏭 اسم المعمل</label><input id="labName"></div>
+      <div class="f"><label>📅 تاريخ الاستلام</label><input type="date" id="labDue"></div>
+      <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><textarea id="labNotes" rows="2"></textarea></div>
+    </div>
+    <button class="btn-save" onclick="addLab()" style="width:100%;margin-top:10px">➕ إضافة طلب</button>
 
+    <h3 style="color:var(--gold);font-size:.95rem;margin:20px 0 10px">📋 الطلبات الحالية</h3>
+    <div id="labList"></div>
+  </div>
+</div>
+
+  <div class="sec" id="sec-billing">
+  <div class="panel">
+    <h2>💳 حسابات المرضى</h2>
+    <div class="desc">إدارة الفواتير والمدفوعات — الإجماليات اليومية والأسبوعية والشهرية</div>
+
+    <div class="g4" style="margin-bottom:16px">
+      <div class="stat"><div class="ic">📅</div><div class="num" id="billToday">$0</div><div class="lbl">إجمالي اليوم</div></div>
+      <div class="stat"><div class="ic">📆</div><div class="num" id="billWeek">$0</div><div class="lbl">هذا الأسبوع</div></div>
+      <div class="stat"><div class="ic">🗓️</div><div class="num" id="billMonth">$0</div><div class="lbl">هذا الشهر</div></div>
+      <div class="stat"><div class="ic">💰</div><div class="num" id="billRemaining" style="color:var(--err)">$0</div><div class="lbl">إجمالي المتبقي</div></div>
+    </div>
+
+    <div style="background:rgba(197,160,89,.05);padding:16px;border-radius:12px;border:1px solid var(--bd);margin-bottom:16px">
+      <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:12px">➕ إضافة دفعة جديدة</h3>
+      <div class="g2">
+        <div class="f"><label>👤 المريض *</label><select id="billPatient"></select></div>
+        <div class="f"><label>📅 التاريخ *</label><input type="date" id="billDate"></div>
+        <div class="f"><label>💰 التكلفة الإجمالية ($)</label><input type="number" id="billTotal" value="0" step="0.01" min="0"></div>
+        <div class="f"><label>💵 المدفوع ($)</label><input type="number" id="billPaid" value="0" step="0.01" min="0"></div>
+        <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><input id="billNotes" placeholder="وصف الخدمة..."></div>
+      </div>
+      <button class="btn-save" onclick="addBilling()" style="width:100%;margin-top:8px">💾 حفظ الدفعة</button>
+    </div>
+
+    <h3 style="color:var(--gold);font-size:.95rem;margin:0 0 10px">📋 سجل المدفوعات</h3>
+    <div id="billingList"></div>
+  </div>
+</div>
   <div class="sec" id="sec-reports">
     <div class="panel">
       <h2>📄 التقارير الشاملة</h2>
@@ -759,8 +805,7 @@ const CATBOX_API = "https://catbox.moe/user/api.php";
 const GEMINI_MODEL = "gemini-3.8-flash";
 
 var CU=null, CD=null;
-var patients=[], appointments=[], billing=[], allUsers=[], posts=[], discussions=[], meetings=[], digitalProducts=[], myOrders=[], subscriptionPlans=[], advertisements=[], notifications=[], friends=[], friendRequests=[];
-var charts={}, threeInit=false, cameraStream=null, lastCapturedImage=null;
+var patients=[], appointments=[], billing=[], lab=[], allUsers=[], posts=[], discussions=[], meetings=[], digitalProducts=[], myOrders=[], subscriptionPlans=[], advertisements=[], notifications=[], friends=[], friendRequests=[];var charts={}, threeInit=false, cameraStream=null, lastCapturedImage=null;
 var toothState={}, faceImg=null, baImg=null;
 var geminiKey = '', currentPatient = null, userSubscription = null;
 var lastDiagnosis = '', lastTreatmentMain = '';
@@ -864,7 +909,7 @@ auth.onAuthStateChanged(async user=>{
         loadPatients(), loadAppointments(), loadBilling(), loadUsers(),
         loadPosts(), loadDiscussions(), loadMeetings(), loadDigitalProducts(),
         loadMyOrders(), loadSubscriptionPlans(), loadUserSubscription(),
-        loadNotifications(), loadFriends(), loadAdvertisements()
+loadNotifications(), loadFriends(), loadAdvertisements(), loadLab()
       ]);
       updateDashboard();
       setTimeout(initThree, 500);
@@ -914,6 +959,8 @@ function showSection(sec){
   if(sec==='manageAds') loadAdvertisements();
   if(sec==='paymentConfig') loadPaymentConfig();
   if(sec==='notifications') loadNotifications();
+  if(sec==='lab') loadLab();
+if(sec==='billing') { renderBilling(); updateBillingStats(); }
   if(sec==='reports') populateSelects();
   if(sec==='settings') loadPrivacy();
   if(sec==='interdisciplinary') { loadInterConsults(); populateSelects(); }
@@ -1949,7 +1996,153 @@ function updateDashboard(){
 }
 async function loadAppointments(){ const snap = await db.collection('appointments').where('clinicId','==',CD.clinicId).get(); appointments=[]; snap.forEach(d=>appointments.push({id:d.id,...d.data()})); }
 async function addAppointment(){ const pid = document.getElementById('apptPatient').value; if(!pid) return toast('⚠️', true); await db.collection('appointments').add({ patientId:pid, date:document.getElementById('apptDate').value, time:document.getElementById('apptTime').value, type:document.getElementById('apptType').value, clinicId:CD.clinicId, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); toast('✅'); loadAppointments(); }
-async function loadBilling(){ billing = []; }
+// ═══════════════════════════════════════════════════════════════
+// 💳 الحسابات والمدفوعات
+// ═══════════════════════════════════════════════════════════════
+async function loadBilling(){
+  try{
+    let q = db.collection('billing');
+    if(CD.role !== 'owner') q = q.where('clinicId','==',CD.clinicId);
+    const snap = await q.get();
+    billing = []; snap.forEach(d=>billing.push({id:d.id,...d.data()}));
+    billing.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    renderBilling(); updateBillingStats();
+  }catch(e){ console.error(e); }
+}
+
+async function addBilling(){
+  const pid = document.getElementById('billPatient').value;
+  const date = document.getElementById('billDate').value;
+  const total = parseFloat(document.getElementById('billTotal').value)||0;
+  const paid = parseFloat(document.getElementById('billPaid').value)||0;
+  const notes = document.getElementById('billNotes').value.trim();
+  if(!pid || !date) return toast('⚠️ اختر المريض والتاريخ', true);
+  if(total <= 0) return toast('⚠️ أدخل التكلفة', true);
+  if(paid > total) return toast('⚠️ المدفوع أكبر من التكلفة', true);
+  const p = patients.find(x=>x.id===pid);
+  try{
+    await db.collection('billing').add({
+      patientId: pid, patientName: p?.fullName||'',
+      date, totalCost: total, paid: paid, remaining: total - paid,
+      notes, clinicId: CD.clinicId, createdBy: CU.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅ تم حفظ الدفعة');
+    document.getElementById('billTotal').value = '0';
+    document.getElementById('billPaid').value = '0';
+    document.getElementById('billNotes').value = '';
+    loadBilling();
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+
+function renderBilling(){
+  const el = document.getElementById('billingList'); if(!el) return;
+  if(!billing.length){ el.innerHTML='<div class="empty">لا توجد مدفوعات</div>'; return; }
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>التاريخ</th><th>المريض</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th><th>ملاحظات</th><th></th></tr></thead><tbody>'+
+    billing.map(b=>`<tr>
+      <td>${esc(b.date)}</td>
+      <td><b>${esc(b.patientName)}</b></td>
+      <td>$${(b.totalCost||0).toFixed(2)}</td>
+      <td style="color:var(--ok)">$${(b.paid||0).toFixed(2)}</td>
+      <td style="color:${(b.remaining||0)>0?'var(--err)':'var(--ok)'}">$${(b.remaining||0).toFixed(2)}</td>
+      <td style="font-size:.7rem;color:var(--muted)">${esc(b.notes||'')}</td>
+      <td><button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="deleteBilling('${b.id}')">🗑️</button></td>
+    </tr>`).join('')+'</tbody></table></div>';
+}
+
+async function deleteBilling(id){
+  if(!confirm('حذف الدفعة؟')) return;
+  await db.collection('billing').doc(id).delete();
+  toast('🗑️'); loadBilling();
+}
+
+function updateBillingStats(){
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+  // بداية الأسبوع (السبت)
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
+  const weekStr = weekStart.toISOString().slice(0,10);
+  const monthStr = today.slice(0,7);
+
+  let dayTotal = 0, weekTotal = 0, monthTotal = 0, remaining = 0;
+  billing.forEach(b => {
+    const paid = b.paid || 0;
+    if(b.date === today) dayTotal += paid;
+    if((b.date||'') >= weekStr) weekTotal += paid;
+    if((b.date||'').startsWith(monthStr)) monthTotal += paid;
+    remaining += (b.remaining || 0);
+  });
+
+  document.getElementById('billToday').textContent = '$' + dayTotal.toFixed(2);
+  document.getElementById('billWeek').textContent = '$' + weekTotal.toFixed(2);
+  document.getElementById('billMonth').textContent = '$' + monthTotal.toFixed(2);
+  document.getElementById('billRemaining').textContent = '$' + remaining.toFixed(2);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 🧪 المعمل
+// ═══════════════════════════════════════════════════════════════
+async function loadLab(){
+  try{
+    let q = db.collection('lab');
+    if(CD.role !== 'owner') q = q.where('clinicId','==',CD.clinicId);
+    const snap = await q.get();
+    lab = []; snap.forEach(d=>lab.push({id:d.id,...d.data()}));
+    lab.sort((a,b)=>(a.due||'').localeCompare(b.due||''));
+    renderLab();
+    const st = document.getElementById('statLab');
+    if(st) st.textContent = lab.length;
+  }catch(e){ console.error(e); }
+}
+
+async function addLab(){
+  const pid = document.getElementById('labPatient').value;
+  if(!pid) return toast('⚠️ اختر المريض', true);
+  const p = patients.find(x=>x.id===pid);
+  try{
+    await db.collection('lab').add({
+      patientId: pid, patientName: p?.fullName||'',
+      type: document.getElementById('labType').value,
+      labName: document.getElementById('labName').value.trim(),
+      due: document.getElementById('labDue').value,
+      notes: document.getElementById('labNotes').value.trim(),
+      status: 'قيد التنفيذ',
+      clinicId: CD.clinicId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅ تم الإضافة');
+    document.getElementById('labName').value = '';
+    document.getElementById('labNotes').value = '';
+    loadLab();
+  }catch(e){ toast('❌ '+e.message, true); }
+}
+
+function renderLab(){
+  const el = document.getElementById('labList'); if(!el) return;
+  if(!lab.length){ el.innerHTML='<div class="empty">لا طلبات</div>'; return; }
+  el.innerHTML = lab.map(l=>`
+    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <div style="flex:1">
+          <b style="color:var(--gold)">${esc(l.patientName)}</b>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">🏷️ ${esc(l.type)} · 🏭 ${esc(l.labName||'—')} · 📅 ${esc(l.due||'—')}</div>
+          ${l.notes?`<div style="font-size:.7rem;color:var(--muted);margin-top:4px">📝 ${esc(l.notes)}</div>`:''}
+        </div>
+        <div style="display:flex;gap:6px;align-items:flex-start">
+          <span class="chip" style="padding:4px 10px;font-size:.7rem">${esc(l.status)}</span>
+          <button class="btn-danger" style="padding:4px 8px;font-size:.7rem" onclick="deleteLab('${l.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function deleteLab(id){
+  if(!confirm('حذف الطلب؟')) return;
+  await db.collection('lab').doc(id).delete();
+  toast('🗑️'); loadLab();
+}
 
 // ═══════════════════════════════════════════════════════════════
 // 29. Interdisciplinary
