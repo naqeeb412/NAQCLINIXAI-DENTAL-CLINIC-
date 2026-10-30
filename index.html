@@ -653,14 +653,48 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
  <div class="sec" id="sec-lab">
   <div class="panel">
     <h2>🧪 المعمل</h2>
-    <div class="desc">إدارة طلبات المعمل</div>
+    <div class="desc">إدارة طلبات المعمل مع حساب التكاليف الكاملة</div>
+
+    <!-- 📊 إحصائيات -->
+    <div class="g4" style="margin-bottom:16px">
+      <div class="stat"><div class="ic">🦷</div><div class="num" id="labStatTeeth">0</div><div class="lbl">إجمالي الأسنان</div></div>
+      <div class="stat"><div class="ic">💰</div><div class="num" id="labStatTotal">$0</div><div class="lbl">المبلغ الكلي</div></div>
+      <div class="stat"><div class="ic">💵</div><div class="num" id="labStatPaid" style="color:var(--ok)">$0</div><div class="lbl">المدفوع</div></div>
+      <div class="stat"><div class="ic">⏳</div><div class="num" id="labStatRemaining" style="color:var(--err)">$0</div><div class="lbl">المتبقي</div></div>
+    </div>
 
     <div class="g2">
       <div class="f"><label>👤 المريض *</label><select id="labPatient"></select></div>
-      <div class="f"><label>🏷️ نوع العمل *</label><select id="labType"><option>تاج</option><option>جسر</option><option>طقم</option><option>زرعة</option><option>فينير</option><option>تقويم</option></select></div>
+      <div class="f"><label>🏷️ نوع العمل *</label>
+        <select id="labType">
+          <option>تاج</option><option>جسر</option><option>طقم</option>
+          <option>زرعة</option><option>فينير</option><option>تقويم</option>
+        </select>
+      </div>
       <div class="f"><label>🏭 اسم المعمل</label><input id="labName"></div>
       <div class="f"><label>📅 تاريخ الاستلام</label><input type="date" id="labDue"></div>
-      <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><textarea id="labNotes" rows="2"></textarea></div>
+
+      <!-- 💰 الحقول المالية -->
+      <div class="f"><label>🔢 عدد الأسنان *</label>
+        <input type="number" id="labTeethCount" min="1" value="1" oninput="calcLabTotals()">
+      </div>
+      <div class="f"><label>💲 قيمة السن ($) *</label>
+        <input type="number" id="labToothPrice" min="0" step="0.01" value="0" oninput="calcLabTotals()">
+      </div>
+      <div class="f"><label>💰 المبلغ الكلي ($)</label>
+        <input type="number" id="labTotal" readonly
+               style="background:rgba(197,160,89,.12);color:var(--gold);font-weight:800;cursor:not-allowed">
+      </div>
+      <div class="f"><label>💵 المدفوع ($)</label>
+        <input type="number" id="labPaid" min="0" step="0.01" value="0" oninput="calcLabTotals()">
+      </div>
+      <div class="f" style="grid-column:1/-1"><label>⏳ المتبقي ($)</label>
+        <input type="number" id="labRemaining" readonly
+               style="background:rgba(239,68,68,.12);color:var(--err);font-weight:800;cursor:not-allowed">
+      </div>
+      <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label>
+        <textarea id="labNotes" rows="2"></textarea>
+      </div>
     </div>
     <button class="btn-save" onclick="addLab()" style="width:100%;margin-top:10px">➕ إضافة طلب</button>
 
@@ -1014,7 +1048,7 @@ function showSection(sec){
   if(sec==='manageAds') loadAdvertisements();
   if(sec==='paymentConfig') loadPaymentConfig();
   if(sec==='notifications') loadNotifications();
-  if(sec==='lab') loadLab();
+  if(sec==='lab'){ populateSelects(); loadLab(); }
 if(sec==='billing') { renderBilling(); updateBillingStats(); }
   if(sec==='reports') populateSelects();
   if(sec==='settings') loadPrivacy();
@@ -2278,45 +2312,136 @@ async function loadLab(){
 async function addLab(){
   const pid = document.getElementById('labPatient').value;
   if(!pid) return toast('⚠️ اختر المريض', true);
-  const p = patients.find(x=>x.id===pid);
+  const p = patients.find(x => x.id === pid);
+
+  const teethCount = parseInt(document.getElementById('labTeethCount').value) || 0;
+  const toothPrice = parseFloat(document.getElementById('labToothPrice').value) || 0;
+  const total      = +(teethCount * toothPrice).toFixed(2);
+  const paid       = parseFloat(document.getElementById('labPaid').value) || 0;
+  const remaining  = +(Math.max(0, total - paid)).toFixed(2);
+
+  if(teethCount <= 0)   return toast('⚠️ أدخل عدد الأسنان', true);
+  if(toothPrice <= 0)   return toast('⚠️ أدخل قيمة السن', true);
+  if(paid > total)      return toast('⚠️ المدفوع أكبر من المبلغ الكلي', true);
+
   try{
     await db.collection('lab').add({
-      patientId: pid, patientName: p?.fullName||'',
+      patientId: pid, patientName: p?.fullName || '',
       type: document.getElementById('labType').value,
       labName: document.getElementById('labName').value.trim(),
       due: document.getElementById('labDue').value,
+      teethCount, toothPrice, total, paid, remaining,
       notes: document.getElementById('labNotes').value.trim(),
-      status: 'قيد التنفيذ',
+      status: remaining <= 0 ? 'مكتمل' : 'قيد التنفيذ',
       clinicId: CD.clinicId,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     toast('✅ تم الإضافة');
-    document.getElementById('labName').value = '';
-    document.getElementById('labNotes').value = '';
+
+    // تفريغ النموذج
+    document.getElementById('labName').value         = '';
+    document.getElementById('labNotes').value        = '';
+    document.getElementById('labTeethCount').value   = '1';
+    document.getElementById('labToothPrice').value   = '0';
+    document.getElementById('labTotal').value        = '';
+    document.getElementById('labPaid').value         = '0';
+    document.getElementById('labRemaining').value    = '';
     loadLab();
   }catch(e){ toast('❌ '+e.message, true); }
 }
 
-function renderLab(){
-  const el = document.getElementById('labList'); if(!el) return;
-  if(!lab.length){ el.innerHTML='<div class="empty">لا طلبات</div>'; return; }
-  el.innerHTML = lab.map(l=>`
-    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-        <div style="flex:1">
-          <b style="color:var(--gold)">${esc(l.patientName)}</b>
-          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">🏷️ ${esc(l.type)} · 🏭 ${esc(l.labName||'—')} · 📅 ${esc(l.due||'—')}</div>
-          ${l.notes?`<div style="font-size:.7rem;color:var(--muted);margin-top:4px">📝 ${esc(l.notes)}</div>`:''}
-        </div>
-        <div style="display:flex;gap:6px;align-items:flex-start">
-          <span class="chip" style="padding:4px 10px;font-size:.7rem">${esc(l.status)}</span>
-          <button class="btn-danger" style="padding:4px 8px;font-size:.7rem" onclick="deleteLab('${l.id}')">🗑️</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+// 🧮 حساب تلقائي
+function calcLabTotals(){
+  const teeth = parseFloat(document.getElementById('labTeethCount')?.value) || 0;
+  const price = parseFloat(document.getElementById('labToothPrice')?.value) || 0;
+  const paid  = parseFloat(document.getElementById('labPaid')?.value) || 0;
+  const total = +(teeth * price).toFixed(2);
+  const remaining = +(Math.max(0, total - paid)).toFixed(2);
+
+  document.getElementById('labTotal').value      = total.toFixed(2);
+  document.getElementById('labRemaining').value  = remaining.toFixed(2);
 }
 
+// ✏️ تعديل المدفوع مباشرة
+async function openLabEdit(id){
+  const l = lab.find(x => x.id === id); if(!l) return;
+  const newPaid = prompt(
+    `💰 المبلغ الكلي: $${(l.total||0).toFixed(2)}\n💵 المدفوع الحالي: $${(l.paid||0).toFixed(2)}\n\nأدخل المبلغ المدفوع الجديد:`,
+    l.paid || 0
+  );
+  if(newPaid === null) return;
+  const paidNum = parseFloat(newPaid);
+  if(isNaN(paidNum) || paidNum < 0)   return toast('⚠️ قيمة غير صحيحة', true);
+  if(paidNum > l.total)               return toast('⚠️ المدفوع أكبر من الكلي', true);
+
+  const remaining = +(l.total - paidNum).toFixed(2);
+  await db.collection('lab').doc(id).update({
+    paid: paidNum,
+    remaining,
+    status: remaining <= 0 ? 'مكتمل' : 'قيد التنفيذ'
+  });
+  toast('✅ تم التحديث');
+  loadLab();
+}
+
+function renderLab(){
+  const el = document.getElementById('labList'); if(!el) return;
+
+  // 📊 الإحصائيات
+  const sumTeeth     = lab.reduce((s,l) => s + (l.teethCount || 0), 0);
+  const sumTotal     = lab.reduce((s,l) => s + (l.total     || 0), 0);
+  const sumPaid      = lab.reduce((s,l) => s + (l.paid      || 0), 0);
+  const sumRemaining = lab.reduce((s,l) => s + (l.remaining || 0), 0);
+
+  document.getElementById('labStatTeeth').textContent     = sumTeeth;
+  document.getElementById('labStatTotal').textContent     = '$' + sumTotal.toFixed(2);
+  document.getElementById('labStatPaid').textContent      = '$' + sumPaid.toFixed(2);
+  document.getElementById('labStatRemaining').textContent = '$' + sumRemaining.toFixed(2);
+
+  if(!lab.length){ el.innerHTML = '<div class="empty">لا طلبات</div>'; return; }
+
+  el.innerHTML = lab.map(l => {
+    const remaining = l.remaining ?? (l.total || 0) - (l.paid || 0);
+    const isPaid    = remaining <= 0;
+    return `
+    <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:8px;border-right:3px solid ${isPaid ? 'var(--ok)' : 'var(--warn)'}">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <b style="color:var(--gold)">${esc(l.patientName)}</b>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">🏷️ ${esc(l.type)} · 🏭 ${esc(l.labName||'—')} · 📅 ${esc(l.due||'—')}</div>
+          ${l.notes ? `<div style="font-size:.7rem;color:var(--muted);margin-top:4px">📝 ${esc(l.notes)}</div>` : ''}
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(60px,1fr));gap:6px;font-size:.72rem;text-align:center;flex:1;min-width:290px">
+          <div style="background:rgba(0,0,0,.25);padding:6px;border-radius:6px">
+            <div style="color:var(--muted);font-size:.6rem">🦷 الأسنان</div>
+            <div style="color:var(--gold);font-weight:800;font-size:.85rem">${l.teethCount||0} × $${(l.toothPrice||0).toFixed(2)}</div>
+          </div>
+          <div style="background:rgba(0,0,0,.25);padding:6px;border-radius:6px">
+            <div style="color:var(--muted);font-size:.6rem">💰 الكلي</div>
+            <div style="color:var(--txt);font-weight:800;font-size:.85rem">$${(l.total||0).toFixed(2)}</div>
+          </div>
+          <div style="background:rgba(16,185,129,.12);padding:6px;border-radius:6px">
+            <div style="color:var(--muted);font-size:.6rem">💵 المدفوع</div>
+            <div style="color:var(--ok);font-weight:800;font-size:.85rem">$${(l.paid||0).toFixed(2)}</div>
+          </div>
+          <div style="background:rgba(239,68,68,.12);padding:6px;border-radius:6px">
+            <div style="color:var(--muted);font-size:.6rem">⏳ المتبقي</div>
+            <div style="color:${remaining > 0 ? 'var(--err)' : 'var(--ok)'};font-weight:800;font-size:.85rem">$${remaining.toFixed(2)}</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:6px;align-items:flex-start;flex-direction:column">
+          <span class="chip" style="padding:4px 10px;font-size:.7rem;background:${isPaid ? 'rgba(16,185,129,.2);color:var(--ok)' : 'rgba(245,158,11,.2);color:var(--warn)'}">${esc(l.status)}</span>
+          <div style="display:flex;gap:4px">
+            <button class="btn-outline" style="padding:4px 8px;font-size:.7rem" onclick="openLabEdit('${l.id}')">✏️</button>
+            <button class="btn-danger"  style="padding:4px 8px;font-size:.7rem" onclick="deleteLab('${l.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 async function deleteLab(id){
   if(!confirm('حذف الطلب؟')) return;
   await db.collection('lab').doc(id).delete();
