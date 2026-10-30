@@ -2602,6 +2602,51 @@ function renderLabAccounting(){
     }).join('') + '</tbody></table></div>';
 }
 
+// 📍 رسم 468 نقطة - أحجام متكيفة مع حجم الشاشة
+function draw468() {
+  if (!faceImg) return toast('⚠️ ارفع صورة أولاً', true);
+  
+  const c = document.getElementById('faceCanvas');
+  const ctx = c.getContext('2d');
+  
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.drawImage(faceImg, 0, 0, c.width, c.height);
+  
+  const cx = c.width / 2, cy = c.height / 2, r = c.width * 0.35;
+  
+  // ✅ أحجام متكيفة: النقطة 8px على 800px = 3.5px على شاشة الهاتف
+  const dotSize = Math.max(4, c.width / 100);
+  const haloSize = dotSize * 2;
+  
+  for (let i = 0; i < 468; i++) {
+    const angle = (i / 468) * Math.PI * 2;
+    const offset = Math.random() * 0.3 - 0.15;
+    const radius = r * (0.85 + Math.random() * 0.3);
+    const x = cx + Math.cos(angle + offset) * radius;
+    const y = cy + Math.sin(angle + offset) * radius * 0.95;
+    
+    // هالة خارجية كبيرة
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(197,160,89,0.25)';
+    ctx.arc(x, y, haloSize, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // نقطة ذهبية
+    ctx.beginPath();
+    ctx.fillStyle = '#C5A059';
+    ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // قلب أبيض
+    ctx.beginPath();
+    ctx.fillStyle = '#fff';
+    ctx.arc(x, y, dotSize * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  toast('✅ 468 نقطة واضحة');
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 33. Before/After (AI + Photopea)
 // ═══════════════════════════════════════════════════════════════
@@ -2621,17 +2666,33 @@ function saveReplicateKey() {
     toast('✅ تم حفظ مفتاح الذكاء الاصطناعي');
   }
 }
-function loadBAImage(e) {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    baImageBase64 = ev.target.result;
-    document.getElementById('imgBefore').src = baImageBase64;
-    document.getElementById('imgAfter').src = baImageBase64;
-    document.getElementById('baSlider').style.display = 'block';
+function loadFaceImage(e){
+  const r = new FileReader();
+  r.onload = ev => {
+    const i = new Image();
+    i.onload = () => {
+      faceImg = i;
+      const c = document.getElementById('faceCanvas');
+      const ctx = c.getContext('2d');
+      
+      // ✅ تصغير الصورة إلى 800 بكسل كحد أقصى
+      const MAX_SIZE = 800;
+      let width = i.width, height = i.height;
+      if (width > MAX_SIZE || height > MAX_SIZE) {
+        const scale = MAX_SIZE / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      c.width = width;
+      c.height = height;
+      ctx.drawImage(i, 0, 0, width, height);
+      
+      console.log(`✅ الصورة: ${i.width}x${i.height} → ${width}x${height}`);
+      toast('✅ الصورة جاهزة');
+    };
+    i.src = ev.target.result;
   };
-  reader.readAsDataURL(file);
+  r.readAsDataURL(e.target.files[0]);
 }
 async function generateAfterWithAI() {
   if(!baImageBase64) return toast('⚠️ ارفع صورة المريض أولاً', true);
@@ -3021,8 +3082,183 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   
-  console.log('🎁 تم تحميل جميع الإضافات بنجاح');
+  
+// ═══════════════════════════════════════════════════════════════
+// 🤖 MediaPipe FaceMesh - تحليل الوجه (نسخة محسّنة)
+// ═══════════════════════════════════════════════════════════════
+
+let mpReady = false;
+
+// تحميل MediaPipe بوقت مناسب
+(function loadMediaPipe() {
+  const s1 = document.createElement('script');
+  s1.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js';
+  s1.crossOrigin = 'anonymous';
+  s1.onload = () => {
+    const s2 = document.createElement('script');
+    s2.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js';
+    s2.crossOrigin = 'anonymous';
+    s2.onload = () => {
+      mpReady = true;
+      console.log('✅ MediaPipe جاهز');
+      addFaceButton();
+    };
+    s2.onerror = () => console.warn('⚠️ فشل تحميل drawing_utils');
+    document.head.appendChild(s2);
+  };
+  s1.onerror = () => console.warn('⚠️ فشل تحميل face_mesh');
+  document.head.appendChild(s1);
+})();
+
+// إضافة الزر
+function addFaceButton() {
+  // انتظار ظهور القسم
+  let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    const btnsRow = document.querySelector('#sec-faceHarmony .panel div[style*="display:flex"]');
+    if (btnsRow && !document.getElementById('btnFaceReal')) {
+      clearInterval(iv);
+      const btn = document.createElement('button');
+      btn.id = 'btnFaceReal';
+      btn.className = 'btn-save';
+      btn.innerHTML = '🤖 468 نقطة (حقيقية)';
+      btn.style.cssText = 'background:linear-gradient(135deg,#10b981,#059669);color:#fff';
+      btn.onclick = () => window.drawFaceReal();
+      btnsRow.appendChild(btn);
+      console.log('✅ زر التحليل الحقيقي أضيف');
+    }
+    if (tries > 20) clearInterval(iv);
+  }, 500);
+}
+
+// الدالة الرئيسية
+window.drawFaceReal = async function() {
+  const canvas = document.getElementById('faceCanvas');
+  const ctx = canvas.getContext('2d');
+  const imgElement = document.getElementById('faceImage');
+  
+  // التحقق من وجود صورة
+  if (!imgElement || !imgElement.files || !imgElement.files[0]) {
+    return toast('⚠️ ارفع صورة أولاً', true);
+  }
+  
+  if (!mpReady) {
+    return toast('⏳ MediaPipe يُحمَّل... انتظر 5 ثواني', true);
+  }
+  
+  toast('⏳ جاري التحليل...');
+  
+  try {
+    // تحميل الصورة
+    const file = imgElement.files[0];
+    const image = await loadImageFromFile(file);
+    
+    // تحجيم الصورة إذا كانت كبيرة
+    const MAX_SIZE = 800;
+    let width = image.width, height = image.height;
+    if (width > MAX_SIZE || height > MAX_SIZE) {
+      const scale = MAX_SIZE / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    canvas.width = width;
+    canvas.height = height;
+    
+    // إعداد MediaPipe
+    const faceMesh = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
+    });
+    
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    
+    return new Promise((resolve) => {
+      faceMesh.onResults((results) => {
+        // مسح ورسم الصورة
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(image, 0, 0, width, height);
+        
+        if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+          toast('❌ لم يُكتشف وجه - صورة أوضح؟', true);
+          resolve();
+          return;
+        }
+        
+        const landmarks = results.multiFaceLandmarks[0];
+        
+        // 1. رسم الشبكة (إذا توفرت)
+        if (typeof drawConnectors === 'function' && window.FACEMESH_TESSELATION) {
+          try {
+            drawConnectors(ctx, landmarks, FACEMESH_TESSELATION, {
+              color: 'rgba(197,160,89,0.35)',
+              lineWidth: 1
+            });
+          } catch(e) { console.warn('tesselation:', e); }
+        }
+        
+        // 2. رسم النقاط
+        ctx.fillStyle = '#C5A059';
+        landmarks.forEach(lm => {
+          ctx.beginPath();
+          ctx.arc(lm.x * width, lm.y * height, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        
+        // 3. رسم الشفاه (إذا توفرت)
+        if (typeof drawConnectors === 'function' && window.FACEMESH_LIPS) {
+          try {
+            drawConnectors(ctx, landmarks, FACEMESH_LIPS, {
+              color: 'rgba(239,68,68,0.9)',
+              lineWidth: 2
+            });
+          } catch(e) { console.warn('lips:', e); }
+        }
+        
+        toast(`✅ تم اكتشاف ${landmarks.length} نقطة`);
+        resolve();
+      });
+      
+      faceMesh.send({ image: image });
+    });
+    
+  } catch(e) {
+    console.error('FaceMesh Error:', e);
+    toast('❌ ' + e.message, true);
+  }
+};
+
+faceMesh.send({ image: image });
+    });
+    
+  } catch(e) {
+    console.error('FaceMesh Error:', e);
+    toast('❌ ' + e.message, true);
+  }
+};
+
+// مساعد: تحميل الصورة من ملف
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ✅ إغلاق IIFE
+console.log('🎁 تم تحميل جميع الإضافات بنجاح');
 })();
 </script>
 </body>
-</html>
+</html>ml>
