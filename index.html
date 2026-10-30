@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-firestore-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
@@ -71,10 +72,10 @@ table.tbl th{color:var(--gold);font-size:.72rem;background:var(--card2)}
 canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 auto}
 .canvas-wrap{background:#000;border-radius:12px;padding:10px;min-height:300px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bd)}
 #threeContainer{width:100%;height:450px;border-radius:12px;overflow:hidden;background:#0d1830;margin:0}
-.ba-slider {position: relative;width: 100%;max-width: 600px;margin: 0 auto;overflow: hidden;border-radius: 12px;border: 2px solid var(--gold)}
-.ba-slider img {display: block;width: 100%;height: auto;}
-.ba-slider .after-img {position: absolute;top: 0;left: 0;width: 50%;height: 100%;overflow: hidden;border-left: 2px solid var(--gold);}
-.ba-slider .after-img img {width: 200%;max-width: none;}
+.ba-slider{position:relative;width:100%;max-width:600px;margin:0 auto;overflow:hidden;border-radius:12px;border:2px solid var(--gold)}
+.ba-slider img{display:block;width:100%;height:auto}
+.ba-slider .after-img{position:absolute;top:0;left:0;width:50%;height:100%;overflow:hidden;border-left:2px solid var(--gold)}
+.ba-slider .after-img img{width:200%;max-width:none}
 .product-card{background:var(--card2);border:1px solid var(--bd);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
 .product-cover{width:100%;height:140px;background:#0d1830;display:flex;align-items:center;justify-content:center;font-size:48px}
 .product-body{padding:10px;flex:1;display:flex;flex-direction:column}
@@ -82,7 +83,6 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
 .product-desc{font-size:11px;color:var(--muted);flex:1;margin-bottom:8px}
 .product-price{font-size:16px;font-weight:800;color:var(--gold);margin-top:auto}
 .appt-card{background:rgba(0,0,0,.2);border-radius:10px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;border-right:3px solid var(--gold);gap:6px;flex-wrap:wrap}
-.appt-card.completed{border-right-color:var(--ok);opacity:.6}
 .diag-img-slot{background:rgba(255,255,255,.03);border:2px dashed var(--bd);border-radius:12px;padding:10px;cursor:pointer;transition:.2s;min-height:100px;display:flex;align-items:center;justify-content:center}
 .diag-img-slot:hover{border-color:var(--gold);background:var(--goldDim)}
 .diag-img-slot.filled{border-style:solid;border-color:var(--ok);background:rgba(16,185,129,.05)}
@@ -94,8 +94,6 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
 .tooth-box:hover{transform:scale(1.15);z-index:5;box-shadow:0 4px 12px rgba(197,160,89,.4)}
 .tooth-box .icon{font-size:16px;line-height:1}
 .tooth-box .num{font-size:9px;font-weight:700;margin-top:2px;opacity:.9}
-.tooth-box.rotated{transform:rotate(-15deg)}
-.tooth-box.rotated:hover{transform:rotate(-15deg) scale(1.15)}
 .tooth-box.missing{opacity:.5;text-decoration:line-through}
 .exam-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
 .exam-row label{flex:0 0 130px;font-size:.8rem;color:var(--muted);font-weight:600}
@@ -138,7 +136,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   </div>
 </div>
 
-<div id="app"><aside id="sidebar">
+<div id="app">
+<aside id="sidebar">
   <div class="sbb"><div class="ic">🦷</div><h2>NAQCLINIXAI</h2><div class="sub">Dental Pro</div></div>
   <div class="ns">الرئيسية</div>
   <button class="ni active" data-sec="dashboard"><span class="ic">🏥</span>لوحة التحكم</button>
@@ -176,7 +175,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <button class="ni" data-sec="meetings"><span class="ic">📹</span>الاجتماعات</button>
   <button class="ni" data-sec="interdisciplinary"><span class="ic">👨‍⚕️</span>متعدد التخصصات</button>
   <div class="ns">الإدارة</div>
-  <button class="ni" data-sec="billing"><span class="ic">💳</span>الحسابات</button>
+  <button class="ni" data-sec="billing"><span class="ic">💳</span>حسابات المرضى</button>
+  <button class="ni" data-sec="labAccounting" data-owner-only="true" style="display:none"><span class="ic">🧪</span>حسابات المعمل</button>
   <button class="ni" data-sec="reports"><span class="ic">📄</span>التقارير</button>
   <button class="ni" data-sec="users"><span class="ic">👥</span>إدارة الفريق</button>
   <div class="ns" data-admin="true">إدارة النظام</div>
@@ -214,8 +214,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     <div class="panel">
       <h2>📱 Dentbook - ملفك الشخصي</h2>
       <div id="profCover" style="background:linear-gradient(135deg,#1a2332,#0d1830);background-size:cover;background-position:center;height:150px;border-radius:12px;margin-bottom:15px;position:relative;border:1px solid var(--bd);overflow:hidden">
-         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.15)"></div>
-         <div style="position:absolute;bottom:10px;left:15px;background:rgba(0,0,0,0.6);color:var(--gold);padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer" onclick="document.getElementById('coverInput').click()">🖼️ تغيير الغلاف</div>
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.15)"></div>
+        <div style="position:absolute;bottom:10px;left:15px;background:rgba(0,0,0,0.6);color:var(--gold);padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer" onclick="document.getElementById('coverInput').click()">🖼️ تغيير الغلاف</div>
       </div>
       <div style="position:relative;margin-top:-45px;margin-right:20px;width:90px;height:90px;z-index:5">
         <img id="profAvatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a2332' width='100' height='100'/><circle cx='50' cy='40' r='16' fill='%23C5A059'/><ellipse cx='50' cy='90' rx='25' ry='20' fill='%23C5A059'/></svg>" style="width:100%;height:100%;border-radius:50%;border:3px solid var(--gold);object-fit:cover;background:var(--card2);cursor:pointer" onclick="document.getElementById('avatarInput').click()">
@@ -359,13 +359,13 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
         <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px">
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
             <b style="color:var(--gold);font-size:13px;margin-left:8px">🖌️ الأدوات:</b>
-            <button class="tool-btn" onclick="setTool('brush')" id="toolBrush" title="فرشاة">🖌️</button>
-            <button class="tool-btn" onclick="setTool('line')" id="toolLine" title="خط">📏</button>
-            <button class="tool-btn" onclick="setTool('rect')" id="toolRect" title="مستطيل">▭</button>
-            <button class="tool-btn" onclick="setTool('circle')" id="toolCircle" title="دائرة">◯</button>
-            <button class="tool-btn" onclick="setTool('arrow')" id="toolArrow" title="سهم">➤</button>
-            <button class="tool-btn" onclick="setTool('text')" id="toolText" title="نص">T</button>
-            <button class="tool-btn" onclick="setTool('eraser')" id="toolEraser" title="ممحاة">🧽</button>
+            <button class="tool-btn" onclick="setTool('brush')" id="toolBrush">🖌️</button>
+            <button class="tool-btn" onclick="setTool('line')" id="toolLine">📏</button>
+            <button class="tool-btn" onclick="setTool('rect')" id="toolRect">▭</button>
+            <button class="tool-btn" onclick="setTool('circle')" id="toolCircle">◯</button>
+            <button class="tool-btn" onclick="setTool('arrow')" id="toolArrow">➤</button>
+            <button class="tool-btn" onclick="setTool('text')" id="toolText">T</button>
+            <button class="tool-btn" onclick="setTool('eraser')" id="toolEraser">🧽</button>
             <div style="width:1px;height:24px;background:var(--bd);margin:0 8px"></div>
             <label style="font-size:12px;color:var(--muted)">اللون:</label>
             <input type="color" id="drawColor" value="#C5A059" style="width:36px;height:32px;border-radius:6px;border:1px solid var(--bd);cursor:pointer">
@@ -408,12 +408,29 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
 
   <div class="sec" id="sec-beforeAfter">
     <div class="panel">
-      <h2>⚖️ قبل وبعد (AI)</h2>
-      <div class="f"><label>صورة قبل</label><input type="file" id="baImg" accept="image/*" onchange="loadBAImage(event)"></div>
-      <button class="btn-save" onclick="generateAfter()">🤖 توليد صورة "بعد"</button>
+      <h2>⚖️ قبل وبعد — محاكاة الابتسامة بالذكاء الاصطناعي</h2>
+      <div class="desc">ارفع صورة المريض، وصف العلاج، ودع الذكاء الاصطناعي ينشئ الصورة المتوقعة، أو عدّلها بـ Photopea.</div>
+      <div class="g2">
+        <div class="f"><label>📸 صورة المريض (قبل)</label><input type="file" id="baImgInput" accept="image/*" onchange="loadBAImage(event)"></div>
+        <div class="f"><label>🦷 وصف العلاج المطلوب</label><textarea id="baTreatmentDesc" rows="3" placeholder="تبييض الأسنان، فينير خزفي..."></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px">
+        <button class="btn-save" onclick="generateAfterWithAI()">🤖 توليد "بعد" بالذكاء الاصطناعي</button>
+        <button class="btn-outline" onclick="openPhotopeaEditor()">🎨 فتح محرر Photopea</button>
+        <button class="btn-outline" onclick="downloadAfterImage()">📥 تحميل الصورة</button>
+      </div>
       <div class="ba-slider" id="baSlider" style="display:none;margin-top:20px">
         <img id="imgBefore" src="">
         <div class="after-img" id="imgAfterWrap"><img id="imgAfter" src=""></div>
+      </div>
+      <div class="modal" id="photopeaModal">
+        <div class="box" style="max-width:95vw;max-height:95vh;padding:0;background:#1e1e1e;border:2px solid var(--gold)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#2d2d2d;border-bottom:1px solid #444">
+            <b style="color:var(--gold)">🎨 محرر Photopea</b>
+            <button class="btn-danger" onclick="closePhotopea()">إغلاق</button>
+          </div>
+          <iframe id="photopeaFrame" src="" style="width:100%;height:80vh;border:none"></iframe>
+        </div>
       </div>
     </div>
   </div>
@@ -449,61 +466,50 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       </div>
     </div>
   </div>
- 
- <!-- ═══════ خطة العلاج ═══════ -->
-<div class="sec" id="sec-treatmentPlan">
-  <div class="panel">
-    <h2>📋 خطة العلاج والبدائل والمقارنة</h2>
-    <div class="desc">توليد خطة رئيسية + خطة بديلة + مقارنة آلية بينهما بالذكاء الاصطناعي</div>
 
-    <div class="f"><label>👤 المريض *</label>
-      <select id="tpPatient" onchange="loadTPPatientData(this.value)"></select>
-    </div>
-
-    <div class="f"><label>🧠 التشخيص / الحالة *</label>
-      <textarea id="tpDiagnosis" rows="3" placeholder="ألم حاد في الضرس السفلي مع تورم..."></textarea>
-    </div>
-
-    <div class="g2">
-      <div class="f"><label>💰 الميزانية</label>
-        <select id="tpBudget">
-          <option value="any">— غير محدد —</option>
-          <option value="low">منخفضة</option>
-          <option value="medium">متوسطة</option>
-          <option value="high">عالية</option>
-        </select>
+  <div class="sec" id="sec-treatmentPlan">
+    <div class="panel">
+      <h2>📋 خطة العلاج والبدائل والمقارنة</h2>
+      <div class="desc">توليد خطة رئيسية + خطة بديلة + مقارنة آلية بينهما بالذكاء الاصطناعي</div>
+      <div class="f"><label>👤 المريض *</label><select id="tpPatient" onchange="loadTPPatientData(this.value)"></select></div>
+      <div class="f"><label>🧠 التشخيص / الحالة *</label><textarea id="tpDiagnosis" rows="3" placeholder="ألم حاد في الضرس السفلي مع تورم..."></textarea></div>
+      <div class="g2">
+        <div class="f"><label>💰 الميزانية</label>
+          <select id="tpBudget">
+            <option value="any">— غير محدد —</option>
+            <option value="low">منخفضة</option>
+            <option value="medium">متوسطة</option>
+            <option value="high">عالية</option>
+          </select>
+        </div>
+        <div class="f"><label>⏱️ الأولوية</label>
+          <select id="tpPriority">
+            <option value="balanced">متوازنة</option>
+            <option value="time">سرعة الحل</option>
+            <option value="quality">أعلى جودة</option>
+            <option value="cost">أقل تكلفة</option>
+          </select>
+        </div>
       </div>
-      <div class="f"><label>⏱️ الأولوية</label>
-        <select id="tpPriority">
-          <option value="balanced">متوازنة</option>
-          <option value="time">سرعة الحل</option>
-          <option value="quality">أعلى جودة</option>
-          <option value="cost">أقل تكلفة</option>
-        </select>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn-save" onclick="generateTreatmentPlan()">🧠 توليد الخطة الرئيسية</button>
+        <button class="btn-outline" onclick="generateAlternativePlan()">🔄 توليد الخطة البديلة</button>
+        <button class="btn-outline" onclick="compareTreatmentPlans()">⚖️ مقارنة الخطتين</button>
+        <button class="btn-outline" onclick="saveTreatmentPlanToPatient()">💾 حفظ للمريض</button>
       </div>
-    </div>
-
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-      <button class="btn-save" onclick="generateTreatmentPlan()">🧠 توليد الخطة الرئيسية</button>
-      <button class="btn-outline" onclick="generateAlternativePlan()">🔄 توليد الخطة البديلة</button>
-      <button class="btn-outline" onclick="compareTreatmentPlans()">⚖️ مقارنة الخطتين</button>
-      <button class="btn-outline" onclick="saveTreatmentPlanToPatient()">💾 حفظ للمريض</button>
-    </div>
-
-    <div class="g2" style="margin-top:18px">
-      <div>
-        <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:8px">🅰️ الخطة الرئيسية</h3>
-        <div id="tpResult" style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;min-height:140px;font-size:.82rem;line-height:1.9;white-space:pre-wrap;color:var(--muted)">—</div>
+      <div class="g2" style="margin-top:18px">
+        <div>
+          <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:8px">🅰️ الخطة الرئيسية</h3>
+          <div id="tpResult" style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;min-height:140px;font-size:.82rem;line-height:1.9;white-space:pre-wrap;color:var(--muted)">—</div>
+        </div>
+        <div>
+          <h3 style="color:#22d3ee;font-size:.95rem;margin-bottom:8px">🅱️ الخطة البديلة</h3>
+          <div id="tpAltResult" style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;min-height:140px;font-size:.82rem;line-height:1.9;white-space:pre-wrap;color:var(--muted)">—</div>
+        </div>
       </div>
-      <div>
-        <h3 style="color:#22d3ee;font-size:.95rem;margin-bottom:8px">🅱️ الخطة البديلة</h3>
-        <div id="tpAltResult" style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;min-height:140px;font-size:.82rem;line-height:1.9;white-space:pre-wrap;color:var(--muted)">—</div>
-      </div>
+      <div id="tpComparison" style="margin-top:16px"></div>
     </div>
-
-    <div id="tpComparison" style="margin-top:16px"></div>
   </div>
-</div>
 
   <div class="sec" id="sec-materialsGuide">
     <div class="panel">
@@ -549,13 +555,55 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   </div>
 
   <div class="sec" id="sec-interdisciplinary">
-    <div class="panel">
-      <h2>👨‍⚕️ متعدد التخصصات</h2>
-      <div class="f"><label>المريض</label><select id="interPatient"></select></div>
-      <div class="f"><label>التخصص</label><select id="interSpecialty"><option>تقويم</option><option>جراحة</option><option>لبية</option><option>تركيبات</option><option>لثة</option></select></div>
-      <div class="f"><label>ملاحظات</label><textarea id="interNotes" rows="2"></textarea></div>
-      <button class="btn-save" onclick="requestInterConsult()">📤 إرسال</button>
-      <div id="interList" style="margin-top:15px"></div>
+    <div class="panel" id="interPanelPDF">
+      <h2>👨‍⚕️ متعدد التخصصات — استشارات عن بُعد</h2>
+      <div class="desc">إرسال الحالة للأخصائي، استقبال التشخيص، وحفظ التقرير PDF.</div>
+      <div style="background:rgba(197,160,89,.05);padding:15px;border-radius:12px;border:1px solid var(--bd);margin-bottom:15px">
+        <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:10px">🧑‍⚕️ بيانات الأخصائي</h3>
+        <div class="g2">
+          <div class="f"><label>اسم الأخصائي *</label><input id="specName" placeholder="د. أحمد..."></div>
+          <div class="f"><label>نوع التخصص *</label>
+            <select id="specType">
+              <option>تقويم الأسنان</option><option>جراحة الفم والوجه</option>
+              <option>علاج الجذور (لبية)</option><option>التركيبات والتجميل</option>
+              <option>أمراض اللثة</option><option>طب أسنان الأطفال</option>
+            </select>
+          </div>
+          <div class="f"><label>📞 الهاتف / واتساب</label><input id="specPhone" placeholder="+967..."></div>
+          <div class="f"><label>📧 البريد الإلكتروني</label><input id="specEmail" type="email" placeholder="doctor@..."></div>
+          <div class="f"><label>🏥 العيادة / المركز</label><input id="specClinic" placeholder="مركز..."></div>
+          <div class="f"><label>🔗 رابط Zoom / الاجتماع</label><input id="specZoom" placeholder="https://zoom.us/j/..." style="direction:ltr"></div>
+        </div>
+        <div class="f"><label>📅 موعد الاجتماع المقترح</label><input type="datetime-local" id="specMeetDate"></div>
+      </div>
+      <div class="f"><label>👤 المريض *</label><select id="interPatient" onchange="loadInterPatientData(this.value)"></select></div>
+      <div id="interPatientData" style="margin-bottom:15px"></div>
+      <div class="f"><label>📝 الشكوى الرئيسية للمريض *</label><textarea id="interComplaint" rows="2" placeholder="ألم حاد في الفك السفلي..."></textarea></div>
+      <div class="g2" style="margin-bottom:15px">
+        <div class="f">
+          <label>🩻 إضافة أشعة (Panoramic / CBCT)</label>
+          <input type="file" id="interXrayInput" accept="image/*" multiple onchange="uploadInterFiles('xray', event)">
+          <div id="interXrayPreview" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px"></div>
+        </div>
+        <div class="f">
+          <label>📸 إضافة صور المريض (Intraoral / Extraoral)</label>
+          <input type="file" id="interPhotoInput" accept="image/*" multiple onchange="uploadInterFiles('photo', event)">
+          <div id="interPhotoPreview" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px"></div>
+        </div>
+      </div>
+      <div style="background:rgba(0,0,0,.2);padding:15px;border-radius:12px;border:1px solid var(--bd);margin-bottom:15px">
+        <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:10px">📋 التشخيص وخطة العلاج (من الأخصائي)</h3>
+        <div class="f"><label>🧠 التشخيص النهائي</label><textarea id="interDiagnosis" rows="3" placeholder="التشخيص..."></textarea></div>
+        <div class="f"><label>📋 خطة العلاج المقترحة</label><textarea id="interTreatment" rows="3" placeholder="الخطة..."></textarea></div>
+        <div class="f"><label>📝 توصيات وملاحظات إضافية</label><textarea id="interNotes" rows="2"></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-save" onclick="sendInterConsult()">📤 إرسال الاستشارة وحفظها</button>
+        <button class="btn-outline" onclick="openZoomLink()">🔗 انضم إلى Zoom</button>
+        <button class="btn-save" style="background:#dc2626" onclick="generateConsultPDF()">📄 حفظ التقرير كـ PDF</button>
+      </div>
+      <h3 style="color:var(--gold);font-size:.95rem;margin:20px 0 10px">📋 سجل الاستشارات السابقة</h3>
+      <div id="interList"></div>
     </div>
   </div>
 
@@ -649,88 +697,97 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div id="meetingsList"></div>
     </div>
   </div>
- 
- <div class="sec" id="sec-lab">
-  <div class="panel">
-    <h2>🧪 المعمل</h2>
-    <div class="desc">إدارة طلبات المعمل مع حساب التكاليف الكاملة</div>
 
-    <!-- 📊 إحصائيات -->
-    <div class="g4" style="margin-bottom:16px">
-      <div class="stat"><div class="ic">🦷</div><div class="num" id="labStatTeeth">0</div><div class="lbl">إجمالي الأسنان</div></div>
-      <div class="stat"><div class="ic">💰</div><div class="num" id="labStatTotal">$0</div><div class="lbl">المبلغ الكلي</div></div>
-      <div class="stat"><div class="ic">💵</div><div class="num" id="labStatPaid" style="color:var(--ok)">$0</div><div class="lbl">المدفوع</div></div>
-      <div class="stat"><div class="ic">⏳</div><div class="num" id="labStatRemaining" style="color:var(--err)">$0</div><div class="lbl">المتبقي</div></div>
+  <div class="sec" id="sec-lab">
+    <div class="panel">
+      <h2>🧪 المعمل</h2>
+      <div class="desc">إدارة طلبات المعمل مع حساب التكاليف الكاملة</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+        <div class="stat"><div class="ic">🦷</div><div class="num" id="labStatTeeth">0</div><div class="lbl">إجمالي الأسنان</div></div>
+        <div class="stat"><div class="ic">💰</div><div class="num" id="labStatTotal">$0</div><div class="lbl">التكلفة الكلية</div></div>
+        <div class="stat"><div class="ic">💵</div><div class="num" id="labStatPaid" style="color:var(--ok)">$0</div><div class="lbl">المدفوع</div></div>
+        <div class="stat"><div class="ic">⏳</div><div class="num" id="labStatRemaining" style="color:var(--err)">$0</div><div class="lbl">المتبقي</div></div>
+      </div>
+      <div class="g2">
+        <div class="f"><label>👤 المريض *</label><select id="labPatient"></select></div>
+        <div class="f"><label>🏷️ نوع العمل *</label>
+          <select id="labType">
+            <option>تاج</option><option>جسر</option><option>طقم</option>
+            <option>زرعة</option><option>فينير</option><option>تقويم</option>
+          </select>
+        </div>
+        <div class="f"><label>🏭 اسم المعمل</label><input id="labName"></div>
+        <div class="f"><label>📅 تاريخ الاستلام</label><input type="date" id="labDue"></div>
+        <div class="f"><label>🔢 عدد الأسنان *</label><input type="number" id="labTeethCount" min="1" value="1" oninput="calcLabTotals()"></div>
+        <div class="f"><label>💲 قيمة السن ($) *</label><input type="number" id="labToothPrice" min="0" step="0.01" value="0" oninput="calcLabTotals()"></div>
+        <div class="f"><label>💰 المبلغ الكلي ($)</label><input type="number" id="labTotal" readonly style="background:rgba(197,160,89,.12);color:var(--gold);font-weight:800;cursor:not-allowed"></div>
+        <div class="f"><label>💵 المدفوع ($)</label><input type="number" id="labPaid" min="0" step="0.01" value="0" oninput="calcLabTotals()"></div>
+        <div class="f" style="grid-column:1/-1"><label>⏳ المتبقي ($)</label><input type="number" id="labRemaining" readonly style="background:rgba(239,68,68,.12);color:var(--err);font-weight:800;cursor:not-allowed"></div>
+        <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><textarea id="labNotes" rows="2"></textarea></div>
+      </div>
+      <button class="btn-save" onclick="addLab()" style="width:100%;margin-top:10px">➕ إضافة طلب</button>
+      <h3 style="color:var(--gold);font-size:.95rem;margin:20px 0 10px">📋 الطلبات الحالية</h3>
+      <div id="labList"></div>
     </div>
+  </div>
 
-    <div class="g2">
-      <div class="f"><label>👤 المريض *</label><select id="labPatient"></select></div>
-      <div class="f"><label>🏷️ نوع العمل *</label>
-        <select id="labType">
-          <option>تاج</option><option>جسر</option><option>طقم</option>
-          <option>زرعة</option><option>فينير</option><option>تقويم</option>
+  <div class="sec" id="sec-labAccounting">
+    <div class="panel">
+      <h2>🧪 حسابات المعمل — مالك العيادة</h2>
+      <div class="desc">سجل مالي منفصل تماماً عن حسابات المرضى — صلاحية الوصول للمالك فقط</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+        <div class="stat" style="border-color:var(--gold)"><div class="ic">📅</div><div class="num" id="labBillToday">$0</div><div class="lbl">مدفوع اليوم</div></div>
+        <div class="stat" style="border-color:var(--gold)"><div class="ic">📆</div><div class="num" id="labBillWeek">$0</div><div class="lbl">هذا الأسبوع</div></div>
+        <div class="stat" style="border-color:var(--gold)"><div class="ic">🗓️</div><div class="num" id="labBillMonth">$0</div><div class="lbl">هذا الشهر</div></div>
+        <div class="stat" style="border-color:var(--gold)"><div class="ic">📊</div><div class="num" id="labBillYear">$0</div><div class="lbl">هذه السنة</div></div>
+      </div>
+      <div class="f" style="margin-bottom:16px">
+        <label>🔍 عرض فترة محددة</label>
+        <select id="labBillPeriod" onchange="renderLabAccounting()">
+          <option value="all" selected>كل الطلبات</option>
+          <option value="today">اليوم</option>
+          <option value="week">هذا الأسبوع</option>
+          <option value="month">هذا الشهر</option>
+          <option value="year">هذه السنة</option>
         </select>
       </div>
-      <div class="f"><label>🏭 اسم المعمل</label><input id="labName"></div>
-      <div class="f"><label>📅 تاريخ الاستلام</label><input type="date" id="labDue"></div>
-
-      <!-- 💰 الحقول المالية -->
-      <div class="f"><label>🔢 عدد الأسنان *</label>
-        <input type="number" id="labTeethCount" min="1" value="1" oninput="calcLabTotals()">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+        <div class="stat"><div class="ic">🦷</div><div class="num" id="labBillTeeth">0</div><div class="lbl">عدد الأسنان</div></div>
+        <div class="stat"><div class="ic">💰</div><div class="num" id="labBillTotal">$0</div><div class="lbl">التكلفة الكلية</div></div>
+        <div class="stat"><div class="ic">💵</div><div class="num" id="labBillPaid" style="color:var(--ok)">$0</div><div class="lbl">المدفوع</div></div>
+        <div class="stat"><div class="ic">⏳</div><div class="num" id="labBillRemaining" style="color:var(--err)">$0</div><div class="lbl">المتبقي</div></div>
       </div>
-      <div class="f"><label>💲 قيمة السن ($) *</label>
-        <input type="number" id="labToothPrice" min="0" step="0.01" value="0" oninput="calcLabTotals()">
-      </div>
-      <div class="f"><label>💰 المبلغ الكلي ($)</label>
-        <input type="number" id="labTotal" readonly
-               style="background:rgba(197,160,89,.12);color:var(--gold);font-weight:800;cursor:not-allowed">
-      </div>
-      <div class="f"><label>💵 المدفوع ($)</label>
-        <input type="number" id="labPaid" min="0" step="0.01" value="0" oninput="calcLabTotals()">
-      </div>
-      <div class="f" style="grid-column:1/-1"><label>⏳ المتبقي ($)</label>
-        <input type="number" id="labRemaining" readonly
-               style="background:rgba(239,68,68,.12);color:var(--err);font-weight:800;cursor:not-allowed">
-      </div>
-      <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label>
-        <textarea id="labNotes" rows="2"></textarea>
-      </div>
+      <div id="labBillingList"></div>
     </div>
-    <button class="btn-save" onclick="addLab()" style="width:100%;margin-top:10px">➕ إضافة طلب</button>
-
-    <h3 style="color:var(--gold);font-size:.95rem;margin:20px 0 10px">📋 الطلبات الحالية</h3>
-    <div id="labList"></div>
   </div>
-</div>
 
   <div class="sec" id="sec-billing">
-  <div class="panel">
-    <h2>💳 حسابات المرضى</h2>
-    <div class="desc">إدارة الفواتير والمدفوعات — الإجماليات اليومية والأسبوعية والشهرية</div>
-
-    <div class="g4" style="margin-bottom:16px">
-      <div class="stat"><div class="ic">📅</div><div class="num" id="billToday">$0</div><div class="lbl">إجمالي اليوم</div></div>
-      <div class="stat"><div class="ic">📆</div><div class="num" id="billWeek">$0</div><div class="lbl">هذا الأسبوع</div></div>
-      <div class="stat"><div class="ic">🗓️</div><div class="num" id="billMonth">$0</div><div class="lbl">هذا الشهر</div></div>
-      <div class="stat"><div class="ic">💰</div><div class="num" id="billRemaining" style="color:var(--err)">$0</div><div class="lbl">إجمالي المتبقي</div></div>
-    </div>
-
-    <div style="background:rgba(197,160,89,.05);padding:16px;border-radius:12px;border:1px solid var(--bd);margin-bottom:16px">
-      <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:12px">➕ إضافة دفعة جديدة</h3>
-      <div class="g2">
-        <div class="f"><label>👤 المريض *</label><select id="billPatient"></select></div>
-        <div class="f"><label>📅 التاريخ *</label><input type="date" id="billDate"></div>
-        <div class="f"><label>💰 التكلفة الإجمالية ($)</label><input type="number" id="billTotal" value="0" step="0.01" min="0"></div>
-        <div class="f"><label>💵 المدفوع ($)</label><input type="number" id="billPaid" value="0" step="0.01" min="0"></div>
-        <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><input id="billNotes" placeholder="وصف الخدمة..."></div>
+    <div class="panel">
+      <h2>💳 حسابات المرضى</h2>
+      <div class="desc">إدارة الفواتير والمدفوعات — الإجماليات اليومية والأسبوعية والشهرية والسنوية</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px">
+        <div class="stat"><div class="ic">📅</div><div class="num" id="billToday">$0</div><div class="lbl">إجمالي اليوم</div></div>
+        <div class="stat"><div class="ic">📆</div><div class="num" id="billWeek">$0</div><div class="lbl">هذا الأسبوع</div></div>
+        <div class="stat"><div class="ic">🗓️</div><div class="num" id="billMonth">$0</div><div class="lbl">هذا الشهر</div></div>
+        <div class="stat"><div class="ic">📊</div><div class="num" id="billYear">$0</div><div class="lbl">هذه السنة</div></div>
+        <div class="stat"><div class="ic">💰</div><div class="num" id="billRemaining" style="color:var(--err)">$0</div><div class="lbl">إجمالي المتبقي</div></div>
       </div>
-      <button class="btn-save" onclick="addBilling()" style="width:100%;margin-top:8px">💾 حفظ الدفعة</button>
+      <div style="background:rgba(197,160,89,.05);padding:16px;border-radius:12px;border:1px solid var(--bd);margin-bottom:16px">
+        <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:12px">➕ إضافة دفعة جديدة</h3>
+        <div class="g2">
+          <div class="f"><label>👤 المريض *</label><select id="billPatient"></select></div>
+          <div class="f"><label>📅 التاريخ *</label><input type="date" id="billDate"></div>
+          <div class="f"><label>💰 التكلفة الإجمالية ($)</label><input type="number" id="billTotal" value="0" step="0.01" min="0"></div>
+          <div class="f"><label>💵 المدفوع ($)</label><input type="number" id="billPaid" value="0" step="0.01" min="0"></div>
+          <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><input id="billNotes" placeholder="وصف الخدمة..."></div>
+        </div>
+        <button class="btn-save" onclick="addBilling()" style="width:100%;margin-top:8px">💾 حفظ الدفعة</button>
+      </div>
+      <h3 style="color:var(--gold);font-size:.95rem;margin:0 0 10px">📋 سجل المدفوعات</h3>
+      <div id="billingList"></div>
     </div>
-
-    <h3 style="color:var(--gold);font-size:.95rem;margin:0 0 10px">📋 سجل المدفوعات</h3>
-    <div id="billingList"></div>
   </div>
-</div>
+
   <div class="sec" id="sec-reports">
     <div class="panel">
       <h2>📄 التقارير الشاملة</h2>
@@ -844,6 +901,11 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <h2>⚙️ الإعدادات والخصوصية</h2>
       <div class="f"><label>🔑 مفتاح Gemini API</label><input type="password" id="geminiKey"></div>
       <button class="btn-save" onclick="saveGemini()">💾 حفظ المفتاح</button>
+      <div class="f" style="margin-top:10px">
+        <label>🔑 مفتاح Replicate API (لتوليد صور AI)</label>
+        <input type="password" id="replicateKey" placeholder="r8_...">
+      </div>
+      <button class="btn-outline" onclick="saveReplicateKey()" style="margin-top:5px">💾 حفظ مفتاح Replicate</button>
       <div class="f" style="margin-top:15px"><label>🔐 الخصوصية</label>
         <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
           <label><input type="checkbox" id="privEmail" style="width:16px"> عرض بريدي</label>
@@ -894,10 +956,11 @@ const CATBOX_API = "https://catbox.moe/user/api.php";
 const GEMINI_MODEL = "gemini-3.8-flash";
 
 var CU=null, CD=null;
-var patients=[], appointments=[], billing=[], lab=[], allUsers=[], posts=[], discussions=[], meetings=[], digitalProducts=[], myOrders=[], subscriptionPlans=[], advertisements=[], notifications=[], friends=[], friendRequests=[];var charts={}, threeInit=false, cameraStream=null, lastCapturedImage=null;
+var patients=[], appointments=[], billing=[], lab=[], allUsers=[], posts=[], discussions=[], meetings=[], digitalProducts=[], myOrders=[], subscriptionPlans=[], advertisements=[], notifications=[], friends=[], friendRequests=[];
+var charts={}, threeInit=false, cameraStream=null, lastCapturedImage=null;
 var toothState={}, faceImg=null, baImg=null;
 var geminiKey = '', currentPatient = null, userSubscription = null;
-var lastDiagnosis = '', lastTreatmentMain = '';
+var lastDiagnosis = '', lastTreatmentMain = '', lastTreatmentAlt = '';
 
 // ═══════════════════════════════════════════════════════════════
 // 2. Utilities
@@ -907,7 +970,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 function showAlert(msg,type){const a=document.getElementById('authAlert');if(a){a.className='alert '+type+' show';a.textContent=msg}}
 
 // ═══════════════════════════════════════════════════════════════
-// 3. Auth
+// 3. Auth Functions
 // ═══════════════════════════════════════════════════════════════
 function switchAuth(t){
   document.getElementById('tabLogin').classList.toggle('active',t==='login');
@@ -993,12 +1056,13 @@ auth.onAuthStateChanged(async user=>{
       document.getElementById('userName').textContent=CD.fullName;
       document.getElementById('clinicInfo').textContent='🏥 '+(CD.clinicName||'عيادتي');
       document.querySelectorAll('[data-admin="true"]').forEach(el=>{el.style.display=(CD.role==='owner'||CD.role==='doctor')?'flex':'none'});
-      loadGemini(); loadProfileUI();
+      document.querySelectorAll('[data-owner-only="true"]').forEach(el=>{el.style.display=(CD.role==='owner')?'flex':'none'});
+      loadGemini(); loadProfileUI(); loadReplicateKey();
       await Promise.all([
         loadPatients(), loadAppointments(), loadBilling(), loadUsers(),
         loadPosts(), loadDiscussions(), loadMeetings(), loadDigitalProducts(),
         loadMyOrders(), loadSubscriptionPlans(), loadUserSubscription(),
-loadNotifications(), loadFriends(), loadAdvertisements(), loadLab()
+        loadNotifications(), loadFriends(), loadAdvertisements(), loadLab()
       ]);
       updateDashboard();
       setTimeout(initThree, 500);
@@ -1022,8 +1086,10 @@ function showSection(sec){
     const access = userSubscription.sectionsAccess || [];
     if (!access.includes(sec)) { toast('🔒 قسم غير مشمول في باقتك', true); return; }
   }
+  
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById('sec-'+sec); if(el) el.classList.add('active');
+  
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
   const btn=document.querySelector(`.ni[data-sec="${sec}"]`); if(btn) btn.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
@@ -1049,71 +1115,161 @@ function showSection(sec){
   if(sec==='paymentConfig') loadPaymentConfig();
   if(sec==='notifications') loadNotifications();
   if(sec==='lab'){ populateSelects(); loadLab(); }
-if(sec==='billing') { renderBilling(); updateBillingStats(); }
+  if(sec==='labAccounting'){ loadLab().then(()=>renderLabAccounting()); }
+  if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); }
   if(sec==='reports') populateSelects();
   if(sec==='settings') loadPrivacy();
   if(sec==='treatmentPlan') populateSelects();
-if(sec==='lab'){ populateSelects(); loadLab(); }
-if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); }
-  if(sec==='interdisciplinary') { loadInterConsults(); populateSelects(); }
+  if(sec==='interdisciplinary') { populateSelects(); loadInterConsults(); }
 }
 document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.sec)));
 
 // ═══════════════════════════════════════════════════════════════
-// 6. Profile
+// 🖼️ ضغط الصور (لتقليل الحجم قبل الحفظ)
 // ═══════════════════════════════════════════════════════════════
+function compressImage(file, maxWidth, maxHeight, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round(height * (maxWidth / width));
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round(width * (maxHeight / height));
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        console.log(`✅ Image compressed: ${img.width}x${img.height} → ${width}x${height}, Size: ${Math.round(compressed.length / 1024)}KB`);
+        resolve(compressed);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+// ═══════════════════════════════════════════════════════════════
+// 6. Profile (Dentbook) - نسخة كاملة وصحيحة
+// ═══════════════════════════════════════════════════════════════
+
 function loadProfileUI(){
-  if(!CD) return;
-  const avatar = document.getElementById('profAvatar');
-  if(avatar) avatar.src = CD.avatar || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a2332' width='100' height='100'/><circle cx='50' cy='40' r='16' fill='%23C5A059'/><ellipse cx='50' cy='90' rx='25' ry='20' fill='%23C5A059'/></svg>";
-  const cover = document.getElementById('profCover');
-  if(cover && CD.cover) cover.style.backgroundImage = `url('${CD.cover}')`;
-  const bio = document.getElementById('bioText');
-  if(bio) bio.value = CD.bio || '';
-}
-async function uploadAvatar(e){
-  const file = e.target.files[0]; if(!file) return;
-  toast('⏳ جاري رفع الصورة...');
-  const fd = new FormData(); fd.append('reqtype','fileupload'); fd.append('fileToUpload', file);
-  const res = await fetch(CATBOX_API, {method:'POST', body:fd});
-  const url = await res.text();
-  if(!url.startsWith('https://')) return toast('❌ فشل الرفع', true);
-  await db.collection('users').doc(CU.uid).update({ avatar: url });
-  CD.avatar = url;
-  document.getElementById('profAvatar').src = url;
-  toast('✅ تم تحديث الصورة');
-}
-async function uploadCover(e){
-  const file = e.target.files[0]; if(!file) return;
-  if(file.size > 5*1024*1024) return toast('❌ أكبر من 5MB', true);
-  toast('⏳ جاري رفع الغلاف...');
-  const fd = new FormData(); fd.append('reqtype','fileupload'); fd.append('fileToUpload', file);
-  const res = await fetch(CATBOX_API, {method:'POST', body:fd});
-  const url = await res.text();
-  if(!url.startsWith('https://')) return toast('❌ فشل الرفع', true);
-  await db.collection('users').doc(CU.uid).update({ cover: url });
-  CD.cover = url;
-  document.getElementById('profCover').style.backgroundImage = `url('${url}')`;
-  toast('✅ تم تحديث الغلاف');
-}
-async function saveProfileInfo(){
-  const bio = document.getElementById('bioText').value;
-  await db.collection('users').doc(CU.uid).update({ bio });
-  CD.bio = bio;
-  toast('✅ تم حفظ الملف');
+  try {
+    if (!CD) return;
+    console.log('🔄 loadProfileUI:', { avatar: !!CD.avatar, cover: !!CD.cover, bio: !!CD.bio });
+    
+    const avatar = document.getElementById('profAvatar');
+    if (avatar) {
+      avatar.src = CD.avatar || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a2332' width='100' height='100'/><circle cx='50' cy='40' r='16' fill='%23C5A059'/><ellipse cx='50' cy='90' rx='25' ry='20' fill='%23C5A059'/></svg>";
+    }
+    
+    const cover = document.getElementById('profCover');
+    if (cover && CD.cover) {
+      cover.style.backgroundImage = `url('${CD.cover}')`;
+      cover.style.backgroundSize = 'cover';
+      cover.style.backgroundPosition = 'center';
+    }
+    
+    const bio = document.getElementById('bioText');
+    if (bio) bio.value = CD.bio || '';
+  } catch(e) { 
+    console.error('loadProfileUI:', e);
+  }
 }
 
+async function uploadAvatar(e) {
+  const file = e.target.files[0]; 
+  if(!file) return;
+  
+  if(file.size > 10*1024*1024) return toast('❌ الحد الأقصى 10MB', true);
+  toast('⏳ جاري معالجة الصورة...');
+  
+  try {
+    const compressedBase64 = await compressImage(file, 300, 300, 0.75);
+    await db.collection('users').doc(CU.uid).update({ avatar: compressedBase64 });
+    CD.avatar = compressedBase64;
+    document.getElementById('profAvatar').src = compressedBase64;
+    toast('✅ تم تحديث الصورة الشخصية');
+  } catch(err) { 
+    console.error('uploadAvatar error:', err);
+    toast('❌ ' + (err.code || err.message), true); 
+  }
+}
+
+async function uploadCover(e) {
+  const file = e.target.files[0]; 
+  if(!file) return;
+  
+  if(file.size > 10*1024*1024) return toast('❌ الحد الأقصى 10MB', true);
+  toast('⏳ جاري معالجة الغلاف...');
+  
+  try {
+    const compressedBase64 = await compressImage(file, 1200, 400, 0.70);
+    await db.collection('users').doc(CU.uid).update({ cover: compressedBase64 });
+    CD.cover = compressedBase64;
+    const cover = document.getElementById('profCover');
+    if(cover) { 
+      cover.style.backgroundImage = `url('${compressedBase64}')`; 
+      cover.style.backgroundSize = 'cover'; 
+      cover.style.backgroundPosition = 'center'; 
+    }
+    toast('✅ تم تحديث الغلاف');
+  } catch(err) { 
+    console.error('uploadCover error:', err);
+    toast('❌ ' + (err.code || err.message), true); 
+  }
+}
+
+async function saveProfileInfo(){
+  try {
+    const bio = document.getElementById('bioText').value;
+    await db.collection('users').doc(CU.uid).update({ bio });
+    CD.bio = bio;
+    toast('✅ تم حفظ الملف');
+  } catch(err) {
+    console.error('saveProfileInfo:', err);
+    toast('❌ ' + (err.code || err.message), true);
+  }
+}
 // ═══════════════════════════════════════════════════════════════
 // 7. Patients
 // ═══════════════════════════════════════════════════════════════
 async function loadPatients(){
   try{
     let q = db.collection('patients');
-    if(CD.role!=='owner') q = q.where('clinicId','==',CD.clinicId);
+    // فقط إذا لم يكن owner، فلتر بـ clinicId
+    if(CD.role !== 'owner' && CD.clinicId) {
+      q = q.where('clinicId','==',CD.clinicId);
+    }
     const snap = await q.get();
     patients=[]; snap.forEach(d=>patients.push({id:d.id,...d.data()}));
+    
+    // 🎯 تشخيص في Console
+    console.log('✅ Patients loaded:', patients.length);
+    console.log('   Role:', CD.role, '| ClinicId:', CD.clinicId);
+    console.log('   Container:', document.getElementById('patientsList'));
+    
     renderPatients(); populateSelects(); updateDashboard();
-  }catch(e){ console.error(e); }
+  } catch(e) { 
+    console.error('❌ loadPatients:', e);
+    toast('⚠️ فشل تحميل المرضى: ' + (e.code || e.message), true);
+  }
 }
 function renderPatients(){
   const el=document.getElementById('patientsList'); if(!el) return;
@@ -1191,7 +1347,7 @@ async function savePhoto(){
   if(!pid||!lastCapturedImage) return toast('⚠️',true);
   const blob=await (await fetch(lastCapturedImage)).blob();
   const fd=new FormData(); fd.append('reqtype','fileupload'); fd.append('fileToUpload',blob,'photo.jpg');
-  const res=await fetch(CATBOX_API,{method:'POST',body:fd}); const url=await res.text();
+  const res=await fetch(CATBOX_API,{method:'POST',body:fd}); const url=(await res.text()).trim();
   if(!url.startsWith('https://')) return toast('❌',true);
   await db.collection('patients').doc(pid).collection('photos').add({ url, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
   toast('✅'); lastCapturedImage=null; document.getElementById('lastCapture').style.display='none'; loadPatientPhotos(pid);
@@ -1243,7 +1399,7 @@ async function saveChart(){
 async function saveHistory(){ if(!window._currentPatientId) return; await db.collection('patients').doc(window._currentPatientId).collection('medical').doc('history').set({ chronic: document.getElementById('histChronic').value, allergy: document.getElementById('histAllergy').value }, {merge:true}); toast('✅'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 10. Gemini AI ⭐ تم تحديث الموديل إلى gemini-3.8-flash
+// 10. Gemini AI
 // ═══════════════════════════════════════════════════════════════
 async function callGemini(prompt, imageBase64 = null){
   if(!geminiKey) throw new Error('أضف مفتاح Gemini من الإعدادات');
@@ -1315,11 +1471,10 @@ async function saveDiagToPatient(){
   await db.collection('patients').doc(pid).collection('medical').doc('diagnosis').set({ text: lastDiagnosis, savedAt: firebase.firestore.FieldValue.serverTimestamp() });
   toast('✅ تم الحفظ');
 }
-// ═══════════════════════════════════════════════════════════════
-// خطة العلاج والبدائل والمقارنة
-// ═══════════════════════════════════════════════════════════════
-var lastTreatmentAlt = '';
 
+// ═══════════════════════════════════════════════════════════════
+// 11. Treatment Plan
+// ═══════════════════════════════════════════════════════════════
 async function loadTPPatientData(pid){
   if(!pid) return;
   try{
@@ -1349,27 +1504,11 @@ async function generateTreatmentPlan(){
   const out = document.getElementById('tpResult');
   out.textContent = '⏳ جاري توليد الخطة الرئيسية...';
   try{
-    const res = await callGemini(
-`أنت طبيب أسنان خبير. اقترح خطة علاج رئيسية للحالة التالية:
-
-${txt}
-
-الميزانية: ${budget}
-الأولوية: ${priority}
-
-قدم الخطة بالشكل التالي:
-1) المراحل بالترتيب
-2) المواد المقترحة
-3) المدة الزمنية لكل مرحلة
-4) التكلفة التقديرية
-5) النتائج المتوقعة
-بالعربية وبتنسيق واضح.`);
+    const res = await callGemini(`أنت طبيب أسنان خبير. اقترح خطة علاج رئيسية للحالة التالية:\n\n${txt}\n\nالميزانية: ${budget}\nالأولوية: ${priority}\n\nقدم الخطة بالشكل التالي:\n1) المراحل بالترتيب\n2) المواد المقترحة\n3) المدة الزمنية لكل مرحلة\n4) التكلفة التقديرية\n5) النتائج المتوقعة\nبالعربية وبتنسيق واضح.`);
     lastTreatmentMain = res;
     out.textContent = res;
     toast('✅ تم توليد الخطة الرئيسية');
-  }catch(e){
-    out.textContent = '❌ ' + e.message;
-  }
+  }catch(e){ out.textContent = '❌ ' + e.message; }
 }
 
 async function generateAlternativePlan(){
@@ -1380,28 +1519,11 @@ async function generateAlternativePlan(){
   const out = document.getElementById('tpAltResult');
   out.textContent = '⏳ جاري توليد الخطة البديلة...';
   try{
-    const res = await callGemini(
-`أنت طبيب أسنان خبير. اقترح خطة علاج بديلة (نهج مختلف تماماً عن الخيار التقليدي) للحالة التالية:
-
-${txt}
-
-الميزانية: ${budget}
-الأولوية: ${priority}
-
-قدم الخطة البديلة بالشكل:
-1) الفكرة المختلفة عن الحل التقليدي
-2) المراحل
-3) المواد
-4) المدة
-5) التكلفة التقديرية
-6) متى يُنصح بها
-بالعربية.`);
+    const res = await callGemini(`أنت طبيب أسنان خبير. اقترح خطة علاج بديلة (نهج مختلف تماماً عن الخيار التقليدي) للحالة التالية:\n\n${txt}\n\nالميزانية: ${budget}\nالأولوية: ${priority}\n\nقدم الخطة البديلة بالشكل:\n1) الفكرة المختلفة عن الحل التقليدي\n2) المراحل\n3) المواد\n4) المدة\n5) التكلفة التقديرية\n6) متى يُنصح بها\nبالعربية.`);
     lastTreatmentAlt = res;
     out.textContent = res;
     toast('✅ تم توليد الخطة البديلة');
-  }catch(e){
-    out.textContent = '❌ ' + e.message;
-  }
+  }catch(e){ out.textContent = '❌ ' + e.message; }
 }
 
 async function compareTreatmentPlans(){
@@ -1411,25 +1533,10 @@ async function compareTreatmentPlans(){
   const el = document.getElementById('tpComparison');
   el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--gold)">⏳ جاري المقارنة بين الخطتين...</div>';
   try{
-    const res = await callGemini(
-`قارن بين خطتي العلاج التاليتين بشكل منهجي:
-
-🅰️ الخطة الرئيسية:
-${lastTreatmentMain}
-
-🅱️ الخطة البديلة:
-${lastTreatmentAlt}
-
-أعطني:
-1) جدول مقارنة (التكلفة | المدة | المخاطر | النتائج | مناسبة لـ)
-2) الفروق الجوهرية
-3) توصيتك النهائية ومتى تختار كل واحدة
-بالعربية وبتنسيق مرتب.`);
+    const res = await callGemini(`قارن بين خطتي العلاج التاليتين بشكل منهجي:\n\n🅰️ الخطة الرئيسية:\n${lastTreatmentMain}\n\n🅱️ الخطة البديلة:\n${lastTreatmentAlt}\n\nأعطني:\n1) جدول مقارنة (التكلفة | المدة | المخاطر | النتائج | مناسبة لـ)\n2) الفروق الجوهرية\n3) توصيتك النهائية ومتى تختار كل واحدة\nبالعربية وبتنسيق مرتب.`);
     el.innerHTML = `<div style="background:var(--card2);border:2px solid var(--gold);border-radius:12px;padding:16px;line-height:1.9;white-space:pre-wrap;color:var(--txt)"><h3 style="color:var(--gold);margin-bottom:10px">⚖️ المقارنة بين الخطتين</h3>${esc(res)}</div>`;
     toast('✅ تم إعداد المقارنة');
-  }catch(e){
-    el.innerHTML = `<div style="color:var(--err);padding:12px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(e.message)}</div>`;
-  }
+  }catch(e){ el.innerHTML = `<div style="color:var(--err);padding:12px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(e.message)}</div>`; }
 }
 
 async function saveTreatmentPlanToPatient(){
@@ -1447,14 +1554,14 @@ async function saveTreatmentPlanToPatient(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 11. Face Analysis
+// 12. Face Analysis
 // ═══════════════════════════════════════════════════════════════
 function loadFaceImage(e){ const r=new FileReader(); r.onload=ev=>{ const i=new Image(); i.onload=()=>{ faceImg=i; const c=document.getElementById('faceCanvas'); c.width=i.width; c.height=i.height; c.getContext('2d').drawImage(i,0,0); }; i.src=ev.target.result; }; r.readAsDataURL(e.target.files[0]); }
 function draw468(){ if(!faceImg) return toast('⚠️',true); const c=document.getElementById('faceCanvas'),ctx=c.getContext('2d'); ctx.drawImage(faceImg,0,0); ctx.fillStyle='rgba(197,160,89,.8)'; const cx=c.width/2,cy=c.height/2,r=c.width*0.3; for(let i=0;i<468;i++){ const a=(i/468)*Math.PI*2; ctx.beginPath(); ctx.arc(cx+Math.cos(a)*r*(0.8+Math.random()*0.4),cy+Math.sin(a)*r*(0.8+Math.random()*0.4),1.5,0,Math.PI*2); ctx.fill(); } toast('✅'); }
 function drawBeautyLines(){ if(!faceImg) return; const c=document.getElementById('faceCanvas'),ctx=c.getContext('2d'); ctx.drawImage(faceImg,0,0); ctx.strokeStyle='rgba(16,185,129,.7)'; ctx.lineWidth=2; [0.33,0.5,0.67].forEach(y=>{ ctx.beginPath(); ctx.moveTo(0,c.height*y); ctx.lineTo(c.width,c.height*y); ctx.stroke(); }); }
 
 // ═══════════════════════════════════════════════════════════════
-// 12. DSD Editor
+// 13. DSD Editor
 // ═══════════════════════════════════════════════════════════════
 var editorCanvas = null, editorCtx = null, editorImage = null;
 var editorTool = 'brush', editorDrawing = false;
@@ -1633,7 +1740,7 @@ async function saveDrawingToPatient() {
     const blob = await (await fetch(dataUrl)).blob();
     const fd = new FormData(); fd.append('reqtype', 'fileupload'); fd.append('fileToUpload', blob, 'design.jpg');
     const res = await fetch(CATBOX_API, { method: 'POST', body: fd });
-    const url = await res.text();
+    const url = (await res.text()).trim();
     if (!url.startsWith('https://')) throw new Error('فشل الرفع');
     await db.collection('patients').doc(pid).collection('photos').add({ url, type: 'smile_design', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     toast('✅');
@@ -1657,14 +1764,12 @@ async function generateAfterWithDrawing() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 13. X-Ray & Before/After
+// 14. X-Ray Analysis (Simple)
 // ═══════════════════════════════════════════════════════════════
 function analyzeXray(){ document.getElementById('xrayResult').innerHTML='<div style="background:var(--card2);padding:15px;border-radius:10px"><b style="color:var(--ok)">✅ كثافة العظام: طبيعية</b></div>'; }
-function loadBAImage(e){ const r=new FileReader(); r.onload=ev=>{ baImg=ev.target.result; document.getElementById('imgBefore').src=baImg; document.getElementById('imgAfter').src=baImg; document.getElementById('baSlider').style.display='block'; }; r.readAsDataURL(e.target.files[0]); }
-function generateAfter(){ if(!baImg) return; document.getElementById('imgAfter').style.filter='brightness(1.15) contrast(1.1)'; toast('✅'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 14. CAD/CAM 3D
+// 15. CAD/CAM 3D
 // ═══════════════════════════════════════════════════════════════
 var threeScene, threeCamera, threeRenderer, threeToothGroup, threeAutoRotate = true;
 var threeMouseDown = false, threePrevX = 0, threePrevY = 0, threeTargetRotY = 0, threeTargetRotX = 0;
@@ -1778,7 +1883,7 @@ function updateToothScale(val) { if (threeToothGroup) { const s = val / 100; thr
 function exportSTL() { if (!threeToothGroup) return toast('⚠️', true); toast('📥 جاري التصدير...'); setTimeout(() => toast('✅'), 1500); }
 
 // ═══════════════════════════════════════════════════════════════
-// 15. Materials Guide
+// 16. Materials Guide
 // ═══════════════════════════════════════════════════════════════
 var MATERIALS_DB = [
   { cat:'restorative', nameAr:'كومبوزيت (حشو تجميلي)', desc:'حشوات تجميلية بلون الأسنان', search:'dental composite resin' },
@@ -1842,7 +1947,7 @@ function searchMaterials() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 16. Store
+// 17. Store
 // ═══════════════════════════════════════════════════════════════
 async function loadDigitalProducts(){
   const snap = await db.collection('digitalProducts').get();
@@ -1887,13 +1992,13 @@ async function addProduct(){
     statusEl.textContent = '⏳ رفع...'; statusEl.style.color = 'var(--gold)';
     const fd = new FormData(); fd.append('reqtype','fileupload'); fd.append('fileToUpload', file);
     const res = await fetch(CATBOX_API, { method: 'POST', body: fd });
-    const fileUrl = await res.text();
+    const fileUrl = (await res.text()).trim();
     if (!fileUrl.startsWith('https://')) throw new Error('فشل الرفع');
     let coverUrl = '';
     if (coverFile) {
       const cfd = new FormData(); cfd.append('reqtype','fileupload'); cfd.append('fileToUpload', coverFile);
       const cres = await fetch(CATBOX_API, { method: 'POST', body: cfd });
-      coverUrl = await cres.text();
+      coverUrl = (await cres.text()).trim();
     }
     await db.collection('digitalProducts').add({ title, type, price, desc, cover: coverUrl, url: fileUrl, isFree: price === 0, createdAt: firebase.firestore.FieldValue.serverTimestamp(), createdBy: CU.uid });
     statusEl.textContent = '✅'; statusEl.style.color = 'var(--ok)';
@@ -1920,7 +2025,7 @@ async function loadMyOrders(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 17. Subscriptions
+// 18. Subscriptions
 // ═══════════════════════════════════════════════════════════════
 async function loadSubscriptionPlans(){
   const snap = await db.collection('subscriptionPlans').get();
@@ -1990,7 +2095,7 @@ async function loadUserSubscription(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 18. Friends
+// 19. Friends
 // ═══════════════════════════════════════════════════════════════
 async function loadFriends(){
   try {
@@ -2010,7 +2115,7 @@ async function acceptFriend(reqId){ await db.collection('friendships').doc(reqId
 async function rejectFriend(reqId){ await db.collection('friendships').doc(reqId).delete(); toast('❌'); loadFriends(); }
 
 // ═══════════════════════════════════════════════════════════════
-// 19. Dentbook Posts
+// 20. Dentbook Posts
 // ═══════════════════════════════════════════════════════════════
 let postImageBase64 = null;
 function handlePostImage(e){ const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = ev => { postImageBase64 = ev.target.result; document.getElementById('postImagePreview').style.display='inline-block'; }; reader.readAsDataURL(file); }
@@ -2019,7 +2124,7 @@ async function createPost(){
   if(!text && !postImageBase64) return toast('⚠️ اكتب شيئاً', true);
   toast('⏳...');
   let imageUrl = '';
-  if(postImageBase64){ const fd = new FormData(); fd.append('reqtype','fileupload'); fd.append('fileToUpload', await (await fetch(postImageBase64)).blob(), 'post.jpg'); const res = await fetch(CATBOX_API, {method:'POST', body:fd}); imageUrl = await res.text(); }
+  if(postImageBase64){ const fd = new FormData(); fd.append('reqtype','fileupload'); fd.append('fileToUpload', await (await fetch(postImageBase64)).blob(), 'post.jpg'); const res = await fetch(CATBOX_API, {method:'POST', body:fd}); imageUrl = (await res.text()).trim(); }
   await db.collection('posts').add({ text, imageUrl, authorName:CD.fullName||'مستخدم', authorAvatar:CD.avatar||'', authorId:CU.uid, likes:0, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
   document.getElementById('postInput').value=''; postImageBase64=null; document.getElementById('postImagePreview').style.display='none';
   loadPosts(); toast('✅');
@@ -2028,11 +2133,23 @@ async function loadPosts(){
   const snap = await db.collection('posts').orderBy('createdAt','desc').limit(50).get();
   posts=[]; snap.forEach(d=>posts.push({id:d.id,...d.data()}));
   const el = document.getElementById('postsList'); if(!el) return;
-  el.innerHTML = posts.length ? posts.map(p => `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px"><div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><div style="width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;overflow:hidden">${p.authorAvatar?`<img src="${p.authorAvatar}" style="width:100%;height:100%;object-fit:cover">`:esc((p.authorName||'?').charAt(0))}</div><div><b>${esc(p.authorName)}</b><br><small style="color:var(--muted)">${p.createdAt?.toDate?.().toLocaleString('ar-EG')||''}</small></div></div>${p.text?`<p style="white-space:pre-wrap;line-height:1.7">${esc(p.text)}</p>`:''}${p.imageUrl?`<img src="${p.imageUrl}" style="max-width:100%;border-radius:10px;margin-top:8px">`:''}</div>`).join('') : '<div class="empty">لا منشورات</div>';
+  el.innerHTML = posts.length ? posts.map(p => {
+    const displayAvatar = (p.authorId === CU.uid && CD.avatar) ? CD.avatar : (p.authorAvatar || '');
+    return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <div style="width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;overflow:hidden">
+          ${displayAvatar?`<img src="${displayAvatar}" style="width:100%;height:100%;object-fit:cover">`:esc((p.authorName||'?').charAt(0))}
+        </div>
+        <div><b>${esc(p.authorName)}</b><br><small style="color:var(--muted)">${p.createdAt?.toDate?.().toLocaleString('ar-EG')||''}</small></div>
+      </div>
+      ${p.text?`<p style="white-space:pre-wrap;line-height:1.7">${esc(p.text)}</p>`:''}
+      ${p.imageUrl?`<img src="${p.imageUrl}" style="max-width:100%;border-radius:10px;margin-top:8px">`:''}
+    </div>`;
+  }).join('') : '<div class="empty">لا منشورات</div>';
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 20. DentChat
+// 21. DentChat
 // ═══════════════════════════════════════════════════════════════
 function loadDentChat(){
   db.collection('dentChat').orderBy('createdAt','asc').limit(100).onSnapshot(snap => {
@@ -2045,13 +2162,13 @@ function loadDentChat(){
 async function sendDentChat(){ const input = document.getElementById('dentChatInput'); const text = input.value.trim(); if(!text) return; await db.collection('dentChat').add({text, senderId:CU.uid, senderName:CD.fullName, createdAt:firebase.firestore.FieldValue.serverTimestamp()}); input.value=''; }
 
 // ═══════════════════════════════════════════════════════════════
-// 21. Discussions
+// 22. Discussions
 // ═══════════════════════════════════════════════════════════════
 async function loadDiscussions(){ const snap = await db.collection('discussions').orderBy('createdAt','desc').get(); discussions=[]; snap.forEach(d=>discussions.push({id:d.id,...d.data()})); const el = document.getElementById('discussionsList'); if(!el) return; el.innerHTML = discussions.length ? discussions.map(d => `<div class="appt-card"><div><b>${esc(d.title)}</b><br><small>${esc(d.body)}</small></div></div>`).join('') : '<div class="empty">لا مناقشات</div>'; }
 async function createDiscussion(){ const title = document.getElementById('discTitle').value; if(!title) return; await db.collection('discussions').add({title, body:document.getElementById('discBody').value, authorName:CD.fullName, createdAt:firebase.firestore.FieldValue.serverTimestamp()}); toast('✅'); loadDiscussions(); }
 
 // ═══════════════════════════════════════════════════════════════
-// 22. Meetings (Jitsi)
+// 23. Meetings (Jitsi)
 // ═══════════════════════════════════════════════════════════════
 var activeJitsiRoom = null;
 
@@ -2125,20 +2242,20 @@ function rejoinMeeting(roomId) {
 function copyLink(link) { navigator.clipboard.writeText(link).then(() => toast('📋')); }
 
 // ═══════════════════════════════════════════════════════════════
-// 23. Ads
+// 24. Ads
 // ═══════════════════════════════════════════════════════════════
 async function loadAdvertisements(){ const snap = await db.collection('advertisements').get(); advertisements=[]; snap.forEach(d=>advertisements.push({id:d.id,...d.data()})); const el = document.getElementById('adminAdsList'); if(!el) return; el.innerHTML = advertisements.length ? '<table class="tbl"><tr><th>العنوان</th><th>حذف</th></tr>' + advertisements.map(a => `<tr><td>${esc(a.title)}</td><td><button class="btn-danger" onclick="deleteAd('${a.id}')">🗑️</button></td></tr>`).join('') + '</table>' : '<div class="empty">لا إعلانات</div>'; }
 async function addAd(){ const title = document.getElementById('adTitle').value; if(!title) return; await db.collection('advertisements').add({title, image:document.getElementById('adImage').value, desc:document.getElementById('adDesc').value, createdAt:firebase.firestore.FieldValue.serverTimestamp()}); toast('✅'); loadAdvertisements(); document.getElementById('adTitle').value=''; }
 async function deleteAd(id){ if(!confirm('حذف؟')) return; await db.collection('advertisements').doc(id).delete(); loadAdvertisements(); }
 
 // ═══════════════════════════════════════════════════════════════
-// 24. Payment Config
+// 25. Payment Config
 // ═══════════════════════════════════════════════════════════════
 async function loadPaymentConfig(){ const doc = await db.collection('settings').doc('payment').get(); if(doc.exists){ const d = doc.data(); ['payBinanceId','payWallet','payBank','payAccount','payWhatsApp','payInstructions'].forEach(id => { const el = document.getElementById(id); if(el && d[id.replace('pay','').toLowerCase()]) el.value = d[id.replace('pay','').toLowerCase()]; }); } }
 async function savePaymentConfig(){ await db.collection('settings').doc('payment').set({ binanceid:document.getElementById('payBinanceId').value, wallet:document.getElementById('payWallet').value, bank:document.getElementById('payBank').value, account:document.getElementById('payAccount').value, whatsapp:document.getElementById('payWhatsApp').value, instructions:document.getElementById('payInstructions').value }); toast('✅'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 25. Notifications
+// 26. Notifications
 // ═══════════════════════════════════════════════════════════════
 function loadNotifications(){
   db.collection('notifications').where('userId','==',CU.uid).orderBy('createdAt','desc').limit(50).onSnapshot(snap => {
@@ -2153,7 +2270,7 @@ async function markNotifRead(id){ await db.collection('notifications').doc(id).u
 async function markAllNotificationsRead(){ const unread = notifications.filter(n => !n.read); for(let n of unread) await db.collection('notifications').doc(n.id).update({read:true}); toast('✅'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 26. Reports
+// 27. Reports
 // ═══════════════════════════════════════════════════════════════
 async function generateFullReport(){
   const pid = document.getElementById('reportPatient2').value;
@@ -2172,12 +2289,18 @@ async function generateFullReport(){
 function printReport(){ window.print(); }
 
 // ═══════════════════════════════════════════════════════════════
-// 27. Users
+// 28. Users
 // ═══════════════════════════════════════════════════════════════
 async function loadUsers(){
-  const snap = await db.collection('users').get();
-  allUsers=[]; snap.forEach(d=>allUsers.push({id:d.id,...d.data()}));
-  renderUsers(); updateDashboard();
+  try {
+    const snap = await db.collection('users').get();
+    allUsers=[]; snap.forEach(d=>allUsers.push({id:d.id,...d.data()}));
+    console.log('✅ Users loaded:', allUsers.length);
+    renderUsers(); updateDashboard();
+  } catch(e) {
+    console.error('❌ loadUsers:', e);
+    toast('⚠️ فشل تحميل الفريق: ' + (e.code || e.message), true);
+  }
 }
 function renderUsers(){
   const el=document.getElementById('usersList'); if(!el) return;
@@ -2197,7 +2320,7 @@ async function approveUser(uid){ await db.collection('users').doc(uid).update({s
 async function deleteUser(uid){ if(!confirm('حذف؟'))return; await db.collection('users').doc(uid).delete(); loadUsers(); toast('🗑️'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 28. Dashboard
+// 29. Dashboard + Appointments
 // ═══════════════════════════════════════════════════════════════
 function updateDashboard(){
   document.getElementById('statPatients').textContent = patients.length;
@@ -2207,10 +2330,17 @@ function updateDashboard(){
   if(!charts.main){ const ctx = document.getElementById('chartMain'); if(!ctx) return; charts.main = new Chart(ctx, { type:'bar', data: { labels:['المرضى','المواعيد'], datasets:[{data:[patients.length,appointments.length], backgroundColor:['#C5A059','#10b981']}]}, options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{color:'#94a3b8'}}, x:{ticks:{color:'#94a3b8'}}} } }); }
   else { charts.main.data.datasets[0].data = [patients.length, appointments.length]; charts.main.update(); }
 }
-async function loadAppointments(){ const snap = await db.collection('appointments').where('clinicId','==',CD.clinicId).get(); appointments=[]; snap.forEach(d=>appointments.push({id:d.id,...d.data()})); }
-async function addAppointment(){ const pid = document.getElementById('apptPatient').value; if(!pid) return toast('⚠️', true); await db.collection('appointments').add({ patientId:pid, date:document.getElementById('apptDate').value, time:document.getElementById('apptTime').value, type:document.getElementById('apptType').value, clinicId:CD.clinicId, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); toast('✅'); loadAppointments(); }
+async function loadAppointments(){
+  try {
+    const snap = await db.collection('appointments').where('clinicId','==',CD.clinicId).get();
+    appointments=[]; snap.forEach(d=>appointments.push({id:d.id,...d.data()}));
+  } catch(e) {
+    console.error('❌ loadAppointments:', e);
+  }
+}async function addAppointment(){ const pid = document.getElementById('apptPatient').value; if(!pid) return toast('⚠️', true); await db.collection('appointments').add({ patientId:pid, date:document.getElementById('apptDate').value, time:document.getElementById('apptTime').value, type:document.getElementById('apptType').value, clinicId:CD.clinicId, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); toast('✅'); loadAppointments(); }
+
 // ═══════════════════════════════════════════════════════════════
-// 💳 الحسابات والمدفوعات
+// 30. Billing (Clinic)
 // ═══════════════════════════════════════════════════════════════
 async function loadBilling(){
   try{
@@ -2222,7 +2352,6 @@ async function loadBilling(){
     renderBilling(); updateBillingStats();
   }catch(e){ console.error(e); }
 }
-
 async function addBilling(){
   const pid = document.getElementById('billPatient').value;
   const date = document.getElementById('billDate').value;
@@ -2247,7 +2376,6 @@ async function addBilling(){
     loadBilling();
   }catch(e){ toast('❌ '+e.message, true); }
 }
-
 function renderBilling(){
   const el = document.getElementById('billingList'); if(!el) return;
   if(!billing.length){ el.innerHTML='<div class="empty">لا توجد مدفوعات</div>'; return; }
@@ -2262,39 +2390,42 @@ function renderBilling(){
       <td><button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="deleteBilling('${b.id}')">🗑️</button></td>
     </tr>`).join('')+'</tbody></table></div>';
 }
-
 async function deleteBilling(id){
   if(!confirm('حذف الدفعة؟')) return;
   await db.collection('billing').doc(id).delete();
-  toast('🗑️'); loadBilling();
+  toast('🗑️');
+  loadBilling();
 }
-
 function updateBillingStats(){
   const now = new Date();
   const today = now.toISOString().slice(0,10);
-  // بداية الأسبوع (السبت)
+  const yearStr = today.slice(0,4);
   const weekStart = new Date(now);
   weekStart.setDate(now.getDate() - now.getDay());
   const weekStr = weekStart.toISOString().slice(0,10);
   const monthStr = today.slice(0,7);
 
-  let dayTotal = 0, weekTotal = 0, monthTotal = 0, remaining = 0;
+  let dayTotal = 0, weekTotal = 0, monthTotal = 0, yearTotal = 0, remaining = 0;
   billing.forEach(b => {
     const paid = b.paid || 0;
-    if(b.date === today) dayTotal += paid;
-    if((b.date||'') >= weekStr) weekTotal += paid;
-    if((b.date||'').startsWith(monthStr)) monthTotal += paid;
+    const d = b.date || '';
+    if(d === today) dayTotal += paid;
+    if(d >= weekStr) weekTotal += paid;
+    if(d.startsWith(monthStr)) monthTotal += paid;
+    if(d.startsWith(yearStr)) yearTotal += paid;
     remaining += (b.remaining || 0);
   });
 
-  document.getElementById('billToday').textContent = '$' + dayTotal.toFixed(2);
-  document.getElementById('billWeek').textContent = '$' + weekTotal.toFixed(2);
-  document.getElementById('billMonth').textContent = '$' + monthTotal.toFixed(2);
-  document.getElementById('billRemaining').textContent = '$' + remaining.toFixed(2);
+  const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setTxt('billToday', '$' + dayTotal.toFixed(2));
+  setTxt('billWeek', '$' + weekTotal.toFixed(2));
+  setTxt('billMonth', '$' + monthTotal.toFixed(2));
+  setTxt('billYear', '$' + yearTotal.toFixed(2));
+  setTxt('billRemaining', '$' + remaining.toFixed(2));
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 🧪 المعمل
+// 31. Lab
 // ═══════════════════════════════════════════════════════════════
 async function loadLab(){
   try{
@@ -2304,26 +2435,29 @@ async function loadLab(){
     lab = []; snap.forEach(d=>lab.push({id:d.id,...d.data()}));
     lab.sort((a,b)=>(a.due||'').localeCompare(b.due||''));
     renderLab();
-    const st = document.getElementById('statLab');
-    if(st) st.textContent = lab.length;
   }catch(e){ console.error(e); }
 }
-
+function calcLabTotals(){
+  const teeth = parseFloat(document.getElementById('labTeethCount')?.value) || 0;
+  const price = parseFloat(document.getElementById('labToothPrice')?.value) || 0;
+  const paid  = parseFloat(document.getElementById('labPaid')?.value) || 0;
+  const total = +(teeth * price).toFixed(2);
+  const remaining = +(Math.max(0, total - paid)).toFixed(2);
+  const tEl = document.getElementById('labTotal'); if(tEl) tEl.value = total.toFixed(2);
+  const rEl = document.getElementById('labRemaining'); if(rEl) rEl.value = remaining.toFixed(2);
+}
 async function addLab(){
   const pid = document.getElementById('labPatient').value;
   if(!pid) return toast('⚠️ اختر المريض', true);
   const p = patients.find(x => x.id === pid);
-
   const teethCount = parseInt(document.getElementById('labTeethCount').value) || 0;
   const toothPrice = parseFloat(document.getElementById('labToothPrice').value) || 0;
   const total      = +(teethCount * toothPrice).toFixed(2);
   const paid       = parseFloat(document.getElementById('labPaid').value) || 0;
   const remaining  = +(Math.max(0, total - paid)).toFixed(2);
-
-  if(teethCount <= 0)   return toast('⚠️ أدخل عدد الأسنان', true);
-  if(toothPrice <= 0)   return toast('⚠️ أدخل قيمة السن', true);
-  if(paid > total)      return toast('⚠️ المدفوع أكبر من المبلغ الكلي', true);
-
+  if(teethCount <= 0) return toast('⚠️ أدخل عدد الأسنان', true);
+  if(toothPrice <= 0) return toast('⚠️ أدخل قيمة السن', true);
+  if(paid > total)    return toast('⚠️ المدفوع أكبر من المبلغ الكلي', true);
   try{
     await db.collection('lab').add({
       patientId: pid, patientName: p?.fullName || '',
@@ -2337,69 +2471,28 @@ async function addLab(){
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     toast('✅ تم الإضافة');
-
-    // تفريغ النموذج
-    document.getElementById('labName').value         = '';
-    document.getElementById('labNotes').value        = '';
-    document.getElementById('labTeethCount').value   = '1';
-    document.getElementById('labToothPrice').value   = '0';
-    document.getElementById('labTotal').value        = '';
-    document.getElementById('labPaid').value         = '0';
-    document.getElementById('labRemaining').value    = '';
+    document.getElementById('labName').value       = '';
+    document.getElementById('labNotes').value      = '';
+    document.getElementById('labTeethCount').value = '1';
+    document.getElementById('labToothPrice').value = '0';
+    document.getElementById('labTotal').value      = '';
+    document.getElementById('labPaid').value       = '0';
+    document.getElementById('labRemaining').value  = '';
     loadLab();
   }catch(e){ toast('❌ '+e.message, true); }
 }
-
-// 🧮 حساب تلقائي
-function calcLabTotals(){
-  const teeth = parseFloat(document.getElementById('labTeethCount')?.value) || 0;
-  const price = parseFloat(document.getElementById('labToothPrice')?.value) || 0;
-  const paid  = parseFloat(document.getElementById('labPaid')?.value) || 0;
-  const total = +(teeth * price).toFixed(2);
-  const remaining = +(Math.max(0, total - paid)).toFixed(2);
-
-  document.getElementById('labTotal').value      = total.toFixed(2);
-  document.getElementById('labRemaining').value  = remaining.toFixed(2);
-}
-
-// ✏️ تعديل المدفوع مباشرة
-async function openLabEdit(id){
-  const l = lab.find(x => x.id === id); if(!l) return;
-  const newPaid = prompt(
-    `💰 المبلغ الكلي: $${(l.total||0).toFixed(2)}\n💵 المدفوع الحالي: $${(l.paid||0).toFixed(2)}\n\nأدخل المبلغ المدفوع الجديد:`,
-    l.paid || 0
-  );
-  if(newPaid === null) return;
-  const paidNum = parseFloat(newPaid);
-  if(isNaN(paidNum) || paidNum < 0)   return toast('⚠️ قيمة غير صحيحة', true);
-  if(paidNum > l.total)               return toast('⚠️ المدفوع أكبر من الكلي', true);
-
-  const remaining = +(l.total - paidNum).toFixed(2);
-  await db.collection('lab').doc(id).update({
-    paid: paidNum,
-    remaining,
-    status: remaining <= 0 ? 'مكتمل' : 'قيد التنفيذ'
-  });
-  toast('✅ تم التحديث');
-  loadLab();
-}
-
 function renderLab(){
   const el = document.getElementById('labList'); if(!el) return;
-
-  // 📊 الإحصائيات
   const sumTeeth     = lab.reduce((s,l) => s + (l.teethCount || 0), 0);
   const sumTotal     = lab.reduce((s,l) => s + (l.total     || 0), 0);
   const sumPaid      = lab.reduce((s,l) => s + (l.paid      || 0), 0);
   const sumRemaining = lab.reduce((s,l) => s + (l.remaining || 0), 0);
-
-  document.getElementById('labStatTeeth').textContent     = sumTeeth;
-  document.getElementById('labStatTotal').textContent     = '$' + sumTotal.toFixed(2);
-  document.getElementById('labStatPaid').textContent      = '$' + sumPaid.toFixed(2);
-  document.getElementById('labStatRemaining').textContent = '$' + sumRemaining.toFixed(2);
-
+  const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setTxt('labStatTeeth', sumTeeth);
+  setTxt('labStatTotal', '$' + sumTotal.toFixed(2));
+  setTxt('labStatPaid', '$' + sumPaid.toFixed(2));
+  setTxt('labStatRemaining', '$' + sumRemaining.toFixed(2));
   if(!lab.length){ el.innerHTML = '<div class="empty">لا طلبات</div>'; return; }
-
   el.innerHTML = lab.map(l => {
     const remaining = l.remaining ?? (l.total || 0) - (l.paid || 0);
     const isPaid    = remaining <= 0;
@@ -2411,26 +2504,12 @@ function renderLab(){
           <div style="font-size:.75rem;color:var(--muted);margin-top:4px">🏷️ ${esc(l.type)} · 🏭 ${esc(l.labName||'—')} · 📅 ${esc(l.due||'—')}</div>
           ${l.notes ? `<div style="font-size:.7rem;color:var(--muted);margin-top:4px">📝 ${esc(l.notes)}</div>` : ''}
         </div>
-
         <div style="display:grid;grid-template-columns:repeat(4,minmax(60px,1fr));gap:6px;font-size:.72rem;text-align:center;flex:1;min-width:290px">
-          <div style="background:rgba(0,0,0,.25);padding:6px;border-radius:6px">
-            <div style="color:var(--muted);font-size:.6rem">🦷 الأسنان</div>
-            <div style="color:var(--gold);font-weight:800;font-size:.85rem">${l.teethCount||0} × $${(l.toothPrice||0).toFixed(2)}</div>
-          </div>
-          <div style="background:rgba(0,0,0,.25);padding:6px;border-radius:6px">
-            <div style="color:var(--muted);font-size:.6rem">💰 الكلي</div>
-            <div style="color:var(--txt);font-weight:800;font-size:.85rem">$${(l.total||0).toFixed(2)}</div>
-          </div>
-          <div style="background:rgba(16,185,129,.12);padding:6px;border-radius:6px">
-            <div style="color:var(--muted);font-size:.6rem">💵 المدفوع</div>
-            <div style="color:var(--ok);font-weight:800;font-size:.85rem">$${(l.paid||0).toFixed(2)}</div>
-          </div>
-          <div style="background:rgba(239,68,68,.12);padding:6px;border-radius:6px">
-            <div style="color:var(--muted);font-size:.6rem">⏳ المتبقي</div>
-            <div style="color:${remaining > 0 ? 'var(--err)' : 'var(--ok)'};font-weight:800;font-size:.85rem">$${remaining.toFixed(2)}</div>
-          </div>
+          <div style="background:rgba(0,0,0,.25);padding:6px;border-radius:6px"><div style="color:var(--muted);font-size:.6rem">🦷 الأسنان</div><div style="color:var(--gold);font-weight:800;font-size:.85rem">${l.teethCount||0} × $${(l.toothPrice||0).toFixed(2)}</div></div>
+          <div style="background:rgba(0,0,0,.25);padding:6px;border-radius:6px"><div style="color:var(--muted);font-size:.6rem">💰 الكلي</div><div style="color:var(--txt);font-weight:800;font-size:.85rem">$${(l.total||0).toFixed(2)}</div></div>
+          <div style="background:rgba(16,185,129,.12);padding:6px;border-radius:6px"><div style="color:var(--muted);font-size:.6rem">💵 المدفوع</div><div style="color:var(--ok);font-weight:800;font-size:.85rem">$${(l.paid||0).toFixed(2)}</div></div>
+          <div style="background:rgba(239,68,68,.12);padding:6px;border-radius:6px"><div style="color:var(--muted);font-size:.6rem">⏳ المتبقي</div><div style="color:${remaining > 0 ? 'var(--err)' : 'var(--ok)'};font-weight:800;font-size:.85rem">$${remaining.toFixed(2)}</div></div>
         </div>
-
         <div style="display:flex;gap:6px;align-items:flex-start;flex-direction:column">
           <span class="chip" style="padding:4px 10px;font-size:.7rem;background:${isPaid ? 'rgba(16,185,129,.2);color:var(--ok)' : 'rgba(245,158,11,.2);color:var(--warn)'}">${esc(l.status)}</span>
           <div style="display:flex;gap:4px">
@@ -2442,20 +2521,290 @@ function renderLab(){
     </div>`;
   }).join('');
 }
+async function openLabEdit(id){
+  const l = lab.find(x => x.id === id); if(!l) return;
+  const newPaid = prompt(`💰 الكلي: $${(l.total||0).toFixed(2)}\n💵 المدفوع: $${(l.paid||0).toFixed(2)}\n\nأدخل المبلغ المدفوع الجديد:`, l.paid || 0);
+  if(newPaid === null) return;
+  const paidNum = parseFloat(newPaid);
+  if(isNaN(paidNum) || paidNum < 0) return toast('⚠️ قيمة غير صحيحة', true);
+  if(paidNum > l.total) return toast('⚠️ المدفوع أكبر من الكلي', true);
+  const remaining = +(l.total - paidNum).toFixed(2);
+  await db.collection('lab').doc(id).update({ paid: paidNum, remaining, status: remaining <= 0 ? 'مكتمل' : 'قيد التنفيذ' });
+  toast('✅ تم التحديث'); loadLab();
+  if(CD.role === 'owner') renderLabAccounting();
+}
 async function deleteLab(id){
-  if(!confirm('حذف الطلب؟')) return;
+  if(!confirm('⚠️ حذف طلب المعمل؟')) return;
   await db.collection('lab').doc(id).delete();
-  toast('🗑️'); loadLab();
+  toast('🗑️');
+  loadLab();
+  if(CD.role === 'owner') renderLabAccounting();
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 29. Interdisciplinary
+// 32. Lab Accounting (Owner Only)
 // ═══════════════════════════════════════════════════════════════
-async function requestInterConsult(){ const pid = document.getElementById('interPatient').value; const spec = document.getElementById('interSpecialty').value; if(!pid) return toast('⚠️', true); await db.collection('interconsult').add({ patientId:pid, patientName:patients.find(p=>p.id===pid)?.fullName, specialty:spec, notes:document.getElementById('interNotes').value, requestedBy:CD.fullName, status:'pending', createdAt:firebase.firestore.FieldValue.serverTimestamp() }); toast('✅'); loadInterConsults(); }
-async function loadInterConsults(){ const snap = await db.collection('interconsult').orderBy('createdAt','desc').limit(20).get(); const el = document.getElementById('interList'); if(!el) return; el.innerHTML = snap.empty ? '<div class="empty">لا طلبات</div>' : snap.docs.map(d => { const r = d.data(); return `<div class="appt-card"><div><b>${esc(r.patientName)}</b><br><small>${esc(r.specialty)} - ${esc(r.notes)}</small></div></div>`; }).join(''); }
+function renderLabAccounting(){
+  if(!CD || CD.role !== 'owner') return;
+  const period = document.getElementById('labBillPeriod')?.value || 'all';
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+  const yearStr = today.slice(0,4);
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
+  const weekStr = weekStart.toISOString().slice(0,10);
+  const monthStr = today.slice(0,7);
+
+  const getDate = (l) => l.due || l.createdAt?.toDate?.().toISOString?.().slice(0,10) || '';
+
+  let dayTotal = 0, weekTotal = 0, monthTotal = 0, yearTotal = 0;
+  lab.forEach(l => {
+    const paid = l.paid || 0;
+    const d = getDate(l);
+    if(d === today) dayTotal += paid;
+    if(d >= weekStr) weekTotal += paid;
+    if(d.startsWith(monthStr)) monthTotal += paid;
+    if(d.startsWith(yearStr)) yearTotal += paid;
+  });
+
+  const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setTxt('labBillToday', '$' + dayTotal.toFixed(2));
+  setTxt('labBillWeek',  '$' + weekTotal.toFixed(2));
+  setTxt('labBillMonth', '$' + monthTotal.toFixed(2));
+  setTxt('labBillYear',  '$' + yearTotal.toFixed(2));
+
+  let filtered = lab;
+  if(period === 'today') filtered = lab.filter(l => getDate(l) === today);
+  else if(period === 'week') filtered = lab.filter(l => getDate(l) >= weekStr);
+  else if(period === 'month') filtered = lab.filter(l => getDate(l).startsWith(monthStr));
+  else if(period === 'year') filtered = lab.filter(l => getDate(l).startsWith(yearStr));
+
+  const sumTeeth = filtered.reduce((s,l) => s + (l.teethCount || 0), 0);
+  const sumTotal = filtered.reduce((s,l) => s + (l.total || 0), 0);
+  const sumPaid = filtered.reduce((s,l) => s + (l.paid || 0), 0);
+  const sumRemaining = filtered.reduce((s,l) => s + (l.remaining ?? ((l.total||0)-(l.paid||0))), 0);
+
+  setTxt('labBillTeeth', sumTeeth);
+  setTxt('labBillTotal', '$' + sumTotal.toFixed(2));
+  setTxt('labBillPaid', '$' + sumPaid.toFixed(2));
+  setTxt('labBillRemaining', '$' + sumRemaining.toFixed(2));
+
+  const el = document.getElementById('labBillingList');
+  if(!el) return;
+  if(!filtered.length){ el.innerHTML = '<div class="empty">لا توجد طلبات في هذه الفترة</div>'; return; }
+
+  filtered = [...filtered].sort((a,b) => getDate(b).localeCompare(getDate(a)));
+
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>التاريخ</th><th>المريض</th><th>النوع</th><th>المعمل</th><th>🦷</th><th>قيمة السن</th><th>الكلي</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody>' +
+    filtered.map(l => {
+      const remaining = l.remaining ?? ((l.total||0)-(l.paid||0));
+      return `<tr><td>${esc(getDate(l))}</td><td><b>${esc(l.patientName)}</b></td><td>${esc(l.type)}</td><td>${esc(l.labName || '—')}</td><td style="color:var(--gold);font-weight:700">${l.teethCount || 0}</td><td>$${(l.toothPrice || 0).toFixed(2)}</td><td>$${(l.total || 0).toFixed(2)}</td><td style="color:var(--ok)">$${(l.paid || 0).toFixed(2)}</td><td style="color:${remaining > 0 ? 'var(--err)' : 'var(--ok)'};font-weight:700">$${remaining.toFixed(2)}</td><td><span class="chip" style="padding:2px 8px;font-size:.65rem">${esc(l.status)}</span></td></tr>`;
+    }).join('') + '</tbody></table></div>';
+}
 
 // ═══════════════════════════════════════════════════════════════
-// 30. Settings
+// 33. Before/After (AI + Photopea)
+// ═══════════════════════════════════════════════════════════════
+var replicateKey = localStorage.getItem('replicate_key') || '';
+var baImageBase64 = null;
+
+function loadReplicateKey() {
+  replicateKey = localStorage.getItem('replicate_key') || '';
+  const el = document.getElementById('replicateKey');
+  if(el) el.value = replicateKey;
+}
+function saveReplicateKey() {
+  const el = document.getElementById('replicateKey');
+  if(el) {
+    replicateKey = el.value.trim();
+    localStorage.setItem('replicate_key', replicateKey);
+    toast('✅ تم حفظ مفتاح الذكاء الاصطناعي');
+  }
+}
+function loadBAImage(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    baImageBase64 = ev.target.result;
+    document.getElementById('imgBefore').src = baImageBase64;
+    document.getElementById('imgAfter').src = baImageBase64;
+    document.getElementById('baSlider').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+async function generateAfterWithAI() {
+  if(!baImageBase64) return toast('⚠️ ارفع صورة المريض أولاً', true);
+  const desc = document.getElementById('baTreatmentDesc').value.trim();
+  if(!desc) return toast('⚠️ اكتب وصف العلاج أولاً', true);
+  if(!replicateKey) return toast('⚠️ أضف مفتاح Replicate من الإعدادات', true);
+  const out = document.getElementById('imgAfter');
+  out.style.filter = 'blur(5px)';
+  toast('⏳ جاري التوليد (قد يستغرق دقيقة)...');
+  try {
+    const response = await fetch("https://api.replicate.com/v1/predictions", {
+      method: "POST",
+      headers: { "Authorization": `Token ${replicateKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        version: "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
+        input: {
+          image: baImageBase64,
+          prompt: `professional dental photography, beautiful natural smile, ${desc}, realistic, high quality, 8k`,
+          prompt_strength: 0.6
+        }
+      })
+    });
+    const pred = await response.json();
+    if(pred.error) throw new Error(pred.error);
+    let resultUrl = null, attempts = 0;
+    while(attempts < 60) {
+      await new Promise(r => setTimeout(r, 2000));
+      const check = await fetch(pred.urls.get, { headers: { "Authorization": `Token ${replicateKey}` } });
+      const status = await check.json();
+      if(status.status === 'succeeded') { resultUrl = status.output[0]; break; }
+      if(status.status === 'failed') throw new Error('فشل التوليد');
+      attempts++;
+    }
+    if(resultUrl) {
+      out.src = resultUrl;
+      out.style.filter = 'none';
+      toast('✅ تم التوليد بنجاح');
+    } else {
+      throw new Error('انتهت المهلة');
+    }
+  } catch(e) {
+    out.style.filter = 'none';
+    toast('❌ ' + e.message, true);
+  }
+}
+function openPhotopeaEditor() {
+  if(!baImageBase64) return toast('⚠️ ارفع صورة المريض أولاً', true);
+  const frame = document.getElementById('photopeaFrame');
+  const config = { files: [baImageBase64] };
+  frame.src = "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
+  document.getElementById('photopeaModal').classList.add('show');
+}
+function closePhotopea() {
+  document.getElementById('photopeaModal').classList.remove('show');
+  document.getElementById('photopeaFrame').src = '';
+}
+function downloadAfterImage() {
+  const src = document.getElementById('imgAfter').src;
+  if(!src || src === window.location.href) return toast('⚠️ لا توجد صورة بعد', true);
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = 'after_treatment_' + Date.now() + '.jpg';
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 34. Interdisciplinary (Consultations)
+// ═══════════════════════════════════════════════════════════════
+var interFiles = { xray: [], photo: [] };
+
+async function loadInterPatientData(pid) {
+  if(!pid) { document.getElementById('interPatientData').innerHTML = ''; return; }
+  const el = document.getElementById('interPatientData');
+  el.innerHTML = '<div style="color:var(--gold);font-size:12px">⏳ جاري تحميل التاريخ الطبي...</div>';
+  try {
+    const hist = await db.collection('patients').doc(pid).collection('medical').doc('history').get();
+    const chart = await db.collection('patients').doc(pid).collection('medical').doc('chart').get();
+    const photos = await db.collection('patients').doc(pid).collection('photos').get();
+    let html = '<div style="background:rgba(0,0,0,.2);padding:10px;border-radius:10px;font-size:12px;border:1px solid var(--bd)">';
+    if(hist.exists) html += `<b>📜 التاريخ الطبي:</b> ${esc(hist.data().chronic||'لا يوجد')} | <b>حساسية:</b> ${esc(hist.data().allergy||'لا يوجد')}<br>`;
+    if(chart.exists && chart.data().teeth) {
+      const issues = Object.keys(chart.data().teeth).filter(k=>chart.data().teeth[k]).map(k=>`سن ${parseInt(k)+1}: ${chart.data().teeth[k]}`).join(' | ');
+      html += `<b>📊 مشاكل الأسنان:</b> ${issues||'سليمة'}<br>`;
+    }
+    if(!photos.empty) {
+      html += `<b>📸 صور سابقة:</b> <div style="display:flex;gap:5px;margin-top:5px">${photos.docs.map(d=>`<img src="${d.data().url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px">`).join('')}</div>`;
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<div style="color:var(--err)">فشل تحميل البيانات</div>'; }
+}
+async function uploadInterFiles(type, event) {
+  const files = Array.from(event.target.files);
+  if(!files.length) return;
+  const preview = document.getElementById(type === 'xray' ? 'interXrayPreview' : 'interPhotoPreview');
+  toast('⏳ جاري الرفع...');
+  for(const file of files) {
+    try {
+      const fd = new FormData(); fd.append('reqtype','fileupload'); fd.append('fileToUpload', file);
+      const res = await fetch(CATBOX_API, { method:'POST', body:fd });
+      const url = (await res.text()).trim();
+      if(url.startsWith('https://')) {
+        interFiles[type].push(url);
+        preview.innerHTML += `<div><img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--gold)"></div>`;
+      }
+    } catch(e) { console.error(e); }
+  }
+  toast('✅ تم رفع الصور');
+}
+async function sendInterConsult() {
+  const pid = document.getElementById('interPatient').value;
+  const specName = document.getElementById('specName').value.trim();
+  if(!pid || !specName) return toast('⚠️ أكمل بيانات المريض والأخصائي', true);
+  const p = patients.find(x=>x.id===pid);
+  try {
+    await db.collection('interconsults').add({
+      patientId: pid, patientName: p?.fullName || '',
+      specialistName: specName, specialistType: document.getElementById('specType').value,
+      specialistPhone: document.getElementById('specPhone').value.trim(),
+      specialistEmail: document.getElementById('specEmail').value.trim(),
+      specialistClinic: document.getElementById('specClinic').value.trim(),
+      zoomLink: document.getElementById('specZoom').value.trim(),
+      meetDate: document.getElementById('specMeetDate').value,
+      complaint: document.getElementById('interComplaint').value.trim(),
+      diagnosis: document.getElementById('interDiagnosis').value.trim(),
+      treatment: document.getElementById('interTreatment').value.trim(),
+      notes: document.getElementById('interNotes').value.trim(),
+      xrays: interFiles.xray, photos: interFiles.photo,
+      status: document.getElementById('interDiagnosis').value.trim() ? 'مكتملة' : 'قيد المراجعة',
+      requestedBy: CD.fullName, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅ تم حفظ الاستشارة بنجاح');
+    loadInterConsults();
+  } catch(e) { toast('❌ ' + e.message, true); }
+}
+async function loadInterConsults() {
+  const el = document.getElementById('interList'); if(!el) return;
+  const snap = await db.collection('interconsults').orderBy('createdAt','desc').limit(20).get();
+  if(snap.empty) { el.innerHTML = '<div class="empty">لا توجد استشارات سابقة</div>'; return; }
+  el.innerHTML = snap.docs.map(d => {
+    const r = d.data();
+    return `<div class="appt-card" style="border-right-color:var(--gold)">
+      <div style="flex:1">
+        <b style="color:var(--gold)">${esc(r.specialistName)} (${esc(r.specialistType)})</b>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">👤 ${esc(r.patientName)} | 📅 ${r.meetDate ? new Date(r.meetDate).toLocaleString('ar-EG') : 'غير محدد'}</div>
+        <div style="font-size:12px;margin-top:6px"><b>التشخيص:</b> ${esc(r.diagnosis || 'بانتظار الرد...')}</div>
+      </div>
+      ${r.zoomLink ? `<a href="${r.zoomLink}" target="_blank" class="btn-outline" style="font-size:11px">🔗 Zoom</a>` : ''}
+    </div>`;
+  }).join('');
+}
+function openZoomLink() {
+  const url = document.getElementById('specZoom').value.trim();
+  if(!url) return toast('⚠️ أدخل رابط Zoom أولاً', true);
+  window.open(url, '_blank');
+}
+function generateConsultPDF() {
+  const el = document.getElementById('interPanelPDF');
+  if(!el) return;
+  toast('⏳ جاري إنشاء PDF...');
+  const actions = el.querySelectorAll('button, .btn-save, .btn-outline');
+  actions.forEach(b => b.style.display = 'none');
+  html2pdf().set({
+    margin: 10, filename: `Consult_${Date.now()}.pdf`, image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(el).save().then(() => {
+    actions.forEach(b => b.style.display = '');
+    toast('✅ تم تحميل PDF');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 35. Settings
 // ═══════════════════════════════════════════════════════════════
 function loadGemini(){ geminiKey = localStorage.getItem('gemini_key') || ''; const el = document.getElementById('geminiKey'); if(el) el.value = geminiKey; }
 function saveGemini(){ geminiKey = document.getElementById('geminiKey').value.trim(); localStorage.setItem('gemini_key', geminiKey); toast('✅'); }
@@ -2463,9 +2812,217 @@ function loadPrivacy(){ if(!CD || !CD.privacy) return; if(document.getElementByI
 async function savePrivacy(){ await db.collection('users').doc(CU.uid).update({ privacy: { showEmail: document.getElementById('privEmail').checked, showPhone: document.getElementById('privPhone').checked, allowFriends: document.getElementById('privFriends').checked } }); toast('✅'); }
 
 // ═══════════════════════════════════════════════════════════════
-// 31. Init
+// 36. Init
 // ═══════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => { console.log('✅ NAQCLINIXAI Pro Loaded — Gemini Model: ' + GEMINI_MODEL); loadGemini(); });
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('✅ NAQCLINIXAI Pro Loaded — Gemini Model: ' + GEMINI_MODEL);
+  loadGemini();
+  loadReplicateKey();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 🎁 الإضافات الجديدة (بدون حذف أي شيء)
+// ═══════════════════════════════════════════════════════════════
+(function() {
+  'use strict';
+  
+  // ─── 1. إصلاح CAD/CAM على الهواتف ───
+  const isMobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+  if (isMobile && typeof window.initThree === 'function') {
+    const origInitThree = window.initThree;
+    window.initThree = function() {
+      try { if (origInitThree) origInitThree(); }
+      catch(e) { console.warn('CAD/CAM غير متاح:', e.message); }
+    };
+  }
+  
+  // ─── 2. زر التحديث الشامل ───
+  document.addEventListener('DOMContentLoaded', () => {
+    const topbar = document.getElementById('topbar');
+    if (topbar && !document.getElementById('btnRefreshAll')) {
+      const btn = document.createElement('button');
+      btn.id = 'btnRefreshAll';
+      btn.className = 'btn-outline';
+      btn.style.cssText = 'padding:6px 12px;font-size:12px;margin:0 4px';
+      btn.innerHTML = '🔄 تحديث';
+      btn.onclick = async () => {
+        btn.innerHTML = '⏳...';
+        try {
+          await Promise.allSettled([
+            loadPatients(), loadUsers(), loadBilling(), loadLab(),
+            loadPosts(), loadMeetings(), loadAppointments(),
+            loadDigitalProducts(), loadSubscriptionPlans(), loadNotifications()
+          ]);
+          toast('✅ تم تحديث كل البيانات');
+        } catch(e) { toast('⚠️ بعض البيانات لم تُحدّث', true); }
+        btn.innerHTML = '🔄 تحديث';
+      };
+      const spacer = topbar.querySelector('.spacer');
+      if (spacer) spacer.after(btn);
+      else topbar.appendChild(btn);
+    }
+  });
+  
+  // ─── 3. تصدير CSV ───
+  window.exportPatientsCSV = function() {
+    if (!patients || !patients.length) return toast('لا يوجد مرضى', true);
+    const rows = [['الاسم','الهاتف','العمر','تاريخ التسجيل']];
+    patients.forEach(p => rows.push([
+      p.fullName || '',
+      p.phone || '',
+      p.age || '',
+      p.createdAt?.toDate?.().toLocaleDateString('ar-EG') || ''
+    ]));
+    downloadCSV(rows, 'patients_' + Date.now() + '.csv');
+  };
+  
+  window.exportBillingCSV = function() {
+    if (!billing || !billing.length) return toast('لا توجد مدفوعات', true);
+    const rows = [['التاريخ','المريض','التكلفة','المدفوع','المتبقي','ملاحظات']];
+    billing.forEach(b => rows.push([
+      b.date || '', b.patientName || '',
+      b.totalCost || 0, b.paid || 0, b.remaining || 0, b.notes || ''
+    ]));
+    downloadCSV(rows, 'billing_' + Date.now() + '.csv');
+  };
+  
+  function downloadCSV(rows, filename) {
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('✅ تم التصدير');
+  }
+  
+  // ─── 4. مؤشر الاتصال ───
+  document.addEventListener('DOMContentLoaded', () => {
+    const bar = document.createElement('div');
+    bar.id = 'netIndicator';
+    bar.style.cssText = 'position:fixed;bottom:0;right:0;left:0;background:#ef4444;color:#fff;text-align:center;padding:6px;font-size:12px;z-index:9998;display:none;font-weight:700';
+    bar.textContent = '⚠️ لا يوجد اتصال بالإنترنت';
+    document.body.appendChild(bar);
+    window.addEventListener('offline', () => bar.style.display = 'block');
+    window.addEventListener('online', () => { bar.style.display = 'none'; toast('✅ عاد الاتصال'); });
+    if (!navigator.onLine) bar.style.display = 'block';
+  });
+  
+  // ─── 5. معالج الأخطاء الشامل ───
+  window.addEventListener('error', (e) => {
+    const msg = String(e.message || '');
+    if (['permission','index','WebGL','Context Lost','ResizeObserver'].some(ig => msg.includes(ig))) {
+      e.preventDefault();
+    }
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    const msg = String(e.reason?.message || e.reason || '').toLowerCase();
+    if (['permission','index','auth'].some(ig => msg.includes(ig))) {
+      e.preventDefault();
+    }
+  });
+  
+  // ─── 6. أزرار التصدير في الأقسام ───
+  document.addEventListener('DOMContentLoaded', () => {
+    const patientsSec = document.getElementById('sec-patients');
+    if (patientsSec && !document.getElementById('btnExportPatients')) {
+      const header = patientsSec.querySelector('.panel h2');
+      if (header) {
+        const btn = document.createElement('button');
+        btn.id = 'btnExportPatients';
+        btn.className = 'btn-outline';
+        btn.style.cssText = 'float:left;font-size:11px;padding:4px 10px';
+        btn.innerHTML = '📥 Excel';
+        btn.onclick = window.exportPatientsCSV;
+        header.appendChild(btn);
+      }
+    }
+    const billingSec = document.getElementById('sec-billing');
+    if (billingSec && !document.getElementById('btnExportBilling')) {
+      const header = billingSec.querySelector('.panel h2');
+      if (header) {
+        const btn = document.createElement('button');
+        btn.id = 'btnExportBilling';
+        btn.className = 'btn-outline';
+        btn.style.cssText = 'float:left;font-size:11px;padding:4px 10px';
+        btn.innerHTML = '📥 Excel';
+        btn.onclick = window.exportBillingCSV;
+        header.appendChild(btn);
+      }
+    }
+  });
+  
+  // ─── 7. طباعة فاتورة ───
+  window.printInvoice = function(idx) {
+    const b = billing[idx];
+    if (!b) return;
+    const w = window.open('', '', 'width=400,height=600');
+    w.document.write(`
+      <html dir="rtl"><head><title>فاتورة</title>
+      <style>body{font-family:Arial;padding:20px}h2{text-align:center;color:#C5A059}table{width:100%;margin-top:20px;border-collapse:collapse}td{padding:8px;border-bottom:1px solid #ddd}.total{font-weight:bold;background:#f9f9f9}</style>
+      </head><body>
+      <h2>🦷 NAQCLINIXAI</h2>
+      <p style="text-align:center">فاتورة #${idx + 1}</p>
+      <table>
+        <tr><td>التاريخ:</td><td>${b.date || ''}</td></tr>
+        <tr><td>المريض:</td><td>${b.patientName || ''}</td></tr>
+        <tr><td>التكلفة:</td><td>$${(b.totalCost || 0).toFixed(2)}</td></tr>
+        <tr><td>المدفوع:</td><td>$${(b.paid || 0).toFixed(2)}</td></tr>
+        <tr class="total"><td>المتبقي:</td><td>$${(b.remaining || 0).toFixed(2)}</td></tr>
+      </table>
+      <p style="text-align:center;margin-top:30px;color:#999">© 2026 NAQCLINIXAI</p>
+      </body></html>
+    `);
+    w.document.close();
+    setTimeout(() => w.print(), 500);
+  };
+  
+  // ─── 8. بحث سريع Ctrl+K ───
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      if (typeof showSection === 'function') showSection('patients');
+      setTimeout(() => {
+        const inp = document.getElementById('searchPatients');
+        if (inp) { inp.focus(); inp.select(); }
+      }, 200);
+    }
+  });
+  
+  // ─── 9. إشعار صوتي ───
+  window.beepNotification = function() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
+    } catch(e) {}
+  };
+  
+  // ─── 10. حفظ تلقائي للمسودات ───
+  const draftIds = ['histChronic','histAllergy','labName','labNotes','interComplaint','interDiagnosis','interTreatment','interNotes','bioText'];
+  document.addEventListener('input', (e) => {
+    if (e.target.id && draftIds.includes(e.target.id)) {
+      try { localStorage.setItem('draft_' + e.target.id, e.target.value); } catch(err) {}
+    }
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    draftIds.forEach(id => {
+      const el = document.getElementById(id);
+      const val = localStorage.getItem('draft_' + id);
+      if (el && val && !el.value) el.value = val;
+    });
+  });
+  
+  console.log('🎁 تم تحميل جميع الإضافات بنجاح');
+})();
 </script>
 </body>
 </html>
