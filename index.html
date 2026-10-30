@@ -449,6 +449,61 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       </div>
     </div>
   </div>
+ 
+ <!-- ═══════ خطة العلاج ═══════ -->
+<div class="sec" id="sec-treatmentPlan">
+  <div class="panel">
+    <h2>📋 خطة العلاج والبدائل والمقارنة</h2>
+    <div class="desc">توليد خطة رئيسية + خطة بديلة + مقارنة آلية بينهما بالذكاء الاصطناعي</div>
+
+    <div class="f"><label>👤 المريض *</label>
+      <select id="tpPatient" onchange="loadTPPatientData(this.value)"></select>
+    </div>
+
+    <div class="f"><label>🧠 التشخيص / الحالة *</label>
+      <textarea id="tpDiagnosis" rows="3" placeholder="ألم حاد في الضرس السفلي مع تورم..."></textarea>
+    </div>
+
+    <div class="g2">
+      <div class="f"><label>💰 الميزانية</label>
+        <select id="tpBudget">
+          <option value="any">— غير محدد —</option>
+          <option value="low">منخفضة</option>
+          <option value="medium">متوسطة</option>
+          <option value="high">عالية</option>
+        </select>
+      </div>
+      <div class="f"><label>⏱️ الأولوية</label>
+        <select id="tpPriority">
+          <option value="balanced">متوازنة</option>
+          <option value="time">سرعة الحل</option>
+          <option value="quality">أعلى جودة</option>
+          <option value="cost">أقل تكلفة</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn-save" onclick="generateTreatmentPlan()">🧠 توليد الخطة الرئيسية</button>
+      <button class="btn-outline" onclick="generateAlternativePlan()">🔄 توليد الخطة البديلة</button>
+      <button class="btn-outline" onclick="compareTreatmentPlans()">⚖️ مقارنة الخطتين</button>
+      <button class="btn-outline" onclick="saveTreatmentPlanToPatient()">💾 حفظ للمريض</button>
+    </div>
+
+    <div class="g2" style="margin-top:18px">
+      <div>
+        <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:8px">🅰️ الخطة الرئيسية</h3>
+        <div id="tpResult" style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;min-height:140px;font-size:.82rem;line-height:1.9;white-space:pre-wrap;color:var(--muted)">—</div>
+      </div>
+      <div>
+        <h3 style="color:#22d3ee;font-size:.95rem;margin-bottom:8px">🅱️ الخطة البديلة</h3>
+        <div id="tpAltResult" style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;min-height:140px;font-size:.82rem;line-height:1.9;white-space:pre-wrap;color:var(--muted)">—</div>
+      </div>
+    </div>
+
+    <div id="tpComparison" style="margin-top:16px"></div>
+  </div>
+</div>
 
   <div class="sec" id="sec-materialsGuide">
     <div class="panel">
@@ -963,6 +1018,9 @@ function showSection(sec){
 if(sec==='billing') { renderBilling(); updateBillingStats(); }
   if(sec==='reports') populateSelects();
   if(sec==='settings') loadPrivacy();
+  if(sec==='treatmentPlan') populateSelects();
+if(sec==='lab'){ populateSelects(); loadLab(); }
+if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); }
   if(sec==='interdisciplinary') { loadInterConsults(); populateSelects(); }
 }
 document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.sec)));
@@ -1067,7 +1125,9 @@ async function openPatient(id){
 }
 function populateSelects(){
   const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
-  ['apptPatient','photoPatient','reportPatient2','historyPatientSelect','interPatient','aiPatientDiag','chartPatientSelect','dsdPatient','meetPatient'].forEach(id=>{
+  ['apptPatient','photoPatient','reportPatient2','historyPatientSelect','interPatient',
+   'aiPatientDiag','chartPatientSelect','dsdPatient','meetPatient',
+   'labPatient','billPatient','tpPatient'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.innerHTML=opts;
   });
 }
@@ -1221,16 +1281,135 @@ async function saveDiagToPatient(){
   await db.collection('patients').doc(pid).collection('medical').doc('diagnosis').set({ text: lastDiagnosis, savedAt: firebase.firestore.FieldValue.serverTimestamp() });
   toast('✅ تم الحفظ');
 }
+// ═══════════════════════════════════════════════════════════════
+// خطة العلاج والبدائل والمقارنة
+// ═══════════════════════════════════════════════════════════════
+var lastTreatmentAlt = '';
+
+async function loadTPPatientData(pid){
+  if(!pid) return;
+  try{
+    const diag = await db.collection('patients').doc(pid).collection('medical').doc('diagnosis').get();
+    if(diag.exists && diag.data().text){
+      const ta = document.getElementById('tpDiagnosis');
+      if(ta && !ta.value) ta.value = diag.data().text;
+    }
+    const tp = await db.collection('patients').doc(pid).collection('medical').doc('treatmentPlan').get();
+    if(tp.exists){
+      lastTreatmentMain = tp.data().main || '';
+      lastTreatmentAlt  = tp.data().alternative || '';
+      document.getElementById('tpResult').textContent    = lastTreatmentMain || '—';
+      document.getElementById('tpAltResult').textContent = lastTreatmentAlt  || '—';
+    } else {
+      document.getElementById('tpResult').textContent    = '—';
+      document.getElementById('tpAltResult').textContent = '—';
+    }
+  }catch(e){ console.error(e); }
+}
+
 async function generateTreatmentPlan(){
-  const txt = document.getElementById('tpDiagnosis')?.value;
-  if(!txt) return toast('⚠️', true);
+  const txt = document.getElementById('tpDiagnosis')?.value?.trim();
+  if(!txt) return toast('⚠️ أدخل التشخيص أولاً', true);
+  const budget   = document.getElementById('tpBudget')?.value   || 'any';
+  const priority = document.getElementById('tpPriority')?.value || 'balanced';
   const out = document.getElementById('tpResult');
-  out.innerHTML = '⏳...';
-  try {
-    const res = await callGemini(`اقترح خطة علاج: ${txt}`);
+  out.textContent = '⏳ جاري توليد الخطة الرئيسية...';
+  try{
+    const res = await callGemini(
+`أنت طبيب أسنان خبير. اقترح خطة علاج رئيسية للحالة التالية:
+
+${txt}
+
+الميزانية: ${budget}
+الأولوية: ${priority}
+
+قدم الخطة بالشكل التالي:
+1) المراحل بالترتيب
+2) المواد المقترحة
+3) المدة الزمنية لكل مرحلة
+4) التكلفة التقديرية
+5) النتائج المتوقعة
+بالعربية وبتنسيق واضح.`);
     lastTreatmentMain = res;
-    out.innerHTML = `<div style="background:var(--card2);padding:15px;border-radius:10px;line-height:1.8">${esc(res).replace(/\n/g, '<br>')}</div>`;
-  } catch(e){ out.innerHTML = `❌ ${e.message}`; }
+    out.textContent = res;
+    toast('✅ تم توليد الخطة الرئيسية');
+  }catch(e){
+    out.textContent = '❌ ' + e.message;
+  }
+}
+
+async function generateAlternativePlan(){
+  const txt = document.getElementById('tpDiagnosis')?.value?.trim();
+  if(!txt) return toast('⚠️ أدخل التشخيص أولاً', true);
+  const budget   = document.getElementById('tpBudget')?.value   || 'any';
+  const priority = document.getElementById('tpPriority')?.value || 'balanced';
+  const out = document.getElementById('tpAltResult');
+  out.textContent = '⏳ جاري توليد الخطة البديلة...';
+  try{
+    const res = await callGemini(
+`أنت طبيب أسنان خبير. اقترح خطة علاج بديلة (نهج مختلف تماماً عن الخيار التقليدي) للحالة التالية:
+
+${txt}
+
+الميزانية: ${budget}
+الأولوية: ${priority}
+
+قدم الخطة البديلة بالشكل:
+1) الفكرة المختلفة عن الحل التقليدي
+2) المراحل
+3) المواد
+4) المدة
+5) التكلفة التقديرية
+6) متى يُنصح بها
+بالعربية.`);
+    lastTreatmentAlt = res;
+    out.textContent = res;
+    toast('✅ تم توليد الخطة البديلة');
+  }catch(e){
+    out.textContent = '❌ ' + e.message;
+  }
+}
+
+async function compareTreatmentPlans(){
+  if(!lastTreatmentMain || !lastTreatmentAlt){
+    return toast('⚠️ ولّد الخطتين أولاً قبل المقارنة', true);
+  }
+  const el = document.getElementById('tpComparison');
+  el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--gold)">⏳ جاري المقارنة بين الخطتين...</div>';
+  try{
+    const res = await callGemini(
+`قارن بين خطتي العلاج التاليتين بشكل منهجي:
+
+🅰️ الخطة الرئيسية:
+${lastTreatmentMain}
+
+🅱️ الخطة البديلة:
+${lastTreatmentAlt}
+
+أعطني:
+1) جدول مقارنة (التكلفة | المدة | المخاطر | النتائج | مناسبة لـ)
+2) الفروق الجوهرية
+3) توصيتك النهائية ومتى تختار كل واحدة
+بالعربية وبتنسيق مرتب.`);
+    el.innerHTML = `<div style="background:var(--card2);border:2px solid var(--gold);border-radius:12px;padding:16px;line-height:1.9;white-space:pre-wrap;color:var(--txt)"><h3 style="color:var(--gold);margin-bottom:10px">⚖️ المقارنة بين الخطتين</h3>${esc(res)}</div>`;
+    toast('✅ تم إعداد المقارنة');
+  }catch(e){
+    el.innerHTML = `<div style="color:var(--err);padding:12px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(e.message)}</div>`;
+  }
+}
+
+async function saveTreatmentPlanToPatient(){
+  const pid = document.getElementById('tpPatient')?.value;
+  if(!pid) return toast('⚠️ اختر المريض', true);
+  if(!lastTreatmentMain) return toast('⚠️ ولّد الخطة أولاً', true);
+  try{
+    await db.collection('patients').doc(pid).collection('medical').doc('treatmentPlan').set({
+      main: lastTreatmentMain,
+      alternative: lastTreatmentAlt || '',
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅ تم الحفظ في ملف المريض');
+  }catch(e){ toast('❌ '+e.message, true); }
 }
 
 // ═══════════════════════════════════════════════════════════════
