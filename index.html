@@ -3232,14 +3232,6 @@ window.drawFaceReal = async function() {
   }
 };
 
-faceMesh.send({ image: image });
-    });
-    
-  } catch(e) {
-    console.error('FaceMesh Error:', e);
-    toast('❌ ' + e.message, true);
-  }
-};
 
 // مساعد: تحميل الصورة من ملف
 function loadImageFromFile(file) {
