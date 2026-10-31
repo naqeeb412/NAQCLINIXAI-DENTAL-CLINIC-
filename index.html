@@ -2,7 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#14B8A6">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dentofacial">
 <title>NAQCLINIXAI Dental Clinic Pro</title>
 <meta name="theme-color" content="#C5A059">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
@@ -12,7 +16,22 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-:root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
+:root{
+  --gold:#14B8A6;
+  --goldL:#2DD4BF;
+  --goldD:#0D9488;
+  --goldDim:rgba(20,184,166,.12);
+  --bg:#0F172A;
+  --card:#1E293B;
+  --card2:#334155;
+  --bd:rgba(20,184,166,.25);
+  --txt:#F1F5F9;
+  --muted:#94A3B8;
+  --ok:#10B981;
+  --warn:#F59E0B;
+  --err:#EF4444;
+  --r:14px;
+}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
 body{background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--gold);border-radius:10px}
@@ -108,8 +127,11 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
 
 <div id="loginScreen">
   <div class="login-card">
-    <div class="ll"><div class="ic">🦷</div><h1>NAQCLINIXAI</h1><div class="sub">DENTAL CLINIC PRO</div></div>
-    <div class="tabs">
+<div class="ll">
+  <img src="https://i.ibb.co/YOUR_LOGO.png" style="width:90px;height:90px;border-radius:50%;border:3px solid var(--gold);margin:0 auto 10px;display:block;object-fit:cover;box-shadow:0 0 25px rgba(20,184,166,.5)">
+  <h1>Dentofacial</h1>
+  <div class="sub">AI DENTAL CLINIC</div>
+</div>   <div class="tabs">
       <button class="tab active" id="tabLogin" onclick="switchAuth('login')">🔑 دخول</button>
       <button class="tab" id="tabReg" onclick="switchAuth('register')">➕ حساب جديد</button>
     </div>
@@ -138,8 +160,11 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
 
 <div id="app">
 <aside id="sidebar">
-  <div class="sbb"><div class="ic">🦷</div><h2>NAQCLINIXAI</h2><div class="sub">Dental Pro</div></div>
-  <div class="ns">الرئيسية</div>
+<div class="sbb">
+  <img src="https://i.ibb.co/YOUR_LOGO.png" style="width:55px;height:55px;border-radius:50%;border:2px solid var(--gold);margin:0 auto 8px;display:block;object-fit:cover">
+  <h2>Dentofacial</h2>
+  <div class="sub">Dental Pro</div>
+</div>  <div class="ns">الرئيسية</div>
   <button class="ni active" data-sec="dashboard"><span class="ic">🏥</span>لوحة التحكم</button>
   <button class="ni" data-sec="dentbookProfile"><span class="ic">📱</span>Dentbook (ملفي)</button>
   <button class="ni" data-sec="notifications"><span class="ic">🔔</span>الإشعارات <span id="notifBadge" style="background:var(--err);color:#fff;padding:1px 6px;border-radius:10px;font-size:.6rem;display:none">0</span></button>
@@ -157,6 +182,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <button class="ni" data-sec="xray"><span class="ic">🩻</span>الأشعة</button>
   <button class="ni" data-sec="beforeAfter"><span class="ic">⚖️</span>قبل وبعد</button>
   <button class="ni" data-sec="cadcam"><span class="ic">⚙️</span>CAD/CAM 3D</button>
+  <button class="btn-save" style="padding:8px 14px;font-size:12px;background:linear-gradient(135deg,#10B981,#059669)" onclick="setToothModel('frontTeeth')">🦷 10 أسنان أمامية</button>
+<button class="btn-save" style="padding:8px 14px;font-size:12px;background:linear-gradient(135deg,#8B5CF6,#7C3AED)" onclick="setToothModel('mouth')">👄 الفم الكامل</button>
   <div class="ns">العلاج والمعرفة</div>
   <button class="ni" data-sec="treatmentPlan"><span class="ic">📋</span>خطة العلاج</button>
   <button class="ni" data-sec="materialsGuide"><span class="ic">📖</span>دليل المواد</button>
@@ -836,40 +863,63 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   </div>
 
   <div class="sec" id="sec-manageSubscriptions">
-    <div class="panel">
-      <h2>🎯 إدارة خطط الاشتراك</h2>
-      <div class="g2">
-        <div class="f"><label>🏷️ الاسم *</label><input id="spName"></div>
-        <div class="f"><label>💰 السعر ($)</label><input type="number" id="spPrice" value="19" min="0"></div>
-        <div class="f"><label>⏱️ المدة</label><select id="spDuration"><option value="7">أسبوع</option><option value="30">شهر</option><option value="90">3 أشهر</option><option value="365">سنة</option><option value="9999">مدى الحياة</option></select></div>
-        <div class="f"><label>⭐ مميزة؟</label><select id="spFeatured"><option value="no">عادية</option><option value="yes">مميزة</option></select></div>
+  <div class="panel">
+    <h2>🎯 إدارة خطط الاشتراك</h2>
+    <div class="desc">أنشئ خططاً مرنة - اختر الأقسام والسعر والمدة</div>
+    <div class="g2">
+      <div class="f"><label>🏷️ اسم الخطة *</label><input id="spName" placeholder="مثال: الخطة الذهبية"></div>
+      <div class="f"><label>💰 السعر ($) *</label><input type="number" id="spPrice" value="19" min="0" step="0.01"></div>
+      <div class="f"><label>⏱️ المدة *</label>
+        <select id="spDuration">
+          <option value="7">أسبوع</option>
+          <option value="30" selected>شهر</option>
+          <option value="90">3 أشهر</option>
+          <option value="180">6 أشهر</option>
+          <option value="365">سنة</option>
+          <option value="9999">مدى الحياة</option>
+        </select>
       </div>
-      <div class="f"><label>📄 الوصف</label><input id="spDesc"></div>
-      <div class="f">
-        <label style="color:var(--gold);font-weight:700;margin-bottom:10px">✅ الأقسام:</label>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;background:rgba(0,0,0,.2);padding:15px;border-radius:12px">
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="patients" checked> 👥 المرضى</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="photography" checked> 📸 التصوير</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="history" checked> 💊 التاريخ</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="chart" checked> 📊 الأسنان</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="appointments" checked> 🗓️ المواعيد</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="aiDiagnosis"> 🧠 تشخيص AI</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="faceHarmony"> 🧑‍⚕️ الوجه</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="dsdStudio"> 🎨 التصميم</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="xray"> 🩻 الأشعة</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="beforeAfter"> ⚖️ قبل/بعد</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="cadcam"> ⚙️ CAD/CAM</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="treatmentPlan"> 📋 العلاج</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="materialsGuide"> 📖 المواد</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="store"> 🏪 المتجر</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="interdisciplinary"> 👨‍⚕️ تخصصات</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="reports"> 📄 التقارير</label>
-        </div>
+      <div class="f"><label>⭐ مميزة؟</label>
+        <select id="spFeatured"><option value="no">عادية</option><option value="yes">مميزة</option></select>
       </div>
-      <button class="btn-save" onclick="addPlan()" style="width:100%;margin-top:15px">💾 إنشاء</button>
-      <div id="adminPlansList" style="margin-top:15px"></div>
     </div>
+    <div class="f"><label>📄 وصف مختصر</label><input id="spDesc" placeholder="وصف الخطة..."></div>
+    <div class="f">
+      <label style="color:var(--gold);font-weight:700;margin-bottom:10px">✅ اختر الأقسام:</label>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="btn-outline" onclick="selectAllSections(true)" style="flex:1;font-size:11px">✅ تحديد الكل</button>
+        <button class="btn-outline" onclick="selectAllSections(false)" style="flex:1;font-size:11px">❌ إلغاء الكل</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;background:rgba(0,0,0,.2);padding:15px;border-radius:12px">
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="patients" checked> 👥 المرضى</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="photography" checked> 📸 التصوير</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="history" checked> 💊 التاريخ</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="chart" checked> 📊 الأسنان</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="appointments" checked> 🗓️ المواعيد</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="lab" checked> 🧪 المعمل</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="aiDiagnosis"> 🧠 تشخيص AI</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="faceHarmony"> 🧑‍⚕️ الوجه</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="dsdStudio"> 🎨 التصميم</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="xray"> 🩻 الأشعة</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="beforeAfter"> ⚖️ قبل/بعد</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="cadcam"> ⚙️ CAD/CAM</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="treatmentPlan"> 📋 العلاج</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="materialsGuide"> 📖 المواد</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="store"> 🏪 المتجر</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="interdisciplinary"> 👨‍⚕️ تخصصات</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="reports"> 📄 التقارير</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="friends"> 👫 الأصدقاء</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="dentbook"> 📖 Dentbook</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="dentchat"> 💬 DentChat</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="discussions"> 🗣️ المناقشات</label>
+        <label class="sp-section-item"><input type="checkbox" class="sp-section" value="meetings"> 📹 الاجتماعات</label>
+      </div>
+    </div>
+    <button class="btn-save" onclick="addPlan()" style="width:100%;margin-top:15px;padding:14px;font-size:15px">💾 إنشاء الخطة</button>
+    <h3 style="color:var(--gold);font-size:.95rem;margin:25px 0 10px">📋 الخطط الحالية</h3>
+    <div id="adminPlansList"></div>
   </div>
+</div>
 
   <div class="sec" id="sec-manageAds">
     <div class="panel">
@@ -914,6 +964,15 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
         </div>
       </div>
       <button class="btn-save" style="margin-top:10px" onclick="savePrivacy()">💾 حفظ الخصوصية</button>
+      <div style="background:rgba(20,184,166,.05);padding:15px;border-radius:12px;border:1px solid var(--bd);margin-top:15px">
+  <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:12px">☁️ النسخ الاحتياطي</h3>
+  <p style="color:var(--muted);font-size:.75rem;margin-bottom:12px">صدّر كل بياناتك كملف JSON - احفظه في Google Drive</p>
+  <div style="display:flex;gap:8px">
+    <button class="btn-save" onclick="backupToJSON()" style="flex:1">☁️ نسخة احتياطية</button>
+    <button class="btn-outline" onclick="restoreFromJSON()" style="flex:1">📥 استعادة</button>
+  </div>
+  <p style="color:var(--warn);font-size:.7rem;margin-top:8px">⚠️ الاستعادة تستبدل البيانات الحالية</p>
+</div>
     </div>
   </div>
 
@@ -1836,10 +1895,48 @@ function buildTooth(type) {
   const colorInput = document.getElementById('toothColor');
   const color = colorInput ? parseInt(colorInput.value) : 0xf5f0e8;
   const material = new THREE.MeshStandardMaterial({ color, roughness: 0.25, metalness: 0.05 });
-  const crownGeo = new THREE.SphereGeometry(1.2, 32, 32, 0, Math.PI*2, 0, Math.PI/2);
-  crownGeo.scale(1, 1.2, 1);
-  const crown = new THREE.Mesh(crownGeo, material); crown.position.y = 0.5; threeToothGroup.add(crown);
-  if (type === 'molar') {
+  
+  if (type === 'frontTeeth') {
+    for (let i = 0; i < 5; i++) {
+      const upperTooth = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.5, 4, 4, 4), material);
+      upperTooth.position.set(-2 + i, 1.2, 0);
+      upperTooth.rotation.y = (i - 2) * 0.1;
+      threeToothGroup.add(upperTooth);
+      const lowerTooth = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.5, 4, 4, 4), material);
+      lowerTooth.position.set(-2 + i, -1.2, 0);
+      lowerTooth.rotation.y = (i - 2) * 0.1;
+      threeToothGroup.add(lowerTooth);
+    }
+  } 
+  else if (type === 'mouth') {
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI - Math.PI/2;
+      const radius = 2;
+      const upperTooth = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.1, 0.6, 8), material);
+      upperTooth.position.set(Math.cos(angle)*radius, 1, Math.sin(angle)*radius);
+      upperTooth.rotation.x = Math.PI/2;
+      upperTooth.rotation.z = angle;
+      threeToothGroup.add(upperTooth);
+      const lowerTooth = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.1, 0.6, 8), material);
+      lowerTooth.position.set(Math.cos(angle)*radius, -1, Math.sin(angle)*radius);
+      lowerTooth.rotation.x = Math.PI/2;
+      lowerTooth.rotation.z = angle;
+      threeToothGroup.add(lowerTooth);
+    }
+    const gumMat = new THREE.MeshStandardMaterial({ color: 0xd97794, roughness: 0.6 });
+    const upperGum = new THREE.Mesh(new THREE.TorusGeometry(2, 0.4, 8, 32, Math.PI), gumMat);
+    upperGum.position.y = 1.3;
+    upperGum.rotation.x = Math.PI/2;
+    threeToothGroup.add(upperGum);
+    const lowerGum = new THREE.Mesh(new THREE.TorusGeometry(2, 0.4, 8, 32, Math.PI), gumMat);
+    lowerGum.position.y = -1.3;
+    lowerGum.rotation.x = -Math.PI/2;
+    threeToothGroup.add(lowerGum);
+  }
+  else if (type === 'molar') {
+    const crownGeo = new THREE.SphereGeometry(1.2, 32, 32, 0, Math.PI*2, 0, Math.PI/2);
+    crownGeo.scale(1, 1.2, 1);
+    const crown = new THREE.Mesh(crownGeo, material); crown.position.y = 0.5; threeToothGroup.add(crown);
     [[-0.5, 1.5, -0.5], [0.5, 1.5, -0.5], [-0.5, 1.5, 0.5], [0.5, 1.5, 0.5]].forEach(([x, y, z]) => {
       const cusp = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), material);
       cusp.position.set(x, y, z); threeToothGroup.add(cusp);
@@ -1848,26 +1945,100 @@ function buildTooth(type) {
       const root = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.15, 1.8, 16), material);
       root.position.set(i * 0.4, -0.5, 0); root.rotation.z = i * 0.15; threeToothGroup.add(root);
     }
-  } else if (type === 'incisor') {
+    const gumMat = new THREE.MeshStandardMaterial({ color: 0xd97794, roughness: 0.6 });
+    const gum = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32, 0, Math.PI*2, Math.PI/2, Math.PI/2), gumMat);
+    gum.position.y = -0.3; gum.scale.set(1, 0.4, 1); threeToothGroup.add(gum);
+  } 
+  else if (type === 'incisor') {
     const incisor = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.6, 4, 4, 4), material);
     incisor.position.y = 1.2; threeToothGroup.add(incisor);
     const root = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.2, 2, 16), material);
     root.position.y = -0.5; threeToothGroup.add(root);
-  } else if (type === 'canine') {
+  } 
+  else if (type === 'canine') {
     const cusp = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1.5, 16), material);
     cusp.position.y = 1.2; threeToothGroup.add(cusp);
     const root = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.2, 1.8, 16), material);
     root.position.y = -0.3; threeToothGroup.add(root);
   }
-  const gumMat = new THREE.MeshStandardMaterial({ color: 0xd97794, roughness: 0.6 });
-  const gum = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32, 0, Math.PI*2, Math.PI/2, Math.PI/2), gumMat);
-  gum.position.y = -0.3; gum.scale.set(1, 0.4, 1); threeToothGroup.add(gum);
+  
   const scaleInput = document.getElementById('toothScale');
   const scale = scaleInput ? parseInt(scaleInput.value) / 100 : 1;
   threeToothGroup.scale.set(scale, scale, scale);
   threeScene.add(threeToothGroup);
 }
 function setToothModel(type) { buildTooth(type); resetToothView(); }
+function exportSTL() {
+  if (!threeToothGroup) return toast('⚠️ لا يوجد نموذج', true);
+  toast('⏳ جاري التصدير...');
+  
+  try {
+    // تحديث مصفوفات التحويل
+    threeToothGroup.updateMatrixWorld(true);
+    
+    const triangles = [];
+    threeToothGroup.traverse((child) => {
+      if (child.isMesh && child.geometry) {
+        const geom = child.geometry.clone();
+        geom.applyMatrix4(child.matrixWorld);
+        const pos = geom.attributes.position;
+        if (pos) {
+          const index = geom.index;
+          if (index) {
+            // استخدام الفهرس إن وُجد
+            for (let i = 0; i < index.count; i += 3) {
+              const i1 = index.getX(i);
+              const i2 = index.getX(i+1);
+              const i3 = index.getX(i+2);
+              triangles.push({
+                v1: [pos.getX(i1), pos.getY(i1), pos.getZ(i1)],
+                v2: [pos.getX(i2), pos.getY(i2), pos.getZ(i2)],
+                v3: [pos.getX(i3), pos.getY(i3), pos.getZ(i3)]
+              });
+            }
+          } else {
+            // بدون فهرس
+            for (let i = 0; i < pos.count; i += 3) {
+              if (i + 2 < pos.count) {
+                triangles.push({
+                  v1: [pos.getX(i), pos.getY(i), pos.getZ(i)],
+                  v2: [pos.getX(i+1), pos.getY(i+1), pos.getZ(i+1)],
+                  v3: [pos.getX(i+2), pos.getY(i+2), pos.getZ(i+2)]
+                });
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    if (triangles.length === 0) {
+      return toast('⚠️ لا توجد بيانات للتصدير', true);
+    }
+    
+    let stl = 'solid dental_model\n';
+    triangles.forEach(tri => {
+      stl += `  facet normal 0 0 1\n    outer loop\n`;
+      stl += `      vertex ${tri.v1[0]} ${tri.v1[1]} ${tri.v1[2]}\n`;
+      stl += `      vertex ${tri.v2[0]} ${tri.v2[1]} ${tri.v2[2]}\n`;
+      stl += `      vertex ${tri.v3[0]} ${tri.v3[1]} ${tri.v3[2]}\n`;
+      stl += `    endloop\n  endfacet\n`;
+    });
+    stl += 'endsolid dental_model\n';
+    
+    const blob = new Blob([stl], { type: 'application/sla' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'dental_' + Date.now() + '.stl';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    
+    toast(`✅ تم تصدير ${triangles.length} مثلث`);
+  } catch(e) {
+    console.error(e);
+    toast('❌ ' + e.message, true);
+  }
+}
 function toggleAutoRotate() { threeAutoRotate = !threeAutoRotate; const btn = document.getElementById('rotateBtnText'); if (btn) btn.textContent = threeAutoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران'; }
 function resetToothView() { threeTargetRotY = 0; threeTargetRotX = 0; if (threeCamera) threeCamera.position.z = 6; }
 function updateToothColor() { buildTooth('molar'); }
@@ -1880,7 +2051,7 @@ function updateToothLight(val) {
   });
 }
 function updateToothScale(val) { if (threeToothGroup) { const s = val / 100; threeToothGroup.scale.set(s, s, s); } }
-function exportSTL() { if (!threeToothGroup) return toast('⚠️', true); toast('📥 جاري التصدير...'); setTimeout(() => toast('✅'), 1500); }
+
 
 // ═══════════════════════════════════════════════════════════════
 // 16. Materials Guide
@@ -2278,7 +2449,7 @@ async function generateFullReport(){
   const p = patients.find(x => x.id === pid); if(!p) return;
   const sections = Array.from(document.querySelectorAll('.rpt-sec:checked')).map(c => c.value);
   const includeAll = document.getElementById('reportType').value === 'comprehensive';
-  let html = `<h2 style="text-align:center;color:#0a6">🦷 NAQCLINIXAI</h2><hr><p><b>الاسم:</b> ${esc(p.fullName)}</p><p><b>الهاتف:</b> ${esc(p.phone||'')}</p><p><b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}</p><hr>`;
+  let html = `<div style="text-align:center;margin-bottom:15px"><img src="https://i.ibb.co/YOUR_LOGO.png" style="width:80px;height:80px;border-radius:50%;border:2px solid #14B8A6;object-fit:cover"><h2 style="color:#14B8A6;margin:8px 0">Dentofacial</h2></div>
   if(includeAll || sections.includes('history')){ const hist = await db.collection('patients').doc(pid).collection('medical').doc('history').get(); if(hist.exists) html += `<h3>💊 التاريخ الطبي</h3><p>الأمراض: ${esc(hist.data().chronic||'—')}</p><p>الحساسية: ${esc(hist.data().allergy||'—')}</p>`; }
   if(includeAll || sections.includes('chart')){ const c = await db.collection('patients').doc(pid).collection('medical').doc('chart').get(); if(c.exists && c.data().teeth){ const issues = Object.keys(c.data().teeth).filter(k => c.data().teeth[k]).map(k => `سن ${parseInt(k)+1}: ${c.data().teeth[k]}`).join(' | '); html += `<h3>📊 المخطط</h3><p>${issues||'لا مشاكل'}</p>`; } }
   if(includeAll || sections.includes('diagnosis')){ if(lastDiagnosis) html += `<h3>🧠 التشخيص</h3><p>${esc(lastDiagnosis).replace(/\n/g, '<br>')}</p>`; }
@@ -3252,5 +3423,64 @@ function loadImageFromFile(file) {
 console.log('🎁 تم تحميل جميع الإضافات بنجاح');
 })();
 </script>
+// ═══════════════════════════════════════════════════════════════
+// ☁️ النسخ الاحتياطي والاستعادة
+// ═══════════════════════════════════════════════════════════════
+window.backupToJSON = async function() {
+  toast('⏳ جاري تجهيز النسخة...');
+  try {
+    const backup = { timestamp: new Date().toISOString(), version: '2.0' };
+    const collections = ['patients','users','appointments','billing','lab','posts','discussions','meetings','digitalProducts','subscriptionPlans','advertisements','notifications'];
+    for (const col of collections) {
+      backup[col] = [];
+      const snap = await db.collection(col).get();
+      snap.forEach(doc => backup[col].push({ id: doc.id, ...doc.data() }));
+    }
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'dental-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('✅ تم التحميل - احفظه في Drive');
+  } catch(e) { toast('❌ ' + e.message, true); }
+};
+
+window.restoreFromJSON = function() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!confirm('⚠️ سيتم استبدال البيانات. متابعة؟')) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const backup = JSON.parse(ev.target.result);
+        const collections = ['patients','users','appointments','billing','lab','posts','discussions','meetings','digitalProducts','subscriptionPlans','advertisements','notifications'];
+        toast('⏳ جاري الاستعادة...');
+        for (const col of collections) {
+          if (backup[col]) {
+            for (const item of backup[col]) {
+              const { id, ...data } = item;
+              await db.collection(col).doc(id).set(data);
+            }
+          }
+        }
+        toast('✅ تمت الاستعادة');
+        setTimeout(() => location.reload(), 2000);
+      } catch(err) { toast('❌ ' + err.message, true); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
+// ═══════════════════════════════════════════════════════════════
+// 📱 PWA
+// ═══════════════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => console.warn('SW registration skipped'));
+}
 </body>
 </html>
