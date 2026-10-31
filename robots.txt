@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://naqclinixai-dental-clinic.web.app/sitemap.xml
