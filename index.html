@@ -780,7 +780,24 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
           <div class="f"><label>📅 التاريخ *</label><input type="date" id="billDate"></div>
           <div class="f"><label>💰 التكلفة الإجمالية ($)</label><input type="number" id="billTotal" value="0" step="0.01" min="0"></div>
           <div class="f"><label>💵 المدفوع ($)</label><input type="number" id="billPaid" value="0" step="0.01" min="0"></div>
-          <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><input id="billNotes" placeholder="وصف الخدمة..."></div>
+          <div class="f"><label>🏷️ نوع العمل *</label>
+  <select id="billServiceType">
+    <option value="فحص">فحص</option>
+    <option value="حشو">حشو</option>
+    <option value="علاج عصب">علاج عصب</option>
+    <option value="تاج">تاج</option>
+    <option value="جسر">جسر</option>
+    <option value="فينير">فينير</option>
+    <option value="زراعة">زراعة</option>
+    <option value="تقويم">تقويم</option>
+    <option value="تنظيف">تنظيف</option>
+    <option value="تبييض">تبييض</option>
+    <option value="خلع">خلع</option>
+    <option value="طقم">طقم</option>
+    <option value="أخرى">أخرى</option>
+  </select>
+</div>
+<div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><input id="billNotes" placeholder="وصف الخدمة..."></div>
         </div>
         <button class="btn-save" onclick="addBilling()" style="width:100%;margin-top:8px">💾 حفظ الدفعة</button>
       </div>
@@ -803,6 +820,16 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
         <button class="btn-save" onclick="generateFullReport()">📄 توليد</button>
         <button class="btn-outline" onclick="printReport()">🖨️ طباعة</button>
+<button class="btn-outline" onclick="exportPatientReportCSV()" style="background:#10b981;color:#fff">📥 Excel</button>
+<div style="margin-top:20px;background:var(--card2);padding:16px;border-radius:12px;border:1px solid var(--bd)">
+  <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:12px">💰 الدخل الشهري المفصّل حسب نوع العمل</h3>
+  <div class="g2" style="margin-bottom:12px">
+    <div class="f"><label>📅 الشهر</label><input type="month" id="monthlyIncomeMonth"></div>
+    <div class="f"><label>🏥 نطاق</label><select id="monthlyIncomeScope"><option value="all">كل العيادة</option><option value="patient">مريض محدد</option></select></div>
+  </div>
+  <button class="btn-save" onclick="generateMonthlyIncomeReport()">📊 توليد التقرير</button>
+  <div id="monthlyIncomeResult" style="margin-top:15px"></div>
+</div>
       </div>
       <div id="reportPreview" style="background:#fff;color:#000;padding:20px;border-radius:10px;min-height:200px"></div>
     </div>
@@ -2299,20 +2326,177 @@ async function markAllNotificationsRead(){ const unread = notifications.filter(n
 // ═══════════════════════════════════════════════════════════════
 async function generateFullReport(){
   const pid = document.getElementById('reportPatient2').value;
-  if(!pid) return toast('⚠️', true);
-  const p = patients.find(x => x.id === pid); if(!p) return;
+  if(!pid) return toast('⚠️ اختر المريض أولاً', true);
+  const p = patients.find(x => x.id === pid); if(!p) return toast('⚠️ المريض غير موجود', true);
   const sections = Array.from(document.querySelectorAll('.rpt-sec:checked')).map(c => c.value);
   const includeAll = document.getElementById('reportType').value === 'comprehensive';
-  let html = `<h2 style="text-align:center;color:#0a6">🦷 NAQCLINIXAI</h2><hr><p><b>الاسم:</b> ${esc(p.fullName)}</p><p><b>الهاتف:</b> ${esc(p.phone||'')}</p><p><b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}</p><hr>`;
-  if(includeAll || sections.includes('history')){ const hist = await db.collection('patients').doc(pid).collection('medical').doc('history').get(); if(hist.exists) html += `<h3>💊 التاريخ الطبي</h3><p>الأمراض: ${esc(hist.data().chronic||'—')}</p><p>الحساسية: ${esc(hist.data().allergy||'—')}</p>`; }
-  if(includeAll || sections.includes('chart')){ const c = await db.collection('patients').doc(pid).collection('medical').doc('chart').get(); if(c.exists && c.data().teeth){ const issues = Object.keys(c.data().teeth).filter(k => c.data().teeth[k]).map(k => `سن ${parseInt(k)+1}: ${c.data().teeth[k]}`).join(' | '); html += `<h3>📊 المخطط</h3><p>${issues||'لا مشاكل'}</p>`; } }
-  if(includeAll || sections.includes('diagnosis')){ if(lastDiagnosis) html += `<h3>🧠 التشخيص</h3><p>${esc(lastDiagnosis).replace(/\n/g, '<br>')}</p>`; }
-  if(includeAll || sections.includes('treatment')){ if(lastTreatmentMain) html += `<h3>📋 العلاج</h3><p>${esc(lastTreatmentMain).replace(/\n/g, '<br>')}</p>`; }
-  html += `<hr><p style="text-align:center;font-size:.75rem;color:#666">© 2026 NAQCLINIXAI</p>`;
-  document.getElementById('reportPreview').innerHTML = html; toast('✅');
-}
-function printReport(){ window.print(); }
+  const preview = document.getElementById('reportPreview');
+  preview.innerHTML = '<div style="text-align:center;padding:20px;color:#666">⏳ جاري توليد التقرير...</div>';
 
+  try {
+    // جلب كل بيانات المريض من Firestore
+    const [histDoc, chartDoc, diagDoc, tpDoc, photosSnap] = await Promise.all([
+      db.collection('patients').doc(pid).collection('medical').doc('history').get(),
+      db.collection('patients').doc(pid).collection('medical').doc('chart').get(),
+      db.collection('patients').doc(pid).collection('medical').doc('diagnosis').get(),
+      db.collection('patients').doc(pid).collection('medical').doc('treatmentPlan').get(),
+      db.collection('patients').doc(pid).collection('photos').get()
+    ]);
+
+    let html = `<div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #C5A059;padding-bottom:15px">
+      <h1 style="color:#C5A059;margin:8px 0;font-size:24px">🦷 NAQCLINIXAI</h1>
+      <p style="color:#666;font-size:12px;margin:2px">Dental Clinic Pro — تقرير شامل</p>
+    </div>`;
+
+    // بيانات المريض الأساسية
+    html += `<div style="background:#f9f9f9;padding:12px;border-radius:8px;margin-bottom:15px">
+      <h2 style="color:#C5A059;font-size:16px;margin-bottom:8px;border-bottom:1px solid #ddd;padding-bottom:5px">👤 بيانات المريض</h2>
+      <table style="width:100%;font-size:13px">
+        <tr><td style="padding:4px;width:120px"><b>الاسم:</b></td><td>${esc(p.fullName||'—')}</td></tr>
+        <tr><td style="padding:4px"><b>الهاتف:</b></td><td>${esc(p.phone||'—')}</td></tr>
+        <tr><td style="padding:4px"><b>العمر:</b></td><td>${esc(p.age||'—')}</td></tr>
+        <tr><td style="padding:4px"><b>تاريخ التسجيل:</b></td><td>${p.createdAt?.toDate?.().toLocaleDateString('ar-EG')||'—'}</td></tr>
+        <tr><td style="padding:4px"><b>تاريخ التقرير:</b></td><td>${new Date().toLocaleString('ar-EG')}</td></tr>
+      </table>
+    </div>`;
+
+    // التاريخ الطبي
+    if(includeAll || sections.includes('history')){
+      if(histDoc.exists){
+        const h = histDoc.data();
+        html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">💊 التاريخ الطبي</h2>
+          <p style="font-size:13px;margin:4px 0"><b>الأمراض المزمنة:</b> ${esc(h.chronic||'لا يوجد')}</p>
+          <p style="font-size:13px;margin:4px 0"><b>الحساسية:</b> ${esc(h.allergy||'لا يوجد')}</p>`;
+      } else {
+        html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px">💊 التاريخ الطبي</h2><p style="font-size:13px;color:#999">لا يوجد تاريخ طبي مسجل</p>`;
+      }
+    }
+
+    // مخطط الأسنان + الفحص الشامل
+    if(includeAll || sections.includes('chart')){
+      if(chartDoc.exists){
+        const c = chartDoc.data();
+        const teeth = c.teeth || {};
+        const issues = Object.keys(teeth).filter(k => teeth[k]).map(k => {
+          const info = TOOTH_INFO[teeth[k]] || {};
+          return `سن ${parseInt(k)+1}: ${info.name||teeth[k]}`;
+        });
+        html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">📊 مخطط الأسنان</h2>`;
+        html += `<p style="font-size:13px"><b>عدد الأسنان المسجلة:</b> ${issues.length}</p>`;
+        if(issues.length){
+          html += `<ul style="font-size:12px;margin:6px 0 6px 20px">${issues.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`;
+        } else {
+          html += `<p style="font-size:13px;color:#999">جميع الأسنان سليمة</p>`;
+        }
+        const exam = c.exam || {};
+        if(Object.keys(exam).length){
+          html += `<table style="width:100%;font-size:12px;margin-top:8px;border:1px solid #ddd;border-collapse:collapse">
+            <tr style="background:#f0f0f0"><th style="padding:6px;border:1px solid #ddd;text-align:right">العنصر</th><th style="padding:6px;border:1px solid #ddd;text-align:right">الحالة</th></tr>`;
+          const labels = {gums:'اللثة', lips:'الشفايف', tongue:'اللسان', bone:'العظم'};
+          Object.entries(exam).forEach(([k,v]) => { html += `<tr><td style="padding:6px;border:1px solid #ddd">${labels[k]||k}</td><td style="padding:6px;border:1px solid #ddd">${esc(v)}</td></tr>`; });
+          html += `</table>`;
+          if(c.examNotes) html += `<p style="font-size:12px;margin-top:6px"><b>ملاحظات:</b> ${esc(c.examNotes)}</p>`;
+        }
+      } else {
+        html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px">📊 مخطط الأسنان</h2><p style="font-size:13px;color:#999">لا يوجد مخطط مسجل</p>`;
+      }
+    }
+
+    // التشخيص
+    if(includeAll || sections.includes('diagnosis')){
+      html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">🧠 التشخيص</h2>`;
+      if(diagDoc.exists && diagDoc.data().text){
+        html += `<p style="font-size:13px;white-space:pre-wrap;line-height:1.7">${esc(diagDoc.data().text)}</p>`;
+      } else if(lastDiagnosis){
+        html += `<p style="font-size:13px;white-space:pre-wrap">${esc(lastDiagnosis)}</p>`;
+      } else {
+        html += `<p style="font-size:13px;color:#999">لا يوجد تشخيص مسجل</p>`;
+      }
+    }
+
+    // خطة العلاج
+    if(includeAll || sections.includes('treatment')){
+      html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">📋 خطة العلاج</h2>`;
+      if(tpDoc.exists && tpDoc.data().main){
+        html += `<h3 style="font-size:13px;color:#333;margin:6px 0">🅰️ الخطة الرئيسية</h3><p style="font-size:13px;white-space:pre-wrap;line-height:1.7">${esc(tpDoc.data().main)}</p>`;
+        if(tpDoc.data().alternative) html += `<h3 style="font-size:13px;color:#333;margin:10px 0 6px">🅱️ الخطة البديلة</h3><p style="font-size:13px;white-space:pre-wrap;line-height:1.7">${esc(tpDoc.data().alternative)}</p>`;
+      } else if(lastTreatmentMain){
+        html += `<p style="font-size:13px;white-space:pre-wrap">${esc(lastTreatmentMain)}</p>`;
+      } else {
+        html += `<p style="font-size:13px;color:#999">لا توجد خطة علاج مسجلة</p>`;
+      }
+    }
+
+    // الصور (بما فيها صور التصميم والزوايا)
+    const photos = photosSnap.empty ? [] : photosSnap.docs.map(d => d.data());
+    if(photos.length){
+      const smileDesigns = photos.filter(ph => ph.type === 'smile_design');
+      const regularPhotos = photos.filter(ph => ph.type !== 'smile_design');
+      if(regularPhotos.length){
+        html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">📸 صور المريض</h2>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">`;
+        regularPhotos.forEach(ph => {
+          html += `<div style="text-align:center"><img src="${ph.url}" style="width:100%;max-width:180px;border-radius:6px;border:1px solid #ddd" crossorigin="anonymous"></div>`;
+        });
+        html += `</div>`;
+      }
+      if(smileDesigns.length){
+        html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">🎨 تصميم الابتسامة (DSD)</h2>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">`;
+        smileDesigns.forEach(ph => {
+          html += `<div style="text-align:center"><img src="${ph.url}" style="width:100%;max-width:250px;border-radius:6px;border:1px solid #ddd" crossorigin="anonymous"></div>`;
+        });
+        html += `</div>`;
+      }
+    }
+
+    // الفواتير والمدفوعات
+    const billingForPatient = billing.filter(b => b.patientId === pid);
+    if(billingForPatient.length){
+      const totalSum = billingForPatient.reduce((s,b)=>s+(b.totalCost||0), 0);
+      const paidSum = billingForPatient.reduce((s,b)=>s+(b.paid||0), 0);
+      const remSum = billingForPatient.reduce((s,b)=>s+(b.remaining||0), 0);
+      html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">💳 الحسابات والمدفوعات</h2>
+        <table style="width:100%;font-size:12px;border:1px solid #ddd;border-collapse:collapse">
+          <tr style="background:#f0f0f0"><th style="padding:6px;border:1px solid #ddd;text-align:right">التاريخ</th><th style="padding:6px;border:1px solid #ddd;text-align:right">التكلفة</th><th style="padding:6px;border:1px solid #ddd;text-align:right">المدفوع</th><th style="padding:6px;border:1px solid #ddd;text-align:right">المتبقي</th><th style="padding:6px;border:1px solid #ddd;text-align:right">ملاحظات</th></tr>`;
+      billingForPatient.forEach(b => {
+        html += `<tr><td style="padding:6px;border:1px solid #ddd">${esc(b.date||'')}</td><td style="padding:6px;border:1px solid #ddd">$${(b.totalCost||0).toFixed(2)}</td><td style="padding:6px;border:1px solid #ddd;color:green">$${(b.paid||0).toFixed(2)}</td><td style="padding:6px;border:1px solid #ddd;color:${(b.remaining||0)>0?'red':'green'}">$${(b.remaining||0).toFixed(2)}</td><td style="padding:6px;border:1px solid #ddd;font-size:11px">${esc(b.notes||'')}</td></tr>`;
+      });
+      html += `<tr style="background:#fffbe6;font-weight:800"><td style="padding:6px;border:1px solid #ddd">الإجمالي</td><td style="padding:6px;border:1px solid #ddd">$${totalSum.toFixed(2)}</td><td style="padding:6px;border:1px solid #ddd;color:green">$${paidSum.toFixed(2)}</td><td style="padding:6px;border:1px solid #ddd;color:red">$${remSum.toFixed(2)}</td><td style="padding:6px;border:1px solid #ddd"></td></tr></table>`;
+    }
+
+    // طلبات المعمل
+    const labForPatient = lab.filter(l => l.patientId === pid);
+    if(labForPatient.length){
+      html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">🧪 طلبات المعمل</h2>
+        <table style="width:100%;font-size:12px;border:1px solid #ddd;border-collapse:collapse">
+          <tr style="background:#f0f0f0"><th style="padding:6px;border:1px solid #ddd;text-align:right">النوع</th><th style="padding:6px;border:1px solid #ddd;text-align:right">المعمل</th><th style="padding:6px;border:1px solid #ddd;text-align:right">الأسنان</th><th style="padding:6px;border:1px solid #ddd;text-align:right">الكلي</th><th style="padding:6px;border:1px solid #ddd;text-align:right">المدفوع</th><th style="padding:6px;border:1px solid #ddd;text-align:right">المتبقي</th></tr>`;
+      labForPatient.forEach(l => {
+        html += `<tr><td style="padding:6px;border:1px solid #ddd">${esc(l.type)}</td><td style="padding:6px;border:1px solid #ddd">${esc(l.labName||'—')}</td><td style="padding:6px;border:1px solid #ddd">${l.teethCount||0}</td><td style="padding:6px;border:1px solid #ddd">$${(l.total||0).toFixed(2)}</td><td style="padding:6px;border:1px solid #ddd;color:green">$${(l.paid||0).toFixed(2)}</td><td style="padding:6px;border:1px solid #ddd;color:${(l.remaining||0)>0?'red':'green'}">$${(l.remaining||0).toFixed(2)}</td></tr>`;
+      });
+      html += `</table>`;
+    }
+
+    // المواعيد
+    const apptsForPatient = appointments.filter(a => a.patientId === pid);
+    if(apptsForPatient.length){
+      html += `<h2 style="color:#C5A059;font-size:16px;margin:15px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px">🗓️ المواعيد</h2>
+        <ul style="font-size:12px;margin:6px 0 6px 20px">`;
+      apptsForPatient.forEach(a => { html += `<li>${esc(a.date||'')} — ${esc(a.time||'')} — ${esc(a.type||'')}</li>`; });
+      html += `</ul>`;
+    }
+
+    html += `<hr style="margin-top:20px;border:none;border-top:1px solid #ddd">
+      <p style="text-align:center;font-size:10px;color:#666;margin-top:10px">© 2026 NAQCLINIXAI — تم توليد التقرير بتاريخ ${new Date().toLocaleString('ar-EG')}</p>`;
+
+    preview.innerHTML = html;
+    toast('✅ تم توليد التقرير');
+  } catch(e) {
+    console.error('❌ generateFullReport:', e);
+    preview.innerHTML = `<div style="color:red;padding:20px;text-align:center">❌ فشل توليد التقرير: ${esc(e.message)}</div>`;
+    toast('❌ ' + e.message, true);
+  }
+}
 // ═══════════════════════════════════════════════════════════════
 // 28. Users
 // ═══════════════════════════════════════════════════════════════
@@ -2382,37 +2566,48 @@ async function addBilling(){
   const date = document.getElementById('billDate').value;
   const total = parseFloat(document.getElementById('billTotal').value)||0;
   const paid = parseFloat(document.getElementById('billPaid').value)||0;
+  const serviceType = document.getElementById('billServiceType').value;
   const notes = document.getElementById('billNotes').value.trim();
   if(!pid || !date) return toast('⚠️ اختر المريض والتاريخ', true);
   if(total <= 0) return toast('⚠️ أدخل التكلفة', true);
   if(paid > total) return toast('⚠️ المدفوع أكبر من التكلفة', true);
   const p = patients.find(x=>x.id===pid);
   try{
-    await db.collection('billing').add({
+    const docRef = await db.collection('billing').add({
       patientId: pid, patientName: p?.fullName||'',
       date, totalCost: total, paid: paid, remaining: total - paid,
-      notes, clinicId: CD.clinicId, createdBy: CU.uid,
+      serviceType, notes, clinicId: CD.clinicId, createdBy: CU.uid,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    billing.push({ id: docRef.id, patientId: pid, patientName: p?.fullName||'', date, totalCost: total, paid, remaining: total - paid, serviceType, notes, clinicId: CD.clinicId });
     toast('✅ تم حفظ الدفعة');
     document.getElementById('billTotal').value = '0';
     document.getElementById('billPaid').value = '0';
     document.getElementById('billNotes').value = '';
-    loadBilling();
-  }catch(e){ toast('❌ '+e.message, true); }
+    renderBilling();
+    updateBillingStats();
+    updateDashboard();
+  }catch(e){
+    console.error('❌ addBilling:', e);
+    toast('❌ ' + (e.code || e.message), true);
+  }
 }
 function renderBilling(){
   const el = document.getElementById('billingList'); if(!el) return;
   if(!billing.length){ el.innerHTML='<div class="empty">لا توجد مدفوعات</div>'; return; }
-  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>التاريخ</th><th>المريض</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th><th>ملاحظات</th><th></th></tr></thead><tbody>'+
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>التاريخ</th><th>المريض</th><th>النوع</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th><th>ملاحظات</th><th></th></tr></thead><tbody>'+
     billing.map(b=>`<tr>
       <td>${esc(b.date)}</td>
       <td><b>${esc(b.patientName)}</b></td>
+      <td>${esc(b.serviceType||'—')}</td>
       <td>$${(b.totalCost||0).toFixed(2)}</td>
       <td style="color:var(--ok)">$${(b.paid||0).toFixed(2)}</td>
       <td style="color:${(b.remaining||0)>0?'var(--err)':'var(--ok)'}">$${(b.remaining||0).toFixed(2)}</td>
       <td style="font-size:.7rem;color:var(--muted)">${esc(b.notes||'')}</td>
-      <td><button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="deleteBilling('${b.id}')">🗑️</button></td>
+      <td style="white-space:nowrap">
+        <button class="btn-outline" style="padding:2px 8px;font-size:.65rem" onclick="printInvoice('${b.id}')">🖨️</button>
+        <button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="deleteBilling('${b.id}')">🗑️</button>
+      </td>
     </tr>`).join('')+'</tbody></table></div>';
 }
 async function deleteBilling(id){
@@ -2447,6 +2642,200 @@ function updateBillingStats(){
   setTxt('billMonth', '$' + monthTotal.toFixed(2));
   setTxt('billYear', '$' + yearTotal.toFixed(2));
   setTxt('billRemaining', '$' + remaining.toFixed(2));
+}
+function printInvoice(id){
+  const b = billing.find(x => x.id === id); if(!b) return toast('⚠️ الدفعة غير موجودة', true);
+  const p = patients.find(x => x.id === b.patientId) || {};
+  const w = window.open('', '', 'width=800,height=900');
+  w.document.write(`
+    <!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>فاتورة</title>
+    <style>
+      body{font-family:'Segoe UI',Tahoma,Arial;padding:30px;color:#333;max-width:700px;margin:0 auto}
+      .header{text-align:center;border-bottom:3px solid #C5A059;padding-bottom:15px;margin-bottom:20px}
+      .header h1{color:#C5A059;margin:0;font-size:26px}
+      .header p{color:#666;margin:5px 0;font-size:12px}
+      .info{background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:20px}
+      .info table{width:100%;font-size:13px}
+      .info td{padding:5px}
+      .info td:first-child{color:#666;width:130px}
+      .items{width:100%;border-collapse:collapse;margin-bottom:20px}
+      .items th{background:#C5A059;color:#fff;padding:10px;font-size:13px;text-align:right}
+      .items td{padding:10px;border-bottom:1px solid #ddd;font-size:13px}
+      .total{background:#fffbe6;padding:15px;border-radius:8px;font-size:15px}
+      .total table{width:100%}
+      .total td{padding:6px}
+      .total .grand{font-size:18px;color:#C5A059;font-weight:800;border-top:2px solid #C5A059;padding-top:10px}
+      .footer{text-align:center;color:#999;font-size:11px;margin-top:40px;border-top:1px solid #ddd;padding-top:15px}
+      @media print{.no-print{display:none}}
+    </style></head><body>
+    <div class="header">
+      <h1>🦷 NAQCLINIXAI</h1>
+      <p>Dental Clinic Pro — فاتورة</p>
+      <p>فاتورة رقم: ${id.slice(0,8).toUpperCase()}</p>
+    </div>
+    <div class="info">
+      <table>
+        <tr><td>👤 المريض:</td><td><b>${p.fullName || b.patientName || '—'}</b></td></tr>
+        <tr><td>📞 الهاتف:</td><td>${p.phone || '—'}</td></tr>
+        <tr><td>📅 التاريخ:</td><td>${b.date || '—'}</td></tr>
+        <tr><td>🏷️ نوع العمل:</td><td>${b.serviceType || '—'}</td></tr>
+      </table>
+    </div>
+    <table class="items">
+      <thead><tr><th>الخدمة</th><th>المبلغ</th></tr></thead>
+      <tbody>
+        <tr><td>${b.notes || b.serviceType || 'خدمة علاجية'}</td><td>$${(b.totalCost||0).toFixed(2)}</td></tr>
+      </tbody>
+    </table>
+    <div class="total">
+      <table>
+        <tr><td>التكلفة الإجمالية:</td><td style="text-align:left">$${(b.totalCost||0).toFixed(2)}</td></tr>
+        <tr><td>المدفوع:</td><td style="text-align:left;color:green">$${(b.paid||0).toFixed(2)}</td></tr>
+        <tr class="grand"><td>المتبقي:</td><td style="text-align:left">$${(b.remaining||0).toFixed(2)}</td></tr>
+      </table>
+    </div>
+    <div class="footer">
+      شكراً لثقتكم — © 2026 NAQCLINIXAI<br>
+      ${new Date().toLocaleString('ar-EG')}
+    </div>
+    <div class="no-print" style="text-align:center;margin-top:20px">
+      <button onclick="window.print()" style="padding:10px 30px;background:#C5A059;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">🖨️ طباعة</button>
+    </div>
+    </body></html>
+  `);
+  w.document.close();
+}
+async function generateMonthlyIncomeReport(){
+  const monthInput = document.getElementById('monthlyIncomeMonth');
+  let month = monthInput.value;
+  if(!month){
+    const now = new Date();
+    month = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2, '0');
+    monthInput.value = month;
+  }
+  const scope = document.getElementById('monthlyIncomeScope').value;
+  const pid = document.getElementById('reportPatient2').value;
+  if(scope === 'patient' && !pid) return toast('⚠️ اختر المريض', true);
+
+  const el = document.getElementById('monthlyIncomeResult');
+  el.innerHTML = '<div style="text-align:center;padding:15px;color:var(--gold)">⏳ جاري الحساب...</div>';
+
+  try {
+    // جلب كل دفعات الشهر المحدد
+    let q = db.collection('billing');
+    const snap = await q.get();
+    const allBills = [];
+    snap.forEach(d => allBills.push({ id: d.id, ...d.data() }));
+
+    // فلترة حسب الشهر والمريض
+    const filtered = allBills.filter(b => {
+      if(!b.date) return false;
+      if(!b.date.startsWith(month)) return false;
+      if(scope === 'patient' && b.patientId !== pid) return false;
+      return true;
+    });
+
+    if(!filtered.length){
+      el.innerHTML = '<div class="empty">لا توجد دفعات في هذا الشهر</div>';
+      return;
+    }
+
+    // تجميع حسب نوع العمل
+    const byType = {};
+    filtered.forEach(b => {
+      const type = b.serviceType || 'غير محدد';
+      if(!byType[type]) byType[type] = { count: 0, total: 0, paid: 0, remaining: 0 };
+      byType[type].count++;
+      byType[type].total += b.totalCost || 0;
+      byType[type].paid += b.paid || 0;
+      byType[type].remaining += b.remaining || 0;
+    });
+
+    // بناء الجدول
+    const grandTotal = filtered.reduce((s,b)=>s+(b.totalCost||0), 0);
+    const grandPaid = filtered.reduce((s,b)=>s+(b.paid||0), 0);
+    const grandRem = filtered.reduce((s,b)=>s+(b.remaining||0), 0);
+    const totalCount = filtered.length;
+
+    let html = `<div style="background:var(--card2);padding:15px;border-radius:12px;border:2px solid var(--gold)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        <h3 style="color:var(--gold);margin:0">📅 تقرير الشهر: ${month}</h3>
+        <button class="btn-outline" onclick="exportMonthlyIncomeCSV('${month}','${scope}','${pid}')" style="font-size:11px">📥 Excel</button>
+      </div>
+      <div class="g4" style="margin-bottom:15px">
+        <div class="stat"><div class="ic">🧾</div><div class="num">${totalCount}</div><div class="lbl">عدد الفواتير</div></div>
+        <div class="stat"><div class="ic">💰</div><div class="num">$${grandTotal.toFixed(2)}</div><div class="lbl">إجمالي الدخل</div></div>
+        <div class="stat"><div class="ic">💵</div><div class="num" style="color:var(--ok)">$${grandPaid.toFixed(2)}</div><div class="lbl">المحصّل</div></div>
+        <div class="stat"><div class="ic">⏳</div><div class="num" style="color:var(--err)">$${grandRem.toFixed(2)}</div><div class="lbl">المتبقي</div></div>
+      </div>
+      <table class="tbl" style="background:var(--card)">
+        <thead><tr>
+          <th>نوع العمل</th><th>عدد الفواتير</th><th>إجمالي الدخل</th><th>المحصّل</th><th>المتبقي</th>
+        </tr></thead><tbody>`;
+
+    // ترتيب حسب إجمالي الدخل تنازلياً
+    const sorted = Object.entries(byType).sort((a,b) => b[1].total - a[1].total);
+    sorted.forEach(([type, data]) => {
+      html += `<tr>
+        <td><b style="color:var(--gold)">${esc(type)}</b></td>
+        <td>${data.count}</td>
+        <td>$${data.total.toFixed(2)}</td>
+        <td style="color:var(--ok)">$${data.paid.toFixed(2)}</td>
+        <td style="color:${data.remaining>0?'var(--err)':'var(--ok)'}">$${data.remaining.toFixed(2)}</td>
+      </tr>`;
+    });
+    html += `<tr style="background:rgba(197,160,89,.15);font-weight:800">
+      <td>الإجمالي العام</td>
+      <td>${totalCount}</td>
+      <td>$${grandTotal.toFixed(2)}</td>
+      <td style="color:var(--ok)">$${grandPaid.toFixed(2)}</td>
+      <td style="color:var(--err)">$${grandRem.toFixed(2)}</td>
+    </tr></tbody></table></div>`;
+
+    el.innerHTML = html;
+    toast('✅ تم توليد التقرير');
+  } catch(e) {
+    console.error('❌ generateMonthlyIncomeReport:', e);
+    el.innerHTML = `<div style="color:var(--err);padding:15px">❌ ${esc(e.message)}</div>`;
+    toast('❌ ' + e.message, true);
+  }
+}
+async function exportMonthlyIncomeCSV(month, scope, pid){
+  try {
+    const snap = await db.collection('billing').get();
+    const allBills = [];
+    snap.forEach(d => allBills.push(d.data()));
+    const filtered = allBills.filter(b => {
+      if(!b.date || !b.date.startsWith(month)) return false;
+      if(scope === 'patient' && b.patientId !== pid) return false;
+      return true;
+    });
+    const byType = {};
+    filtered.forEach(b => {
+      const type = b.serviceType || 'غير محدد';
+      if(!byType[type]) byType[type] = { count: 0, total: 0, paid: 0, remaining: 0 };
+      byType[type].count++;
+      byType[type].total += b.totalCost || 0;
+      byType[type].paid += b.paid || 0;
+      byType[type].remaining += b.remaining || 0;
+    });
+    const rows = [['نوع العمل','عدد الفواتير','إجمالي الدخل','المحصّل','المتبقي']];
+    Object.entries(byType).sort((a,b)=>b[1].total-a[1].total).forEach(([type, d]) => {
+      rows.push([type, d.count, d.total.toFixed(2), d.paid.toFixed(2), d.remaining.toFixed(2)]);
+    });
+    const grandTotal = filtered.reduce((s,b)=>s+(b.totalCost||0), 0);
+    const grandPaid = filtered.reduce((s,b)=>s+(b.paid||0), 0);
+    const grandRem = filtered.reduce((s,b)=>s+(b.remaining||0), 0);
+    rows.push(['الإجمالي', filtered.length, grandTotal.toFixed(2), grandPaid.toFixed(2), grandRem.toFixed(2)]);
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `monthly_income_${month}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('✅ تم تصدير التقرير');
+  } catch(e) { toast('❌ ' + e.message, true); }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3283,6 +3672,7 @@ window.addEventListener('load', () => {
       .catch(err => console.error('❌ SW registration failed:', err));
   }
 });
+
 </script>
 </body>
 </html>
