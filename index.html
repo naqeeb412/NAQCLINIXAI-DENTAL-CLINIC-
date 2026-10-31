@@ -3422,7 +3422,7 @@ function loadImageFromFile(file) {
 // ✅ إغلاق IIFE
 console.log('🎁 تم تحميل جميع الإضافات بنجاح');
 })();
-</script>
+
 // ═══════════════════════════════════════════════════════════════
 // ☁️ النسخ الاحتياطي والاستعادة
 // ═══════════════════════════════════════════════════════════════
@@ -3482,5 +3482,6 @@ window.restoreFromJSON = function() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => console.warn('SW registration skipped'));
 }
+</script>
 </body>
 </html>
