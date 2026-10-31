@@ -187,6 +187,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <button class="ni" data-sec="paymentConfig" data-admin="true"><span class="ic">💳</span>إعدادات الدفع</button>
   <div class="ns"></div>
   <button class="ni" data-sec="settings"><span class="ic">⚙️</span>الإعدادات</button>
+  <button class="ni" onclick="openShareAd()" style="background:linear-gradient(135deg,rgba(37,211,102,.2),rgba(24,119,242,.2));border:1px solid var(--ok)"><span class="ic">📤</span>شارك التطبيق</button>
   <button class="ni" onclick="doLogout()" style="color:var(--err)"><span class="ic">🚪</span>تسجيل الخروج</button>
 </aside>
 
@@ -965,6 +966,41 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     <div style="display:flex;gap:8px;margin-top:12px">
       <button class="btn-save" style="flex:1" onclick="createPatient()">💾 حفظ</button>
       <button class="btn-outline" onclick="document.getElementById('patientModal').classList.remove('show')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="shareAdModal">
+  <div class="box" style="max-width:520px;padding:0;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#C5A059,#a8893e);padding:20px;text-align:center;position:relative">
+      <button onclick="document.getElementById('shareAdModal').classList.remove('show')" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,.3);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
+      <div style="font-size:48px;margin-bottom:8px">🦷</div>
+      <h2 style="color:#0A0A0A;margin:0;font-size:22px;font-weight:900">NAQCLINIXAI</h2>
+      <p style="color:#0A0A0A;margin:4px 0 0;font-size:12px;font-weight:700;opacity:0.8">DENTAL CLINIC PRO</p>
+    </div>
+    <div style="padding:20px">
+      <div style="background:rgba(197,160,89,.08);padding:15px;border-radius:12px;border:1px solid var(--bd);margin-bottom:15px">
+        <h3 style="color:var(--gold);margin:0 0 10px;font-size:16px">✨ نظام إدارة عيادة الأسنان بالذكاء الاصطناعي</h3>
+        <div style="font-size:13px;line-height:1.9;color:var(--txt)">
+          🧠 تشخيص ذكي بالذكاء الاصطناعي<br>
+          📊 مخطط أسنان تفاعلي كامل<br>
+          🎨 محرر تصميم الابتسامة (DSD)<br>
+          🩻 تحليل الأشعة والوجه (468 نقطة)<br>
+          📅 إدارة المواعيد والحسابات والمعمل<br>
+          👥 متعدد التخصصات + اجتماعات فيديو<br>
+          💾 نسخ احتياطي سحابي آمن
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <button onclick="shareAdNow('whatsapp')" style="padding:12px;background:#25D366;color:#fff;border:none;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">📱 واتساب</button>
+        <button onclick="shareAdNow('telegram')" style="padding:12px;background:#0088cc;color:#fff;border:none;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">✈️ تيليجرام</button>
+        <button onclick="shareAdNow('facebook')" style="padding:12px;background:#1877F2;color:#fff;border:none;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">📘 فيسبوك</button>
+        <button onclick="shareAdNow('twitter')" style="padding:12px;background:#000;color:#fff;border:none;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">🐦 X</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="copyAdLink()" style="padding:10px;background:transparent;color:var(--gold);border:1px solid var(--gold);border-radius:10px;font-weight:700;font-size:12px;cursor:pointer">📋 نسخ الإعلان</button>
+        <button onclick="nativeShareAd()" style="padding:10px;background:linear-gradient(135deg,var(--gold),var(--goldD));color:#0A0A0A;border:none;border-radius:10px;font-weight:800;font-size:12px;cursor:pointer">📤 مشاركة النظام</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3665,11 +3701,76 @@ function loadImageFromFile(file) {
 // ✅ إغلاق IIFE
 console.log('🎁 تم تحميل جميع الإضافات بنجاح');
 })();
-window.addEventListener('load', () => {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then(() => console.log('✅ Service Worker registered'))
-      .catch(err => console.error('❌ SW registration failed:', err));
+
+// ═══════════════════════════════════════════════════════════════
+// 📤 الإعلان المباشر — مشاركة بنص جاهز + إغلاق تلقائي
+// ═══════════════════════════════════════════════════════════════
+var SHARE_AD_URL = 'https://naqclinixaidentalpro.netlify.app/';
+var SHARE_AD_TEXT = `🦷 NAQCLINIXAI — نظام إدارة عيادة الأسنان بالذكاء الاصطناعي
+
+✨ المميزات:
+🧠 تشخيص ذكي بالذكاء الاصطناعي
+📊 مخطط أسنان تفاعلي كامل
+🎨 محرر تصميم الابتسامة (DSD)
+🩻 تحليل الأشعة والوجه (468 نقطة)
+📅 إدارة المواعيد والحسابات والمعمل
+👥 متعدد التخصصات + اجتماعات فيديو
+💾 نسخ احتياطي سحابي آمن
+
+🎁 جرّب الآن مجاناً!
+🔗 ${SHARE_AD_URL}`;
+
+window.openShareAd = function(){
+  document.getElementById('shareAdModal').classList.add('show');
+};
+
+window.shareAdNow = function(platform){
+  const url = encodeURIComponent(SHARE_AD_URL);
+  const text = encodeURIComponent(SHARE_AD_TEXT);
+  let shareUrl = '';
+  switch(platform){
+    case 'whatsapp': shareUrl = `https://wa.me/?text=${text}`; break;
+    case 'telegram': shareUrl = `https://t.me/share/url?url=${url}&text=${text}`; break;
+    case 'facebook': shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
+    case 'twitter': shareUrl = `https://twitter.com/intent/tweet?text=${text}`; break;
+  }
+  if(shareUrl){
+    window.open(shareUrl, '_blank', 'width=650,height=600');
+    toast('✅ تم فتح ' + platform);
+    setTimeout(function(){
+      document.getElementById('shareAdModal').classList.remove('show');
+    }, 500);
+  }
+};
+
+window.copyAdLink = function(){
+  navigator.clipboard.writeText(SHARE_AD_TEXT).then(() => {
+    toast('✅ تم نسخ الإعلان');
+    document.getElementById('shareAdModal').classList.remove('show');
+  }).catch(() => toast('❌ فشل النسخ', true));
+};
+
+window.nativeShareAd = async function(){
+  if(navigator.share){
+    try {
+      await navigator.share({ title: 'NAQCLINIXAI', text: SHARE_AD_TEXT, url: SHARE_AD_URL });
+      toast('✅ تمت المشاركة');
+      document.getElementById('shareAdModal').classList.remove('show');
+    } catch(e) {
+      if(e.name !== 'AbortError') toast('❌ ' + e.message, true);
+    }
+  } else {
+    window.copyAdLink();
+  }
+};
+
+// ✅ إغلاق النافذة عند الضغط على الخلفية
+window.addEventListener('load', function(){
+  const modal = document.getElementById('shareAdModal');
+  if(modal){
+    modal.addEventListener('click', function(e){
+      if(e.target === modal) modal.classList.remove('show');
+    });
   }
 });
 
