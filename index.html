@@ -3081,10 +3081,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.innerHTML = '⏳...';
         try {
           await Promise.allSettled([
-            loadPatients(), loadUsers(), loadBilling(), loadLab(),
-            loadPosts(), loadMeetings(), loadAppointments(),
-            loadDigitalProducts(), loadSubscriptionPlans(), loadNotifications()
-          ]);
+  loadPatients(), loadAppointments(), loadBilling(), loadUsers(),
+  loadPosts(), loadDiscussions(), loadMeetings(), loadDigitalProducts(),
+  loadMyOrders(), loadSubscriptionPlans(), loadUserSubscription(),
+  loadNotifications(), loadFriends(), loadAdvertisements(), loadLab()
+]);
           toast('✅ تم تحديث كل البيانات');
         } catch(e) { toast('⚠️ بعض البيانات لم تُحدّث', true); }
         btn.innerHTML = '🔄 تحديث';
