@@ -1,4 +1,20 @@
 User-agent: *
+Disallow: /login.html
+Disallow: /Register.html
+Disallow: /admin-plans.html
+Disallow: /clinical.html
+Disallow: /dentbook.html
+Disallow: /dentchat.html
+Disallow: /lab.html
+Disallow: /profile.html
+Disallow: /subscribe.html
+Disallow: /Subscription.html
+Disallow: /analyzer.html
+Disallow: /ai-analysis.html
+Disallow: /Migrate.html
+Disallow: /fix-owner.html
+Disallow: /test.html
+Disallow: /verify-email.html
 Allow: /
 
 Sitemap: https://naqclinixai-dental-clinic.web.app/sitemap.xml
