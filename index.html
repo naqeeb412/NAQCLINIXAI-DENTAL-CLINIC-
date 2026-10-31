@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>NAQCLINIXAI Dental Clinic Pro</title>
 <meta name="theme-color" content="#C5A059">
+<link rel="manifest" href="manifest.json">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-auth-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-firestore-compat.min.js"></script>
@@ -3251,6 +3252,9 @@ function loadImageFromFile(file) {
 // ✅ إغلاق IIFE
 console.log('🎁 تم تحميل جميع الإضافات بنجاح');
 })();
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => console.warn('SW registration skipped'));
+}
 </script>
 </body>
 </html>
