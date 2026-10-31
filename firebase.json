@@ -8,6 +8,10 @@
     ],
     "rewrites": [
       {
+        "source": "/google*.html",
+        "destination": "/google*.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
