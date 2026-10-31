@@ -3252,9 +3252,13 @@ function loadImageFromFile(file) {
 // ✅ إغلاق IIFE
 console.log('🎁 تم تحميل جميع الإضافات بنجاح');
 })();
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => console.warn('SW registration skipped'));
-}
+window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('✅ Service Worker registered'))
+      .catch(err => console.error('❌ SW registration failed:', err));
+  }
+});
 </script>
 </body>
 </html>
