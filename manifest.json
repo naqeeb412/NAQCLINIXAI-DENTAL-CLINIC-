@@ -1,10 +1,10 @@
 {
-  "name": "Dentofacial - Dental Clinic",
-  "short_name": "Dentofacial",
+  "name": "NAQCLINIXAI Dental Clinic Pro",
+  "short_name": "NAQCLINIXAI",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#14B8A6",
+  "background_color": "#0A0A0A",
+  "theme_color": "#C5A059",
   "orientation": "portrait",
   "icons": [
     {
@@ -16,7 +16,8 @@
     {
       "src": "https://i.ibb.co/YOUR_LOGO.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
