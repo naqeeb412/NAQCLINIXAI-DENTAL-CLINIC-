@@ -1297,9 +1297,29 @@ async function loadHistoryForPatient(pid){
 function openAddPatient(){ document.getElementById('patientModal').classList.add('show'); }
 async function createPatient(){
   const name=document.getElementById('pName').value.trim(), phone=document.getElementById('pPhone').value.trim();
-  if(!name||!phone) return toast('⚠️',true);
-  await db.collection('patients').add({ fullName:name, phone, age:parseInt(document.getElementById('pAge').value)||null, clinicId:CD.clinicId, createdAt:firebase.firestore.FieldValue.serverTimestamp(), createdBy:CU.uid });
-  document.getElementById('patientModal').classList.remove('show'); toast('✅'); loadPatients();
+  if(!name||!phone) return toast('⚠️ املأ الاسم والهاتف',true);
+  try {
+    const docRef = await db.collection('patients').add({
+      fullName:name,
+      phone,
+      age:parseInt(document.getElementById('pAge').value)||null,
+      clinicId:CD.clinicId,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy:CU.uid
+    });
+    patients.push({ id: docRef.id, fullName: name, phone, age: parseInt(document.getElementById('pAge').value)||null, clinicId: CD.clinicId });
+    patients.sort((a,b) => (a.fullName||'').localeCompare(b.fullName||''));
+    document.getElementById('patientModal').classList.remove('show');
+    document.getElementById('pName').value = '';
+    document.getElementById('pPhone').value = '';
+    document.getElementById('pAge').value = '';
+    toast('✅ تم إضافة المريض');
+    populateSelects();
+    renderPatients();
+    updateDashboard();
+  } catch(e) {
+    toast('❌ ' + e.message, true);
+  }
 }
 async function deletePatient(id){ if(!confirm('حذف؟'))return; await db.collection('patients').doc(id).delete(); loadPatients(); toast('🗑️'); }
 async function openPatient(id){
@@ -1319,10 +1339,14 @@ function populateSelects(){
   ['apptPatient','photoPatient','reportPatient2','historyPatientSelect','interPatient',
    'aiPatientDiag','chartPatientSelect','dsdPatient','meetPatient',
    'labPatient','billPatient','tpPatient'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.innerHTML=opts;
+    const el=document.getElementById(id);
+    if(el){
+      const current = el.value;
+      el.innerHTML=opts;
+      if(current && patients.find(p => p.id === current)) el.value = current;
+    }
   });
 }
-
 // ═══════════════════════════════════════════════════════════════
 // 8. Camera
 // ═══════════════════════════════════════════════════════════════
