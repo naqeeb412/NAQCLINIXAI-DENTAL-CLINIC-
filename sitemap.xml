@@ -3,17 +3,6 @@
   <url>
     <loc>https://naqclinixai-dental-clinic.web.app/</loc>
     <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://naqclinixai-dental-clinic.web.app/login.html</loc>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://naqclinixai-dental-clinic.web.app/Register.html</loc>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://naqclinixai-dental-clinic.web.app/admin-plans.html</loc>
-    <priority>0.7</priority>
+    <changefreq>weekly</changefreq>
   </url>
 </urlset>
