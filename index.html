@@ -1327,13 +1327,27 @@ auth.onAuthStateChanged(async user=>{
 // ═══════════════════════════════════════════════════════════════
 function showSection(sec){
   const paidSections = ['patients','photography','history','chart','appointments','aiDiagnosis','faceHarmony','dsdStudio','xray','beforeAfter','cadcam','treatmentPlan','materialsGuide','interdisciplinary'];
-  const isAdminUser = CD && (CD.role === 'owner' || CD.role === 'admin' || CD.role === 'doctor');
-  if (!isAdminUser && paidSections.includes(sec) && !userSubscription) { toast('🔒 يتطلب اشتراكاً نشطاً', true); return; }
-  if (!isAdminUser && userSubscription && paidSections.includes(sec)) {
-    const access = userSubscription.sectionsAccess || [];
-    if (!access.includes(sec)) { toast('🔒 قسم غير مشمول في باقتك', true); return; }
+  const isOwner = CD && CD.role === 'owner';
+
+// ✅ أقسام منحها المالك لعضو الفريق
+const freeSections = (CD && CD.freeSections) || [];
+const isFreeForTeam = freeSections.includes(sec);
+
+// منع الدخول بدون اشتراك (إلا المالك أو عضو فريق لديه القسم مجاناً)
+if (!isOwner && !isFreeForTeam && paidSections.includes(sec) && !userSubscription) {
+  toast('🔒 يتطلب اشتراكاً نشطاً — يرجى الاشتراك من "خطط الاشتراك"', true); 
+  setTimeout(() => showSection('subscriptions'), 1500);
+  return;
+}
+
+// منع الدخول لقسم غير مشمول في الباقة
+if (!isOwner && !isFreeForTeam && userSubscription && paidSections.includes(sec)) {
+  const access = userSubscription.sectionsAccess || [];
+  if (!access.includes(sec)) { 
+    toast('🔒 هذا القسم غير مشمول في باقتك — قم بالترقية للوصول', true); 
+    return; 
   }
-  
+}
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById('sec-'+sec); if(el) el.classList.add('active');
   
@@ -2931,8 +2945,11 @@ function renderUsers(){
       <td style="font-size:.7rem">${esc(u.email)}</td>
       <td>${u.role==='owner'?'👑 مالك':u.role==='doctor'?'👨‍⚕️ طبيب':'👤 مستخدم'}</td>
       <td>${u.status==='pending'?'<span style="color:var(--err)">⏳ معلق</span>':'<span style="color:var(--ok)">✅ نشط</span>'}</td>
-      <td>${u.status==='pending'?`<button class="btn-save" style="padding:4px 8px;font-size:.7rem" onclick="approveUser('${u.id}')">✅</button>`:''}
-      ${u.role!=='owner'?`<button class="btn-danger" style="padding:4px 8px;font-size:.7rem" onclick="deleteUser('${u.id}')">🗑️</button>`:''}</td>
+      <td style="white-space:nowrap">
+        ${u.role !== 'owner' ? `<button class="btn-outline" style="padding:4px 8px;font-size:.7rem" onclick="openTeamSections('${u.id}')" title="إدارة الأقسام">⚙️</button>` : ''}
+        ${u.status==='pending'?`<button class="btn-save" style="padding:4px 8px;font-size:.7rem" onclick="approveUser('${u.id}')">✅</button>`:''}
+        ${u.role!=='owner'?`<button class="btn-danger" style="padding:4px 8px;font-size:.7rem" onclick="deleteUser('${u.id}')">🗑️</button>`:''}
+      </td>
     </tr>`).join('')}</tbody></table>`;
 }
 async function approveUser(uid){ await db.collection('users').doc(uid).update({status:'approved',active:true}); toast('✅'); loadUsers(); }
@@ -5088,6 +5105,83 @@ var SECTION_DESCRIPTIONS = {
   interdisciplinary: 'استشارات متعددة التخصصات',
   reports: 'تقارير شاملة وتفصيلية'
 };
+// ═══════════════════════════════════════════════════════════════
+// 🎯 إدارة أقسام الفريق (للمالك فقط)
+// ═══════════════════════════════════════════════════════════════
+var TEAM_SECTIONS = {
+  patients:'👥 المرضى', photography:'📸 التصوير', history:'💊 التاريخ',
+  chart:'📊 الأسنان', appointments:'🗓️ المواعيد', lab:'🧪 المعمل',
+  inventory:'📦 المخزون', billing:'💳 الفواتير', debtors:'📊 المديونين',
+  aiDiagnosis:'🧠 AI تشخيص', faceHarmony:'🧑‍⚕️ الوجه', dsdStudio:'🎨 التصميم',
+  xray:'🩻 الأشعة', beforeAfter:'⚖️ قبل/بعد', cadcam:'⚙️ CAD/CAM',
+  treatmentPlan:'📋 العلاج', materialsGuide:'📖 المواد', store:'🏪 المتجر',
+  interdisciplinary:'👨‍⚕️ التخصصات', reports:'📄 التقارير'
+};
+
+async function openTeamSections(uid){
+  const doc = await db.collection('users').doc(uid).get();
+  if(!doc.exists) return toast('⚠️ المستخدم غير موجود', true);
+  const u = doc.data();
+  const freeSecs = u.freeSections || [];
+
+  let modal = document.getElementById('teamSectionsModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'teamSectionsModal';
+    modal.className = 'modal';
+    modal.innerHTML = '<div class="box" id="teamSectionsBox" style="max-width:600px"></div>';
+    document.body.appendChild(modal);
+  }
+
+  const rows = Object.entries(TEAM_SECTIONS).map(([key, label]) => `
+    <tr>
+      <td><b>${label}</b></td>
+      <td style="text-align:center">
+        <input type="checkbox" data-free="${key}" ${freeSecs.includes(key) ? 'checked' : ''}>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('teamSectionsBox').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="color:var(--gold);margin:0">⚙️ أقسام مجانية — ${esc(u.fullName || u.email)}</h3>
+      <button class="btn-danger" style="padding:6px 12px" onclick="document.getElementById('teamSectionsModal').classList.remove('show')">✕</button>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:10px">
+      ✅ الأقسام المفعّلة هنا = <b>مجانية بالكامل</b> لهذا المستخدم (بدون اشتراك).<br>
+      ⬜ الأقسام غير المفعّلة = تحتاج <b>اشتراكاً</b> لفتحها.
+    </p>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn-outline" style="font-size:11px;padding:6px 12px" onclick="toggleAllTeamSections(true)">✅ تفعيل الكل</button>
+      <button class="btn-outline" style="font-size:11px;padding:6px 12px" onclick="toggleAllTeamSections(false)">⬜ إلغاء الكل</button>
+    </div>
+    <div style="overflow-x:auto;background:rgba(0,0,0,.2);padding:10px;border-radius:10px;max-height:400px">
+      <table class="tbl" style="font-size:.8rem">
+        <thead><tr><th>القسم</th><th>مجاني؟</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-save" style="flex:1" onclick="saveTeamSections('${uid}')">💾 حفظ</button>
+      <button class="btn-outline" onclick="document.getElementById('teamSectionsModal').classList.remove('show')">إلغاء</button>
+    </div>
+  `;
+  modal.classList.add('show');
+}
+
+function toggleAllTeamSections(checked){
+  document.querySelectorAll('[data-free]').forEach(cb => cb.checked = checked);
+}
+
+async function saveTeamSections(uid){
+  const free = Array.from(document.querySelectorAll('[data-free]:checked')).map(cb => cb.dataset.free);
+  try {
+    await db.collection('users').doc(uid).update({ freeSections: free });
+    toast(`✅ تم حفظ ${free.length} قسماً مجانياً`);
+    document.getElementById('teamSectionsModal').classList.remove('show');
+    loadUsers();
+  } catch(e) { toast('❌ ' + (e.code || e.message), true); }
+}
 </script>
 </body>
 </html>
