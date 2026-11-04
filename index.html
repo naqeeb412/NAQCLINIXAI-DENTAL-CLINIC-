@@ -451,13 +451,30 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   </div>
 
   <div class="sec" id="sec-xray">
-    <div class="panel">
-      <h2>🩻 الأشعة</h2>
-      <div class="f"><label>نوع الأشعة</label><select id="xrayType"><option>بانورامية</option><option>سيفالومترية</option><option>CBCT</option></select></div>
-      <button class="btn-save" onclick="analyzeXray()">🔬 تحليل الكثافة</button>
-      <div id="xrayResult" style="margin-top:15px"></div>
+  <div class="panel">
+    <h2>🩻 الأشعة والتحليل الجانبي</h2>
+    <div class="desc">ارفع أشعة سيفالومترية أو صورة جانبية، وسيقوم الذكاء الاصطناعي بتحليل الزوايا والنقاط التشريحية.</div>
+    
+    <div class="f">
+      <label>نوع الصورة</label>
+      <select id="xrayType">
+        <option value="سيفالومترية">سيفالومترية (Cephalometric)</option>
+        <option value="جانبية">صورة جانبية فوتوغرافية (Profile)</option>
+        <option value="بانورامية">بانورامية (Panoramic)</option>
+        <option value="CBCT">CBCT</option>
+      </select>
     </div>
+
+    <div class="f">
+      <label>📸 رفع الصورة</label>
+      <input type="file" id="xrayImageInput" accept="image/*" style="padding:10px; border-radius:10px; border:1px solid var(--bd); background:var(--card2); color:var(--txt); width:100%;">
+    </div>
+
+    <button class="btn-save" onclick="analyzeXray()" style="width:100%; margin-top:10px;">🔬 تحليل بالذكاء الاصطناعي (Gemini)</button>
+    
+    <div id="xrayResult" style="margin-top:15px"></div>
   </div>
+</div>
 
   <div class="sec" id="sec-beforeAfter">
     <div class="panel">
@@ -2240,21 +2257,27 @@ function renderFaceResults() {
   const el = document.getElementById('faceResults'); if (!el) return;
   const a = lastFaceAnalysis;
   
+  // ✅ نطاقات معدلة لتناسب الصورة الأمامية (Frontal View)
   const refs = {
-    nasalTipAngle: { min: 90, max: 110, label: 'الزاوية الأنفية', unit: '°' },
-    facialConvexity: { min: 165, max: 175, label: 'تحدب الوجه', unit: '°' },
+    nasalTipAngle: { min: 150, max: 180, label: 'زاوية الأنف (2D)', unit: '°' },
+    facialConvexity: { min: 170, max: 180, label: 'تحدب الوجه (2D)', unit: '°' },
     canthalTiltLeft: { min: -5, max: 8, label: 'ميل العين الأيسر', unit: '°' },
     canthalTiltRight: { min: -5, max: 8, label: 'ميل العين الأيمن', unit: '°' },
-    facialThirds: { min: 0.95, max: 1.05, label: 'توازن أثلاث الوجه', unit: '%', isPct: true },
-    mouthWidthRatio: { min: 1.45, max: 1.65, label: 'عرض الفم / عرض الأنف', unit: '' },
-    facialSymmetry: { min: 0.9, max: 1.0, label: 'تماثل الوجه', unit: '%', isPct: true }
+    facialThirds: { min: 75, max: 100, label: 'توازن أثلاث الوجه', unit: '%', isPct: true },
+    mouthWidthRatio: { min: 1.2, max: 1.7, label: 'عرض الفم / عرض الأنف', unit: '' },
+    facialSymmetry: { min: 90, max: 100, label: 'تماثل الوجه', unit: '%' } // تعديل حساب التماثل
   };
 
   const rows = Object.entries(refs).map(([key, ref]) => {
-    const val = a[key]; if (val === undefined) return '';
+    let val = a[key]; if (val === undefined) return '';
+    
+    // تعديل حساب التماثل ليكون نسبة مئوية
+    if(key === 'facialSymmetry') val = val * 100;
+    
     const inRange = val >= ref.min && val <= ref.max;
     const display = ref.isPct ? (val * 100).toFixed(1) + '%' : val.toFixed(1) + ref.unit;
     const rangeDisplay = ref.isPct ? `${(ref.min * 100).toFixed(0)}-${(ref.max * 100).toFixed(0)}%` : `${ref.min}${ref.unit}-${ref.max}${ref.unit}`;
+    
     return `<tr><td><b>${ref.label}</b></td><td style="font-weight:800;color:${inRange ? 'var(--ok)' : 'var(--err)'}">${display}</td><td style="font-size:.7rem;color:var(--muted)">${rangeDisplay}</td><td>${inRange ? '✅ طبيعي' : '⚠️ خارج النطاق'}</td></tr>`;
   }).join('');
 
@@ -2272,24 +2295,6 @@ function renderFaceResults() {
   `;
   drawFaceChart();
 }
-
-function drawFaceChart() {
-  const ctx = document.getElementById('faceChart'); if (!ctx || !lastFaceAnalysis) return;
-  if (window._faceChart) window._faceChart.destroy();
-  const a = lastFaceAnalysis;
-  window._faceChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['الزاوية الأنفية', 'تحدب الوجه', 'ميل العين', 'أثلاث الوجه', 'عرض الفم', 'التماثل'],
-      datasets: [
-        { label: 'المريض', data: [a.nasalTipAngle, a.facialConvexity, (a.canthalTiltLeft + a.canthalTiltRight) / 2, a.facialThirds * 100, a.mouthWidthRatio * 60, a.facialSymmetry * 100], backgroundColor: '#C5A059' },
-        { label: 'المثالي', data: [100, 170, 4, 100, 93, 95], backgroundColor: '#10b981' }
-      ]
-    },
-    options: { responsive: true, plugins: { legend: { labels: { color: '#000' } } }, scales: { y: { ticks: { color: '#000' } }, x: { ticks: { color: '#000' } } } }
-  });
-}
-
 async function saveFaceAnalysisToPatient() {
   const pid = document.getElementById('dsdPatient')?.value || document.getElementById('aiPatientDiag')?.value;
   if (!pid) return toast('⚠️ اختر المريض أولاً', true);
@@ -2513,8 +2518,79 @@ async function generateAfterWithDrawing() {
 // ═══════════════════════════════════════════════════════════════
 // 14. X-Ray Analysis (Simple)
 // ═══════════════════════════════════════════════════════════════
-function analyzeXray(){ document.getElementById('xrayResult').innerHTML='<div style="background:var(--card2);padding:15px;border-radius:10px"><b style="color:var(--ok)">✅ كثافة العظام: طبيعية</b></div>'; }
+async function analyzeXray() {
+  const out = document.getElementById('xrayResult');
+  const type = document.getElementById('xrayType').value;
+  const fileInput = document.getElementById('xrayImageInput'); // سنضيف هذا الحقل في HTML
+  
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+    return toast('⚠️ الرجاء رفع صورة الأشعة أو الصورة الجانبية أولاً', true);
+  }
+  if (!geminiKey) {
+    return toast('⚠️ أضف مفتاح Gemini من الإعدادات أولاً', true);
+  }
 
+  out.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gold)">⏳ جاري تحليل الصورة بالذكاء الاصطناعي (قد يستغرق 10-20 ثانية)...</div>';
+
+  try {
+    const file = fileInput.files[0];
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // صياغة الطلب (Prompt) لنموذج Gemini ليتصرف كخبير سيفالومتري
+    let prompt = '';
+    if (type === 'سيفالومترية' || type === 'جانبية') {
+      prompt = `أنت خبير في تحليل السيفالومتري (Cephalometric Analysis) وطب تقويم الأسنان.
+        قم بتحليل هذه الصورة (${type}) بدقة.
+        1. تعرف على النقاط التشريحية الرئيسية: Sella (S), Nasion (N), A-point, B-point, Pogonion (Pg), Menton (Me), Gonion (Go).
+        2. احسب أو قدر الزوايا التالية (إذا كانت النقاط واضحة):
+           - SNA (الزاوية بين Sella-Nasion-A point): النطاق الطبيعي 80°-84°
+           - SNB (الزاوية بين Sella-Nasion-B point): النطاق الطبيعي 78°-82°
+           - ANB (الفرق بين SNA و SNB): النطاق الطبيعي 0°-4°
+           - زاوية الفك السفلي (Gonial Angle): النطاق الطبيعي 120°-130°
+        3. أعطني تقييماً مكتوباً بالعربية يشمل:
+           - العلاقة الهيكلية بين الفكين (Class I, II, III).
+           - بروز الشفاه أو انسحابهما.
+           - أي ملاحظات تشريحية أخرى تراها.
+        تنسيق الإخراج: جدول بسيط للقيم، ثم فقرة تحليلية.`;
+    } else {
+      prompt = `أنت طبيب أسنان خبير. حلل صورة الأشعة (${type}) المرفقة. ابحث عن أي علامات تسوس، أمراض لثة، أو مشاكل في العظام. أعطني تقريراً بالعربية.`;
+    }
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType: file.type, data: base64.split(',')[1] } }
+          ]
+        }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const reply = data.candidates[0].content.parts[0].text;
+
+    out.innerHTML = `
+      <div style="background:var(--card2);padding:18px;border-radius:12px;border-right:4px solid var(--gold);line-height:1.9">
+        <h3 style="color:var(--gold);margin-bottom:12px">📊 تقرير التحليل السيفالومتري:</h3>
+        <div style="white-space:pre-wrap;font-size:0.9rem">${esc(reply)}</div>
+      </div>
+    `;
+    toast('✅ تم التحليل بنجاح');
+  } catch(e) {
+    console.error(e);
+    out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ فشل التحليل: ${esc(e.message)}</div>`;
+    toast('❌ ' + e.message, true);
+  }
+}
 // ═══════════════════════════════════════════════════════════════
 // 15. CAD/CAM 3D
 // ═══════════════════════════════════════════════════════════════
@@ -5099,7 +5175,7 @@ var SECTIONS_LABELS = {
   patients:'👥 المرضى', photography:'📸 التصوير', history:'💊 التاريخ',
   chart:'📊 الأسنان', appointments:'🗓️ المواعيد', lab:'🧪 المعمل',
   inventory:'📦 المخزون', billing:'💳 الفواتير', debtors:'📊 المديونين',
-  aiDiagnosis:'🧠 AI تشخيص', faceHarmony:'🧑‍⚕️ الوجه', dsdStudio:'🎨 التصميم',
+  aiDiagnosis:'🧠 AI تشخيص', faceHarmony:'🧑‍⚕️ الوجه', dsdStudio:'?? التصميم',
   xray:'🩻 الأشعة', beforeAfter:'⚖️ قبل/بعد', cadcam:'⚙️ CAD/CAM',
   treatmentPlan:'📋 العلاج', materialsGuide:'📖 المواد', store:'🏪 المتجر',
   interdisciplinary:'👨‍⚕️ التخصصات', reports:'📄 التقارير'
