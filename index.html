@@ -2194,24 +2194,25 @@ const facialConvexity = calcAngle(glabella, subnasale, chin); // تحدب الو
     ctx.lineTo(chin.x, chin.y);
     ctx.stroke();
 
-    // 6. الزاوية الأنفية الشفوية
-    ctx.strokeStyle = 'rgba(239, 68, 68, 0.9)';
-    ctx.lineWidth = 2;
+    // 6. رسم الزاوية الأنفية
+ctx.strokeStyle = 'rgba(239, 68, 68, 0.9)';
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(nasion.x, nasion.y);
+ctx.lineTo(noseTip.x, noseTip.y);
+ctx.lineTo(subnasale.x, subnasale.y);
+ctx.stroke();
+[nasion, noseTip, subnasale].forEach(p => {
+  if(p) {
     ctx.beginPath();
-    ctx.moveTo(noseTip.x, noseTip.y);
-    ctx.lineTo(subnasale.x, subnasale.y);
-    ctx.lineTo(upperLip.x, upperLip.y);
-    ctx.stroke();
-    [noseTip, subnasale, upperLip].forEach(p => {
-      ctx.beginPath();
-      ctx.fillStyle = '#ef4444';
-      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-      ctx.fill();
-    });
     ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText(`${nasolabialAngle.toFixed(1)}°`, subnasale.x + 10, subnasale.y - 10);
-
+    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+});
+ctx.fillStyle = '#ef4444';
+ctx.font = 'bold 16px Arial';
+ctx.fillText(`${nasalTipAngle.toFixed(1)}°`, noseTip.x + 15, noseTip.y - 15);
     // 7. عرض الفم والأنف
     ctx.strokeStyle = 'rgba(34, 211, 238, 0.9)';
     ctx.beginPath();
