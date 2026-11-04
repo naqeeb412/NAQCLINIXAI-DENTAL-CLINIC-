@@ -1327,7 +1327,7 @@ auth.onAuthStateChanged(async user=>{
 // 5. Navigation
 // ═══════════════════════════════════════════════════════════════
 function showSection(sec){
-  const paidSections = ['patients','photography','history','chart','appointments','aiDiagnosis','faceHarmony','dsdStudio','xray','beforeAfter','cadcam','treatmentPlan','materialsGuide','interdisciplinary'];
+  const paidSections = ['patients','photography','history','chart','appointments','lab','inventory','billing','debtors','aiDiagnosis','faceHarmony','dsdStudio','xray','beforeAfter','cadcam','treatmentPlan','materialsGuide','store','interdisciplinary','reports'];
   const isOwner = CD && CD.role === 'owner';
 
 // ✅ أقسام منحها المالك لعضو الفريق
@@ -2038,29 +2038,9 @@ async function saveTreatmentPlanToPatient(){
 // ═══════════════════════════════════════════════════════════════
 var lastFaceAnalysis = null;
 
-function loadFaceImage(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      faceImg = img;
-      const canvas = document.getElementById('faceCanvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      document.getElementById('faceResults').innerHTML = '';
-      toast('✅ الصورة جاهزة للتحليل');
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-}
 
 // تحميل مكتبة tasks-vision مرة واحدة
-let faceLandmarkerInstance = null;
+
 
 let faceLandmarkerInstance = null;
 
