@@ -257,6 +257,19 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <div class="sec" id="sec-patients">
     <div class="panel">
       <h2>👥 المرضى</h2>
+      <!-- 📊 ملخص حسابات المرضى (مجمّع) -->
+<div style="background:linear-gradient(135deg,rgba(197,160,89,.12),rgba(197,160,89,.04));padding:16px;border-radius:12px;border:2px solid var(--gold);margin-bottom:16px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <h3 style="color:var(--gold);margin:0;font-size:1rem">📊 ملخص حسابات المرضى (المجمّع)</h3>
+    <button class="btn-outline" style="font-size:11px;padding:6px 12px" onclick="renderPatientsSummary()">🔄 تحديث</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <input type="text" id="summarySearch" placeholder="🔍 بحث بالاسم أو الهاتف..." 
+           oninput="renderPatientsSummary()" 
+           style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+  </div>
+  <div id="patientsSummaryList">⏳ جاري التحميل...</div>
+</div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <input type="text" id="searchPatients" placeholder="🔍 بحث..." oninput="renderPatients()" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
         <button class="btn-save" onclick="openAddPatient()">➕ مريض جديد</button>
@@ -738,6 +751,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <div class="sec" id="sec-lab">
     <div class="panel">
       <h2>🧪 المعمل</h2>
+      <div id="labSummaryList"></div>
       <div class="desc">إدارة طلبات المعمل مع حساب التكاليف الكاملة</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
         <div class="stat"><div class="ic">🦷</div><div class="num" id="labStatTeeth">0</div><div class="lbl">إجمالي الأسنان</div></div>
@@ -801,6 +815,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <div class="sec" id="sec-billing">
     <div class="panel">
       <h2>💳 حسابات المرضى</h2>
+      <div id="patientsSummaryList" style="background:rgba(0,0,0,.2);padding:12px;border-radius:10px;margin-bottom:12px;min-height:40px">⏳ جاري التحميل...</div>
       <div class="desc">إدارة الفواتير والمدفوعات — الإجماليات اليومية والأسبوعية والشهرية والسنوية</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px">
         <div class="stat"><div class="ic">📅</div><div class="num" id="billToday">$0</div><div class="lbl">إجمالي اليوم</div></div>
@@ -1213,9 +1228,9 @@ function showSection(sec){
   if(sec==='manageAds') loadAdvertisements();
   if(sec==='paymentConfig') loadPaymentConfig();
   if(sec==='notifications') loadNotifications();
-  if(sec==='lab'){ populateSelects(); loadLab(); }
+if(sec==='lab'){ populateSelects(); loadLab(); setTimeout(renderLabSummary, 300); }
   if(sec==='labAccounting'){ loadLab().then(()=>renderLabAccounting()); }
-  if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); }
+  if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); renderPatientsSummary(); }
   if(sec==='reports') populateSelects();
   if(sec==='settings') loadPrivacy();
   if(sec==='treatmentPlan') populateSelects();
@@ -2818,7 +2833,7 @@ async function loadBilling(){
     const snap = await q.get();
     billing = []; snap.forEach(d=>billing.push({id:d.id,...d.data()}));
     billing.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-    renderBilling(); updateBillingStats();
+    renderBilling(); updateBillingStats(); renderPatientsSummary();
   }catch(e){ console.error(e); }
 }
 async function addBilling(){
@@ -2846,6 +2861,7 @@ async function addBilling(){
     document.getElementById('billNotes').value = '';
     renderBilling();
     updateBillingStats();
+    renderPatientsSummary();
     updateDashboard();
   }catch(e){
     console.error('❌ addBilling:', e);
@@ -3099,6 +3115,169 @@ async function exportMonthlyIncomeCSV(month, scope, pid){
 }
 
 // ═══════════════════════════════════════════════════════════════
+// 📊 ملخص حسابات المرضى (مجمّع) — قبل قسم المعمل
+// ═══════════════════════════════════════════════════════════════
+function renderPatientsSummary(){
+  const el = document.getElementById('patientsSummaryList');
+  if(!el) return;
+
+  const q = (document.getElementById('summarySearch')?.value || '').toLowerCase().trim();
+  const active = patients.filter(p => p.archived !== true);
+  const filtered = active.filter(p =>
+    !q ||
+    (p.fullName || '').toLowerCase().includes(q) ||
+    (p.phone || '').includes(q)
+  );
+
+  const summary = filtered.map(p => {
+    const patientBills = billing.filter(b => b.patientId === p.id);
+    const total = patientBills.reduce((s,b) => s + (b.totalCost || 0), 0);
+    const paid  = patientBills.reduce((s,b) => s + (b.paid || 0), 0);
+    const rem   = patientBills.reduce((s,b) => s + (b.remaining || 0), 0);
+    return { patient: p, total, paid, rem, count: patientBills.length };
+  });
+
+  summary.sort((a,b) => b.rem - a.rem);
+
+  if(!summary.length){
+    el.innerHTML = '<div class="empty">لا يوجد مرضى' + (q ? ' مطابقون' : '') + '</div>';
+    return;
+  }
+
+  const grandTotal = summary.reduce((s,x) => s + x.total, 0);
+  const grandPaid  = summary.reduce((s,x) => s + x.paid, 0);
+  const grandRem   = summary.reduce((s,x) => s + x.rem, 0);
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+      <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center">
+        <div style="font-size:.65rem;color:var(--muted)">إجمالي الفواتير</div>
+        <div style="font-size:1.05rem;font-weight:800;color:var(--txt)">$${grandTotal.toFixed(2)}</div>
+      </div>
+      <div style="background:rgba(16,185,129,.15);padding:10px;border-radius:8px;text-align:center">
+        <div style="font-size:.65rem;color:var(--muted)">إجمالي المدفوع</div>
+        <div style="font-size:1.05rem;font-weight:800;color:var(--ok)">$${grandPaid.toFixed(2)}</div>
+      </div>
+      <div style="background:rgba(239,68,68,.15);padding:10px;border-radius:8px;text-align:center">
+        <div style="font-size:.65rem;color:var(--muted)">إجمالي المتبقي</div>
+        <div style="font-size:1.05rem;font-weight:800;color:var(--err)">$${grandRem.toFixed(2)}</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl" style="font-size:.78rem">
+        <thead><tr>
+          <th>👤 المريض</th>
+          <th>📞 الهاتف</th>
+          <th>🧾 عدد الفواتير</th>
+          <th>💰 الإجمالي</th>
+          <th>💵 المدفوع</th>
+          <th>⏳ المتبقي</th>
+          <th>إجراء</th>
+        </tr></thead>
+        <tbody>
+          ${summary.map(s => `
+            <tr style="${s.rem > 0 ? 'background:rgba(239,68,68,.05)' : ''}">
+              <td><b style="color:var(--gold)">${esc(s.patient.fullName)}</b></td>
+              <td>${esc(s.patient.phone || '—')}</td>
+              <td style="text-align:center">${s.count}</td>
+              <td>$${s.total.toFixed(2)}</td>
+              <td style="color:var(--ok)">$${s.paid.toFixed(2)}</td>
+              <td style="color:${s.rem > 0 ? 'var(--err)' : 'var(--ok)'};font-weight:800">$${s.rem.toFixed(2)}</td>
+              <td style="white-space:nowrap">
+                <button class="btn-save" style="padding:4px 8px;font-size:.7rem" onclick="addNewWorkToPatient('${s.patient.id}')">➕ دفعة</button>
+                <button class="btn-outline" style="padding:4px 8px;font-size:.7rem" onclick="viewPatientBills('${s.patient.id}')">📋 التفاصيل</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function viewPatientBills(id){
+  const p = patients.find(x => x.id === id);
+  if(!p) return;
+
+  const bills = billing.filter(b => b.patientId === id)
+    .sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  const total = bills.reduce((s,b) => s + (b.totalCost || 0), 0);
+  const paid  = bills.reduce((s,b) => s + (b.paid || 0), 0);
+  const rem   = bills.reduce((s,b) => s + (b.remaining || 0), 0);
+
+  let modal = document.getElementById('patientBillsModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'patientBillsModal';
+    modal.className = 'modal';
+    modal.innerHTML = '<div class="box" id="patientBillsBox" style="max-width:700px"></div>';
+    document.body.appendChild(modal);
+  }
+
+  const box = document.getElementById('patientBillsBox');
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="color:var(--gold);margin:0">📋 فواتير: ${esc(p.fullName)}</h3>
+      <button class="btn-danger" style="padding:6px 12px" onclick="document.getElementById('patientBillsModal').classList.remove('show')">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center">
+        <div style="font-size:.65rem;color:var(--muted)">الإجمالي</div>
+        <div style="font-size:1rem;font-weight:800">$${total.toFixed(2)}</div>
+      </div>
+      <div style="background:rgba(16,185,129,.15);padding:10px;border-radius:8px;text-align:center">
+        <div style="font-size:.65rem;color:var(--muted)">المدفوع</div>
+        <div style="font-size:1rem;font-weight:800;color:var(--ok)">$${paid.toFixed(2)}</div>
+      </div>
+      <div style="background:rgba(239,68,68,.15);padding:10px;border-radius:8px;text-align:center">
+        <div style="font-size:.65rem;color:var(--muted)">المتبقي</div>
+        <div style="font-size:1rem;font-weight:800;color:var(--err)">$${rem.toFixed(2)}</div>
+      </div>
+    </div>
+    ${bills.length ? `
+      <div style="overflow-x:auto">
+        <table class="tbl" style="font-size:.78rem">
+          <thead><tr><th>التاريخ</th><th>النوع</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th><th></th></tr></thead>
+          <tbody>
+            ${bills.map(b => `
+              <tr>
+                <td>${esc(b.date||'')}</td>
+                <td>${esc(b.serviceType||'—')}</td>
+                <td>$${(b.totalCost||0).toFixed(2)}</td>
+                <td style="color:var(--ok)">$${(b.paid||0).toFixed(2)}</td>
+                <td style="color:${(b.remaining||0)>0?'var(--err)':'var(--ok)'}">$${(b.remaining||0).toFixed(2)}</td>
+                <td><button class="btn-outline" style="padding:2px 6px;font-size:.65rem" onclick="printInvoice('${b.id}')">🖨️</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    ` : '<div class="empty">لا فواتير</div>'}
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)">
+      <button class="btn-save" style="width:100%" onclick="addNewWorkToPatient('${p.id}'); document.getElementById('patientBillsModal').classList.remove('show')">➕ إضافة دفعة جديدة</button>
+    </div>
+  `;
+  modal.classList.add('show');
+}
+
+function addNewWorkToPatient(id){
+  const pc = document.getElementById('patientCardModal');
+  if(pc) pc.classList.remove('show');
+  const pb = document.getElementById('patientBillsModal');
+  if(pb) pb.classList.remove('show');
+
+  showSection('billing');
+  setTimeout(() => {
+    const sel = document.getElementById('billPatient');
+    if(sel) sel.value = id;
+    const dateEl = document.getElementById('billDate');
+    if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10);
+    const form = document.getElementById('billTotal');
+    if(form) form.focus();
+  }, 300);
+}
+// ═══════════════════════════════════════════════════════════════
 // 31. Lab
 // ═══════════════════════════════════════════════════════════════
 async function loadLab(){
@@ -3152,9 +3331,8 @@ async function addLab(){
     document.getElementById('labTotal').value      = '';
     document.getElementById('labPaid').value       = '0';
     document.getElementById('labRemaining').value  = '';
-    loadLab();
-  }catch(e){ toast('❌ '+e.message, true); }
-}
+      loadLab().then(() => renderLabSummary());
+}catch(e){ toast('❌ '+e.message, true); }
 function renderLab(){
   const el = document.getElementById('labList'); if(!el) return;
   const sumTeeth     = lab.reduce((s,l) => s + (l.teethCount || 0), 0);
@@ -3214,7 +3392,75 @@ async function deleteLab(id){
   loadLab();
   if(CD.role === 'owner') renderLabAccounting();
 }
+// ═══════════════════════════════════════════════════════════════
+// 📊 ملخص طلبات المعمل لكل مريض (مجمّع)
+// ═══════════════════════════════════════════════════════════════
+function renderLabSummary(){
+  const el = document.getElementById('labSummaryList');
+  if(!el) return;
 
+  const active = patients.filter(p => p.archived !== true);
+
+  const summary = active.map(p => {
+    const patientLabs = lab.filter(l => l.patientId === p.id);
+    const total = patientLabs.reduce((s,l) => s + (l.total || 0), 0);
+    const paid  = patientLabs.reduce((s,l) => s + (l.paid || 0), 0);
+    const rem   = patientLabs.reduce((s,l) => s + (l.remaining || 0), 0);
+    const teeth = patientLabs.reduce((s,l) => s + (l.teethCount || 0), 0);
+    return { patient: p, total, paid, rem, teeth, count: patientLabs.length };
+  }).filter(s => s.count > 0);
+
+  summary.sort((a,b) => b.rem - a.rem);
+
+  if(!summary.length){
+    el.innerHTML = '';
+    return;
+  }
+
+  const grandTotal = summary.reduce((s,x) => s + x.total, 0);
+  const grandPaid  = summary.reduce((s,x) => s + x.paid, 0);
+  const grandRem   = summary.reduce((s,x) => s + x.rem, 0);
+
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,rgba(197,160,89,.12),rgba(197,160,89,.04));padding:16px;border-radius:12px;border:2px solid var(--gold);margin-bottom:16px">
+      <h3 style="color:var(--gold);margin:0 0 12px;font-size:1rem">📊 ملخص طلبات المعمل (المجمّع)</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+        <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center">
+          <div style="font-size:.65rem;color:var(--muted)">الإجمالي</div>
+          <div style="font-size:1rem;font-weight:800">$${grandTotal.toFixed(2)}</div>
+        </div>
+        <div style="background:rgba(16,185,129,.15);padding:10px;border-radius:8px;text-align:center">
+          <div style="font-size:.65rem;color:var(--muted)">المدفوع</div>
+          <div style="font-size:1rem;font-weight:800;color:var(--ok)">$${grandPaid.toFixed(2)}</div>
+        </div>
+        <div style="background:rgba(239,68,68,.15);padding:10px;border-radius:8px;text-align:center">
+          <div style="font-size:.65rem;color:var(--muted)">المتبقي</div>
+          <div style="font-size:1rem;font-weight:800;color:var(--err)">$${grandRem.toFixed(2)}</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="font-size:.78rem">
+          <thead><tr>
+            <th>👤 المريض</th><th>📞 الهاتف</th><th>🧾 الطلبات</th><th>🦷 الأسنان</th><th>💰 الإجمالي</th><th>💵 المدفوع</th><th>⏳ المتبقي</th>
+          </tr></thead>
+          <tbody>
+            ${summary.map(s => `
+              <tr style="${s.rem > 0 ? 'background:rgba(239,68,68,.05)' : ''}">
+                <td><b style="color:var(--gold)">${esc(s.patient.fullName)}</b></td>
+                <td>${esc(s.patient.phone || '—')}</td>
+                <td style="text-align:center">${s.count}</td>
+                <td style="text-align:center">${s.teeth}</td>
+                <td>$${s.total.toFixed(2)}</td>
+                <td style="color:var(--ok)">$${s.paid.toFixed(2)}</td>
+                <td style="color:${s.rem > 0 ? 'var(--err)' : 'var(--ok)'};font-weight:800">$${s.rem.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
 // ═══════════════════════════════════════════════════════════════
 // 32. Lab Accounting (Owner Only)
 // ═══════════════════════════════════════════════════════════════
