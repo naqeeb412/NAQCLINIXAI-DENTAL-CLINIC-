@@ -1044,67 +1044,72 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
   </div>
 
-<div class="sec" id="sec-manageSubscriptions">
-  <div class="panel">
-    <h2>🎯 إدارة خطط الاشتراك</h2>
-    <div class="g2">
-      <div class="f"><label>🏷️ الاسم *</label><input id="spName"></div>
-      <div class="f"><label>⏱️ المدة</label>
-        <select id="spDuration">
-          <option value="7">أسبوع</option>
-          <option value="30">شهر</option>
-          <option value="90">3 أشهر</option>
-          <option value="365">سنة</option>
-          <option value="9999">مدى الحياة</option>
-        </select>
+  <div class="sec" id="sec-manageSubscriptions">
+    <div class="panel">
+      <h2>🎯 إدارة خطط الاشتراك</h2>
+      <div class="g2">
+        <div class="f"><label>🏷️ الاسم *</label><input id="spName"></div>
+        <div class="f"><label>⏱️ المدة</label>
+          <select id="spDuration">
+            <option value="7">أسبوع</option>
+            <option value="30">شهر</option>
+            <option value="90">3 أشهر</option>
+            <option value="365">سنة</option>
+            <option value="9999">مدى الحياة</option>
+          </select>
+        </div>
+        <div class="f"><label>⭐ مميزة؟</label>
+          <select id="spFeatured"><option value="no">عادية</option><option value="yes">مميزة</option></select>
+        </div>
+        <div class="f"><label>🎁 نسبة الخصم (%)</label>
+          <input type="number" id="spDiscount" value="0" min="0" max="100" step="1">
+        </div>
       </div>
-      <div class="f"><label>⭐ مميزة؟</label>
-        <select id="spFeatured"><option value="no">عادية</option><option value="yes">مميزة</option></select>
-      </div>
-      <div class="f"><label>🎁 نسبة الخصم (%)</label>
-        <input type="number" id="spDiscount" value="0" min="0" max="100" step="1">
-      </div>
+      <div class="f"><label>📄 الوصف</label><input id="spDesc"></div>
+
+      <div class="f">
+        <label style="color:var(--gold);font-weight:700;margin-bottom:10px">✅ الأقسام والأسعار الفردية:</label>
+        <div style="overflow-x:auto;background:rgba(0,0,0,.2);padding:12px;border-radius:12px">
+          <table class="tbl" style="font-size:.75rem">
+            <thead><tr><th>القسم</th><th>مفعل</th><th>السعر ($)</th></tr></thead>
+            <tbody>
+              <tr><td><b>👥 المرضى</b><br><span style="font-size:9px;color:var(--muted)">إدارة كاملة للملفات</span></td><td><input type="checkbox" data-section="patients" checked></td><td><input type="number" data-price="patients" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>📸 التصوير</b><br><span style="font-size:9px;color:var(--muted)">تصوير داخل العيادة</span></td><td><input type="checkbox" data-section="photography" checked></td><td><input type="number" data-price="photography" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>💊 التاريخ الطبي</b><br><span style="font-size:9px;color:var(--muted)">سجل كل مريض</span></td><td><input type="checkbox" data-section="history" checked></td><td><input type="number" data-price="history" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>📊 مخطط الأسنان</b><br><span style="font-size:9px;color:var(--muted)">مخطط تفاعلي 32 سن</span></td><td><input type="checkbox" data-section="chart" checked></td><td><input type="number" data-price="chart" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>🗓️ المواعيد</b><br><span style="font-size:9px;color:var(--muted)">حجز وإدارة</span></td><td><input type="checkbox" data-section="appointments" checked></td><td><input type="number" data-price="appointments" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>🧪 المعمل</b><br><span style="font-size:9px;color:var(--muted)">طلبات وتكاليف</span></td><td><input type="checkbox" data-section="lab"></td><td><input type="number" data-price="lab" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>📦 المخزون</b><br><span style="font-size:9px;color:var(--muted)">مواد ومشتريات</span></td><td><input type="checkbox" data-section="inventory"></td><td><input type="number" data-price="inventory" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>💳 الفواتير</b><br><span style="font-size:9px;color:var(--muted)">مدفوعات ومتبقي</span></td><td><input type="checkbox" data-section="billing"></td><td><input type="number" data-price="billing" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>📊 المديونين</b><br><span style="font-size:9px;color:var(--muted)">قائمة من عليه دين</span></td><td><input type="checkbox" data-section="debtors"></td><td><input type="number" data-price="debtors" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>🧠 التشخيص AI</b><br><span style="font-size:9px;color:var(--muted)">تشخيص بالصور</span></td><td><input type="checkbox" data-section="aiDiagnosis"></td><td><input type="number" data-price="aiDiagnosis" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>🧑‍⚕️ تحليل الوجه</b><br><span style="font-size:9px;color:var(--muted)">468 نقطة</span></td><td><input type="checkbox" data-section="faceHarmony"></td><td><input type="number" data-price="faceHarmony" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>🎨 محرر التصميم</b><br><span style="font-size:9px;color:var(--muted)">تصميم الابتسامة</span></td><td><input type="checkbox" data-section="dsdStudio"></td><td><input type="number" data-price="dsdStudio" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>🩻 الأشعة</b><br><span style="font-size:9px;color:var(--muted)">تحليل الأشعة</span></td><td><input type="checkbox" data-section="xray"></td><td><input type="number" data-price="xray" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>⚖️ قبل/بعد</b><br><span style="font-size:9px;color:var(--muted)">مقارنة</span></td><td><input type="checkbox" data-section="beforeAfter"></td><td><input type="number" data-price="beforeAfter" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>⚙️ CAD/CAM</b><br><span style="font-size:9px;color:var(--muted)">نماذج 3D</span></td><td><input type="checkbox" data-section="cadcam"></td><td><input type="number" data-price="cadcam" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>📋 خطة العلاج</b><br><span style="font-size:9px;color:var(--muted)">مقترحة بالـ AI</span></td><td><input type="checkbox" data-section="treatmentPlan"></td><td><input type="number" data-price="treatmentPlan" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>📖 دليل المواد</b><br><span style="font-size:9px;color:var(--muted)">مراجع علمية</span></td><td><input type="checkbox" data-section="materialsGuide"></td><td><input type="number" data-price="materialsGuide" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>🏪 المتجر</b><br><span style="font-size:9px;color:var(--muted)">منتجات رقمية</span></td><td><input type="checkbox" data-section="store"></td><td><input type="number" data-price="store" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>👨‍⚕️ التخصصات</b><br><span style="font-size:9px;color:var(--muted)">استشارات عن بعد</span></td><td><input type="checkbox" data-section="interdisciplinary"></td><td><input type="number" data-price="interdisciplinary" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+              <tr><td><b>📄 التقارير</b><br><span style="font-size:9px;color:var(--muted)">شاملة وتفصيلية</span></td><td><input type="checkbox" data-section="reports"></td><td><input type="number" data-price="reports" value="0" min="0" step="0.01" style="width:70px"></td></tr>
+            </tbody>
+          </table>
+        </div> <!-- ✅ هذا القوس كان ناقصاً -->
+      </div> <!-- ✅ وهذا القوس أيضاً -->
+
+      <button class="btn-save" onclick="addPlan()" style="width:100%;margin-top:15px">💾 إنشاء</button>
+      <div id="adminPlansList" style="margin-top:15px"></div>
     </div>
-    <div class="f"><label>📄 الوصف</label><input id="spDesc"></div>
-
-    <div class="f">
-      <label style="color:var(--gold);font-weight:700;margin-bottom:10px">✅ الأقسام والأسعار الفردية:</label>
-      <div style="overflow-x:auto;background:rgba(0,0,0,.2);padding:12px;border-radius:12px">
-<table class="tbl" style="font-size:.75rem">
-  <thead><tr><th>القسم</th><th>مفعل</th><th>السعر ($)</th></tr></thead>
-  <tbody>
-    <tr><td><b>👥 المرضى</b><br><span style="font-size:9px;color:var(--muted)">إدارة كاملة للملفات</span></td><td><input type="checkbox" data-section="patients" checked></td><td><input type="number" data-price="patients" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>📸 التصوير</b><br><span style="font-size:9px;color:var(--muted)">تصوير داخل العيادة</span></td><td><input type="checkbox" data-section="photography" checked></td><td><input type="number" data-price="photography" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>💊 التاريخ الطبي</b><br><span style="font-size:9px;color:var(--muted)">سجل كل مريض</span></td><td><input type="checkbox" data-section="history" checked></td><td><input type="number" data-price="history" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>📊 مخطط الأسنان</b><br><span style="font-size:9px;color:var(--muted)">مخطط تفاعلي 32 سن</span></td><td><input type="checkbox" data-section="chart" checked></td><td><input type="number" data-price="chart" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>🗓️ المواعيد</b><br><span style="font-size:9px;color:var(--muted)">حجز وإدارة</span></td><td><input type="checkbox" data-section="appointments" checked></td><td><input type="number" data-price="appointments" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>🧪 المعمل</b><br><span style="font-size:9px;color:var(--muted)">طلبات وتكاليف</span></td><td><input type="checkbox" data-section="lab"></td><td><input type="number" data-price="lab" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>📦 المخزون</b><br><span style="font-size:9px;color:var(--muted)">مواد ومشتريات</span></td><td><input type="checkbox" data-section="inventory"></td><td><input type="number" data-price="inventory" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>💳 الفواتير</b><br><span style="font-size:9px;color:var(--muted)">مدفوعات ومتبقي</span></td><td><input type="checkbox" data-section="billing"></td><td><input type="number" data-price="billing" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>📊 المديونين</b><br><span style="font-size:9px;color:var(--muted)">قائمة من عليه دين</span></td><td><input type="checkbox" data-section="debtors"></td><td><input type="number" data-price="debtors" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>🧠 التشخيص AI</b><br><span style="font-size:9px;color:var(--muted)">تشخيص بالصور</span></td><td><input type="checkbox" data-section="aiDiagnosis"></td><td><input type="number" data-price="aiDiagnosis" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>🧑‍⚕️ تحليل الوجه</b><br><span style="font-size:9px;color:var(--muted)">468 نقطة</span></td><td><input type="checkbox" data-section="faceHarmony"></td><td><input type="number" data-price="faceHarmony" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>🎨 محرر التصميم</b><br><span style="font-size:9px;color:var(--muted)">تصميم الابتسامة</span></td><td><input type="checkbox" data-section="dsdStudio"></td><td><input type="number" data-price="dsdStudio" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>🩻 الأشعة</b><br><span style="font-size:9px;color:var(--muted)">تحليل الأشعة</span></td><td><input type="checkbox" data-section="xray"></td><td><input type="number" data-price="xray" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>⚖️ قبل/بعد</b><br><span style="font-size:9px;color:var(--muted)">مقارنة</span></td><td><input type="checkbox" data-section="beforeAfter"></td><td><input type="number" data-price="beforeAfter" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>⚙️ CAD/CAM</b><br><span style="font-size:9px;color:var(--muted)">نماذج 3D</span></td><td><input type="checkbox" data-section="cadcam"></td><td><input type="number" data-price="cadcam" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>📋 خطة العلاج</b><br><span style="font-size:9px;color:var(--muted)">مقترحة بالـ AI</span></td><td><input type="checkbox" data-section="treatmentPlan"></td><td><input type="number" data-price="treatmentPlan" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>📖 دليل المواد</b><br><span style="font-size:9px;color:var(--muted)">مراجع علمية</span></td><td><input type="checkbox" data-section="materialsGuide"></td><td><input type="number" data-price="materialsGuide" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>🏪 المتجر</b><br><span style="font-size:9px;color:var(--muted)">منتجات رقمية</span></td><td><input type="checkbox" data-section="store"></td><td><input type="number" data-price="store" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>👨‍⚕️ التخصصات</b><br><span style="font-size:9px;color:var(--muted)">استشارات عن بعد</span></td><td><input type="checkbox" data-section="interdisciplinary"></td><td><input type="number" data-price="interdisciplinary" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-    <tr><td><b>📄 التقارير</b><br><span style="font-size:9px;color:var(--muted)">شاملة وتفصيلية</span></td><td><input type="checkbox" data-section="reports"></td><td><input type="number" data-price="reports" value="0" min="0" step="0.01" style="width:70px"></td></tr>
-  </tbody>
-</table>
-
-    <button class="btn-save" onclick="addPlan()" style="width:100%;margin-top:15px">💾 إنشاء</button>
-    <div id="adminPlansList" style="margin-top:15px"></div>
   </div>
-</div>
 
   <div class="sec" id="sec-manageAds">
     <div class="panel">
       <h2>📢 إدارة الإعلانات</h2>
-      <div class="g2"><div class="f"><label>العنوان</label><input id="adTitle"></div><div class="f"><label>رابط الصورة</label><input id="adImage"></div></div>
+      <div class="g2">
+        <div class="f"><label>العنوان</label><input id="adTitle"></div>
+        <div class="f"><label>رابط الصورة</label><input id="adImage"></div>
+      </div>
       <div class="f"><label>الوصف</label><textarea id="adDesc" rows="2"></textarea></div>
       <button class="btn-save" onclick="addAd()">➕ إضافة</button>
       <div id="adminAdsList" style="margin-top:12px"></div>
@@ -1126,36 +1131,33 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
   </div>
 
-<div class="sec" id="sec-settings">
-  <div class="panel">
-    <h2>⚙️ الإعدادات والخصوصية</h2>
-    
-    <!-- حقل مفتاح Gemini -->
-    <div class="f">
-      <label>🔑 مفتاح Gemini API (للتحليل الذكي)</label>
-      <input type="password" id="geminiKey" placeholder="AIzaSy...">
-    </div>
-    <button class="btn-save" onclick="saveGemini()">💾 حفظ المفتاح</button>
-    
-    <!-- حقل مفتاح Replicate -->
-    <div class="f" style="margin-top:15px">
-      <label>🔑 مفتاح Replicate API (لتوليد صور AI)</label>
-      <input type="password" id="replicateKey" placeholder="r8_...">
-    </div>
-    <button class="btn-outline" onclick="saveReplicateKey()" style="margin-top:5px">💾 حفظ مفتاح Replicate</button>
-    
-    <!-- الخصوصية -->
-    <div class="f" style="margin-top:20px; border-top:1px solid var(--bd); padding-top:15px;">
-      <label>🔐 الخصوصية</label>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
-        <label><input type="checkbox" id="privEmail" style="width:16px"> عرض بريدي</label>
-        <label><input type="checkbox" id="privPhone" style="width:16px"> عرض هاتفي</label>
-        <label><input type="checkbox" id="privFriends" style="width:16px" checked> السماح بالصداقة</label>
+  <div class="sec" id="sec-settings">
+    <div class="panel">
+      <h2>⚙️ الإعدادات والخصوصية</h2>
+      
+      <div class="f">
+        <label>🔑 مفتاح Gemini API (للتحليل الذكي)</label>
+        <input type="password" id="geminiKey" placeholder="AIzaSy...">
       </div>
+      <button class="btn-save" onclick="saveGemini()">💾 حفظ المفتاح</button>
+      
+      <div class="f" style="margin-top:15px">
+        <label>🔑 مفتاح Replicate API (لتوليد صور AI)</label>
+        <input type="password" id="replicateKey" placeholder="r8_...">
+      </div>
+      <button class="btn-outline" onclick="saveReplicateKey()" style="margin-top:5px">💾 حفظ مفتاح Replicate</button>
+      
+      <div class="f" style="margin-top:20px; border-top:1px solid var(--bd); padding-top:15px;">
+        <label>🔐 الخصوصية</label>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <label><input type="checkbox" id="privEmail" style="width:16px"> عرض بريدي</label>
+          <label><input type="checkbox" id="privPhone" style="width:16px"> عرض هاتفي</label>
+          <label><input type="checkbox" id="privFriends" style="width:16px" checked> السماح بالصداقة</label>
+        </div>
+      </div>
+      <button class="btn-save" style="margin-top:15px" onclick="savePrivacy()">💾 حفظ الخصوصية</button>
     </div>
-    <button class="btn-save" style="margin-top:15px" onclick="savePrivacy()">💾 حفظ الخصوصية</button>
   </div>
-</div>
 
 </main>
 </div>
