@@ -4781,6 +4781,142 @@ function showInvTab(tab){
     btnMat.className = 'btn-outline'; btnPur.className = 'btn-save';
   }
 }
+// ═══════════════════════════════════════════════════════════════
+// 📊 تقرير المديونين
+// ═══════════════════════════════════════════════════════════════
+function renderDebtors(){
+  const el = document.getElementById('debtorsList'); if(!el) return;
+
+  // تجميع المديونية من الفواتير + المعمل
+  const debtors = [];
+
+  // 1. مديونية المرضى (billing)
+  const patientDebts = {};
+  billing.forEach(b => {
+    if((b.remaining || 0) > 0){
+      const key = b.patientId;
+      if(!patientDebts[key]) patientDebts[key] = { patientId: key, patientName: b.patientName, type: 'مريض', total: 0, entries: [] };
+      patientDebts[key].total += b.remaining;
+      patientDebts[key].entries.push({ date: b.date, amount: b.remaining, serviceType: b.serviceType });
+    }
+  });
+
+  Object.values(patientDebts).forEach(d => {
+    const p = patients.find(x => x.id === d.patientId);
+    debtors.push({
+      name: p?.fullName || d.patientName || 'غير معروف',
+      phone: p?.phone || '—',
+      patientId: d.patientId,
+      type: 'مريض',
+      total: d.total,
+      count: d.entries.length,
+      lastDate: d.entries.sort((a,b) => (b.date||'').localeCompare(a.date||''))[0]?.date || '—'
+    });
+  });
+
+  // 2. مديونية المعمل (lab) — إن كان المتبقي على المريض
+  const labDebts = {};
+  lab.forEach(l => {
+    if((l.remaining || 0) > 0){
+      const key = l.patientId;
+      if(!labDebts[key]) labDebts[key] = { patientId: key, patientName: l.patientName, total: 0, entries: [] };
+      labDebts[key].total += l.remaining;
+      labDebts[key].entries.push({ date: l.due, amount: l.remaining, type: l.type });
+    }
+  });
+
+  Object.values(labDebts).forEach(d => {
+    const p = patients.find(x => x.id === d.patientId);
+    debtors.push({
+      name: p?.fullName || d.patientName || 'غير معروف',
+      phone: p?.phone || '—',
+      patientId: d.patientId,
+      type: 'معمل',
+      total: d.total,
+      count: d.entries.length,
+      lastDate: d.entries.sort((a,b) => (b.date||'').localeCompare(a.date||''))[0]?.date || '—'
+    });
+  });
+
+  // دمج المديونية لنفس المريض
+  const merged = {};
+  debtors.forEach(d => {
+    const key = d.patientId + '_' + d.name;
+    if(!merged[key]) merged[key] = { ...d, types: [d.type] };
+    else {
+      merged[key].total += d.total;
+      merged[key].count += d.count;
+      if(!merged[key].types.includes(d.type)) merged[key].types.push(d.type);
+    }
+  });
+
+  const list = Object.values(merged).sort((a,b) => b.total - a.total);
+
+  // الإحصائيات
+  const totalDebt = list.reduce((s,d) => s + d.total, 0);
+  const labDebt = list.filter(d => d.types.includes('معمل')).reduce((s,d) => s + d.total, 0);
+  document.getElementById('debtStatCount').textContent = list.length;
+  document.getElementById('debtStatTotal').textContent = '$' + totalDebt.toFixed(2);
+  document.getElementById('debtStatLab').textContent = '$' + labDebt.toFixed(2);
+
+  if(!list.length){ el.innerHTML = '<div class="empty">🎉 لا يوجد مديونون</div>'; return; }
+
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>عدد المستحقات</th><th>المبلغ المتبقي</th><th>آخر تاريخ</th><th>إجراءات</th></tr></thead><tbody>' +
+    list.map(d => `
+      <tr>
+        <td><b style="color:var(--gold)">${esc(d.name)}</b></td>
+        <td>${d.phone !== '—' ? `<a href="tel:${esc(d.phone)}" style="color:var(--ok)">📞 ${esc(d.phone)}</a>` : '—'}</td>
+        <td>${d.types.map(t => `<span style="background:rgba(197,160,89,.15);padding:2px 8px;border-radius:6px;font-size:.65rem">${t}</span>`).join(' ')}</td>
+        <td style="text-align:center">${d.count}</td>
+        <td style="color:var(--err);font-weight:800">$${d.total.toFixed(2)}</td>
+        <td style="font-size:.7rem">${esc(d.lastDate)}</td>
+        <td>
+          <button class="btn-save" style="padding:4px 8px;font-size:.65rem" onclick="sendWhatsAppReminder('${esc(d.name)}','${esc(d.phone)}',${d.total})">📱 تذكير</button>
+        </td>
+      </tr>
+    `).join('') + '</tbody></table></div>';
+}
+
+function sendWhatsAppReminder(name, phone, amount){
+  if(!phone || phone === '—') return toast('⚠️ لا يوجد رقم هاتف', true);
+  const msg = `السلام عليكم ${name}\n\nنود تذكيركم بأن لديكم مبلغاً متبقياً في حساب العيادة:\n💰 المبلغ: $${amount.toFixed(2)}\n\nيرجى التواصل لترتيب السداد.\n\nشكراً لتعاملكم معنا 🦷`;
+  window.open(`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function exportDebtorsCSV(){
+  const rows = [['الاسم','الهاتف','النوع','عدد المستحقات','المبلغ المتبقي','آخر تاريخ']];
+  // نعيد بناء القائمة
+  const list = [];
+  billing.filter(b => (b.remaining||0) > 0).forEach(b => {
+    const p = patients.find(x => x.id === b.patientId);
+    list.push([p?.fullName || b.patientName, p?.phone || '—', 'مريض', 1, b.remaining, b.date || '—']);
+  });
+  lab.filter(l => (l.remaining||0) > 0).forEach(l => {
+    const p = patients.find(x => x.id === l.patientId);
+    list.push([p?.fullName || l.patientName, p?.phone || '—', 'معمل', 1, l.remaining, l.due || '—']);
+  });
+  list.forEach(r => rows.push(r));
+
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'debtors_' + Date.now() + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ تم التصدير');
+}
+
+function copyDebtorsWhatsApp(){
+  const debts = [];
+  billing.filter(b => (b.remaining||0) > 0).forEach(b => {
+    const p = patients.find(x => x.id === b.patientId);
+    debts.push(`• ${p?.fullName || b.patientName}: $${b.remaining.toFixed(2)}`);
+  });
+  if(!debts.length) return toast('⚠️ لا يوجد مديونون', true);
+  const text = `📊 تقرير المديونين\n\n${debts.join('\n')}`;
+  navigator.clipboard.writeText(text).then(() => toast('✅ تم النسخ — الصقه في واتساب'));
+}
 </script>
 </body>
 </html>
