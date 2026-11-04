@@ -264,6 +264,20 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div id="patientsList"></div>
     </div>
   </div>
+ 
+ <!-- 📚 الأرشيف -->
+<div style="margin-top:14px">
+  <button class="btn-outline" onclick="toggleArchive()">📚 الأرشيف (بحث في الحسابات المؤرشفة)</button>
+</div>
+
+<div id="archiveSection" style="display:none;margin-top:14px;padding-top:14px;border-top:2px dashed var(--bd)">
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <input type="text" id="archiveSearch" placeholder="🔍 بحث في الأرشيف..." 
+           oninput="loadArchive()" 
+           style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+  </div>
+  <div id="archiveList"></div>
+</div>
 
   <div class="sec" id="sec-photography">
     <div class="panel">
@@ -1357,17 +1371,38 @@ async function loadPatients(){
   }
 }
 function renderPatients(){
-  const el=document.getElementById('patientsList'); if(!el) return;
-  const q=(document.getElementById('searchPatients')?.value||'').toLowerCase();
-  const list=patients.filter(p=>!q||(p.fullName||'').toLowerCase().includes(q));
-  if(!list.length){ el.innerHTML='<div class="empty">لا يوجد مرضى</div>'; return; }
-  el.innerHTML='<div class="g3">'+list.map(p=>`
+  const el = document.getElementById('patientsList');
+  if(!el) return;
+
+  const q = (document.getElementById('searchPatients')?.value || '').toLowerCase().trim();
+
+  // 🔹 استبعاد المؤرشفين من القائمة الرئيسية
+  const active = patients.filter(p => p.archived !== true);
+
+  const list = active.filter(p =>
+    !q ||
+    (p.fullName||'').toLowerCase().includes(q) ||
+    (p.phone||'').includes(q)
+  );
+
+  if(!list.length){
+    el.innerHTML = '<div class="empty">لا يوجد مرضى' +
+      (q ? ' مطابقون لـ «' + esc(q) + '»' : '') +
+      '<br><br><button class="btn-save" onclick="openAddPatient()">➕ إضافة حساب جديد</button></div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="g3">' + list.map(p => `
     <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px">
       <b>${esc(p.fullName)}</b>
-      <div style="font-size:.7rem;color:var(--muted);margin:4px 0">${esc(p.phone||'')}</div>
+      <div style="font-size:.7rem;color:var(--muted);margin:4px 0">
+        ${esc(p.phone||'')}${p.age ? ' · ' + p.age + ' سنة' : ''}
+      </div>
       <button class="btn-outline" onclick="openPatient('${p.id}')">📂 فتح</button>
+      <button class="btn-outline" onclick="archivePatient('${p.id}')" title="أرشفة">📚</button>
       <button class="btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
-    </div>`).join('')+'</div>';
+    </div>
+  `).join('') + '</div>';
 }
 async function loadHistoryForPatient(pid){
   if(!pid) return;
@@ -1380,31 +1415,99 @@ async function loadHistoryForPatient(pid){
 }
 function openAddPatient(){ document.getElementById('patientModal').classList.add('show'); }
 async function createPatient(){
-  const name=document.getElementById('pName').value.trim(), phone=document.getElementById('pPhone').value.trim();
-  if(!name||!phone) return toast('⚠️ املأ الاسم والهاتف',true);
+  const name  = document.getElementById('pName').value.trim();
+  const phone = document.getElementById('pPhone').value.trim();
+  const age   = parseInt(document.getElementById('pAge').value) || null;
+
+  if(!name || !phone) return toast('⚠️ املأ الاسم والهاتف', true);
+
   try {
+    // 🔍 1) ابحث بالهاتف أولاً (مطابقة تامة)
+    let existing = null;
+
+    const byPhone = await db.collection('patients')
+      .where('clinicId', '==', CD.clinicId)
+      .where('phone', '==', phone)
+      .limit(1).get();
+
+    if(!byPhone.empty){
+      existing = { id: byPhone.docs[0].id, ...byPhone.docs[0].data() };
+    }
+
+    // 🔍 2) إن لم يوجد بالهاتف، ابحث بالاسم (مطابقة تامة)
+    if(!existing){
+      const byName = await db.collection('patients')
+        .where('clinicId', '==', CD.clinicId)
+        .get();
+
+      const nameLower = name.toLowerCase();
+      const found = byName.docs.find(d => {
+        const p = d.data();
+        return (p.fullName || '').toLowerCase().trim() === nameLower;
+      });
+
+      if(found){
+        // ⚠️ وُجد مريض بنفس الاسم — نعرضه للمستخدم ليقرر
+        const p = found.data();
+        const choice = confirm(
+          `⚠️ يوجد مريض مسجّل بنفس الاسم:\n\n` +
+          `👤 ${p.fullName}\n📞 ${p.phone || 'بدون هاتف'}\n\n` +
+          `اضغط OK لفتح حسابه وإضافة العمل الجديد إليه.\n` +
+          `اضغط Cancel لإنشاء حساب جديد منفصل.`
+        );
+        if(choice){
+          document.getElementById('patientModal').classList.remove('show');
+          return openPatient(found.id);
+        }
+      }
+    }
+
+    // 🔍 3) إن وُجد بالهاتف — افتح حسابه مباشرة
+    if(existing){
+      const choice = confirm(
+        `⚠️ هذا الرقم مسجّل بالفعل:\n\n` +
+        `👤 ${existing.fullName}\n📞 ${existing.phone}\n\n` +
+        `اضغط OK لفتح حسابه وإضافة العمل الجديد إليه.`
+      );
+      if(choice){
+        document.getElementById('patientModal').classList.remove('show');
+        return openPatient(existing.id);
+      }
+    }
+
+    // ✅ 4) لم يوجد — أنشئ حساباً جديداً
     const docRef = await db.collection('patients').add({
-      fullName:name,
+      fullName: name,
       phone,
-      age:parseInt(document.getElementById('pAge').value)||null,
-      clinicId:CD.clinicId,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy:CU.uid
+      age,
+      clinicId: CD.clinicId,
+      archived: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: CU.uid
     });
-    patients.push({ id: docRef.id, fullName: name, phone, age: parseInt(document.getElementById('pAge').value)||null, clinicId: CD.clinicId });
+
+    patients.push({
+      id: docRef.id, fullName: name, phone, age,
+      clinicId: CD.clinicId, archived: false
+    });
     patients.sort((a,b) => (a.fullName||'').localeCompare(b.fullName||''));
+
     document.getElementById('patientModal').classList.remove('show');
-    document.getElementById('pName').value = '';
+    document.getElementById('pName').value  = '';
     document.getElementById('pPhone').value = '';
-    document.getElementById('pAge').value = '';
+    document.getElementById('pAge').value   = '';
+
     toast('✅ تم إضافة المريض');
     populateSelects();
     renderPatients();
     updateDashboard();
+
   } catch(e) {
-    toast('❌ ' + e.message, true);
+    console.error('❌ createPatient:', e);
+    toast('❌ ' + (e.code || e.message), true);
   }
 }
+    
 async function deletePatient(id){ if(!confirm('حذف؟'))return; await db.collection('patients').doc(id).delete(); loadPatients(); toast('🗑️'); }
 async function openPatient(id){
   currentPatient = patients.find(p=>p.id===id); window._currentPatientId=id;
@@ -1417,6 +1520,106 @@ async function openPatient(id){
   const c=await db.collection('patients').doc(id).collection('medical').doc('chart').get();
   toothState = c.exists ? (c.data().teeth||{}) : {};
   renderChart();
+}
+// ═══════════════════════════════════════════════════════════════
+// 📚 أرشيف المرضى
+// ═══════════════════════════════════════════════════════════════
+async function archivePatient(id){
+  if(!confirm('أرشفة هذا المريض؟ سيختفي من القائمة الرئيسية لكن يمكن استعادته من الأرشيف.')) return;
+  try {
+    await db.collection('patients').doc(id).update({
+      archived: true,
+      archivedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    const p = patients.find(x => x.id === id);
+    if(p) p.archived = true;
+    renderPatients();
+    toast('📚 تمت الأرشفة');
+  } catch(e) {
+    toast('❌ ' + (e.code || e.message), true);
+  }
+}
+
+async function restorePatient(id){
+  try {
+    await db.collection('patients').doc(id).update({
+      archived: false,
+      mergedInto: null
+    });
+    const p = patients.find(x => x.id === id);
+    if(p){ p.archived = false; p.mergedInto = null; }
+    loadArchive();
+    renderPatients();
+    toast('✅ تمت الاستعادة');
+  } catch(e) {
+    toast('❌ ' + (e.code || e.message), true);
+  }
+}
+
+async function loadArchive(){
+  const el = document.getElementById('archiveList');
+  if(!el) return;
+  el.innerHTML = '⏳ جاري التحميل...';
+
+  try {
+    let q = db.collection('patients').where('archived', '==', true);
+    if(CD.role !== 'owner') q = q.where('clinicId', '==', CD.clinicId);
+
+    const snap = await q.get();
+    if(snap.empty){
+      el.innerHTML = '<div class="empty">لا توجد حسابات مؤرشفة</div>';
+      return;
+    }
+
+    const search = (document.getElementById('archiveSearch')?.value || '').toLowerCase().trim();
+
+    let list = [];
+    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+
+    if(search){
+      list = list.filter(p =>
+        (p.fullName||'').toLowerCase().includes(search) ||
+        (p.phone||'').includes(search)
+      );
+    }
+
+    if(!list.length){
+      el.innerHTML = '<div class="empty">لا نتائج مطابقة في الأرشيف</div>';
+      return;
+    }
+
+    el.innerHTML = list.map(p => `
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin:6px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <b>${esc(p.fullName)}</b>
+          <div style="font-size:.7rem;color:var(--muted)">
+            ${esc(p.phone||'')}${p.age ? ' · ' + p.age + ' سنة' : ''}
+            ${p.mergedInto ? ' · 🔗 مدمج' : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-outline" onclick="openPatient('${p.id}')">📂 فتح</button>
+          <button class="btn-save" onclick="restorePatient('${p.id}')">♻️ استعادة</button>
+          <button class="btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+
+  } catch(e) {
+    console.error('loadArchive:', e);
+    el.innerHTML = '<div class="empty">❌ ' + (e.code || e.message) + '</div>';
+  }
+}
+
+function toggleArchive(){
+  const box = document.getElementById('archiveSection');
+  if(!box) return;
+  if(box.style.display === 'none' || !box.style.display){
+    box.style.display = 'block';
+    loadArchive();
+  } else {
+    box.style.display = 'none';
+  }
 }
 function populateSelects(){
   const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
