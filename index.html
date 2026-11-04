@@ -2062,53 +2062,78 @@ function loadFaceImage(e) {
 // تحميل مكتبة tasks-vision مرة واحدة
 let faceLandmarkerInstance = null;
 
+let faceLandmarkerInstance = null;
+
 async function initFaceLandmarker() {
   if (faceLandmarkerInstance) return faceLandmarkerInstance;
 
-  const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17');
-  const { FaceLandmarker, FilesetResolver } = vision;
+  try {
+    console.log('⏳ جاري تحميل مكتبة MediaPipe...');
+    const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17');
+    const { FaceLandmarker, FilesetResolver } = vision;
 
-  const filesetResolver = await FilesetResolver.forVisionTasks(
-    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/wasm'
-  );
+    const filesetResolver = await FilesetResolver.forVisionTasks(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/wasm'
+    );
 
-  faceLandmarkerInstance = await FaceLandmarker.createFromOptions(filesetResolver, {
-    baseOptions: {
-      modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
-      delegate: 'CPU'  // ✅ إجبار المعالج على العمل بدون WebGL
-    },
-    runningMode: 'IMAGE',
-    numFaces: 1,
-    outputFaceBlendshapes: false,
-    outputFacialTransformationMatrixes: false
-  });
+    console.log('⏳ جاري تحميل نموذج الوجه...');
+    faceLandmarkerInstance = await FaceLandmarker.createFromOptions(filesetResolver, {
+      baseOptions: {
+        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+        delegate: 'CPU' 
+      },
+      runningMode: 'IMAGE',
+      numFaces: 1
+    });
 
-  return faceLandmarkerInstance;
+    console.log('✅ تم تحميل النموذج بنجاح');
+    return faceLandmarkerInstance;
+  } catch (e) {
+    console.error('❌ فشل تحميل النموذج:', e);
+    throw new Error('فشل تحميل نموذج الذكاء الاصطناعي: ' + e.message);
+  }
 }
-
 async function runFullFaceAnalysis() {
-  if (!faceImg) return toast('⚠️ ارفع صورة أولاً', true);
+  if (!faceImg || !faceImg.complete) return toast('⚠️ الصورة لم تُحمل بعد، ارفعها مرة أخرى', true);
 
   const canvas = document.getElementById('faceCanvas');
   const ctx = canvas.getContext('2d');
-  toast('⏳ جاري تحميل النموذج والتحليل...');
+  toast('⏳ جاري التحليل...');
 
   try {
     const landmarker = await initFaceLandmarker();
-    const results = landmarker.detect(faceImg);
+    
+    // ✅ تصغير الصورة لـ 512 بكسل كحد أقصى (يمنع مشاكل الذاكرة ويضمن دقة سريعة)
+    const maxSize = 512;
+    let w = faceImg.width, h = faceImg.height;
+    if (w > maxSize || h > maxSize) {
+      const ratio = Math.min(maxSize / w, maxSize / h);
+      w = Math.round(w * ratio);
+      h = Math.round(h * ratio);
+    }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(faceImg, 0, 0);
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    tempCanvas.getContext('2d').drawImage(faceImg, 0, 0, w, h);
+
+    canvas.width = w;
+    canvas.height = h;
+    ctx.drawImage(tempCanvas, 0, 0);
+
+    // التحليل
+    const results = landmarker.detect(tempCanvas);
+    console.log('نتيجة التحليل:', results);
 
     if (!results.faceLandmarks || results.faceLandmarks.length === 0) {
-      toast('❌ لم يتم اكتشاف وجه واضح', true);
+      toast('❌ لم يتم اكتشاف وجه، تأكد من وضوح الصورة', true);
       return;
     }
 
-    const lm = results.faceLandmarks[0].slice(0, 468); // أول 468 نقطة
+    const lm = results.faceLandmarks[0];
     const W = canvas.width, H = canvas.height;
 
-    // رسم النقاط
+    // 1. رسم 468 نقطة
     lm.forEach(l => {
       ctx.beginPath();
       ctx.fillStyle = 'rgba(197, 160, 89, 0.8)';
@@ -2116,10 +2141,110 @@ async function runFullFaceAnalysis() {
       ctx.fill();
     });
 
-    // ... (باقي كود القياسات والرسم كما هو تماماً) ...
-    // انسخ هنا الجزء الخاص بـ "استخراج النقاط" و "الحسابات" و "رسم خطوط الجمال" و "renderFaceResults" من الدالة السابقة
-    // (كل ما يبدأ من const P = (idx) => ... حتى renderFaceResults();)
+    // 2. استخراج النقاط
+    const P = (idx) => {
+      if (!lm[idx]) return null;
+      return { x: lm[idx].x * W, y: lm[idx].y * H };
+    };
 
+    const noseTip = P(1), subnasale = P(2), upperLip = P(13), lowerLip = P(14), chin = P(152);
+    const forehead = P(10), mouthLeft = P(61), mouthRight = P(291), noseLeft = P(129), noseRight = P(358);
+    const leftEyeOuter = P(33), rightEyeOuter = P(263), leftEyeInner = P(133), rightEyeInner = P(362);
+
+    if (!noseTip || !subnasale || !upperLip || !chin || !forehead || !leftEyeOuter || !rightEyeOuter) {
+      toast('⚠️ الوجه غير مكتمل في الصورة', true);
+      return; 
+    }
+
+    // 3. الحسابات
+    const calcAngle = (p1, p2, p3) => {
+      if (!p1 || !p2 || !p3) return 0;
+      const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+      const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+      const dot = v1.x * v2.x + v1.y * v2.y;
+      const mag1 = Math.sqrt(v1.x*v1.x + v1.y*v1.y), mag2 = Math.sqrt(v2.x*v2.x + v2.y*v2.y);
+      return (mag1 === 0 || mag2 === 0) ? 0 : Math.acos(dot / (mag1 * mag2)) * (180 / Math.PI);
+    };
+
+    const nasolabialAngle = calcAngle(noseTip, subnasale, upperLip);
+    const mentolabialAngle = calcAngle(lowerLip, chin, subnasale);
+    const tiltLeft = Math.atan2(leftEyeInner.y - leftEyeOuter.y, leftEyeInner.x - leftEyeOuter.x) * 180 / Math.PI;
+    const tiltRight = Math.atan2(rightEyeInner.y - rightEyeOuter.y, rightEyeInner.x - rightEyeOuter.x) * 180 / Math.PI;
+
+    const upperThird = Math.abs(forehead.y - noseTip.y), middleThird = Math.abs(noseTip.y - subnasale.y), lowerThird = Math.abs(subnasale.y - chin.y);
+    const avgThird = (upperThird + middleThird + lowerThird) / 3;
+    const thirdsBalance = 1 - (Math.abs(upperThird - avgThird) + Math.abs(middleThird - avgThird) + Math.abs(lowerThird - avgThird)) / (avgThird * 3);
+
+    const mouthWidth = Math.hypot(mouthRight.x - mouthLeft.x, mouthRight.y - mouthLeft.y);
+    const noseWidth = Math.hypot(noseRight.x - noseLeft.x, noseRight.y - noseLeft.y);
+    const mouthRatio = mouthWidth / noseWidth;
+
+    const faceCenterX = (leftEyeOuter.x + rightEyeOuter.x) / 2, faceCenterY = (forehead.y + chin.y) / 2;
+    const leftDist = Math.hypot(mouthLeft.x - faceCenterX, mouthLeft.y - faceCenterY);
+    const rightDist = Math.hypot(mouthRight.x - faceCenterX, mouthRight.y - faceCenterY);
+    const symmetry = Math.min(leftDist, rightDist) / Math.max(leftDist, rightDist);
+
+    lastFaceAnalysis = { nasolabialAngle, mentolabialAngle, canthalTiltLeft: tiltLeft, canthalTiltRight: tiltRight, facialThirds: thirdsBalance, mouthWidthRatio: mouthRatio, facialSymmetry: symmetry };
+
+    // 4. رسم خطوط الجمال
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 6]);
+    ctx.strokeStyle = 'rgba(245, 199, 106, 0.9)';
+    const linesY = [forehead.y, noseTip.y, subnasale.y, chin.y];
+    const labels = ['الجبهة', 'الأنف', 'تحت الأنف', 'الذقن'];
+    linesY.forEach((y, i) => {
+      ctx.beginPath();
+      ctx.moveTo(W * 0.1, y);
+      ctx.lineTo(W * 0.9, y);
+      ctx.stroke();
+      ctx.fillStyle = '#f5c76a';
+      ctx.font = 'bold 14px Arial';
+      ctx.fillText(labels[i], W * 0.02, y + 5);
+    });
+
+    // 5. خط منتصف الوجه
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.9)';
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(forehead.x, forehead.y);
+    ctx.lineTo(chin.x, chin.y);
+    ctx.stroke();
+
+    // 6. الزاوية الأنفية الشفوية
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(noseTip.x, noseTip.y);
+    ctx.lineTo(subnasale.x, subnasale.y);
+    ctx.lineTo(upperLip.x, upperLip.y);
+    ctx.stroke();
+    [noseTip, subnasale, upperLip].forEach(p => {
+      ctx.beginPath();
+      ctx.fillStyle = '#ef4444';
+      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = '#ef4444';
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText(`${nasolabialAngle.toFixed(1)}°`, subnasale.x + 10, subnasale.y - 10);
+
+    // 7. عرض الفم والأنف
+    ctx.strokeStyle = 'rgba(34, 211, 238, 0.9)';
+    ctx.beginPath();
+    ctx.moveTo(mouthLeft.x, mouthLeft.y);
+    ctx.lineTo(mouthRight.x, mouthRight.y);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(168, 85, 247, 0.9)';
+    ctx.beginPath();
+    ctx.moveTo(noseLeft.x, noseLeft.y);
+    ctx.lineTo(noseRight.x, noseRight.y);
+    ctx.stroke();
+
+    // 8. عرض النتائج
+    renderFaceResults();
+    toast('✅ تم التحليل بنجاح');
+    
   } catch (e) {
     console.error('FaceLandmarker error:', e);
     toast('❌ فشل التحليل: ' + e.message, true);
