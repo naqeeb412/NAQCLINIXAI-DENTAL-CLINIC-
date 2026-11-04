@@ -5038,7 +5038,7 @@ function renderSubPlans(){
       ${disc > 0 ? `<div style="color:var(--ok);font-size:.7rem;font-weight:700">🎁 خصم ${disc}%</div>` : ''}
       <div class="lbl">${dur}</div>
       ${p.desc ? `<div style="font-size:11px;color:var(--muted);margin:10px 0">${esc(p.desc)}</div>` : ''}
-      <div style="text-align:right;font-size:11px;margin:10px 0;color:var(--muted)"><b style="color:var(--gold)">يشمل:</b><br>${secs.slice(0,6).map(s => '✓ ' + (SECTIONS_LABELS[s] || s)).join('<br>')}${secs.length > 6 ? '<br>+ المزيد' : ''}</div>
+      <div style="text-align:right;font-size:11px;margin:10px 0;color:var(--muted)"><b style="color:var(--gold)">يشمل:</b>${secs.map(s => `<div style="margin-top:6px"><b style="color:var(--txt)">✓ ${SECTIONS_LABELS[s] || s}</b><br><span style="font-size:10px;opacity:.8">${SECTION_DESCRIPTIONS[s] || ''}</span></div>`).join('')}</div>
       <button class="btn-save" style="margin-top:8px;width:100%" onclick="subscribeToPlan('${p.id}')">اشترك</button>
     </div>`;
   }).join('');
@@ -5068,6 +5068,28 @@ async function subscribeToPlan(id){
     loadUserSubscription();
   } catch(e) { toast('❌ ' + e.message, true); }
 }
+var SECTION_DESCRIPTIONS = {
+  patients: 'إدارة كاملة لملفات المرضى',
+  photography: 'تصوير فوتوغرافي داخل العيادة',
+  history: 'السجل الطبي لكل مريض',
+  chart: 'مخطط أسنان تفاعلي 32 سن',
+  appointments: 'حجز وإدارة المواعيد',
+  lab: 'طلبات المعمل وتكاليفها',
+  inventory: 'إدارة المواد والمشتريات',
+  billing: 'تتبع المدفوعات والمتبقي',
+  debtors: 'قائمة بمن عليه دين',
+  aiDiagnosis: 'تشخيص ذكي بالصور',
+  faceHarmony: 'تحليل 468 نقطة للوجه',
+  dsdStudio: 'تصميم الابتسامة الرقمي',
+  xray: 'تحليل الأشعة السينية',
+  beforeAfter: 'مقارنة قبل/بعد',
+  cadcam: 'نماذج ثلاثية الأبعاد',
+  treatmentPlan: 'خطط علاج مقترحة بالـ AI',
+  materialsGuide: 'دليل مواد ومراجع علمية',
+  store: 'متجر رقمي للمنتجات',
+  interdisciplinary: 'استشارات متعددة التخصصات',
+  reports: 'تقارير شاملة وتفصيلية'
+};
 </script>
 </body>
 </html>
