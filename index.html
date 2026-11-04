@@ -2147,8 +2147,11 @@ async function runFullFaceAnalysis(event) {
       return (mag1 === 0 || mag2 === 0) ? 0 : Math.acos(dot / (mag1 * mag2)) * (180 / Math.PI);
     };
 
-    const nasolabialAngle = calcAngle(noseTip, subnasale, upperLip);
-    const mentolabialAngle = calcAngle(lowerLip, chin, subnasale);
+    const nasion = P(168); // جسر الأنف
+const glabella = P(9); // بين الحاجبين
+
+const nasalTipAngle = calcAngle(nasion, noseTip, subnasale); // الزاوية الأنفية
+const facialConvexity = calcAngle(glabella, subnasale, chin); // تحدب الوجه
     const tiltLeft = Math.atan2(leftEyeInner.y - leftEyeOuter.y, leftEyeInner.x - leftEyeOuter.x) * 180 / Math.PI;
     const tiltRight = Math.atan2(rightEyeInner.y - rightEyeOuter.y, rightEyeInner.x - rightEyeOuter.x) * 180 / Math.PI;
 
@@ -2165,7 +2168,7 @@ async function runFullFaceAnalysis(event) {
     const rightDist = Math.hypot(mouthRight.x - faceCenterX, mouthRight.y - faceCenterY);
     const symmetry = Math.min(leftDist, rightDist) / Math.max(leftDist, rightDist);
 
-    lastFaceAnalysis = { nasolabialAngle, mentolabialAngle, canthalTiltLeft: tiltLeft, canthalTiltRight: tiltRight, facialThirds: thirdsBalance, mouthWidthRatio: mouthRatio, facialSymmetry: symmetry };
+    lastFaceAnalysis = { nasalTipAngle, facialConvexity, canthalTiltLeft: tiltLeft, canthalTiltRight: tiltRight, facialThirds: thirdsBalance, mouthWidthRatio: mouthRatio, facialSymmetry: symmetry };
 
     // 4. رسم خطوط الجمال
     ctx.lineWidth = 2;
@@ -2235,9 +2238,10 @@ function renderFaceResults() {
   if (!lastFaceAnalysis) return;
   const el = document.getElementById('faceResults'); if (!el) return;
   const a = lastFaceAnalysis;
+  
   const refs = {
-    nasolabialAngle: { min: 90, max: 110, label: 'الزاوية الأنفية الشفوية', unit: '°' },
-    mentolabialAngle: { min: 115, max: 135, label: 'الزاوية الذقنية الشفوية', unit: '°' },
+    nasalTipAngle: { min: 90, max: 110, label: 'الزاوية الأنفية', unit: '°' },
+    facialConvexity: { min: 165, max: 175, label: 'تحدب الوجه', unit: '°' },
     canthalTiltLeft: { min: -5, max: 8, label: 'ميل العين الأيسر', unit: '°' },
     canthalTiltRight: { min: -5, max: 8, label: 'ميل العين الأيمن', unit: '°' },
     facialThirds: { min: 0.95, max: 1.05, label: 'توازن أثلاث الوجه', unit: '%', isPct: true },
@@ -2275,10 +2279,10 @@ function drawFaceChart() {
   window._faceChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['أنفي شفوي', 'ذقني شفوي', 'ميل عين', 'أثلاث', 'عرض الفم', 'تماثل'],
+      labels: ['الزاوية الأنفية', 'تحدب الوجه', 'ميل العين', 'أثلاث الوجه', 'عرض الفم', 'التماثل'],
       datasets: [
-        { label: 'المريض', data: [a.nasolabialAngle, a.mentolabialAngle, (a.canthalTiltLeft + a.canthalTiltRight) / 2, a.facialThirds * 100, a.mouthWidthRatio * 60, a.facialSymmetry * 100], backgroundColor: '#C5A059' },
-        { label: 'المثالي', data: [100, 125, 4, 100, 93, 95], backgroundColor: '#10b981' }
+        { label: 'المريض', data: [a.nasalTipAngle, a.facialConvexity, (a.canthalTiltLeft + a.canthalTiltRight) / 2, a.facialThirds * 100, a.mouthWidthRatio * 60, a.facialSymmetry * 100], backgroundColor: '#C5A059' },
+        { label: 'المثالي', data: [100, 170, 4, 100, 93, 95], backgroundColor: '#10b981' }
       ]
     },
     options: { responsive: true, plugins: { legend: { labels: { color: '#000' } } }, scales: { y: { ticks: { color: '#000' } }, x: { ticks: { color: '#000' } } } }
