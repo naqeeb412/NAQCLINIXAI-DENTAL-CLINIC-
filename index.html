@@ -1342,7 +1342,7 @@ function showSection(sec){
   if(sec==='notifications') loadNotifications();
 if(sec==='lab'){ populateSelects(); loadLab(); setTimeout(renderLabSummary, 300); }
 if(sec==='inventory'){ loadInventory(); loadPurchases(); }
-if(sec==='debtors'){ renderDebtors(); }
+if(sec==='debtors'){ Promise.all([loadBilling(), loadLab()]).then(() => renderDebtors()); }
   if(sec==='labAccounting'){ loadLab().then(()=>renderLabAccounting()); }
   if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); renderPatientsSummary(); }
   if(sec==='reports') populateSelects();
