@@ -392,6 +392,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <h2>🧑‍⚕️ تحليل الوجه 468 نقطة</h2>
       <div class="f"><label>رفع صورة</label><input type="file" id="faceImage" accept="image/*" onchange="loadFaceImage(event)"></div>
       <div class="canvas-wrap"><canvas id="faceCanvas" width="600" height="600"></canvas></div>
+      <div id="faceResults"></div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
         <button class="btn-save" onclick="draw468()">📍 468 نقطة</button>
         <button class="btn-outline" onclick="drawBeautyLines()">✨ خطوط الجمال</button>
@@ -2033,8 +2034,303 @@ async function saveTreatmentPlanToPatient(){
 // 12. Face Analysis
 // ═══════════════════════════════════════════════════════════════
 function loadFaceImage(e){ const r=new FileReader(); r.onload=ev=>{ const i=new Image(); i.onload=()=>{ faceImg=i; const c=document.getElementById('faceCanvas'); c.width=i.width; c.height=i.height; c.getContext('2d').drawImage(i,0,0); }; i.src=ev.target.result; }; r.readAsDataURL(e.target.files[0]); }
-function draw468(){ if(!faceImg) return toast('⚠️',true); const c=document.getElementById('faceCanvas'),ctx=c.getContext('2d'); ctx.drawImage(faceImg,0,0); ctx.fillStyle='rgba(197,160,89,.8)'; const cx=c.width/2,cy=c.height/2,r=c.width*0.3; for(let i=0;i<468;i++){ const a=(i/468)*Math.PI*2; ctx.beginPath(); ctx.arc(cx+Math.cos(a)*r*(0.8+Math.random()*0.4),cy+Math.sin(a)*r*(0.8+Math.random()*0.4),1.5,0,Math.PI*2); ctx.fill(); } toast('✅'); }
-function drawBeautyLines(){ if(!faceImg) return; const c=document.getElementById('faceCanvas'),ctx=c.getContext('2d'); ctx.drawImage(faceImg,0,0); ctx.strokeStyle='rgba(16,185,129,.7)'; ctx.lineWidth=2; [0.33,0.5,0.67].forEach(y=>{ ctx.beginPath(); ctx.moveTo(0,c.height*y); ctx.lineTo(c.width,c.height*y); ctx.stroke(); }); }
+// ═══════════════════════════════════════════════════════════════
+// 🧑‍⚕️ تحليل الوجه الحقيقي — MediaPipe Face Mesh + قياسات علمية
+// ═══════════════════════════════════════════════════════════════
+var lastFaceAnalysis = null;
+var faceMeshInstance = null;
+
+// القيم المرجعية العلمية (بالدرجات/النسب)
+var FACE_REF = {
+  nasolabialAngle: { min: 90, max: 110, ideal: 100, label: 'الزاوية الأنفية الشفوية' },
+  mentolabialAngle: { min: 115, max: 135, ideal: 125, label: 'الزاوية الذقنية الشفوية' },
+  canthalTiltLeft: { min: -5, max: 8, ideal: 4, label: 'ميل العين الأيسر' },
+  canthalTiltRight: { min: -5, max: 8, ideal: 4, label: 'ميل العين الأيمن' },
+  facialThirds: { min: 0.95, max: 1.05, ideal: 1.0, label: 'توازن أثلاث الوجه' },
+  mouthWidthRatio: { min: 1.45, max: 1.65, ideal: 1.55, label: 'عرض الفم / عرض الأنف' },
+  facialSymmetry: { min: 0.9, max: 1.0, ideal: 0.95, label: 'تماثل الوجه' }
+};
+
+// حساب الزاوية بين ثلاث نقاط (بالدرجات)
+function calcAngle(p1, p2, p3){
+  const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+  const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+  const dot = v1.x * v2.x + v1.y * v2.y;
+  const mag1 = Math.sqrt(v1.x*v1.x + v1.y*v1.y);
+  const mag2 = Math.sqrt(v2.x*v2.x + v2.y*v2.y);
+  if(mag1 === 0 || mag2 === 0) return 0;
+  let angle = Math.acos(dot / (mag1 * mag2)) * (180 / Math.PI);
+  return angle;
+}
+
+async function draw468(){
+  if(!faceImg) return toast('⚠️ ارفع صورة أولاً', true);
+  
+  if(typeof FaceMesh === 'undefined'){
+    return toast('⏳ MediaPipe يُحمَّل... انتظر 5 ثواني وأعد المحاولة', true);
+  }
+
+  const c = document.getElementById('faceCanvas');
+  const ctx = c.getContext('2d');
+  toast('⏳ جاري التحليل الحقيقي...');
+
+  try {
+    if(!faceMeshInstance){
+      faceMeshInstance = new FaceMesh({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
+      });
+      faceMeshInstance.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+    }
+
+    return new Promise((resolve) => {
+      faceMeshInstance.onResults((results) => {
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.drawImage(faceImg, 0, 0, c.width, c.height);
+
+        if(!results.multiFaceLandmarks || !results.multiFaceLandmarks.length){
+          toast('❌ لم يُكتشف وجه واضح — صورة أوضح؟', true);
+          resolve();
+          return;
+        }
+
+        const lm = results.multiFaceLandmarks[0];
+        const W = c.width, H = c.height;
+
+        // 1️⃣ رسم 468 نقطة
+        lm.forEach(l => {
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(197,160,89,0.6)';
+          ctx.arc(l.x * W, l.y * H, 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // 2️⃣ استخراج النقاط المرجعية الرئيسية
+        const P = (idx) => ({ x: lm[idx].x * W, y: lm[idx].y * H });
+
+        const noseTip      = P(1);
+        const subnasale    = P(2);
+        const upperLip     = P(13);
+        const lowerLip     = P(14);
+        const chin         = P(152);
+        const leftEyeOuter = P(33);
+        const rightEyeOuter= P(263);
+        const leftEyeInner = P(133);
+        const rightEyeInner= P(362);
+        const mouthLeft    = P(61);
+        const mouthRight   = P(291);
+        const noseLeft     = P(129);
+        const noseRight    = P(358);
+        const forehead     = P(10);
+
+        // 3️⃣ حساب القياسات العلمية
+        const nasolabialAngle = calcAngle(noseTip, subnasale, upperLip);
+        const mentolabialAngle = calcAngle(lowerLip, chin, subnasale);
+
+        // ميل العين
+        const tiltLeft  = Math.atan2(leftEyeInner.y - leftEyeOuter.y, leftEyeInner.x - leftEyeOuter.x) * 180 / Math.PI;
+        const tiltRight = Math.atan2(rightEyeInner.y - rightEyeOuter.y, rightEyeInner.x - rightEyeOuter.x) * 180 / Math.PI;
+
+        // أثلاث الوجه
+        const upperThird = Math.abs(forehead.y - noseTip.y);
+        const middleThird = Math.abs(noseTip.y - subnasale.y);
+        const lowerThird = Math.abs(subnasale.y - chin.y);
+        const avgThird = (upperThird + middleThird + lowerThird) / 3;
+        const thirdsBalance = 1 - (Math.abs(upperThird - avgThird) + Math.abs(middleThird - avgThird) + Math.abs(lowerThird - avgThird)) / (avgThird * 3);
+
+        // عرض الفم / عرض الأنف
+        const mouthWidth = Math.hypot(mouthRight.x - mouthLeft.x, mouthRight.y - mouthLeft.y);
+        const noseWidth  = Math.hypot(noseRight.x - noseLeft.x, noseRight.y - noseLeft.y);
+        const mouthRatio = mouthWidth / noseWidth;
+
+        // تماثل الوجه
+        const faceCenterX = (leftEyeOuter.x + rightEyeOuter.x) / 2;
+        const faceCenterY = (forehead.y + chin.y) / 2;
+        const leftDist  = Math.hypot(mouthLeft.x - faceCenterX, mouthLeft.y - faceCenterY);
+        const rightDist = Math.hypot(mouthRight.x - faceCenterX, mouthRight.y - faceCenterY);
+        const symmetry = Math.min(leftDist, rightDist) / Math.max(leftDist, rightDist);
+
+        lastFaceAnalysis = {
+          nasolabialAngle, mentolabialAngle,
+          canthalTiltLeft: tiltLeft, canthalTiltRight: tiltRight,
+          facialThirds: thirdsBalance, mouthWidthRatio: mouthRatio,
+          facialSymmetry: symmetry
+        };
+
+        // 4️⃣ رسم خطوط الجمال
+        ctx.strokeStyle = 'rgba(245,199,106,0.9)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 6]);
+
+        // خطوط أثلاث الوجه
+        [forehead.y, noseTip.y, subnasale.y, chin.y].forEach((y, i) => {
+          ctx.beginPath();
+          ctx.moveTo(W * 0.15, y);
+          ctx.lineTo(W * 0.85, y);
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(245,199,106,1)';
+          ctx.font = 'bold 12px Arial';
+          const labels = ['الجبهة', 'الأنف', 'تحت الأنف', 'الذقن'];
+          ctx.fillText(labels[i], W * 0.15 - 50, y + 4);
+        });
+
+        // خط منتصف الوجه
+        ctx.strokeStyle = 'rgba(16,185,129,0.9)';
+        ctx.beginPath();
+        ctx.moveTo(forehead.x, forehead.y);
+        ctx.lineTo(chin.x, chin.y);
+        ctx.stroke();
+
+        // خط الزاوية الأنفية الشفوية
+        ctx.strokeStyle = 'rgba(239,68,68,0.9)';
+        ctx.setLineDash([]);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(noseTip.x, noseTip.y);
+        ctx.lineTo(subnasale.x, subnasale.y);
+        ctx.lineTo(upperLip.x, upperLip.y);
+        ctx.stroke();
+
+        // نقاط الزاوية
+        [noseTip, subnasale, upperLip].forEach(p => {
+          ctx.beginPath();
+          ctx.fillStyle = '#ef4444';
+          ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // نص الزاوية
+        ctx.fillStyle = 'rgba(239,68,68,1)';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText(`${nasolabialAngle.toFixed(1)}°`, subnasale.x + 10, subnasale.y - 10);
+
+        // خطوط عرض الفم والأنف
+        ctx.strokeStyle = 'rgba(34,211,238,0.9)';
+        ctx.beginPath();
+        ctx.moveTo(mouthLeft.x, mouthLeft.y);
+        ctx.lineTo(mouthRight.x, mouthRight.y);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(168,85,247,0.9)';
+        ctx.beginPath();
+        ctx.moveTo(noseLeft.x, noseLeft.y);
+        ctx.lineTo(noseRight.x, noseRight.y);
+        ctx.stroke();
+
+        // 5️⃣ عرض النتائج
+        renderFaceResults();
+
+        toast('✅ تم التحليل — 468 نقطة + قياسات علمية');
+        resolve();
+      });
+
+      faceMeshInstance.send({ image: faceImg });
+    });
+
+  } catch(e) {
+    console.error('draw468 error:', e);
+    toast('❌ ' + e.message, true);
+  }
+}
+
+function renderFaceResults(){
+  if(!lastFaceAnalysis) return;
+  const el = document.getElementById('faceResults'); if(!el) return;
+  const a = lastFaceAnalysis;
+  const rows = Object.entries(FACE_REF).map(([key, ref]) => {
+    const val = a[key];
+    if(val === undefined) return '';
+    const inRange = val >= ref.min && val <= ref.max;
+    const isPercentage = key === 'facialThirds' || key === 'facialSymmetry';
+    const display = isPercentage ? (val * 100).toFixed(1) + '%' : val.toFixed(1) + '°';
+    const rangeDisplay = isPercentage ? `${(ref.min*100).toFixed(0)}-${(ref.max*100).toFixed(0)}%` : `${ref.min}°-${ref.max}°`;
+    return `
+      <tr>
+        <td><b>${ref.label}</b></td>
+        <td style="font-weight:800;color:${inRange ? 'var(--ok)' : 'var(--err)'}">${display}</td>
+        <td style="font-size:.7rem;color:var(--muted)">${rangeDisplay}</td>
+        <td>${inRange ? '✅ ضمن النطاق' : '⚠️ خارج النطاق'}</td>
+      </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="background:var(--card2);padding:16px;border-radius:12px;border:1px solid var(--bd);margin-top:14px">
+      <h3 style="color:var(--gold);margin-bottom:12px;font-size:1rem">📊 نتائج التحليل العلمي</h3>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="font-size:.78rem">
+          <thead><tr><th>القياس</th><th>قيمة المريض</th><th>النطاق الطبيعي</th><th>الحالة</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <canvas id="faceChart" height="100" style="margin-top:16px;background:#fff;border-radius:8px;padding:8px"></canvas>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn-save" style="flex:1" onclick="saveFaceAnalysisToPatient()">💾 حفظ في ملف المريض</button>
+        <button class="btn-outline" onclick="window.print()">🖨️ طباعة</button>
+      </div>
+    </div>
+  `;
+  drawFaceChart();
+}
+
+function drawFaceChart(){
+  const ctx = document.getElementById('faceChart');
+  if(!ctx || !lastFaceAnalysis) return;
+  if(window._faceChartInstance) window._faceChartInstance.destroy();
+
+  const labels = ['أنفي شفوي', 'ذقني شفوي', 'ميل عين', 'أثلاث', 'عرض الفم', 'تماثل'];
+  const values = [
+    lastFaceAnalysis.nasolabialAngle,
+    lastFaceAnalysis.mentolabialAngle,
+    (lastFaceAnalysis.canthalTiltLeft + lastFaceAnalysis.canthalTiltRight) / 2,
+    lastFaceAnalysis.facialThirds * 100,
+    lastFaceAnalysis.mouthWidthRatio * 60,
+    lastFaceAnalysis.facialSymmetry * 100
+  ];
+  const ideals = [100, 125, 4, 100, 93, 95];
+
+  window._faceChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'المريض', data: values, backgroundColor: '#C5A059' },
+        { label: 'المثالي', data: ideals, backgroundColor: '#10b981' }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#000' } } },
+      scales: { y: { ticks: { color: '#000' } }, x: { ticks: { color: '#000' } } }
+    }
+  });
+}
+
+async function saveFaceAnalysisToPatient(){
+  const pid = document.getElementById('dsdPatient')?.value || document.getElementById('aiPatientDiag')?.value;
+  if(!pid) return toast('⚠️ اختر المريض أولاً', true);
+  if(!lastFaceAnalysis) return toast('⚠️ حلّل الوجه أولاً', true);
+
+  try {
+    const canvas = document.getElementById('faceCanvas');
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    const blob = await (await fetch(dataUrl)).blob();
+    const fd = new FormData(); fd.append('reqtype','fileupload'); fd.append('fileToUpload', blob, 'face_analysis.jpg');
+    const res = await fetch(CATBOX_API, { method:'POST', body:fd });
+    const url = (await res.text()).trim();
+
+    await db.collection('patients').doc(pid).collection('photos').add({
+      url,
+      type: 'face_analysis',
+      measurements: lastFaceAnalysis,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅ تم حفظ التحليل في ملف المريض');
+  } catch(e) { toast('❌ ' + e.message, true); }
+}function drawBeautyLines(){ if(!faceImg) return; const c=document.getElementById('faceCanvas'),ctx=c.getContext('2d'); ctx.drawImage(faceImg,0,0); ctx.strokeStyle='rgba(16,185,129,.7)'; ctx.lineWidth=2; [0.33,0.5,0.67].forEach(y=>{ ctx.beginPath(); ctx.moveTo(0,c.height*y); ctx.lineTo(c.width,c.height*y); ctx.stroke(); }); }
 
 // ═══════════════════════════════════════════════════════════════
 // 13. DSD Editor
