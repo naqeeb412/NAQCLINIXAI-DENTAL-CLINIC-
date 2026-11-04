@@ -1026,41 +1026,64 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
   </div>
 
-  <div class="sec" id="sec-manageSubscriptions">
-    <div class="panel">
-      <h2>🎯 إدارة خطط الاشتراك</h2>
-      <div class="g2">
-        <div class="f"><label>🏷️ الاسم *</label><input id="spName"></div>
-        <div class="f"><label>💰 السعر ($)</label><input type="number" id="spPrice" value="19" min="0"></div>
-        <div class="f"><label>⏱️ المدة</label><select id="spDuration"><option value="7">أسبوع</option><option value="30">شهر</option><option value="90">3 أشهر</option><option value="365">سنة</option><option value="9999">مدى الحياة</option></select></div>
-        <div class="f"><label>⭐ مميزة؟</label><select id="spFeatured"><option value="no">عادية</option><option value="yes">مميزة</option></select></div>
+<div class="sec" id="sec-manageSubscriptions">
+  <div class="panel">
+    <h2>🎯 إدارة خطط الاشتراك</h2>
+    <div class="g2">
+      <div class="f"><label>🏷️ الاسم *</label><input id="spName"></div>
+      <div class="f"><label>⏱️ المدة</label>
+        <select id="spDuration">
+          <option value="7">أسبوع</option>
+          <option value="30">شهر</option>
+          <option value="90">3 أشهر</option>
+          <option value="365">سنة</option>
+          <option value="9999">مدى الحياة</option>
+        </select>
       </div>
-      <div class="f"><label>📄 الوصف</label><input id="spDesc"></div>
-      <div class="f">
-        <label style="color:var(--gold);font-weight:700;margin-bottom:10px">✅ الأقسام:</label>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;background:rgba(0,0,0,.2);padding:15px;border-radius:12px">
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="patients" checked> 👥 المرضى</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="photography" checked> 📸 التصوير</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="history" checked> 💊 التاريخ</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="chart" checked> 📊 الأسنان</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="appointments" checked> 🗓️ المواعيد</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="aiDiagnosis"> 🧠 تشخيص AI</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="faceHarmony"> 🧑‍⚕️ الوجه</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="dsdStudio"> 🎨 التصميم</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="xray"> 🩻 الأشعة</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="beforeAfter"> ⚖️ قبل/بعد</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="cadcam"> ⚙️ CAD/CAM</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="treatmentPlan"> 📋 العلاج</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="materialsGuide"> 📖 المواد</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="store"> 🏪 المتجر</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="interdisciplinary"> 👨‍⚕️ تخصصات</label>
-          <label class="sp-section-item"><input type="checkbox" class="sp-section" value="reports"> 📄 التقارير</label>
-        </div>
+      <div class="f"><label>⭐ مميزة؟</label>
+        <select id="spFeatured"><option value="no">عادية</option><option value="yes">مميزة</option></select>
       </div>
-      <button class="btn-save" onclick="addPlan()" style="width:100%;margin-top:15px">💾 إنشاء</button>
-      <div id="adminPlansList" style="margin-top:15px"></div>
+      <div class="f"><label>🎁 نسبة الخصم (%)</label>
+        <input type="number" id="spDiscount" value="0" min="0" max="100" step="1">
+      </div>
     </div>
+    <div class="f"><label>📄 الوصف</label><input id="spDesc"></div>
+
+    <div class="f">
+      <label style="color:var(--gold);font-weight:700;margin-bottom:10px">✅ الأقسام والأسعار الفردية:</label>
+      <div style="overflow-x:auto;background:rgba(0,0,0,.2);padding:12px;border-radius:12px">
+        <table class="tbl" style="font-size:.75rem">
+          <thead><tr><th>القسم</th><th>مفعل</th><th>السعر ($)</th></tr></thead>
+          <tbody>
+            <tr><td>👥 المرضى</td><td><input type="checkbox" data-section="patients" checked></td><td><input type="number" data-price="patients" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>📸 التصوير</td><td><input type="checkbox" data-section="photography" checked></td><td><input type="number" data-price="photography" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>💊 التاريخ الطبي</td><td><input type="checkbox" data-section="history" checked></td><td><input type="number" data-price="history" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>📊 مخطط الأسنان</td><td><input type="checkbox" data-section="chart" checked></td><td><input type="number" data-price="chart" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>🗓️ المواعيد</td><td><input type="checkbox" data-section="appointments" checked></td><td><input type="number" data-price="appointments" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>🧪 المعمل</td><td><input type="checkbox" data-section="lab"></td><td><input type="number" data-price="lab" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>📦 المخزون</td><td><input type="checkbox" data-section="inventory"></td><td><input type="number" data-price="inventory" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>💳 الفواتير</td><td><input type="checkbox" data-section="billing"></td><td><input type="number" data-price="billing" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>📊 المديونين</td><td><input type="checkbox" data-section="debtors"></td><td><input type="number" data-price="debtors" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>🧠 التشخيص AI</td><td><input type="checkbox" data-section="aiDiagnosis"></td><td><input type="number" data-price="aiDiagnosis" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>🧑‍⚕️ تحليل الوجه</td><td><input type="checkbox" data-section="faceHarmony"></td><td><input type="number" data-price="faceHarmony" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>🎨 محرر التصميم</td><td><input type="checkbox" data-section="dsdStudio"></td><td><input type="number" data-price="dsdStudio" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>🩻 الأشعة</td><td><input type="checkbox" data-section="xray"></td><td><input type="number" data-price="xray" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>⚖️ قبل/بعد</td><td><input type="checkbox" data-section="beforeAfter"></td><td><input type="number" data-price="beforeAfter" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>⚙️ CAD/CAM</td><td><input type="checkbox" data-section="cadcam"></td><td><input type="number" data-price="cadcam" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>📋 خطة العلاج</td><td><input type="checkbox" data-section="treatmentPlan"></td><td><input type="number" data-price="treatmentPlan" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>📖 دليل المواد</td><td><input type="checkbox" data-section="materialsGuide"></td><td><input type="number" data-price="materialsGuide" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>🏪 المتجر</td><td><input type="checkbox" data-section="store"></td><td><input type="number" data-price="store" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>👨‍⚕️ التخصصات</td><td><input type="checkbox" data-section="interdisciplinary"></td><td><input type="number" data-price="interdisciplinary" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+            <tr><td>📄 التقارير</td><td><input type="checkbox" data-section="reports"></td><td><input type="number" data-price="reports" value="0" min="0" step="0.01" style="width:80px"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <button class="btn-save" onclick="addPlan()" style="width:100%;margin-top:15px">💾 إنشاء</button>
+    <div id="adminPlansList" style="margin-top:15px"></div>
   </div>
+</div>
 
   <div class="sec" id="sec-manageAds">
     <div class="panel">
@@ -4916,6 +4939,134 @@ function copyDebtorsWhatsApp(){
   if(!debts.length) return toast('⚠️ لا يوجد مديونون', true);
   const text = `📊 تقرير المديونين\n\n${debts.join('\n')}`;
   navigator.clipboard.writeText(text).then(() => toast('✅ تم النسخ — الصقه في واتساب'));
+}
+// ═══════════════════════════════════════════════════════════════
+// 🎯 إدارة خطط الاشتراك (محسّنة)
+// ═══════════════════════════════════════════════════════════════
+var SECTIONS_LABELS = {
+  patients:'👥 المرضى', photography:'📸 التصوير', history:'💊 التاريخ',
+  chart:'📊 الأسنان', appointments:'🗓️ المواعيد', lab:'🧪 المعمل',
+  inventory:'📦 المخزون', billing:'💳 الفواتير', debtors:'📊 المديونين',
+  aiDiagnosis:'🧠 AI تشخيص', faceHarmony:'🧑‍⚕️ الوجه', dsdStudio:'🎨 التصميم',
+  xray:'🩻 الأشعة', beforeAfter:'⚖️ قبل/بعد', cadcam:'⚙️ CAD/CAM',
+  treatmentPlan:'📋 العلاج', materialsGuide:'📖 المواد', store:'🏪 المتجر',
+  interdisciplinary:'👨‍⚕️ التخصصات', reports:'📄 التقارير'
+};
+
+async function addPlan(){
+  const name = document.getElementById('spName').value.trim();
+  const duration = parseInt(document.getElementById('spDuration').value);
+  const desc = document.getElementById('spDesc').value.trim();
+  const featured = document.getElementById('spFeatured').value === 'yes';
+  const discount = parseFloat(document.getElementById('spDiscount').value) || 0;
+  if(!name) return toast('⚠️ اسم الخطة', true);
+
+  // جمع الأقسام المفعّلة وأسعارها
+  const sectionPrices = {};
+  const sections = [];
+  let basePrice = 0;
+
+  document.querySelectorAll('[data-section]').forEach(cb => {
+    if(cb.checked){
+      const key = cb.dataset.section;
+      const priceEl = document.querySelector(`[data-price="${key}"]`);
+      const price = parseFloat(priceEl?.value) || 0;
+      sections.push(key);
+      sectionPrices[key] = price;
+      basePrice += price;
+    }
+  });
+
+  if(!sections.length) return toast('⚠️ اختر قسماً واحداً على الأقل', true);
+
+  const finalPrice = +(basePrice * (1 - discount / 100)).toFixed(2);
+
+  try {
+    await db.collection('subscriptionPlans').add({
+      name, duration, desc, featured, discount,
+      sections, sectionPrices,
+      basePrice, finalPrice,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast(`✅ تم إنشاء الخطة — السعر النهائي: $${finalPrice}`);
+    document.getElementById('spName').value = '';
+    document.getElementById('spDesc').value = '';
+    document.getElementById('spDiscount').value = '0';
+    document.querySelectorAll('[data-price]').forEach(el => el.value = '0');
+    loadSubscriptionPlans();
+  } catch(e) { toast('❌ ' + (e.code || e.message), true); }
+}
+
+function renderAdminPlans(){
+  const el = document.getElementById('adminPlansList'); if(!el) return;
+  if(!subscriptionPlans.length){ el.innerHTML = '<div class="empty">لا خطط</div>'; return; }
+
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الخطة</th><th>المدة</th><th>السعر الأصلي</th><th>الخصم</th><th>السعر النهائي</th><th>عدد الأقسام</th><th>حذف</th></tr></thead><tbody>' +
+    subscriptionPlans.map(p => {
+      const base = p.basePrice || p.price || 0;
+      const disc = p.discount || 0;
+      const final = p.finalPrice || (base * (1 - disc/100));
+      const dur = p.duration === 9999 ? '♾️' : (p.duration === 7 ? 'أسبوع' : p.duration === 30 ? 'شهر' : p.duration === 90 ? '3 أشهر' : p.duration === 365 ? 'سنة' : p.duration + ' يوم');
+      return `<tr>
+        <td><b>${esc(p.name)}</b>${p.featured ? ' ⭐' : ''}</td>
+        <td>${dur}</td>
+        <td>$${base.toFixed(2)}</td>
+        <td>${disc > 0 ? disc + '%' : '—'}</td>
+        <td style="color:var(--gold);font-weight:800">$${final.toFixed(2)}</td>
+        <td>${(p.sections||p.sectionsAccess||[]).length}</td>
+        <td><button class="btn-danger" onclick="deletePlan('${p.id}')">🗑️</button></td>
+      </tr>`;
+    }).join('') + '</tbody></table></div>';
+}
+
+function renderSubPlans(){
+  const el = document.getElementById('subscriptionPlans'); if(!el) return;
+  if(!subscriptionPlans.length){ el.innerHTML = '<div class="empty">لا توجد خطط</div>'; return; }
+
+  el.innerHTML = subscriptionPlans.map(p => {
+    const base = p.basePrice || p.price || 0;
+    const disc = p.discount || 0;
+    const final = p.finalPrice || (base * (1 - disc/100));
+    const dur = p.duration === 9999 ? '♾️ مدى الحياة' : (p.duration === 7 ? 'أسبوع' : p.duration === 30 ? 'شهر' : p.duration === 90 ? '3 أشهر' : p.duration === 365 ? 'سنة' : p.duration + ' يوم');
+    const secs = p.sections || p.sectionsAccess || [];
+    return `
+    <div class="stat" style="border-color:${p.featured ? 'var(--gold)' : 'var(--bd)'};position:relative">
+      ${p.featured ? '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;padding:2px 12px;border-radius:10px;font-size:10px;font-weight:800">⭐ مميزة</div>' : ''}
+      <h3 style="color:var(--gold)">${esc(p.name)}</h3>
+      ${disc > 0 ? `<div style="text-decoration:line-through;color:var(--muted);font-size:.8rem">$${base.toFixed(2)}</div>` : ''}
+      <div class="num">$${final.toFixed(2)}</div>
+      ${disc > 0 ? `<div style="color:var(--ok);font-size:.7rem;font-weight:700">🎁 خصم ${disc}%</div>` : ''}
+      <div class="lbl">${dur}</div>
+      ${p.desc ? `<div style="font-size:11px;color:var(--muted);margin:10px 0">${esc(p.desc)}</div>` : ''}
+      <div style="text-align:right;font-size:11px;margin:10px 0;color:var(--muted)"><b style="color:var(--gold)">يشمل:</b><br>${secs.slice(0,6).map(s => '✓ ' + (SECTIONS_LABELS[s] || s)).join('<br>')}${secs.length > 6 ? '<br>+ المزيد' : ''}</div>
+      <button class="btn-save" style="margin-top:8px;width:100%" onclick="subscribeToPlan('${p.id}')">اشترك</button>
+    </div>`;
+  }).join('');
+}
+
+async function subscribeToPlan(id){
+  const p = subscriptionPlans.find(x => x.id === id); if(!p) return;
+  const finalPrice = p.finalPrice || p.price || 0;
+  if(!confirm(`الاشتراك في "${p.name}" بـ $${finalPrice}؟`)) return;
+
+  const end = new Date();
+  if(p.duration === 9999) end.setFullYear(end.getFullYear() + 100);
+  else end.setDate(end.getDate() + p.duration);
+
+  try {
+    await db.collection('users').doc(CU.uid).collection('mySubscription').doc('current').set({
+      planId: p.id, planName: p.name,
+      price: finalPrice,
+      sectionsAccess: p.sections || p.sectionsAccess || [],
+      sectionPrices: p.sectionPrices || {},
+      status: 'active',
+      startDate: new Date().toISOString(),
+      endDate: end.toISOString(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('✅ تم الاشتراك');
+    loadUserSubscription();
+  } catch(e) { toast('❌ ' + e.message, true); }
 }
 </script>
 </body>
