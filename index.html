@@ -172,6 +172,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <button class="ni" data-sec="chart"><span class="ic">📊</span>مخطط الأسنان</button>
   <button class="ni" data-sec="appointments"><span class="ic">🗓️</span>المواعيد</button>
   <button class="ni" data-sec="lab"><span class="ic">🧪</span>المعمل</button>
+  <button class="ni" data-sec="inventory"><span class="ic">📦</span>مخزون العيادة</button>
   <div class="ns">التحليل والتصميم AI</div>
   <button class="ni" data-sec="aiDiagnosis"><span class="ic">🧠</span>التشخيص الذكي</button>
   <button class="ni" data-sec="faceHarmony"><span class="ic">🧑‍⚕️</span>تحليل الوجه</button>
@@ -747,6 +748,84 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div id="meetingsList"></div>
     </div>
   </div>
+ 
+ <div class="sec" id="sec-inventory">
+  <div class="panel">
+    <h2>📦 مخزون العيادة</h2>
+    <div class="desc">إدارة المواد والمستلزمات الطبية + سجل المشتريات من التجار</div>
+
+    <!-- الإحصائيات -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px">
+      <div class="stat"><div class="ic">📦</div><div class="num" id="invStatItems">0</div><div class="lbl">عدد الأصناف</div></div>
+      <div class="stat"><div class="ic">💰</div><div class="num" id="invStatValue">$0</div><div class="lbl">قيمة المخزون</div></div>
+      <div class="stat"><div class="ic">⚠️</div><div class="num" id="invStatLow" style="color:var(--warn)">0</div><div class="lbl">أصناف منخفضة</div></div>
+      <div class="stat"><div class="ic">🧾</div><div class="num" id="invStatPurchases">0</div><div class="lbl">فواتير الشراء</div></div>
+      <div class="stat"><div class="ic">💵</div><div class="num" id="invStatPaid" style="color:var(--ok)">$0</div><div class="lbl">المدفوع للتجار</div></div>
+      <div class="stat"><div class="ic">⏳</div><div class="num" id="invStatRemaining" style="color:var(--err)">$0</div><div class="lbl">متبقي للتجار</div></div>
+    </div>
+
+    <!-- التبويبات -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn-save" onclick="showInvTab('materials')" id="invTabMat">📦 المواد</button>
+      <button class="btn-outline" onclick="showInvTab('purchases')" id="invTabPur">🧾 المشتريات</button>
+    </div>
+
+    <!-- تبويب المواد -->
+    <div id="invMaterialsTab">
+      <div style="background:rgba(197,160,89,.05);padding:16px;border-radius:12px;border:1px solid var(--bd);margin-bottom:16px">
+        <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:12px">➕ إضافة مادة جديدة</h3>
+        <div class="g2">
+          <div class="f"><label>📝 اسم المادة *</label><input id="invName" placeholder="كومبوزيت، مخدر، قفازات..."></div>
+          <div class="f"><label>🏷️ التصنيف</label>
+            <select id="invCategory">
+              <option>ترميم</option><option>تخدير</option><option>لبية</option>
+              <option>جراحة</option><option>تقويم</option><option>وقاية</option>
+              <option>أدوات</option><option>أخرى</option>
+            </select>
+          </div>
+          <div class="f"><label>📏 الوحدة</label><input id="invUnit" placeholder="علبة، أنبوب، قطعة..." value="علبة"></div>
+          <div class="f"><label>🔢 الكمية الحالية *</label><input type="number" id="invQuantity" value="0" min="0" step="0.01"></div>
+          <div class="f"><label>⚠️ حد التنبيه</label><input type="number" id="invMinQuantity" value="5" min="0"></div>
+          <div class="f"><label>💲 سعر الوحدة ($)</label><input type="number" id="invUnitPrice" value="0" min="0" step="0.01"></div>
+          <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><input id="invNotes"></div>
+        </div>
+        <button class="btn-save" onclick="addInventoryItem()" style="width:100%;margin-top:10px">💾 إضافة المادة</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <input type="text" id="invSearch" placeholder="🔍 بحث..." oninput="renderInventory()" style="flex:1;min-width:150px;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+        <select id="invFilterCat" onchange="renderInventory()" style="padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+          <option value="">كل التصنيفات</option>
+          <option>ترميم</option><option>تخدير</option><option>لبية</option>
+          <option>جراحة</option><option>تقويم</option><option>وقاية</option>
+          <option>أدوات</option><option>أخرى</option>
+        </select>
+      </div>
+      <div id="inventoryList"></div>
+    </div>
+
+    <!-- تبويب المشتريات -->
+    <div id="invPurchasesTab" style="display:none">
+      <div style="background:rgba(197,160,89,.05);padding:16px;border-radius:12px;border:1px solid var(--bd);margin-bottom:16px">
+        <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:12px">➕ تسجيل فاتورة شراء من تاجر</h3>
+        <div class="g2">
+          <div class="f"><label>📦 المادة *</label><select id="purMaterial"></select></div>
+          <div class="f"><label>🏭 اسم التاجر</label><input id="purSupplier" placeholder="شركة..."></div>
+          <div class="f"><label>🧾 رقم الفاتورة</label><input id="purInvoiceNo" placeholder="INV-123"></div>
+          <div class="f"><label>📅 تاريخ الشراء</label><input type="date" id="purDate"></div>
+          <div class="f"><label>🔢 الكمية *</label><input type="number" id="purQuantity" value="1" min="0.01" step="0.01" oninput="calcPurchaseTotals()"></div>
+          <div class="f"><label>💲 سعر الوحدة *</label><input type="number" id="purUnitPrice" value="0" min="0" step="0.01" oninput="calcPurchaseTotals()"></div>
+          <div class="f"><label>💰 الإجمالي ($)</label><input type="number" id="purTotal" readonly style="background:rgba(197,160,89,.12);color:var(--gold);font-weight:800"></div>
+          <div class="f"><label>💵 المدفوع ($)</label><input type="number" id="purPaid" value="0" min="0" step="0.01" oninput="calcPurchaseTotals()"></div>
+          <div class="f" style="grid-column:1/-1"><label>⏳ المتبقي ($)</label><input type="number" id="purRemaining" readonly style="background:rgba(239,68,68,.12);color:var(--err);font-weight:800"></div>
+          <div class="f" style="grid-column:1/-1"><label>📝 ملاحظات</label><input id="purNotes"></div>
+        </div>
+        <button class="btn-save" onclick="addPurchase()" style="width:100%;margin-top:10px">💾 حفظ الفاتورة</button>
+      </div>
+      <div id="purchasesList"></div>
+    </div>
+  </div>
+</div>
 
   <div class="sec" id="sec-lab">
     <div class="panel">
@@ -1229,6 +1308,7 @@ function showSection(sec){
   if(sec==='paymentConfig') loadPaymentConfig();
   if(sec==='notifications') loadNotifications();
 if(sec==='lab'){ populateSelects(); loadLab(); setTimeout(renderLabSummary, 300); }
+if(sec==='inventory'){ loadInventory(); loadPurchases(); }
   if(sec==='labAccounting'){ loadLab().then(()=>renderLabAccounting()); }
   if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); renderPatientsSummary(); }
   if(sec==='reports') populateSelects();
@@ -2871,7 +2951,7 @@ async function addBilling(){
 function renderBilling(){
   const el = document.getElementById('billingList'); if(!el) return;
   if(!billing.length){ el.innerHTML='<div class="empty">لا توجد مدفوعات</div>'; return; }
-  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>التاريخ</th><th>المريض</th><th>النوع</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th><th>ملاحظات</th><th></th></tr></thead><tbody>'+
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>التاريخ</th><th>المريض</th><th>النوع</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th><th>ملاحظات</th><th>إجراءات</th></tr></thead><tbody>'+
     billing.map(b=>`<tr>
       <td>${esc(b.date)}</td>
       <td><b>${esc(b.patientName)}</b></td>
@@ -2881,6 +2961,7 @@ function renderBilling(){
       <td style="color:${(b.remaining||0)>0?'var(--err)':'var(--ok)'}">$${(b.remaining||0).toFixed(2)}</td>
       <td style="font-size:.7rem;color:var(--muted)">${esc(b.notes||'')}</td>
       <td style="white-space:nowrap">
+        <button class="btn-outline" style="padding:2px 8px;font-size:.65rem" onclick="openBillingEdit('${b.id}')">✏️</button>
         <button class="btn-outline" style="padding:2px 8px;font-size:.65rem" onclick="printInvoice('${b.id}')">🖨️</button>
         <button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="deleteBilling('${b.id}')">🗑️</button>
       </td>
@@ -2891,6 +2972,75 @@ async function deleteBilling(id){
   await db.collection('billing').doc(id).delete();
   toast('🗑️');
   loadBilling();
+}
+async function openBillingEdit(id){
+  const b = billing.find(x => x.id === id);
+  if(!b) return toast('⚠️ الدفعة غير موجودة', true);
+
+  let modal = document.getElementById('billingEditModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'billingEditModal';
+    modal.className = 'modal';
+    modal.innerHTML = '<div class="box" id="billingEditBox" style="max-width:500px"></div>';
+    document.body.appendChild(modal);
+  }
+
+  document.getElementById('billingEditBox').innerHTML = `
+    <h3 style="color:var(--gold);margin-bottom:14px">✏️ تعديل الدفعة</h3>
+    <div class="f"><label>💰 التكلفة الإجمالية ($)</label><input type="number" id="editTotal" value="${b.totalCost||0}" step="0.01" min="0"></div>
+    <div class="f"><label>💵 المدفوع ($)</label><input type="number" id="editPaid" value="${b.paid||0}" step="0.01" min="0"></div>
+    <div class="f"><label>📅 التاريخ</label><input type="date" id="editDate" value="${b.date||''}"></div>
+    <div class="f"><label>🏷️ نوع العمل</label>
+      <select id="editServiceType">
+        ${['فحص','حشو','علاج عصب','تاج','جسر','فينير','زراعة','تقويم','تنظيف','تبييض','خلع','طقم','أخرى'].map(t => 
+          `<option value="${t}" ${b.serviceType === t ? 'selected' : ''}>${t}</option>`
+        ).join('')}
+      </select>
+    </div>
+    <div class="f"><label>📝 ملاحظات</label><input id="editNotes" value="${(b.notes||'').replace(/"/g,'&quot;')}"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-save" style="flex:1" onclick="saveBillingEdit('${id}')">💾 حفظ</button>
+      <button class="btn-outline" onclick="document.getElementById('billingEditModal').classList.remove('show')">إلغاء</button>
+    </div>
+  `;
+  modal.classList.add('show');
+}
+
+async function saveBillingEdit(id){
+  const total = parseFloat(document.getElementById('editTotal').value) || 0;
+  const paid  = parseFloat(document.getElementById('editPaid').value) || 0;
+  if(paid > total) return toast('⚠️ المدفوع أكبر من التكلفة', true);
+
+  try {
+    await db.collection('billing').doc(id).update({
+      totalCost: total,
+      paid: paid,
+      remaining: total - paid,
+      date: document.getElementById('editDate').value,
+      serviceType: document.getElementById('editServiceType').value,
+      notes: document.getElementById('editNotes').value.trim()
+    });
+
+    const b = billing.find(x => x.id === id);
+    if(b){
+      b.totalCost = total;
+      b.paid = paid;
+      b.remaining = total - paid;
+      b.date = document.getElementById('editDate').value;
+      b.serviceType = document.getElementById('editServiceType').value;
+      b.notes = document.getElementById('editNotes').value.trim();
+    }
+
+    document.getElementById('billingEditModal').classList.remove('show');
+    toast('✅ تم التعديل');
+    renderBilling();
+    updateBillingStats();
+    renderPatientsSummary();
+    updateDashboard();
+  } catch(e) {
+    toast('❌ ' + (e.code || e.message), true);
+  }
 }
 function updateBillingStats(){
   const now = new Date();
@@ -4244,7 +4394,314 @@ window.addEventListener('load', function(){
     });
   }
 });
+// ═══════════════════════════════════════════════════════════════
+// 📦 مخزون العيادة + المشتريات
+// ═══════════════════════════════════════════════════════════════
+var inventoryItems = [], purchases = [];
 
+// ─── تحميل البيانات ───
+async function loadInventory(){
+  try {
+    const snap = await db.collection('inventory').get();
+    inventoryItems = [];
+    snap.forEach(d => inventoryItems.push({id:d.id, ...d.data()}));
+    renderInventory();
+    updateInventoryStats();
+    populatePurchaseSelect();
+  } catch(e) { console.error('loadInventory:', e); toast('❌ ' + e.message, true); }
+}
+
+async function loadPurchases(){
+  try {
+    const snap = await db.collection('purchases').get();
+    purchases = [];
+    snap.forEach(d => purchases.push({id:d.id, ...d.data()}));
+    purchases.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    renderPurchases();
+    updateInventoryStats();
+  } catch(e) { console.error('loadPurchases:', e); toast('❌ ' + e.message, true); }
+}
+
+// ─── إضافة مادة ───
+async function addInventoryItem(){
+  const name = document.getElementById('invName').value.trim();
+  const quantity = parseFloat(document.getElementById('invQuantity').value) || 0;
+  const unitPrice = parseFloat(document.getElementById('invUnitPrice').value) || 0;
+  if(!name) return toast('⚠️ أدخل اسم المادة', true);
+
+  try {
+    const docRef = await db.collection('inventory').add({
+      name,
+      category: document.getElementById('invCategory').value,
+      unit: document.getElementById('invUnit').value.trim() || 'علبة',
+      quantity,
+      minQuantity: parseFloat(document.getElementById('invMinQuantity').value) || 5,
+      unitPrice,
+      notes: document.getElementById('invNotes').value.trim(),
+      clinicId: CD.clinicId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    inventoryItems.push({ id: docRef.id, name, category: document.getElementById('invCategory').value, unit: document.getElementById('invUnit').value.trim(), quantity, minQuantity: parseFloat(document.getElementById('invMinQuantity').value)||5, unitPrice, notes: document.getElementById('invNotes').value.trim(), clinicId: CD.clinicId });
+    toast('✅ تم إضافة المادة');
+    document.getElementById('invName').value = '';
+    document.getElementById('invQuantity').value = '0';
+    document.getElementById('invUnitPrice').value = '0';
+    document.getElementById('invNotes').value = '';
+    renderInventory();
+    updateInventoryStats();
+    populatePurchaseSelect();
+  } catch(e) { toast('❌ ' + (e.code || e.message), true); }
+}
+
+// ─── عرض المواد ───
+function renderInventory(){
+  const el = document.getElementById('inventoryList'); if(!el) return;
+  const q = (document.getElementById('invSearch')?.value || '').toLowerCase().trim();
+  const catFilter = document.getElementById('invFilterCat')?.value || '';
+
+  let list = inventoryItems.filter(i => {
+    if(catFilter && i.category !== catFilter) return false;
+    if(q && !(i.name||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if(!list.length){ el.innerHTML = '<div class="empty">لا توجد مواد</div>'; return; }
+
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>المادة</th><th>التصنيف</th><th>الكمية</th><th>الوحدة</th><th>سعر الوحدة</th><th>القيمة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>' +
+    list.map(i => {
+      const isLow = i.quantity <= (i.minQuantity || 5);
+      const value = (i.quantity || 0) * (i.unitPrice || 0);
+      return `<tr style="${isLow ? 'background:rgba(245,158,11,.08)' : ''}">
+        <td><b style="color:var(--gold)">${esc(i.name)}</b></td>
+        <td>${esc(i.category||'—')}</td>
+        <td style="font-weight:700;color:${isLow ? 'var(--warn)' : 'var(--txt)'}">${i.quantity || 0}</td>
+        <td>${esc(i.unit||'')}</td>
+        <td>$${(i.unitPrice||0).toFixed(2)}</td>
+        <td>$${value.toFixed(2)}</td>
+        <td>${isLow ? '<span style="color:var(--warn);font-weight:700">⚠️ منخفض</span>' : '<span style="color:var(--ok)">✅ جيد</span>'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn-outline" style="padding:2px 8px;font-size:.65rem" onclick="editInventoryItem('${i.id}')">✏️</button>
+          <button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="deleteInventoryItem('${i.id}')">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('') + '</tbody></table></div>';
+}
+
+// ─── تعديل مادة ───
+async function editInventoryItem(id){
+  const item = inventoryItems.find(x => x.id === id);
+  if(!item) return;
+
+  const newQty = prompt(`📦 ${item.name}\n\nالكمية الحالية: ${item.quantity}\nأدخل الكمية الجديدة:`, item.quantity);
+  if(newQty === null) return;
+  const qty = parseFloat(newQty);
+  if(isNaN(qty) || qty < 0) return toast('⚠️ قيمة غير صحيحة', true);
+
+  const newPrice = prompt(`💲 سعر الوحدة الحالي: $${item.unitPrice}\nأدخل السعر الجديد:`, item.unitPrice);
+  if(newPrice === null) return;
+  const price = parseFloat(newPrice) || 0;
+
+  try {
+    await db.collection('inventory').doc(id).update({ quantity: qty, unitPrice: price });
+    item.quantity = qty;
+    item.unitPrice = price;
+    toast('✅ تم التحديث');
+    renderInventory();
+    updateInventoryStats();
+  } catch(e) { toast('❌ ' + e.message, true); }
+}
+
+// ─── حذف مادة ───
+async function deleteInventoryItem(id){
+  if(!confirm('⚠️ حذف هذه المادة؟')) return;
+  try {
+    await db.collection('inventory').doc(id).delete();
+    inventoryItems = inventoryItems.filter(x => x.id !== id);
+    toast('🗑️');
+    renderInventory();
+    updateInventoryStats();
+    populatePurchaseSelect();
+  } catch(e) { toast('❌ ' + e.message, true); }
+}
+
+// ─── إحصائيات المخزون ───
+function updateInventoryStats(){
+  const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  const totalItems = inventoryItems.length;
+  const totalValue = inventoryItems.reduce((s,i) => s + ((i.quantity||0) * (i.unitPrice||0)), 0);
+  const lowItems = inventoryItems.filter(i => (i.quantity||0) <= (i.minQuantity||5)).length;
+
+  setTxt('invStatItems', totalItems);
+  setTxt('invStatValue', '$' + totalValue.toFixed(2));
+  setTxt('invStatLow', lowItems);
+
+  const totalPurchases = purchases.length;
+  const totalPaid = purchases.reduce((s,p) => s + (p.paid||0), 0);
+  const totalRemaining = purchases.reduce((s,p) => s + (p.remaining||0), 0);
+
+  setTxt('invStatPurchases', totalPurchases);
+  setTxt('invStatPaid', '$' + totalPaid.toFixed(2));
+  setTxt('invStatRemaining', '$' + totalRemaining.toFixed(2));
+}
+
+// ─── قائمة اختيار المادة في المشتريات ───
+function populatePurchaseSelect(){
+  const sel = document.getElementById('purMaterial'); if(!sel) return;
+  sel.innerHTML = '<option value="">— اختر مادة —</option>' +
+    inventoryItems.map(i => `<option value="${i.id}">${esc(i.name)} (${i.quantity} ${i.unit})</option>`).join('');
+}
+
+// ─── حساب إجمالي الشراء ───
+function calcPurchaseTotals(){
+  const qty = parseFloat(document.getElementById('purQuantity')?.value) || 0;
+  const price = parseFloat(document.getElementById('purUnitPrice')?.value) || 0;
+  const paid = parseFloat(document.getElementById('purPaid')?.value) || 0;
+  const total = +(qty * price).toFixed(2);
+  const remaining = +(Math.max(0, total - paid)).toFixed(2);
+  const tEl = document.getElementById('purTotal'); if(tEl) tEl.value = total.toFixed(2);
+  const rEl = document.getElementById('purRemaining'); if(rEl) rEl.value = remaining.toFixed(2);
+}
+
+// ─── إضافة فاتورة شراء ───
+async function addPurchase(){
+  const materialId = document.getElementById('purMaterial').value;
+  if(!materialId) return toast('⚠️ اختر المادة', true);
+
+  const qty = parseFloat(document.getElementById('purQuantity').value) || 0;
+  const unitPrice = parseFloat(document.getElementById('purUnitPrice').value) || 0;
+  if(qty <= 0) return toast('⚠️ أدخل الكمية', true);
+  if(unitPrice <= 0) return toast('⚠️ أدخل سعر الوحدة', true);
+
+  const total = +(qty * unitPrice).toFixed(2);
+  const paid = parseFloat(document.getElementById('purPaid').value) || 0;
+  if(paid > total) return toast('⚠️ المدفوع أكبر من الإجمالي', true);
+  const remaining = +(total - paid).toFixed(2);
+
+  const material = inventoryItems.find(x => x.id === materialId);
+  if(!material) return toast('⚠️ المادة غير موجودة', true);
+
+  try {
+    const docRef = await db.collection('purchases').add({
+      materialId,
+      materialName: material.name,
+      supplier: document.getElementById('purSupplier').value.trim(),
+      invoiceNo: document.getElementById('purInvoiceNo').value.trim(),
+      date: document.getElementById('purDate').value || new Date().toISOString().slice(0,10),
+      quantity: qty,
+      unitPrice,
+      total,
+      paid,
+      remaining,
+      notes: document.getElementById('purNotes').value.trim(),
+      clinicId: CD.clinicId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // 🔄 تحديث كمية المخزون تلقائياً
+    const newQty = (material.quantity || 0) + qty;
+    await db.collection('inventory').doc(materialId).update({ quantity: newQty });
+    material.quantity = newQty;
+
+    purchases.push({ id: docRef.id, materialId, materialName: material.name, supplier: document.getElementById('purSupplier').value.trim(), invoiceNo: document.getElementById('purInvoiceNo').value.trim(), date: document.getElementById('purDate').value, quantity: qty, unitPrice, total, paid, remaining, clinicId: CD.clinicId });
+
+    toast(`✅ تم تسجيل الفاتورة — تمت إضافة ${qty} ${material.unit} للمخزون`);
+    document.getElementById('purSupplier').value = '';
+    document.getElementById('purInvoiceNo').value = '';
+    document.getElementById('purQuantity').value = '1';
+    document.getElementById('purUnitPrice').value = '0';
+    document.getElementById('purTotal').value = '';
+    document.getElementById('purPaid').value = '0';
+    document.getElementById('purRemaining').value = '';
+    document.getElementById('purNotes').value = '';
+    renderPurchases();
+    renderInventory();
+    updateInventoryStats();
+    populatePurchaseSelect();
+  } catch(e) { toast('❌ ' + (e.code || e.message), true); }
+}
+
+// ─── عرض المشتريات ───
+function renderPurchases(){
+  const el = document.getElementById('purchasesList'); if(!el) return;
+  if(!purchases.length){ el.innerHTML = '<div class="empty">لا توجد فواتير شراء</div>'; return; }
+
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>التاريخ</th><th>المادة</th><th>التاجر</th><th>الفاتورة</th><th>الكمية</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th><th>إجراءات</th></tr></thead><tbody>' +
+    purchases.map(p => `
+      <tr>
+        <td>${esc(p.date||'')}</td>
+        <td><b style="color:var(--gold)">${esc(p.materialName)}</b></td>
+        <td>${esc(p.supplier||'—')}</td>
+        <td style="font-size:.7rem">${esc(p.invoiceNo||'—')}</td>
+        <td>${p.quantity} × $${(p.unitPrice||0).toFixed(2)}</td>
+        <td>$${(p.total||0).toFixed(2)}</td>
+        <td style="color:var(--ok)">$${(p.paid||0).toFixed(2)}</td>
+        <td style="color:${(p.remaining||0)>0?'var(--err)':'var(--ok)'};font-weight:700">$${(p.remaining||0).toFixed(2)}</td>
+        <td style="white-space:nowrap">
+          <button class="btn-outline" style="padding:2px 8px;font-size:.65rem" onclick="editPurchasePaid('${p.id}')">💵</button>
+          <button class="btn-danger" style="padding:2px 8px;font-size:.65rem" onclick="deletePurchase('${p.id}')">🗑️</button>
+        </td>
+      </tr>
+    `).join('') + '</tbody></table></div>';
+}
+
+// ─── تحديث المدفوع لفاتورة ───
+async function editPurchasePaid(id){
+  const p = purchases.find(x => x.id === id); if(!p) return;
+  const newPaid = prompt(`💰 الإجمالي: $${(p.total||0).toFixed(2)}\n💵 المدفوع: $${(p.paid||0).toFixed(2)}\n\nأدخل المبلغ المدفوع الجديد:`, p.paid || 0);
+  if(newPaid === null) return;
+  const paidNum = parseFloat(newPaid);
+  if(isNaN(paidNum) || paidNum < 0) return toast('⚠️ قيمة غير صحيحة', true);
+  if(paidNum > p.total) return toast('⚠️ المدفوع أكبر من الإجمالي', true);
+  const remaining = +(p.total - paidNum).toFixed(2);
+
+  try {
+    await db.collection('purchases').doc(id).update({ paid: paidNum, remaining });
+    p.paid = paidNum; p.remaining = remaining;
+    toast('✅ تم التحديث');
+    renderPurchases();
+    updateInventoryStats();
+  } catch(e) { toast('❌ ' + e.message, true); }
+}
+
+// ─── حذف فاتورة شراء ───
+async function deletePurchase(id){
+  const p = purchases.find(x => x.id === id);
+  if(!p) return;
+  if(!confirm(`⚠️ حذف فاتورة شراء "${p.materialName}"؟\nسيتم خصم ${p.quantity} من المخزون أيضاً.`)) return;
+
+  try {
+    // خصم الكمية من المخزون
+    const material = inventoryItems.find(x => x.id === p.materialId);
+    if(material){
+      const newQty = Math.max(0, (material.quantity || 0) - p.quantity);
+      await db.collection('inventory').doc(p.materialId).update({ quantity: newQty });
+      material.quantity = newQty;
+    }
+
+    await db.collection('purchases').doc(id).delete();
+    purchases = purchases.filter(x => x.id !== id);
+    toast('🗑️');
+    renderPurchases();
+    renderInventory();
+    updateInventoryStats();
+    populatePurchaseSelect();
+  } catch(e) { toast('❌ ' + e.message, true); }
+}
+
+// ─── تبديل تبويبات المخزون ───
+function showInvTab(tab){
+  const mat = document.getElementById('invMaterialsTab');
+  const pur = document.getElementById('invPurchasesTab');
+  const btnMat = document.getElementById('invTabMat');
+  const btnPur = document.getElementById('invTabPur');
+  if(tab === 'materials'){
+    mat.style.display = 'block'; pur.style.display = 'none';
+    btnMat.className = 'btn-save'; btnPur.className = 'btn-outline';
+  } else {
+    mat.style.display = 'none'; pur.style.display = 'block';
+    btnMat.className = 'btn-outline'; btnPur.className = 'btn-save';
+  }
+}
 </script>
 </body>
 </html>
