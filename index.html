@@ -199,6 +199,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <button class="ni" data-sec="interdisciplinary"><span class="ic">👨‍⚕️</span>متعدد التخصصات</button>
   <div class="ns">الإدارة</div>
   <button class="ni" data-sec="billing"><span class="ic">💳</span>حسابات المرضى</button>
+  <button class="ni" data-sec="debtors"><span class="ic">📊</span>تقرير المديونين</button>
   <button class="ni" data-sec="labAccounting" data-owner-only="true" style="display:none"><span class="ic">🧪</span>حسابات المعمل</button>
   <button class="ni" data-sec="reports"><span class="ic">📄</span>التقارير</button>
   <button class="ni" data-sec="users"><span class="ic">👥</span>إدارة الفريق</button>
@@ -749,6 +750,28 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
   </div>
  
+ <div class="sec" id="sec-debtors">
+  <div class="panel">
+    <h2>📊 تقرير المديونين الأسبوعي</h2>
+    <div class="desc">قائمة المرضى الذين عليهم مبالغ متبقية — مع أرقام هواتفهم</div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+      <div class="stat"><div class="ic">👥</div><div class="num" id="debtStatCount">0</div><div class="lbl">عدد المديونين</div></div>
+      <div class="stat"><div class="ic">💰</div><div class="num" id="debtStatTotal" style="color:var(--err)">$0</div><div class="lbl">إجمالي المديونية</div></div>
+      <div class="stat"><div class="ic">🧪</div><div class="num" id="debtStatLab" style="color:var(--warn)">$0</div><div class="lbl">مديونية المعمل</div></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn-save" onclick="renderDebtors()">🔄 تحديث</button>
+      <button class="btn-outline" onclick="exportDebtorsCSV()">📥 تصدير Excel</button>
+      <button class="btn-outline" onclick="copyDebtorsWhatsApp()">📱 نسخ للواتساب</button>
+    </div>
+
+    <div id="debtorsList"></div>
+  </div>
+</div>
+
+ 
  <div class="sec" id="sec-inventory">
   <div class="panel">
     <h2>📦 مخزون العيادة</h2>
@@ -773,6 +796,16 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     <!-- تبويب المواد -->
     <div id="invMaterialsTab">
       <div style="background:rgba(197,160,89,.05);padding:16px;border-radius:12px;border:1px solid var(--bd);margin-bottom:16px">
+      <div style="background:rgba(34,197,94,.05);padding:16px;border-radius:12px;border:2px solid var(--ok);margin-bottom:16px">
+  <h3 style="color:var(--ok);font-size:.95rem;margin-bottom:8px">⚡ إضافة سريعة (مواد متعددة)</h3>
+  <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">اكتب كل مادة في سطر — بالشكل: <b>الاسم | التصنيف | الوحدة | الكمية | السعر</b></p>
+  <textarea id="bulkInvInput" rows="6" placeholder="كومبوزيت | ترميم | علبة | 10 | 50
+مخدر | تخدير | أمبول | 50 | 5
+قفازات | وقاية | علبة | 20 | 10
+كمامات | وقاية | كيس | 30 | 15
+مبارد | أدوات | حزمة | 5 | 25" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--txt);font-family:monospace;font-size:12px"></textarea>
+  <button class="btn-save" onclick="bulkAddInventory()" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#10b981,#059669)">➕ إضافة كل المواد</button>
+</div>
         <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:12px">➕ إضافة مادة جديدة</h3>
         <div class="g2">
           <div class="f"><label>📝 اسم المادة *</label><input id="invName" placeholder="كومبوزيت، مخدر، قفازات..."></div>
@@ -1309,6 +1342,7 @@ function showSection(sec){
   if(sec==='notifications') loadNotifications();
 if(sec==='lab'){ populateSelects(); loadLab(); setTimeout(renderLabSummary, 300); }
 if(sec==='inventory'){ loadInventory(); loadPurchases(); }
+if(sec==='debtors'){ renderDebtors(); }
   if(sec==='labAccounting'){ loadLab().then(()=>renderLabAccounting()); }
   if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); renderPatientsSummary(); }
   if(sec==='reports') populateSelects();
@@ -4687,7 +4721,52 @@ async function deletePurchase(id){
     populatePurchaseSelect();
   } catch(e) { toast('❌ ' + e.message, true); }
 }
+async function bulkAddInventory(){
+  const text = document.getElementById('bulkInvInput').value.trim();
+  if(!text) return toast('⚠️ أدخل المواد', true);
 
+  const lines = text.split('\n').filter(l => l.trim());
+  let success = 0, failed = 0;
+
+  for(const line of lines){
+    const parts = line.split('|').map(p => p.trim());
+    if(parts.length < 1 || !parts[0]) continue;
+
+    const name = parts[0];
+    try {
+      const docRef = await db.collection('inventory').add({
+        name,
+        category: parts[1] || 'أخرى',
+        unit: parts[2] || 'علبة',
+        quantity: parseFloat(parts[3]) || 0,
+        unitPrice: parseFloat(parts[4]) || 0,
+        minQuantity: 5,
+        notes: '',
+        clinicId: CD.clinicId,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      inventoryItems.push({
+        id: docRef.id, name,
+        category: parts[1] || 'أخرى',
+        unit: parts[2] || 'علبة',
+        quantity: parseFloat(parts[3]) || 0,
+        unitPrice: parseFloat(parts[4]) || 0,
+        minQuantity: 5, notes: '',
+        clinicId: CD.clinicId
+      });
+      success++;
+    } catch(e){
+      failed++;
+      console.error('bulk add failed:', name, e);
+    }
+  }
+
+  document.getElementById('bulkInvInput').value = '';
+  toast(`✅ تمت إضافة ${success} مادة${failed ? ' — فشل ' + failed : ''}`);
+  renderInventory();
+  updateInventoryStats();
+  populatePurchaseSelect();
+}
 // ─── تبديل تبويبات المخزون ───
 function showInvTab(tab){
   const mat = document.getElementById('invMaterialsTab');
