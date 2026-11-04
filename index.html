@@ -393,7 +393,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     <div class="f"><label>رفع صورة</label><input type="file" id="faceImage" accept="image/*" onchange="loadFaceImage(event)"></div>
     <div class="canvas-wrap"><canvas id="faceCanvas" width="600" height="600"></canvas></div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-      <button class="btn-save" onclick="runFullFaceAnalysis()">📊 تحليل شامل (468 نقطة + قياسات)</button>
+<button type="button" class="btn-save" style="user-select: none; -webkit-user-select: none;" onclick="runFullFaceAnalysis(event)">📊 تحليل شامل (468 نقطة + قياسات)</button>
       <button class="btn-outline" onclick="saveFaceAnalysisToPatient()">💾 حفظ في ملف المريض</button>
     </div>
     <div id="faceResults"></div>
@@ -2093,8 +2093,10 @@ async function initFaceLandmarker() {
     throw new Error('فشل تحميل نموذج الذكاء الاصطناعي: ' + e.message);
   }
 }
-async function runFullFaceAnalysis() {
-  if (!faceImg || !faceImg.complete) return toast('⚠️ الصورة لم تُحمل بعد، ارفعها مرة أخرى', true);
+async function runFullFaceAnalysis(event) {
+  // ✅ منع تحديد الصورة أو النسخ
+  if (event) event.preventDefault(); 
+  if (!faceImg || !faceImg.complete) return toast('⚠️ الصورة لم تُحمل، ارفعها مرة أخرى', true);
 
   const canvas = document.getElementById('faceCanvas');
   const ctx = canvas.getContext('2d');
@@ -2103,8 +2105,8 @@ async function runFullFaceAnalysis() {
   try {
     const landmarker = await initFaceLandmarker();
     
-    // ✅ تصغير الصورة لـ 512 بكسل كحد أقصى (يمنع مشاكل الذاكرة ويضمن دقة سريعة)
-    const maxSize = 512;
+    // ✅ تصغير الصورة لـ 800 بكسل كحد أقصى (يمنع مشاكل الذاكرة)
+    const maxSize = 800;
     let w = faceImg.width, h = faceImg.height;
     if (w > maxSize || h > maxSize) {
       const ratio = Math.min(maxSize / w, maxSize / h);
@@ -2123,7 +2125,6 @@ async function runFullFaceAnalysis() {
 
     // التحليل
     const results = landmarker.detect(tempCanvas);
-    console.log('نتيجة التحليل:', results);
 
     if (!results.faceLandmarks || results.faceLandmarks.length === 0) {
       toast('❌ لم يتم اكتشاف وجه، تأكد من وضوح الصورة', true);
