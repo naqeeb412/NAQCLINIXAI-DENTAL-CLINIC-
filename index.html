@@ -1126,34 +1126,36 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
   </div>
 
-  <div class="sec" id="sec-settings">
-    <div class="panel">
-      <h2>⚙️ الإعدادات والخصوصية</h2>
-      <div class="f"><label>🔑 مفتاح Gemini API</label><input type="password" id="geminiKey"></div>
-      <button class="btn-save" onclick="saveGemini()">💾 حفظ المفتاح</button>
-      <div class="f" style="margin-top:10px">
-        <label>🔑 مفتاح Replicate API (لتوليد صور AI)</label>
-        <input type="password" id="replicateKey" placeholder="r8_...">
-      </div>
-      <button class="btn-outline" onclick="saveReplicateKey()" style="margin-top:5px">💾 حفظ مفتاح Replicate</button>
-      <div class="f" style="margin-top:15px"><label>🔐 الخصوصية</label>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
-          <label><input type="checkbox" id="privEmail" style="width:16px"> عرض بريدي</label>
-          <label><input type="checkbox" id="privPhone" style="width:16px"> عرض هاتفي</label>
-          <label><input type="checkbox" id="privFriends" style="width:16px" checked> السماح بالصداقة</label>
-        </div>
-      </div>
-      <button class="btn-save" style="margin-top:10px" onclick="savePrivacy()">💾 حفظ الخصوصية</button>
+<div class="sec" id="sec-settings">
+  <div class="panel">
+    <h2>⚙️ الإعدادات والخصوصية</h2>
+    
+    <!-- حقل مفتاح Gemini -->
+    <div class="f">
+      <label>🔑 مفتاح Gemini API (للتحليل الذكي)</label>
+      <input type="password" id="geminiKey" placeholder="AIzaSy...">
     </div>
-  </div>
-
-  <div class="sec" id="sec-notifications">
-    <div class="panel">
-      <h2>🔔 الإشعارات</h2>
-      <button class="btn-save" onclick="markAllNotificationsRead()">✅ قراءة الكل</button>
-      <div id="notificationsList" style="margin-top:12px"></div>
+    <button class="btn-save" onclick="saveGemini()">💾 حفظ المفتاح</button>
+    
+    <!-- حقل مفتاح Replicate -->
+    <div class="f" style="margin-top:15px">
+      <label>🔑 مفتاح Replicate API (لتوليد صور AI)</label>
+      <input type="password" id="replicateKey" placeholder="r8_...">
     </div>
+    <button class="btn-outline" onclick="saveReplicateKey()" style="margin-top:5px">💾 حفظ مفتاح Replicate</button>
+    
+    <!-- الخصوصية -->
+    <div class="f" style="margin-top:20px; border-top:1px solid var(--bd); padding-top:15px;">
+      <label>🔐 الخصوصية</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <label><input type="checkbox" id="privEmail" style="width:16px"> عرض بريدي</label>
+        <label><input type="checkbox" id="privPhone" style="width:16px"> عرض هاتفي</label>
+        <label><input type="checkbox" id="privFriends" style="width:16px" checked> السماح بالصداقة</label>
+      </div>
+    </div>
+    <button class="btn-save" style="margin-top:15px" onclick="savePrivacy()">💾 حفظ الخصوصية</button>
   </div>
+</div>
 
 </main>
 </div>
@@ -4369,7 +4371,19 @@ function loadGemini(){ geminiKey = localStorage.getItem('gemini_key') || ''; con
 function saveGemini(){ geminiKey = document.getElementById('geminiKey').value.trim(); localStorage.setItem('gemini_key', geminiKey); toast('✅'); }
 function loadPrivacy(){ if(!CD || !CD.privacy) return; if(document.getElementById('privEmail')) document.getElementById('privEmail').checked = CD.privacy.showEmail || false; if(document.getElementById('privPhone')) document.getElementById('privPhone').checked = CD.privacy.showPhone || false; if(document.getElementById('privFriends')) document.getElementById('privFriends').checked = CD.privacy.allowFriends !== false; }
 async function savePrivacy(){ await db.collection('users').doc(CU.uid).update({ privacy: { showEmail: document.getElementById('privEmail').checked, showPhone: document.getElementById('privPhone').checked, allowFriends: document.getElementById('privFriends').checked } }); toast('✅'); }
-
+function loadReplicateKey() {
+  replicateKey = localStorage.getItem('replicate_key') || '';
+  const el = document.getElementById('replicateKey');
+  if(el) el.value = replicateKey;
+}
+function saveReplicateKey() {
+  const el = document.getElementById('replicateKey');
+  if(el) {
+    replicateKey = el.value.trim();
+    localStorage.setItem('replicate_key', replicateKey);
+    toast('✅ تم حفظ مفتاح الذكاء الاصطناعي');
+  }
+}
 // ═══════════════════════════════════════════════════════════════
 // 36. Init
 // ═══════════════════════════════════════════════════════════════
