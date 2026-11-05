@@ -1233,19 +1233,122 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   </div>
 
   <div class="sec" id="sec-paymentConfig">
-    <div class="panel">
-      <h2>💳 إعدادات الدفع</h2>
-      <div class="g2">
-        <div class="f"><label>Binance ID</label><input id="payBinanceId"></div>
-        <div class="f"><label>المحفظة</label><input id="payWallet"></div>
-        <div class="f"><label>البنك</label><input id="payBank"></div>
-        <div class="f"><label>الحساب</label><input id="payAccount"></div>
-      </div>
-      <div class="f"><label>واتساب</label><input id="payWhatsApp"></div>
-      <div class="f"><label>التعليمات</label><textarea id="payInstructions" rows="2"></textarea></div>
-      <button class="btn-save" onclick="savePaymentConfig()">💾 حفظ</button>
+  <div class="panel">
+    <h2>💳 إعدادات الدفع والاشتراك</h2>
+    <div class="desc">اختر طريقة الدفع المناسبة، حوّل المبلغ، ثم أرسل إيصال التحويل لتفعيل اشتراكك.</div>
+
+    <!-- خطوات الاشتراك -->
+    <div style="background:linear-gradient(135deg,rgba(197,160,89,.1),rgba(197,160,89,.03));padding:16px;border-radius:12px;border:1px solid var(--gold);margin-bottom:20px;">
+      <h3 style="color:var(--gold);margin-bottom:12px;font-size:.95rem;">📋 كيف تشترك؟</h3>
+      <ol style="font-size:.82rem;line-height:2;padding-right:20px;color:var(--txt);">
+        <li>اختر خطة الاشتراك من <a href="#" onclick="showSection('subscriptions');return false;" style="color:var(--gold);">صفحة الخطط</a>.</li>
+        <li>حوّل المبلغ عبر إحدى الطرق أدناه.</li>
+        <li>أرسل صورة الإيصال + اسمك + اسم الخطة إلى <a href="mailto:naqclinixai@gmail.com" style="color:var(--gold);">naqclinixai@gmail.com</a> أو واتساب <b>777700412</b>.</li>
+        <li>سيتم تفعيل اشتراكك خلال 24 ساعة.</li>
+      </ol>
     </div>
+
+    <!-- العملات الرقمية -->
+    <div style="margin-bottom:16px;">
+      <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:10px;">₿ العملات الرقمية</h3>
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:.75rem;color:var(--muted);">Binance ID</div>
+          <div style="font-size:.9rem;font-weight:700;direction:ltr;">360202769</div>
+        </div>
+        <button class="btn-outline" onclick="copyPayment('360202769')" style="font-size:.7rem;">📋 نسخ</button>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:.75rem;color:var(--muted);">FaucetPay</div>
+          <div style="font-size:.85rem;font-weight:700;direction:ltr;word-break:break-all;">naqeeb730303200@gmail.com</div>
+        </div>
+        <button class="btn-outline" onclick="copyPayment('naqeeb730303200@gmail.com')" style="font-size:.7rem;">📋 نسخ</button>
+      </div>
+    </div>
+
+    <!-- المحافظ الإلكترونية -->
+    <div style="margin-bottom:16px;">
+      <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:10px;">📱 المحافظ الإلكترونية</h3>
+      
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div><div style="font-size:.75rem;color:var(--muted);">💛 جوالي</div><div style="font-size:.9rem;font-weight:700;">777700412</div></div>
+        <button class="btn-outline" onclick="copyPayment('777700412')" style="font-size:.7rem;">📋 نسخ</button>
+      </div>
+      
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div><div style="font-size:.75rem;color:var(--muted);">💚 جيب</div><div style="font-size:.9rem;font-weight:700;">777700412</div></div>
+        <button class="btn-outline" onclick="copyPayment('777700412')" style="font-size:.7rem;">📋 نسخ</button>
+      </div>
+      
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div><div style="font-size:.75rem;color:var(--muted);">🔵 Cash W</div><div style="font-size:.9rem;font-weight:700;">777700412</div></div>
+        <button class="btn-outline" onclick="copyPayment('777700412')" style="font-size:.7rem;">📋 نسخ</button>
+      </div>
+      
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div><div style="font-size:.75rem;color:var(--muted);">💜 محفظتي</div><div style="font-size:.9rem;font-weight:700;">777700412</div></div>
+        <button class="btn-outline" onclick="copyPayment('777700412')" style="font-size:.7rem;">📋 نسخ</button>
+      </div>
+      
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div><div style="font-size:.75rem;color:var(--muted);">💳 Money Mobile</div><div style="font-size:.9rem;font-weight:700;">777700412</div></div>
+        <button class="btn-outline" onclick="copyPayment('777700412')" style="font-size:.7rem;">📋 نسخ</button>
+      </div>
+    </div>
+
+    <!-- البنوك -->
+    <div style="margin-bottom:16px;">
+      <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:10px;">🏦 البنوك</h3>
+      <div style="background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:.75rem;color:var(--muted);">CAK Bank — رقم الحساب</div>
+          <div style="font-size:.9rem;font-weight:700;">777700412</div>
+        </div>
+        <button class="btn-outline" onclick="copyPayment('777700412')" style="font-size:.7rem;">📋 نسخ</button>
+      </div>
+    </div>
+
+    <!-- التواصل -->
+    <div style="margin-bottom:16px;">
+      <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:10px;">📞 التواصل وإرسال الإيصال</h3>
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(16,185,129,.03));border:2px solid var(--ok);border-radius:12px;padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:.75rem;color:var(--muted);">واتساب / اتصال</div>
+            <div style="font-size:.95rem;font-weight:700;">777700412</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-outline" onclick="copyPayment('777700412')" style="font-size:.7rem;">📋</button>
+            <a href="https://wa.me/967777700412" target="_blank" class="btn-save" style="font-size:.7rem;padding:6px 12px;text-decoration:none;">📱 واتساب</a>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:.75rem;color:var(--muted);">البريد الإلكتروني</div>
+            <div style="font-size:.85rem;font-weight:700;direction:ltr;">naqclinixai@gmail.com</div>
+          </div>
+          <button class="btn-outline" onclick="copyPayment('naqclinixai@gmail.com')" style="font-size:.7rem;">📋 نسخ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- إدارة (للمالك فقط) -->
+    <div style="margin-top:24px;padding-top:16px;border-top:2px dashed var(--bd);">
+      <h3 style="color:var(--gold);font-size:.9rem;margin-bottom:10px;">⚙️ إدارة طرق الدفع (للمالك)</h3>
+      <div class="g2">
+        <div class="f"><label>Binance ID</label><input id="payBinanceId" placeholder="360202769"></div>
+        <div class="f"><label>FaucetPay</label><input id="payWallet" placeholder="email@..."></div>
+        <div class="f"><label>البنك</label><input id="payBank" placeholder="CAK Bank"></div>
+        <div class="f"><label>الحساب</label><input id="payAccount" placeholder="7777..."></div>
+      </div>
+      <div class="f"><label>واتساب</label><input id="payWhatsApp" placeholder="9677..."></div>
+      <div class="f"><label>التعليمات</label><textarea id="payInstructions" rows="2"></textarea></div>
+      <button class="btn-save" onclick="savePaymentConfig()">💾 حفظ الإعدادات</button>
+    </div>
+
   </div>
+</div>
 
   <div class="sec" id="sec-settings">
     <div class="panel">
@@ -1288,6 +1391,17 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <button class="btn-save" style="flex:1" onclick="createPatient()">💾 حفظ</button>
       <button class="btn-outline" onclick="document.getElementById('patientModal').classList.remove('show')">إلغاء</button>
     </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;background:rgba(0,0,0,.2);padding:10px;border-radius:10px;">
+  <div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:5px;">الرابط الأساسي:</div>
+    <div style="font-size:10px;color:var(--gold);direction:ltr;word-break:break-all;">naqclinixai-dental-clinic.web.app</div>
+  </div>
+  <div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:5px;">الرابط البديل:</div>
+    <div style="font-size:10px;color:var(--muted);direction:ltr;word-break:break-all;">naqclinixaidentalpro.netlify.app</div>
   </div>
 </div>
 
@@ -4882,7 +4996,10 @@ console.log('🎁 تم تحميل جميع الإضافات بنجاح');
 // ═══════════════════════════════════════════════════════════════
 // 📤 الإعلان المباشر — مشاركة بنص جاهز + إغلاق تلقائي
 // ═══════════════════════════════════════════════════════════════
-var SHARE_AD_URL = 'https://naqclinixaidentalpro.netlify.app/';
+var SHARE_AD_URL_PRIMARY = 'https://naqclinixai-dental-clinic.web.app/';
+var SHARE_AD_URL_BACKUP = 'https://naqclinixaidentalpro.netlify.app/';
+var SHARE_AD_URL = SHARE_AD_URL_PRIMARY; // للاستخدام الداخلي
+
 var SHARE_AD_TEXT = `🦷 NAQCLINIXAI — نظام إدارة عيادة الأسنان بالذكاء الاصطناعي
 
 ✨ المميزات:
@@ -4894,8 +5011,10 @@ var SHARE_AD_TEXT = `🦷 NAQCLINIXAI — نظام إدارة عيادة الأ�
 👥 متعدد التخصصات + اجتماعات فيديو
 💾 نسخ احتياطي سحابي آمن
 
-🎁 جرّب الآن مجاناً!
-🔗 ${SHARE_AD_URL}`;
+🎁 جرّب الآن مجاناً:
+🔗 ${SHARE_AD_URL_PRIMARY}
+🌐 أو من الرابط البديل:
+🔗 ${SHARE_AD_URL_BACKUP}`;
 
 window.openShareAd = function(){
   document.getElementById('shareAdModal').classList.add('show');
@@ -6380,6 +6499,36 @@ function fileToBase64(file) {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+// ═══════════════════════════════════════════════════════════════
+// 📋 نسخ بيانات الدفع
+// ═══════════════════════════════════════════════════════════════
+function copyPayment(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      toast('📋 تم النسخ: ' + text);
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand('copy');
+    toast('📋 تم النسخ: ' + text);
+  } catch (e) {
+    toast('❌ فشل النسخ', true);
+  }
+  document.body.removeChild(textarea);
 }
 </script>
 </body>
