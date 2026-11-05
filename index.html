@@ -2530,8 +2530,11 @@ async function analyzeXray() {
   if (!fileInput || !fileInput.files || !fileInput.files[0]) {
     return toast('⚠️ الرجاء رفع صورة الأشعة أو الصورة الجانبية أولاً', true);
   }
-  if (!geminiKey) {
-    return toast('⚠️ أضف مفتاح API من الإعدادات أولاً', true);
+  
+  // ✅ التأكد من قراءة المفتاح من الذاكرة المحلية مباشرة
+  const apiKey = localStorage.getItem('gemini_key');
+  if (!apiKey) {
+    return toast('⚠️ لم يتم العثور على المفتاح، يرجى حفظه في الإعدادات أولاً', true);
   }
 
   const btn = event ? event.target : null;
@@ -2553,24 +2556,20 @@ async function analyzeXray() {
 
     let prompt = '';
     if (type === 'سيفالومترية' || type === 'جانبية') {
-      prompt = `أنت خبير في تحليل السيفالومتري (Cephalometric Analysis). قم بتحليل هذه الصورة (${type}) بدقة.
-      1. تعرف على النقاط التشريحية: Sella (S), Nasion (N), A-point, B-point.
-      2. قدر الزوايا التالية: SNA (طبيعي 80-84°)، SNB (طبيعي 78-82°)، ANB (طبيعي 0-4°).
-      3. أعطني تقييماً مكتوباً بالعربية يشمل: العلاقة الهيكلية بين الفكين (Class I, II, III)، وبروز الشفاه.
-      تنسيق الإخراج: جدول بسيط للقيم، ثم فقرة تحليلية.`;
+      prompt = `أنت خبير في تحليل السيفالومتري. حلل هذه الصورة (${type}) بالتفصيل وقدم تقريراً بالعربية.`;
     } else {
-      prompt = `أنت طبيب أسنان خبير. حلل صورة الأشعة (${type}) المرفقة. ابحث عن أي علامات تسوس، أمراض لثة، أو مشاكل في العظام. أعطني تقريراً بالعربية.`;
+      prompt = `أنت طبيب أسنان خبير. حلل صورة الأشعة (${type}) وقدم تقريراً بالعربية.`;
     }
 
-    // ✅ استخدام OpenRouter (نموذج Gemini المجاني)
+    // ✅ إرسال الطلب إلى OpenRouter
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${geminiKey}`
+        'Authorization': `Bearer ${apiKey}` 
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-exp:free", // نموذج مجاني
+        model: "google/gemini-2.0-flash-exp:free", 
         messages: [
           {
             role: "user",
@@ -2585,9 +2584,7 @@ async function analyzeXray() {
     
     const data = await res.json();
     
-    if (data.error) {
-      throw new Error(data.error.message);
-    }
+    if (data.error) throw new Error(data.error.message);
 
     const reply = data.choices[0].message.content;
 
