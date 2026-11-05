@@ -2531,7 +2531,7 @@ async function analyzeXray() {
     return toast('⚠️ الرجاء رفع صورة الأشعة أو الصورة الجانبية أولاً', true);
   }
   if (!geminiKey) {
-    return toast('⚠️ أضف مفتاح Gemini من الإعدادات أولاً', true);
+    return toast('⚠️ أضف مفتاح API من الإعدادات أولاً', true);
   }
 
   const btn = event ? event.target : null;
@@ -2562,55 +2562,38 @@ async function analyzeXray() {
       prompt = `أنت طبيب أسنان خبير. حلل صورة الأشعة (${type}) المرفقة. ابحث عن أي علامات تسوس، أمراض لثة، أو مشاكل في العظام. أعطني تقريراً بالعربية.`;
     }
 
-    const modelName = "gemini-3.8-flash"; 
-    let data = null;
-    let success = false;
-    let attempts = 0;
-    const maxAttempts = 3;
-
-    while (attempts < maxAttempts && !success) {
-      attempts++;
-      try {
-        out.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gold)">⏳ جاري التحليل (محاولة ${attempts})... يرجى الانتظار</div>`;
-        
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64.split(',')[1] } } ] }]
-          })
-        });
-        
-        const result = await res.json();
-        
-        if (result.error) {
-          if (result.error.message.includes('high demand') || result.error.message.includes('quota')) {
-            if (attempts < maxAttempts) {
-              await new Promise(r => setTimeout(r, 2500));
-              continue; 
-            }
+    // ✅ استخدام OpenRouter (نموذج Gemini المجاني)
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${geminiKey}`
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.0-flash-exp:free", // نموذج مجاني
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: base64 } }
+            ]
           }
-          throw new Error(result.error.message);
-        }
-        
-        data = result;
-        success = true;
-        
-      } catch (err) {
-        if (attempts >= maxAttempts || !err.message.includes('high demand')) {
-          throw new Error(err.message);
-        }
-        await new Promise(r => setTimeout(r, 2500));
-      }
+        ]
+      })
+    });
+    
+    const data = await res.json();
+    
+    if (data.error) {
+      throw new Error(data.error.message);
     }
 
-    if (!success) throw new Error('السيرفر مزدحم جداً، يرجى المحاولة بعد قليل.');
-
-    const reply = data.candidates[0].content.parts[0].text;
+    const reply = data.choices[0].message.content;
 
     out.innerHTML = `
       <div style="background:var(--card2);padding:18px;border-radius:12px;border-right:4px solid var(--gold);line-height:1.9">
-        <h3 style="color:var(--gold);margin-bottom:12px">📊 تقرير التحليل السيفالومتري:</h3>
+        <h3 style="color:var(--gold);margin-bottom:12px">📊 تقرير التحليل:</h3>
         <div style="white-space:pre-wrap;font-size:0.9rem">${esc(reply)}</div>
       </div>
     `;
@@ -2618,25 +2601,15 @@ async function analyzeXray() {
 
   } catch(e) {
     console.error(e);
-    let errorMsg = e.message;
-    
-    if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
-      errorMsg = '⚠️ عذراً، لقد استهلكت الحصة المجانية اليومية (20 طلباً). يرجى المحاولة غداً أو ترقية الحساب في Google AI Studio.';
-    } else if (errorMsg.includes('high demand')) {
-      errorMsg = '⏳ خوادم الذكاء الاصطناعي مزدحمة حالياً، يرجى المحاولة بعد دقيقة.';
-    } else if (errorMsg.includes('not found') || errorMsg.includes('not supported')) {
-      errorMsg = '⚠️ خطأ في اسم النموذج، يرجى تحديث الكود.';
-    }
-
-    out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(errorMsg)}</div>`;
-    toast('❌ تنبيه: ' + errorMsg, true);
+    out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ فشل التحليل: ${esc(e.message)}</div>`;
+    toast('❌ ' + e.message, true);
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = '🔬 تحليل بالذكاء الاصطناعي (Gemini)';
+      btn.innerHTML = '🔬 تحليل بالذكاء الاصطناعي';
     }
   }
-} // ✅ هذا هو القوس الذي كان ناقصاً
+}
 // ═══════════════════════════════════════════════════════════════
 // 15. CAD/CAM 3D
 // ═══════════════════════════════════════════════════════════════
