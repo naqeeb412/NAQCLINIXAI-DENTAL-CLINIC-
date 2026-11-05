@@ -503,7 +503,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
         بعد رفع الصورة بالأعلى، ستظهر هنا. اضغط على الصورة لوضع النقاط بالترتيب: (Sella) ثم (Nasion) ثم (A-point) ثم (B-point).
       </p>
       
-      <div id="canvasWrapper" style="position:relative; display:none; overflow:auto; max-height:500px; text-align:center; background:#000; border-radius:8px; margin-bottom:10px; border: 1px solid var(--gold);">
+<div id="canvasWrapper" style="position:relative; display:block; overflow:auto; max-height:500px; text-align:center; background:#000; border-radius:8px; margin-bottom:10px; border: 1px solid var(--gold);">
         <canvas id="tracingCanvas" style="max-width:100%; cursor:crosshair;"></canvas>
       </div>
 
@@ -5458,48 +5458,47 @@ async function saveTeamSections(uid){
   } catch(e) { toast('❌ ' + (e.code || e.message), true); }
 }
 // ═══════════════════════════════════════════════════════════════
-// 📐 أداة تتبع النقاط السيفالومترية (نسخة نظيفة وموحدة)
+// 📐 أداة تتبع النقاط السيفالومترية
 // ═══════════════════════════════════════════════════════════════
 let tracingPoints = [];
 let tracingCanvas = null;
 let tracingCtx = null;
 
-document.addEventListener('DOMContentLoaded', function() {
-  const xrayInput = document.getElementById('xrayImageInput');
-  if (xrayInput) {
-    xrayInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+// ربط الصورة بلوحة الرسم
+document.getElementById('xrayImageInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-          tracingCanvas = document.getElementById('tracingCanvas');
-          if (!tracingCanvas) return;
-          
-          tracingCanvas.width = img.width;
-          tracingCanvas.height = img.height;
-          tracingCtx = tracingCanvas.getContext('2d');
-          
-          tracingCtx.drawImage(img, 0, 0);
-          
-          const wrapper = document.getElementById('canvasWrapper');
-          if (wrapper) wrapper.style.display = 'block';
-          
-          tracingPoints = [];
-          
-          tracingCanvas.removeEventListener('click', addTracingPoint);
-          tracingCanvas.removeEventListener('touchstart', handleTracingTouch);
-          
-          tracingCanvas.addEventListener('click', addTracingPoint);
-          tracingCanvas.addEventListener('touchstart', handleTracingTouch, {passive: false});
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = new Image();
+    img.onload = function() {
+      tracingCanvas = document.getElementById('tracingCanvas');
+      if (!tracingCanvas) return;
+      
+      tracingCanvas.width = img.width;
+      tracingCanvas.height = img.height;
+      tracingCtx = tracingCanvas.getContext('2d');
+      
+      tracingCtx.drawImage(img, 0, 0);
+      
+      const wrapper = document.getElementById('canvasWrapper');
+      if (wrapper) {
+        wrapper.style.display = 'block';
+        wrapper.style.minHeight = '300px';
+      }
+      
+      tracingPoints = [];
+      
+      tracingCanvas.removeEventListener('click', addTracingPoint);
+      tracingCanvas.removeEventListener('touchstart', handleTracingTouch);
+      
+      tracingCanvas.addEventListener('click', addTracingPoint);
+      tracingCanvas.addEventListener('touchstart', handleTracingTouch, {passive: false});
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
 });
 
 function handleTracingTouch(e) {
