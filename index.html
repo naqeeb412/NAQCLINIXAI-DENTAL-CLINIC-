@@ -2520,7 +2520,7 @@ async function generateAfterWithDrawing() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 14. X-Ray Analysis (Simple)
+// 14. X-Ray Analysis
 // ═══════════════════════════════════════════════════════════════
 async function analyzeXray() {
   const out = document.getElementById('xrayResult');
@@ -2617,26 +2617,26 @@ async function analyzeXray() {
     toast('✅ تم التحليل بنجاح');
 
   } catch(e) {
-  console.error(e);
-  let errorMsg = e.message;
-  
-  // ✅ ترجمة الأخطاء الشائعة إلى رسائل عربية واضحة
-  if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
-    errorMsg = '⚠️ عذراً، لقد استهلكت الحصة المجانية اليومية (20 طلباً). يرجى المحاولة غداً أو ترقية الحساب في Google AI Studio.';
-  } else if (errorMsg.includes('high demand')) {
-    errorMsg = '⏳ خوادم الذكاء الاصطناعي مزدحمة حالياً، يرجى المحاولة بعد دقيقة.';
-  } else if (errorMsg.includes('not found') || errorMsg.includes('not supported')) {
-    errorMsg = '⚠️ خطأ في اسم النموذج، يرجى تحديث الكود.';
-  }
+    console.error(e);
+    let errorMsg = e.message;
+    
+    if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
+      errorMsg = '⚠️ عذراً، لقد استهلكت الحصة المجانية اليومية (20 طلباً). يرجى المحاولة غداً أو ترقية الحساب في Google AI Studio.';
+    } else if (errorMsg.includes('high demand')) {
+      errorMsg = '⏳ خوادم الذكاء الاصطناعي مزدحمة حالياً، يرجى المحاولة بعد دقيقة.';
+    } else if (errorMsg.includes('not found') || errorMsg.includes('not supported')) {
+      errorMsg = '⚠️ خطأ في اسم النموذج، يرجى تحديث الكود.';
+    }
 
-  out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(errorMsg)}</div>`;
-  toast('❌ تنبيه: ' + errorMsg, true);
-} finally {
-  if (btn) {
-    btn.disabled = false;
-    btn.innerHTML = '🔬 تحليل بالذكاء الاصطناعي (Gemini)';
+    out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(errorMsg)}</div>`;
+    toast('❌ تنبيه: ' + errorMsg, true);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '🔬 تحليل بالذكاء الاصطناعي (Gemini)';
+    }
   }
-}
+} // ✅ هذا هو القوس الذي كان ناقصاً
 // ═══════════════════════════════════════════════════════════════
 // 15. CAD/CAM 3D
 // ═══════════════════════════════════════════════════════════════
