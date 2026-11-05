@@ -359,34 +359,56 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
   </div>
 
-  <div class="sec" id="sec-aiDiagnosis">
-    <div class="panel">
-      <h2>🧠 التشخيص الذكي (AI)</h2>
-      <div class="f"><label>👤 المريض</label><select id="aiPatientDiag"></select></div>
-      <div class="f"><label>📝 الشكوى *</label><input type="text" id="aiComplaint" placeholder="ألم في الضرس..."></div>
-      <h3 style="color:var(--gold);font-size:.95rem;margin:15px 0 10px">📸 صور التشخيص</h3>
-      <div class="g2" style="gap:10px">
-        <div class="diag-img-slot" onclick="document.getElementById('diagFrontal').click()" id="slotFrontal"><div class="diag-preview" id="prevFrontal">😊<br><small>الوجه الأمامي</small></div><input type="file" id="diagFrontal" accept="image/*" style="display:none" onchange="handleDiagImage('frontal', event)"></div>
-        <div class="diag-img-slot" onclick="document.getElementById('diagLateral').click()" id="slotLateral"><div class="diag-preview" id="prevLateral">👥<br><small>الوجه الجانبي</small></div><input type="file" id="diagLateral" accept="image/*" style="display:none" onchange="handleDiagImage('lateral', event)"></div>
-        <div class="diag-img-slot" onclick="document.getElementById('diagSmile').click()" id="slotSmile"><div class="diag-preview" id="prevSmile">😁<br><small>الابتسامة</small></div><input type="file" id="diagSmile" accept="image/*" style="display:none" onchange="handleDiagImage('smile', event)"></div>
-        <div class="diag-img-slot" onclick="document.getElementById('diagTeethFront').click()" id="slotTeethFront"><div class="diag-preview" id="prevTeethFront">🦷<br><small>الأسنان</small></div><input type="file" id="diagTeethFront" accept="image/*" style="display:none" onchange="handleDiagImage('teethFront', event)"></div>
-      </div>
-      <div style="margin-top:15px;background:rgba(255,255,255,.03);padding:12px;border-radius:12px;border:1px solid var(--bd)">
-        <label style="display:block;font-size:.8rem;color:var(--gold);margin-bottom:8px">🩻 الأشعة</label>
-        <select id="diagXrayType" style="width:100%;padding:10px;border-radius:10px;background:var(--card2);color:var(--txt);border:1px solid var(--bd);margin-bottom:10px">
-          <option>بانورامية</option><option>سيفالومترية</option><option>حول ذروية</option><option>CBCT</option>
-        </select>
-        <div class="diag-img-slot" onclick="document.getElementById('diagXray').click()" id="slotXray"><div class="diag-preview" id="prevXray">🩻<br><small>صورة الأشعة</small></div><input type="file" id="diagXray" accept="image/*" style="display:none" onchange="handleDiagImage('xray', event)"></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap">
-        <button class="btn-save" onclick="runAIDiagnosis()">🧠 توليد التشخيص</button>
-        <button class="btn-outline" onclick="clearDiagImages()">🗑️ مسح</button>
-        <button class="btn-outline" onclick="saveDiagToPatient()">💾 حفظ</button>
-      </div>
-      <div id="aiOutput" style="margin-top:15px"></div>
+<div class="sec" id="sec-aiDiagnosis">
+  <div class="panel">
+    <h2>🧠 التشخيص الذكي (AI)</h2>
+    <div class="f"><label>👤 المريض</label><select id="aiPatientDiag"></select></div>
+    <div class="f"><label>📝 الشكوى *</label><input type="text" id="aiComplaint" placeholder="ألم في الضرس..."></div>
+    
+    <h3 style="color:var(--gold);font-size:.95rem;margin:15px 0 10px">📸 صور التشخيص</h3>
+    <div class="g2" style="gap:10px">
+      <div class="diag-img-slot" onclick="document.getElementById('diagFrontal').click()" id="slotFrontal"><div class="diag-preview" id="prevFrontal">😊<br><small>الوجه الأمامي</small></div><input type="file" id="diagFrontal" accept="image/*" style="display:none" onchange="handleDiagImage('frontal', event)"></div>
+      <div class="diag-img-slot" onclick="document.getElementById('diagLateral').click()" id="slotLateral"><div class="diag-preview" id="prevLateral">👥<br><small>الوجه الجانبي</small></div><input type="file" id="diagLateral" accept="image/*" style="display:none" onchange="handleDiagImage('lateral', event)"></div>
+      <div class="diag-img-slot" onclick="document.getElementById('diagSmile').click()" id="slotSmile"><div class="diag-preview" id="prevSmile">😁<br><small>الابتسامة</small></div><input type="file" id="diagSmile" accept="image/*" style="display:none" onchange="handleDiagImage('smile', event)"></div>
+      <div class="diag-img-slot" onclick="document.getElementById('diagTeethFront').click()" id="slotTeethFront"><div class="diag-preview" id="prevTeethFront">🦷<br><small>الأسنان</small></div><input type="file" id="diagTeethFront" accept="image/*" style="display:none" onchange="handleDiagImage('teethFront', event)"></div>
     </div>
-  </div>
 
+    <div style="margin-top:15px;background:rgba(255,255,255,.03);padding:12px;border-radius:12px;border:1px solid var(--bd)">
+      <label style="display:block;font-size:.8rem;color:var(--gold);margin-bottom:8px">🩻 الأشعة</label>
+      <select id="diagXrayType" style="width:100%;padding:10px;border-radius:10px;background:var(--card2);color:var(--txt);border:1px solid var(--bd);margin-bottom:10px">
+        <option>بانورامية</option><option>سيفالومترية</option><option>حول ذروية</option><option>CBCT</option>
+      </select>
+      <!-- حقل رفع الأشعة -->
+      <div class="diag-img-slot" onclick="document.getElementById('diagXray').click()" id="slotXray"><div class="diag-preview" id="prevXray">🩻<br><small>صورة الأشعة</small></div><input type="file" id="diagXray" accept="image/*" style="display:none" onchange="handleDiagImage('xray', event)"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap">
+      <button class="btn-save" onclick="runAIDiagnosis()">🧠 توليد التشخيص</button>
+      <button class="btn-outline" onclick="clearDiagImages()">🗑️ مسح</button>
+      <button class="btn-outline" onclick="saveDiagToPatient()">💾 حفظ</button>
+    </div>
+
+    <!-- ✍️ أداة تتبع النقاط السيفالومترية -->
+    <div style="margin-top:15px; background:var(--card2); padding:15px; border-radius:12px; border:1px solid var(--bd);">
+      <h3 style="color:var(--gold); font-size:.9rem; margin-bottom:10px;">✍️ أداة تتبع النقاط السيفالومترية</h3>
+      <p style="font-size:.7rem; color:var(--muted); margin-bottom:10px;">
+        ارفع صورة الأشعة في المربع أعلاه، ثم اضغط على الصورة لوضع النقاط بالترتيب: (Sella) ثم (Nasion) ثم (A-point) ثم (B-point).
+      </p>
+      
+      <div id="canvasWrapper" style="position:relative; display:none; overflow:auto; max-height:400px; text-align:center; background:#000; border-radius:8px; margin-bottom:10px;">
+        <canvas id="tracingCanvas" style="max-width:100%; cursor:crosshair;"></canvas>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-outline" onclick="resetTracing()" id="btnResetTracing">🗑️ مسح الرسم</button>
+        <button class="btn-save" onclick="saveTracingImage()" id="btnSaveTracing">💾 حفظ الصورة المرسومة</button>
+      </div>
+    </div>
+    <!-- ✍️ نهاية الأداة -->
+
+    <div id="aiOutput" style="margin-top:15px"></div>
+  </div>
+</div>
 <div class="sec" id="sec-faceHarmony">
   <div class="panel">
     <h2>🧑‍⚕️ تحليل الوجه 468 نقطة</h2>
@@ -5420,6 +5442,167 @@ async function saveTeamSections(uid){
     document.getElementById('teamSectionsModal').classList.remove('show');
     loadUsers();
   } catch(e) { toast('❌ ' + (e.code || e.message), true); }
+}
+// ═══════════════════════════════════════════════════════════════
+// 📐 أداة تتبع النقاط السيفالومترية (داخل قسم التشخيص)
+// ═══════════════════════════════════════════════════════════════
+let tracingPoints = [];
+let tracingCanvas = null;
+let tracingCtx = null;
+
+// ربط الصورة بلوحة الرسم عند رفعها (من حقل diagXray)
+document.getElementById('diagXray').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = new Image();
+    img.onload = function() {
+      tracingCanvas = document.getElementById('tracingCanvas');
+      if (!tracingCanvas) return;
+      
+      tracingCanvas.width = img.width;
+      tracingCanvas.height = img.height;
+      tracingCtx = tracingCanvas.getContext('2d');
+      
+      tracingCtx.drawImage(img, 0, 0);
+      
+      document.getElementById('canvasWrapper').style.display = 'block';
+      tracingPoints = [];
+      
+      tracingCanvas.removeEventListener('click', addTracingPoint);
+      tracingCanvas.removeEventListener('touchstart', handleTracingTouch);
+      
+      tracingCanvas.addEventListener('click', addTracingPoint);
+      tracingCanvas.addEventListener('touchstart', handleTracingTouch, {passive: false});
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function handleTracingTouch(e) {
+  e.preventDefault();
+  if (e.touches.length > 0) {
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent("click", {
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    });
+    tracingCanvas.dispatchEvent(mouseEvent);
+  }
+}
+
+function addTracingPoint(e) {
+  if (tracingPoints.length >= 4) return; 
+
+  const rect = tracingCanvas.getBoundingClientRect();
+  const scaleX = tracingCanvas.width / rect.width;
+  const scaleY = tracingCanvas.height / rect.height;
+
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
+
+  const labels = ['S (Sella)', 'N (Nasion)', 'A (A-point)', 'B (B-point)'];
+  tracingPoints.push({ x: x, y: y, label: labels[tracingPoints.length] });
+
+  drawTracing();
+}
+
+function drawTracing() {
+  const file = document.getElementById('diagXray').files[0];
+  if (!file) return;
+
+  const imgObj = new Image();
+  imgObj.onload = function() {
+    tracingCtx.clearRect(0, 0, tracingCanvas.width, tracingCanvas.height);
+    tracingCtx.drawImage(imgObj, 0, 0);
+    
+    tracingCtx.strokeStyle = '#10b981'; 
+    tracingCtx.lineWidth = 2;
+    tracingCtx.setLineDash([]);
+
+    if (tracingPoints.length >= 2) {
+      tracingCtx.beginPath();
+      tracingCtx.moveTo(tracingPoints[0].x, tracingPoints[0].y);
+      tracingCtx.lineTo(tracingPoints[1].x, tracingPoints[1].y);
+      tracingCtx.stroke();
+    }
+    if (tracingPoints.length >= 3) {
+      tracingCtx.beginPath();
+      tracingCtx.moveTo(tracingPoints[1].x, tracingPoints[1].y);
+      tracingCtx.lineTo(tracingPoints[2].x, tracingPoints[2].y);
+      tracingCtx.stroke();
+    }
+    if (tracingPoints.length >= 4) {
+      tracingCtx.beginPath();
+      tracingCtx.moveTo(tracingPoints[1].x, tracingPoints[1].y);
+      tracingCtx.lineTo(tracingPoints[3].x, tracingPoints[3].y);
+      tracingCtx.stroke();
+    }
+
+    tracingPoints.forEach(p => {
+      tracingCtx.beginPath();
+      tracingCtx.fillStyle = '#ef4444'; 
+      tracingCtx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+      tracingCtx.fill();
+      
+      tracingCtx.fillStyle = '#fff';
+      tracingCtx.font = 'bold 16px Arial';
+      tracingCtx.fillText(p.label, p.x + 8, p.y - 8);
+    });
+
+    if (tracingPoints.length === 4) {
+      const angleSNA = calcAngle(tracingPoints[0], tracingPoints[1], tracingPoints[2]);
+      const angleSNB = calcAngle(tracingPoints[0], tracingPoints[1], tracingPoints[3]);
+      const angleANB = Math.abs(angleSNA - angleSNB);
+
+      const out = document.getElementById('aiOutput');
+      out.innerHTML = `
+        <div style="background:var(--card2);padding:15px;border-radius:12px;border-right:4px solid var(--ok);margin-top:15px;">
+          <h3 style="color:var(--ok);margin-bottom:10px;">📐 النتائج المحسوبة (التتبع اليدوي):</h3>
+          <p><b>زاوية SNA:</b> ${angleSNA.toFixed(1)}°</p>
+          <p><b>زاوية SNB:</b> ${angleSNB.toFixed(1)}°</p>
+          <p><b>زاوية ANB:</b> ${angleANB.toFixed(1)}°</p>
+        </div>
+      `;
+    }
+  };
+  imgObj.src = URL.createObjectURL(file);
+}
+
+function calcAngle(p1, p2, p3) {
+  const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+  const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+  const dot = v1.x * v2.x + v1.y * v2.y;
+  const mag1 = Math.sqrt(v1.x*v1.x + v1.y*v1.y);
+  const mag2 = Math.sqrt(v2.x*v2.x + v2.y*v2.y);
+  if(mag1 === 0 || mag2 === 0) return 0;
+  return Math.acos(dot / (mag1 * mag2)) * (180 / Math.PI);
+}
+
+function resetTracing() {
+  tracingPoints = [];
+  const file = document.getElementById('diagXray').files[0];
+  if (!file) return;
+  
+  const imgObj = new Image();
+  imgObj.onload = function() {
+    tracingCtx.clearRect(0, 0, tracingCanvas.width, tracingCanvas.height);
+    tracingCtx.drawImage(imgObj, 0, 0);
+  };
+  imgObj.src = URL.createObjectURL(file);
+  document.getElementById('aiOutput').innerHTML = '';
+}
+
+function saveTracingImage() {
+  if (!tracingCanvas) return;
+  const a = document.createElement('a');
+  a.download = 'tracing_' + Date.now() + '.png';
+  a.href = tracingCanvas.toDataURL('image/png');
+  a.click();
+  toast('✅ تم تحميل الصورة');
 }
 </script>
 </body>
