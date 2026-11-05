@@ -2531,10 +2531,9 @@ async function analyzeXray() {
     return toast('⚠️ الرجاء رفع صورة الأشعة أو الصورة الجانبية أولاً', true);
   }
   
-  // ✅ جلب مفتاح Gemini من ذاكرة المتصفح
   const apiKey = localStorage.getItem('gemini_key');
   if (!apiKey || apiKey.trim() === '') {
-    return toast('⚠️ يرجى لصق مفتاح Gemini في الإعدادات وحفظه أولاً', true);
+    return toast('⚠️ لم يتم العثور على المفتاح. يرجى لصقه في الإعدادات وحفظه.', true);
   }
 
   const btn = event ? event.target : null;
@@ -2561,51 +2560,23 @@ async function analyzeXray() {
       prompt = `أنت طبيب أسنان خبير. حلل صورة الأشعة (${type}) المرفقة. ابحث عن أي علامات تسوس أو مشاكل في العظام وقدم تقريراً بالعربية.`;
     }
 
-    // ✅ النموذج المجاني الذي يعمل حاليًا على Google
-    const modelName = "gemini-3-flash-preview"; 
-    let data = null;
-    let success = false;
-    let attempts = 0;
-    const maxAttempts = 3;
-
-    while (attempts < maxAttempts && !success) {
-      attempts++;
-      try {
-        out.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gold)">⏳ جاري التحليل (محاولة ${attempts})... يرجى الانتظار</div>`;
-        
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64.split(',')[1] } } ] }]
-          })
-        });
-        
-        const result = await res.json();
-        
-        if (result.error) {
-          // إذا كان الخطأ بسبب الازدحام، انتظر ثانيتين وأعد المحاولة
-          if (result.error.message.includes('high demand') || result.error.message.includes('quota')) {
-            if (attempts < maxAttempts) {
-              await new Promise(r => setTimeout(r, 2500));
-              continue; 
-            }
-          }
-          throw new Error(result.error.message);
-        }
-        
-        data = result;
-        success = true;
-        
-      } catch (err) {
-        if (attempts >= maxAttempts || !err.message.includes('high demand')) {
-          throw new Error(err.message);
-        }
-        await new Promise(r => setTimeout(r, 2500));
-      }
-    }
-
-    if (!success) throw new Error('السيرفر مزدحم جداً، يرجى المحاولة بعد قليل.');
+    const modelName = "gemini-3.8-flash"; 
+    
+    // ✅ إرسال المفتاح في الترويسة (Header) ليتوافق مع المفاتيح الجديدة
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey // الطريقة الصحيحة للمفاتيح الجديدة
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64.split(',')[1] } } ] }]
+      })
+    });
+    
+    const data = await res.json();
+    
+    if (data.error) throw new Error(data.error.message);
 
     const reply = data.candidates[0].content.parts[0].text;
 
@@ -2622,6 +2593,8 @@ async function analyzeXray() {
     let errorMsg = e.message;
     if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
       errorMsg = '⚠️ لقد استهلكت الحصة المجانية لهذا النموذج. يرجى إنشاء مشروع جديد في Google AI Studio للحصول على مفتاح جديد، أو المحاولة غداً.';
+    } else if (errorMsg.includes('API key not valid') || errorMsg.includes('invalid authentication')) {
+      errorMsg = '⚠️ المفتاح غير صالح. إذا كان المفتاح من Google Cloud، فقد تحتاج إلى تفعيل (Generative Language API) من لوحة التحكم.';
     }
     out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(errorMsg)}</div>`;
     toast('❌ ' + errorMsg, true);
