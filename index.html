@@ -471,8 +471,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       </div>
     </div>
   </div>
-
-<div class="sec" id="sec-xray">
+ 
+ <div class="sec" id="sec-xray">
   <div class="panel">
     <h2>🩻 الأشعة والتحليل الجانبي</h2>
     <div class="desc">ارفع أشعة سيفالومترية أو صورة جانبية، وسيقوم الذكاء الاصطناعي بتحليل الزوايا والنقاط التشريحية.</div>
@@ -496,20 +496,26 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     
     <div id="xrayResult" style="margin-top:15px"></div>
 
-    <!-- ✍️ أداة تتبع النقاط السيفالومترية (هذا هو الجزء الذي كان ناقصاً) -->
+    <!-- ✍️ أداة تتبع النقاط السيفالومترية -->
     <div style="margin-top:20px; background:var(--card2); padding:15px; border-radius:12px; border:1px solid var(--bd);">
       <h3 style="color:var(--gold); font-size:.9rem; margin-bottom:10px;">✍️ أداة تتبع النقاط السيفالومترية</h3>
       <p style="font-size:.7rem; color:var(--muted); margin-bottom:10px;">
-        بعد رفع الصورة بالأعلى، ستظهر هنا. اضغط على الصورة لوضع النقاط بالترتيب: (Sella) ثم (Nasion) ثم (A-point) ثم (B-point).
+        ارفع الصورة بالأعلى، ثم يمكنك الضغط على الصورة لوضع النقاط يدوياً، أو استخدام زر الرسم التقديري بالذكاء الاصطناعي.
       </p>
       
-<div id="canvasWrapper" style="position:relative; display:block; overflow:auto; max-height:500px; text-align:center; background:#000; border-radius:8px; margin-bottom:10px; border: 1px solid var(--gold);">
-        <canvas id="tracingCanvas" style="max-width:100%; cursor:crosshair;"></canvas>
+      <!-- ✅ المربع الأسود الخاص بالرسم -->
+      <div id="canvasWrapper" style="position:relative; display:block; overflow:auto; max-height:500px; text-align:center; background:#000; border-radius:8px; margin-bottom:10px; border: 1px solid var(--gold); min-height: 300px;">
+        <canvas id="tracingCanvas" style="max-width:100%; cursor:crosshair; display:block;"></canvas>
       </div>
 
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn-outline" onclick="resetTracing()" id="btnResetTracing">🗑️ مسح الرسم</button>
-        <button class="btn-save" onclick="saveTracingImage()" id="btnSaveTracing">💾 حفظ الصورة المرسومة</button>
+      <!-- ✅ الأزرار في مكانها الصحيح داخل الأداة -->
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="btn-save" onclick="runAITracing()" style="width:100%; background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; border:none;">🤖 رسم تقديري بالذكاء الاصطناعي</button>
+        
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-outline" onclick="resetTracing()" id="btnResetTracing" style="flex:1;">🗑️ مسح الرسم</button>
+          <button class="btn-outline" onclick="saveTracingImage()" id="btnSaveTracing" style="flex:1;">💾 حفظ الصورة المرسومة</button>
+        </div>
       </div>
     </div>
     <!-- ✍️ نهاية الأداة -->
@@ -5629,6 +5635,85 @@ function saveTracingImage() {
   a.href = tracingCanvas.toDataURL('image/png');
   a.click();
   toast('✅ تم تحميل الصورة');
+}
+// ═══════════════════════════════════════════════════════════════
+// 🤖 الرسم التقديري بالذكاء الاصطناعي
+// ═══════════════════════════════════════════════════════════════
+async function runAITracing() {
+  const fileInput = document.getElementById('xrayImageInput');
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+    return toast('⚠️ الرجاء رفع الصورة أولاً', true);
+  }
+  
+  const apiKey = localStorage.getItem('gemini_key');
+  if (!apiKey) return toast('⚠️ أضف مفتاح Gemini من الإعدادات أولاً', true);
+
+  toast('⏳ جاري رسم النقاط بالذكاء الاصطناعي... قد يستغرق 10 ثوانٍ');
+
+  try {
+    const file = fileInput.files[0];
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // نطلب من الذكاء الاصطناعي إعطاء الإحداثيات كنسبة مئوية (0-100) من عرض وطول الصورة
+    const prompt = `أنت خبير في تحليل السيفالومتري. حدد الإحداثيات التقريبية لهذه النقاط الأربع: Sella, Nasion, A-point, B-point.
+    أريد الإجابة بتنسيق JSON فقط (بدون أي نصوص إضافية أو علامات markdown).
+    استخدم النسب المئوية من عرض وطول الصورة (من 0 إلى 100).
+    التنسيق المطلوب:
+    [
+      {"label": "S (Sella)", "x": 50, "y": 30},
+      {"label": "N (Nasion)", "x": 60, "y": 25},
+      {"label": "A (A-point)", "x": 65, "y": 50},
+      {"label": "B (B-point)", "x": 60, "y": 70}
+    ]`;
+
+    const modelName = "gemini-3.8-flash"; 
+    
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey 
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64.split(',')[1] } } ] }],
+        generationConfig: { responseMimeType: "application/json" } // إجبار النموذج على إرجاع JSON
+      })
+    });
+    
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const replyText = data.candidates[0].content.parts[0].text;
+    
+    // تنظيف النص من أي علامات markdown قد يضيفها الذكاء الاصطناعي
+    const cleanJson = replyText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const aiPoints = JSON.parse(cleanJson);
+
+    // تحويل النسب المئوية إلى إحداثيات بكسل على الكانفاس
+    tracingCanvas = document.getElementById('tracingCanvas');
+    tracingCtx = tracingCanvas.getContext('2d');
+    tracingPoints = [];
+
+    aiPoints.forEach(p => {
+      tracingPoints.push({
+        x: (p.x / 100) * tracingCanvas.width,
+        y: (p.y / 100) * tracingCanvas.height,
+        label: p.label
+      });
+    });
+
+    drawTracing();
+    toast('✅ تم الرسم التقديري. يمكنك الآن سحب/تعديل النقاط يدوياً إذا لزم الأمر.');
+
+  } catch (e) {
+    console.error(e);
+    toast('❌ فشل الرسم بالذكاء الاصطناعي: ' + e.message, true);
+  }
 }
 </script>
 </body>
