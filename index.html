@@ -2564,7 +2564,7 @@ async function analyzeXray() {
     }
 
     // ✅ استخدام النموذج الأحدث والأكثر استقراراً فقط
-    const modelName = "gemini-2.5-flash"; 
+    const modelName = "gemini-3.8-flash"; 
     
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`, {
       method: 'POST',
