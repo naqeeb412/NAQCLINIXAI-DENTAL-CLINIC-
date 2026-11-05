@@ -174,12 +174,14 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <button class="ni" data-sec="lab"><span class="ic">🧪</span>المعمل</button>
   <button class="ni" data-sec="inventory"><span class="ic">📦</span>مخزون العيادة</button>
   <div class="ns">التحليل والتصميم AI</div>
-  <button class="ni" data-sec="aiDiagnosis"><span class="ic">🧠</span>التشخيص الذكي</button>
-  <button class="ni" data-sec="faceHarmony"><span class="ic">🧑‍⚕️</span>تحليل الوجه</button>
-  <button class="ni" data-sec="dsdStudio"><span class="ic">🎨</span>محرر التصميم</button>
-  <button class="ni" data-sec="xray"><span class="ic">🩻</span>الأشعة</button>
-  <button class="ni" data-sec="beforeAfter"><span class="ic">⚖️</span>قبل وبعد</button>
-  <button class="ni" data-sec="cadcam"><span class="ic">⚙️</span>CAD/CAM 3D</button>
+<button class="ni" data-sec="aiDiagnosis"><span class="ic">🧠</span>التشخيص الذكي</button>
+<button class="ni" data-sec="faceHarmony"><span class="ic">🧑‍⚕️</span>تحليل الوجه</button>
+<button class="ni" data-sec="dsdStudio"><span class="ic">🎨</span>محرر التصميم</button>
+<button class="ni" data-sec="dentalAesthetics"><span class="ic">📐</span>تحليل تناسب الأسنان</button>
+<button class="ni" data-sec="harmonyAnalysis"><span class="ic">🌟</span>التناغم الشامل</button>
+<button class="ni" data-sec="xray"><span class="ic">🩻</span>الأشعة</button>
+<button class="ni" data-sec="beforeAfter"><span class="ic">⚖️</span>قبل وبعد</button>
+<button class="ni" data-sec="cadcam"><span class="ic">⚙️</span>CAD/CAM 3D</button>
   <div class="ns">العلاج والمعرفة</div>
   <button class="ni" data-sec="treatmentPlan"><span class="ic">📋</span>خطة العلاج</button>
   <button class="ni" data-sec="materialsGuide"><span class="ic">📖</span>دليل المواد</button>
@@ -383,11 +385,14 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
 
     <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap">
-      <button class="btn-save" onclick="runAIDiagnosis()">🧠 توليد التشخيص</button>
-      <button class="btn-outline" onclick="clearDiagImages()">🗑️ مسح</button>
-      <button class="btn-outline" onclick="saveDiagToPatient()">💾 حفظ</button>
-    </div>
-
+  <button class="btn-save" onclick="runAIDiagnosis()">🧠 توليد التشخيص</button>
+  <button class="btn-save" onclick="runDentalAI()" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;">🦷 تحليل الأسنان واللثة</button>
+  <button class="btn-save" onclick="runOcclusionAI()" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;">📐 تحليل الأطباق</button>
+  <button class="btn-outline" onclick="clearDiagImages()">🗑️ مسح</button>
+  <button class="btn-outline" onclick="saveDiagToPatient()">💾 حفظ</button>
+</div>
+     
+     
     <!-- ✍️ أداة تتبع النقاط السيفالومترية -->
     <div style="margin-top:15px; background:var(--card2); padding:15px; border-radius:12px; border:1px solid var(--bd);">
       <h3 style="color:var(--gold); font-size:.9rem; margin-bottom:10px;">✍️ أداة تتبع النقاط السيفالومترية</h3>
@@ -419,6 +424,69 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <button class="btn-outline" onclick="saveFaceAnalysisToPatient()">💾 حفظ في ملف المريض</button>
     </div>
     <div id="faceResults"></div>
+  </div>
+</div>
+
+<div class="sec" id="sec-dentalAesthetics">
+  <div class="panel">
+    <h2>📐 تحليل تناسب الأسنان واللثة (Digital Smile Analysis)</h2>
+    <div class="desc">ارفع صورة الابتسامة، ثم استخدم الأدوات لرسم الخطوط التشريحية وقياس النسب.</div>
+    
+    <div class="f">
+      <label>📸 رفع صورة الابتسامة</label>
+      <input type="file" id="aestheticImageInput" accept="image/*" style="padding:10px; border-radius:10px; border:1px solid var(--bd); background:var(--card2); color:var(--txt); width:100%;">
+    </div>
+
+    <!-- شريط الأدوات -->
+    <div style="background:var(--card2); padding:10px; border-radius:10px; border:1px solid var(--bd); margin-bottom:10px;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+        <button class="btn-outline" onclick="setAestheticTool('midline')" style="font-size:11px; border-color:var(--ok); color:var(--ok);">➕ منتصف الوجه</button>
+        <button class="btn-outline" onclick="setAestheticTool('teethWidth')" style="font-size:11px; border-color:#3b82f6; color:#3b82f6;">📏 عرض الأسنان</button>
+        <button class="btn-outline" onclick="setAestheticTool('gumLine')" style="font-size:11px; border-color:var(--warn); color:var(--warn);">🩸 خط اللثة</button>
+        <button class="btn-outline" onclick="setAestheticTool('smileArc')" style="font-size:11px; border-color:#8b5cf6; color:#8b5cf6;">😁 خط الابتسامة</button>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn-danger" onclick="clearAesthetic()" style="font-size:11px;">🗑️ مسح الكل</button>
+        <button class="btn-save" onclick="saveAestheticImage()" style="font-size:11px;">💾 حفظ الصورة</button>
+      </div>
+    </div>
+
+    <!-- منطقة الرسم (المربع الأسود) -->
+    <div id="aestheticCanvasWrapper" style="position:relative; display:block; overflow:auto; max-height:500px; text-align:center; background:#000; border-radius:8px; margin-bottom:10px; border: 1px solid var(--gold); min-height: 300px;">
+      <canvas id="aestheticCanvas" style="max-width:100%; cursor:crosshair; display:block;"></canvas>
+    </div>
+    
+    <!-- نتائج القياسات -->
+    <div id="aestheticResults" style="background:var(--card2); padding:15px; border-radius:12px; border:1px solid var(--bd); display:none;">
+      <h3 style="color:var(--gold); font-size:.9rem; margin-bottom:10px;">📊 القياسات والنسب</h3>
+      <div id="aestheticData" style="font-size:0.85rem; line-height:1.8;"></div>
+    </div>
+
+
+  </div>
+</div>
+
+<div class="sec" id="sec-harmonyAnalysis">
+  <div class="panel">
+    <h2>🌟 التحليل الشامل — تناغم الأسنان مع الوجه</h2>
+    <div class="desc">ارفع صورة الوجه الأمامي + صورة الابتسامة. سيحلل الذكاء الاصطناعي التناغم بين الأسنان وملامح الوجه ويقترح خطة تجميل شاملة.</div>
+    
+    <div class="g2" style="gap:10px; margin-bottom:15px;">
+      <div class="f">
+        <label>📸 صورة الوجه الأمامي</label>
+        <input type="file" id="harmonyFaceInput" accept="image/*" style="padding:10px; border-radius:10px; border:1px solid var(--bd); background:var(--card2); color:var(--txt); width:100%;">
+      </div>
+      <div class="f">
+        <label>😁 صورة الابتسامة</label>
+        <input type="file" id="harmonySmileInput" accept="image/*" style="padding:10px; border-radius:10px; border:1px solid var(--bd); background:var(--card2); color:var(--txt); width:100%;">
+      </div>
+    </div>
+    
+    <button class="btn-save" onclick="runHarmonyAnalysis()" style="width:100%; background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; padding:14px;">
+      🌟 تحليل التناغم الشامل بالذكاء الاصطناعي
+    </button>
+    
+    <div id="harmonyResult" style="margin-top:20px;"></div>
   </div>
 </div>
 
@@ -534,7 +602,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px">
         <button class="btn-save" onclick="generateAfterWithAI()">🤖 توليد "بعد" بالذكاء الاصطناعي</button>
         <button class="btn-outline" onclick="openPhotopeaEditor()">🎨 فتح محرر Photopea</button>
-        <button class="btn-outline" onclick="downloadAfterImage()">📥 تحميل الصورة</button>
+      
+<div id="afterStatusMsg" style="text-align:center;padding:10px;font-size:0.85rem;font-weight:600;color:var(--gold);min-height:30px;"></div>  <button class="btn-outline" onclick="downloadAfterImage()">📥 تحميل الصورة</button>
       </div>
       <div class="ba-slider" id="baSlider" style="display:none;margin-top:20px">
         <img id="imgBefore" src="">
@@ -2534,9 +2603,21 @@ function drawSmileArcPreset() {
   pushHistory(); toast('😁');
 }
 async function saveDrawingToPatient() {
+  if (!editorCanvas) return toast('⚠️ ارفع صورة وارسم أولاً', true);
+  
   const pid = document.getElementById('dsdPatient').value;
-  if (!pid) return toast('⚠️ اختر المريض', true);
-  if (!editorCanvas) return toast('⚠️ ارفع صورة', true);
+  
+  // ✅ إذا لم يتم اختيار مريض، قم بتنزيل الصورة مباشرة لهاتفك
+  if (!pid) {
+    const a = document.createElement('a'); 
+    a.download = 'smile_design_' + Date.now() + '.jpg';
+    a.href = editorCanvas.toDataURL('image/jpeg', 0.9); 
+    a.click(); 
+    toast('✅ تم تحميل التصميم (بدون حفظ في ملف مريض)');
+    return;
+  }
+
+  // ✅ إذا تم اختيار مريض، احفظها في ملفه (الكود القديم)
   toast('⏳...');
   try {
     const dataUrl = editorCanvas.toDataURL('image/jpeg', 0.85);
@@ -2546,7 +2627,7 @@ async function saveDrawingToPatient() {
     const url = (await res.text()).trim();
     if (!url.startsWith('https://')) throw new Error('فشل الرفع');
     await db.collection('patients').doc(pid).collection('photos').add({ url, type: 'smile_design', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    toast('✅');
+    toast('✅ تم الحفظ في ملف المريض');
   } catch (e) { toast('❌ ' + e.message, true); }
 }
 function downloadDrawing() {
@@ -2591,6 +2672,10 @@ async function analyzeXray() {
 
   out.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gold)">⏳ جاري الاتصال بالذكاء الاصطناعي...</div>';
 
+  // ✅ إعداد مهلة زمنية (15 ثانية) لمنع التعليق
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
     const file = fileInput.files[0];
     const base64 = await new Promise((resolve, reject) => {
@@ -2604,7 +2689,6 @@ async function analyzeXray() {
 
     const modelName = "gemini-3.8-flash"; 
     
-    // ✅ إرسال المفتاح في الترويسة (Header) كما علمتك سابقاً
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
       method: 'POST',
       headers: { 
@@ -2613,9 +2697,11 @@ async function analyzeXray() {
       },
       body: JSON.stringify({
         contents: [{ parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64.split(',')[1] } } ] }]
-      })
+      }),
+      signal: controller.signal // ✅ ربط المهلة الزمنية بالطلب
     });
     
+    clearTimeout(timeoutId); // إلغاء المهلة إذا نجح الطلب
     const data = await res.json();
     
     if (data.error) throw new Error(data.error.message);
@@ -2631,12 +2717,13 @@ async function analyzeXray() {
     toast('✅ تم التحليل بنجاح');
 
   } catch(e) {
+    clearTimeout(timeoutId);
     console.error(e);
     let errorMsg = e.message;
-    if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
-      errorMsg = '⚠️ لقد استهلكت الحصة المجانية. يرجى المحاولة غداً.';
-    } else if (errorMsg.includes('high demand')) {
-      errorMsg = '⏳ السيرفر مزدحم حالياً، يرجى المحاولة بعد دقيقة.';
+    if (errorMsg === 'The user aborted a request.') {
+      errorMsg = '⏳ السيرفر مزدحم جداً ولم يستجب. يرجى استخدام أداة الرسم اليدوي في الأسفل، أو المحاولة بعد دقيقة.';
+    } else if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
+      errorMsg = '⚠️ لقد استهلكت الحصة المجانية لهذا النموذج. يرجى المحاولة غداً.';
     }
     out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(errorMsg)}</div>`;
     toast('❌ ' + errorMsg, true);
@@ -4240,50 +4327,164 @@ function loadFaceImage(e){
   };
   r.readAsDataURL(e.target.files[0]);
 }
+// ═══════════════════════════════════════════════════════════════
+// 🎨 توليد "بعد" بالذكاء الاصطناعي (Gemini ← ثم Replicate)
+// ═══════════════════════════════════════════════════════════════
+
+async function tryGeminiImage(beforeImageBase64, desc, apiKey) {
+  const modelName = "gemini-2.5-flash-image";
+  const prompt = `Professional dental photography. Patient smile after treatment: ${desc}. 
+  Keep the original face and features 100% intact. Only enhance the teeth aesthetics.
+  Photorealistic, natural white teeth, high quality, 8k, realistic smile.`;
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey 
+    },
+    body: JSON.stringify({
+      contents: [{ 
+        parts: [
+          { text: prompt },
+          { inlineData: { mimeType: 'image/jpeg', data: beforeImageBase64.split(',')[1] } }
+        ] 
+      }],
+      generationConfig: { responseModalities: ["IMAGE", "TEXT"] }
+    })
+  });
+  
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  
+  const parts = data.candidates[0]?.content?.parts || [];
+  for (const part of parts) {
+    if (part.inlineData) {
+      return 'data:image/png;base64,' + part.inlineData.data;
+    }
+  }
+  throw new Error('لم يتم استلام صورة من Gemini');
+}
+
+async function tryReplicateImage(beforeImageBase64, desc, replicateKey) {
+  const response = await fetch("https://api.replicate.com/v1/predictions", {
+    method: "POST",
+    headers: { 
+      "Authorization": `Token ${replicateKey}`, 
+      "Content-Type": "application/json" 
+    },
+    body: JSON.stringify({
+      version: "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
+      input: {
+        image: beforeImageBase64,
+        prompt: `professional dental photography, beautiful natural smile, ${desc}, realistic, high quality, 8k, photorealistic`,
+        negative_prompt: "cartoon, drawing, ugly, distorted, extra teeth, deformed, cgi",
+        prompt_strength: 0.5,
+        num_inference_steps: 30
+      }
+    })
+  });
+  
+  const pred = await response.json();
+  if (pred.error) throw new Error(pred.error);
+
+  let attempts = 0;
+  while (attempts < 60) {
+    await new Promise(r => setTimeout(r, 2000));
+    const check = await fetch(pred.urls.get, { headers: { "Authorization": `Token ${replicateKey}` } });
+    const status = await check.json();
+    
+    if (status.status === 'succeeded') return status.output[0];
+    if (status.status === 'failed') throw new Error('فشل التوليد في Replicate');
+    attempts++;
+  }
+  throw new Error('انتهت المهلة (Replicate)');
+}
+
 async function generateAfterWithAI() {
-  if(!baImageBase64) return toast('⚠️ ارفع صورة المريض أولاً', true);
-  const desc = document.getElementById('baTreatmentDesc').value.trim();
-  if(!desc) return toast('⚠️ اكتب وصف العلاج أولاً', true);
-  if(!replicateKey) return toast('⚠️ أضف مفتاح Replicate من الإعدادات', true);
   const out = document.getElementById('imgAfter');
+  
+  if (!baImageBase64) return toast('⚠️ ارفع صورة المريض أولاً', true);
+  
+  const desc = document.getElementById('baTreatmentDesc').value.trim();
+  if (!desc) return toast('⚠️ اكتب وصف العلاج أولاً', true);
+
+  const geminiKey = localStorage.getItem('gemini_key');
+  const rKey = localStorage.getItem('replicate_key') || (typeof replicateKey !== 'undefined' ? replicateKey : '');
+
+  if (!geminiKey && !rKey) {
+    return toast('⚠️ أضف مفتاح Gemini أو Replicate من الإعدادات أولاً', true);
+  }
+
+  // عرض حالة التحميل
   out.style.filter = 'blur(5px)';
-  toast('⏳ جاري التوليد (قد يستغرق دقيقة)...');
-  try {
-    const response = await fetch("https://api.replicate.com/v1/predictions", {
-      method: "POST",
-      headers: { "Authorization": `Token ${replicateKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        version: "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
-        input: {
-          image: baImageBase64,
-          prompt: `professional dental photography, beautiful natural smile, ${desc}, realistic, high quality, 8k`,
-          prompt_strength: 0.6
-        }
-      })
-    });
-    const pred = await response.json();
-    if(pred.error) throw new Error(pred.error);
-    let resultUrl = null, attempts = 0;
-    while(attempts < 60) {
-      await new Promise(r => setTimeout(r, 2000));
-      const check = await fetch(pred.urls.get, { headers: { "Authorization": `Token ${replicateKey}` } });
-      const status = await check.json();
-      if(status.status === 'succeeded') { resultUrl = status.output[0]; break; }
-      if(status.status === 'failed') throw new Error('فشل التوليد');
-      attempts++;
+  out.style.opacity = '0.5';
+  
+  const statusMsg = document.getElementById('afterStatusMsg');
+
+  let resultImage = null;
+  let usedMethod = '';
+  let geminiError = '';
+  let replicateError = '';
+
+  // 1️⃣ محاولة Gemini أولاً
+  if (geminiKey) {
+    try {
+      statusMsg.textContent = '🎨 محاولة 1/2: توليد بواسطة Gemini AI...';
+      resultImage = await tryGeminiImage(baImageBase64, desc, geminiKey);
+      usedMethod = 'Gemini AI (مجاني)';
+    } catch (e) {
+      geminiError = e.message;
+      console.warn('Gemini فشل:', e.message);
     }
-    if(resultUrl) {
-      out.src = resultUrl;
-      out.style.filter = 'none';
-      toast('✅ تم التوليد بنجاح');
-    } else {
-      throw new Error('انتهت المهلة');
+  }
+
+  // 2️⃣ إذا فشل Gemini (أو لم يوجد)، جرب Replicate
+  if (!resultImage && rKey) {
+    try {
+      statusMsg.textContent = '🎨 محاولة 2/2: توليد بواسطة Replicate... (قد يستغرق دقيقة)';
+      resultImage = await tryReplicateImage(baImageBase64, desc, rKey);
+      usedMethod = 'Replicate';
+    } catch (e) {
+      replicateError = e.message;
+      console.error('Replicate فشل:', e.message);
     }
-  } catch(e) {
-    out.style.filter = 'none';
-    toast('❌ ' + e.message, true);
+  }
+
+  // إزالة تأثير التحميل
+  out.style.filter = 'none';
+  out.style.opacity = '1';
+
+  // عرض النتيجة أو الخطأ
+  if (resultImage) {
+    out.src = resultImage;
+    statusMsg.innerHTML = `<span style="color:var(--ok)">✅ تم التوليد بنجاح عبر <b>${usedMethod}</b></span>`;
+    toast('✅ تم التوليد عبر ' + usedMethod);
+    
+    // إظهار شريط المقارنة
+    const slider = document.getElementById('baSlider');
+    if (slider) slider.style.display = 'block';
+    
+  } else {
+    // كلتا الطريقتين فشلتا
+    let errorDetails = '';
+    if (geminiError) errorDetails += `<div style="font-size:0.75rem;color:var(--muted);margin-top:5px;">Gemini: ${esc(geminiError.substring(0, 100))}...</div>`;
+    if (replicateError) errorDetails += `<div style="font-size:0.75rem;color:var(--muted);margin-top:5px;">Replicate: ${esc(replicateError.substring(0, 100))}...</div>`;
+    
+    statusMsg.innerHTML = `
+      <div style="background:rgba(239,68,68,.1);padding:12px;border-radius:10px;border-right:3px solid var(--err);text-align:right;">
+        <b style="color:var(--err)">❌ فشل التوليد</b>
+        ${errorDetails}
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:8px;">
+          💡 <b>الحل:</b> إذا كان Gemini لا يدعم الصور في نسختك المجانية، أضف مفتاح Replicate. 
+          وإذا كان Replicate ينتهي، اشحن رصيداً بسيطاً من <a href="https://replicate.com/account/billing" target="_blank" style="color:var(--gold)">replicate.com/account/billing</a>.
+        </div>
+      </div>
+    `;
+    toast('❌ فشل التوليد بكل الطرق', true);
   }
 }
+
 function openPhotopeaEditor() {
   if(!baImageBase64) return toast('⚠️ ارفع صورة المريض أولاً', true);
   const frame = document.getElementById('photopeaFrame');
@@ -4291,10 +4492,12 @@ function openPhotopeaEditor() {
   frame.src = "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
   document.getElementById('photopeaModal').classList.add('show');
 }
+
 function closePhotopea() {
   document.getElementById('photopeaModal').classList.remove('show');
   document.getElementById('photopeaFrame').src = '';
 }
+
 function downloadAfterImage() {
   const src = document.getElementById('imgAfter').src;
   if(!src || src === window.location.href) return toast('⚠️ لا توجد صورة بعد', true);
@@ -4302,8 +4505,8 @@ function downloadAfterImage() {
   a.href = src;
   a.download = 'after_treatment_' + Date.now() + '.jpg';
   a.click();
+  toast('📥 تم تحميل الصورة');
 }
-
 // ═══════════════════════════════════════════════════════════════
 // 34. Interdisciplinary (Consultations)
 // ═══════════════════════════════════════════════════════════════
@@ -5636,6 +5839,7 @@ function saveTracingImage() {
   a.click();
   toast('✅ تم تحميل الصورة');
 }
+
 // ═══════════════════════════════════════════════════════════════
 // 🤖 الرسم التقديري بالذكاء الاصطناعي
 // ═══════════════════════════════════════════════════════════════
@@ -5648,6 +5852,12 @@ async function runAITracing() {
   const apiKey = localStorage.getItem('gemini_key');
   if (!apiKey) return toast('⚠️ أضف مفتاح Gemini من الإعدادات أولاً', true);
 
+  // ✅ حماية إضافية: التأكد من أن الصورة قد ظهرت على الشاشة
+  const canvasCheck = document.getElementById('tracingCanvas');
+  if (!canvasCheck || canvasCheck.width === 0) {
+    return toast('⚠️ الرجاء الانتظار حتى تظهر الصورة على الشاشة قبل الضغط', true);
+  }
+
   toast('⏳ جاري رسم النقاط بالذكاء الاصطناعي... قد يستغرق 10 ثوانٍ');
 
   try {
@@ -5659,7 +5869,6 @@ async function runAITracing() {
       reader.readAsDataURL(file);
     });
 
-    // نطلب من الذكاء الاصطناعي إعطاء الإحداثيات كنسبة مئوية (0-100) من عرض وطول الصورة
     const prompt = `أنت خبير في تحليل السيفالومتري. حدد الإحداثيات التقريبية لهذه النقاط الأربع: Sella, Nasion, A-point, B-point.
     أريد الإجابة بتنسيق JSON فقط (بدون أي نصوص إضافية أو علامات markdown).
     استخدم النسب المئوية من عرض وطول الصورة (من 0 إلى 100).
@@ -5681,7 +5890,7 @@ async function runAITracing() {
       },
       body: JSON.stringify({
         contents: [{ parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64.split(',')[1] } } ] }],
-        generationConfig: { responseMimeType: "application/json" } // إجبار النموذج على إرجاع JSON
+        generationConfig: { responseMimeType: "application/json" }
       })
     });
     
@@ -5689,12 +5898,9 @@ async function runAITracing() {
     if (data.error) throw new Error(data.error.message);
 
     const replyText = data.candidates[0].content.parts[0].text;
-    
-    // تنظيف النص من أي علامات markdown قد يضيفها الذكاء الاصطناعي
     const cleanJson = replyText.replace(/```json/g, '').replace(/```/g, '').trim();
     const aiPoints = JSON.parse(cleanJson);
 
-    // تحويل النسب المئوية إلى إحداثيات بكسل على الكانفاس
     tracingCanvas = document.getElementById('tracingCanvas');
     tracingCtx = tracingCanvas.getContext('2d');
     tracingPoints = [];
@@ -5714,6 +5920,466 @@ async function runAITracing() {
     console.error(e);
     toast('❌ فشل الرسم بالذكاء الاصطناعي: ' + e.message, true);
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 🦷 تحليل الأسنان واللثة بالذكاء الاصطناعي
+// ═══════════════════════════════════════════════════════════════
+async function runDentalAI() {
+  const out = document.getElementById('aiOutput');
+  const teethImg = diagImages['teethFront'];
+  const smileImg = diagImages['smile'];
+
+  if ((!teethImg || teethImg.length < 100) && (!smileImg || smileImg.length < 100)) {
+    return toast('⚠️ الرجاء رفع صورة للأسنان أو الابتسامة أولاً', true);
+  }
+
+  const apiKey = localStorage.getItem('gemini_key');
+  if (!apiKey) return toast('⚠️ أضف مفتاح Gemini من الإعدادات أولاً', true);
+
+  out.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gold)">⏳ جاري تحليل الأسنان واللثة بالذكاء الاصطناعي...</div>';
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const parts = [
+      { text: `أنت طبيب أسنان خبير. قم بتحليل صور الفم المرفقة بدقة.
+      1. ابحث عن علامات تسوس ظاهر (Caries) أو تغير في لون الأسنان.
+      2. ابحث عن علامات التهاب في اللثة (Gingivitis) أو نزيف.
+      3. ابحث عن ترسبات جيرية (Calculus).
+      4. أعطني تقريراً باللغة العربية يحدد المشكلة التقريبية وتوصيات العلاج.` }
+    ];
+
+    if (teethImg && teethImg.length > 100) {
+      const [mime1, data1] = teethImg.split(',');
+      parts.push({ text: '📸 صورة الأسنان:' });
+      parts.push({ inlineData: { mimeType: mime1.split(':')[1].split(';')[0], data: data1 } });
+    }
+    
+    if (smileImg && smileImg.length > 100) {
+      const [mime2, data2] = smileImg.split(',');
+      parts.push({ text: '📸 صورة الابتسامة:' });
+      parts.push({ inlineData: { mimeType: mime2.split(':')[1].split(';')[0], data: data2 } });
+    }
+
+    const modelName = "gemini-3.8-flash"; 
+    
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey 
+      },
+      body: JSON.stringify({ contents: [{ parts }] }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    const data = await res.json();
+    
+    if (data.error) throw new Error(data.error.message);
+
+    const reply = data.candidates[0].content.parts[0].text;
+
+    out.innerHTML = `
+      <div style="background:var(--card2);padding:18px;border-radius:12px;border-right:4px solid var(--ok);line-height:1.9">
+        <h3 style="color:var(--ok);margin-bottom:12px">🦷 تقرير تحليل الأسنان واللثة:</h3>
+        <div style="white-space:pre-wrap;font-size:0.9rem">${esc(reply)}</div>
+      </div>
+    `;
+    toast('✅ تم التحليل بنجاح');
+
+  } catch(e) {
+    clearTimeout(timeoutId);
+    console.error(e);
+    let errorMsg = e.message;
+    
+    if (errorMsg === 'The user aborted a request.') {
+      errorMsg = '⏳ السيرفر مزدحم جداً ولم يستجب. يرجى المحاولة بعد دقيقة.';
+    } else if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
+      errorMsg = '⚠️ لقد استهلكت الحصة المجانية لهذا اليوم. يرجى المحاولة غداً.';
+    }
+    
+    out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(errorMsg)}</div>`;
+    toast('❌ ' + errorMsg, true);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 📐 تحليل الأطباق وعلاقة الفكين (Occlusion Analysis)
+// ═══════════════════════════════════════════════════════════════
+async function runOcclusionAI() {
+  const out = document.getElementById('aiOutput');
+  const frontalImg = diagImages['frontal'];
+  const lateralImg = diagImages['lateral'];
+  const teethImg = diagImages['teethFront'];
+
+  if ((!frontalImg || frontalImg.length < 100) && 
+      (!lateralImg || lateralImg.length < 100) && 
+      (!teethImg || teethImg.length < 100)) {
+    return toast('⚠️ الرجاء رفع صورة للوجه (أمامي/جانبي) أو صورة الأسنان أولاً', true);
+  }
+
+  const apiKey = localStorage.getItem('gemini_key');
+  if (!apiKey) return toast('⚠️ أضف مفتاح Gemini من الإعدادات أولاً', true);
+
+  out.innerHTML = '<div style="text-align:center;padding:20px;color:#3b82f6">⏳ جاري تحليل الأطباق وعلاقة الفكين...</div>';
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const parts = [
+      { text: `أنت أخصائي تقويم أسنان خبير. قم بتحليل الصور المرفقة لتقييم الأطباق وعلاقة الفكين:
+      
+      1. **تصنيف أنجل (Angle's Classification):** هل العلاقة Class I (طبيعية)، Class II (فك علوي بارز)، أم Class III (فك سفلي بارز)؟
+      2. **البروز (Overjet / Overbite):** هل هناك بروز أفقي أو رأسي (عضة عميقة)؟
+      3. **انحراف المنتصف (Midline Deviation):** هل يوجد انحراف في خط منتصف الأسنان بين الفكين العلوي والسفلي؟
+      4. **التزاحم أو الفراغات (Crowding / Spacing):** هل الأسنان مزدحمة أم يوجد فراغات؟
+      5. **العضة المتصالبة (Crossbite):** هل توجد أسنان علوية مغلقة من الداخل (Posterior Crossbite)؟
+      
+      اكتب تقريراً طبياً واضحاً باللغة العربية.` }
+    ];
+
+    if (frontalImg && frontalImg.length > 100) {
+      const [mime1, data1] = frontalImg.split(',');
+      parts.push({ text: '📸 صورة الوجه الأمامي:' });
+      parts.push({ inlineData: { mimeType: mime1.split(':')[1].split(';')[0], data: data1 } });
+    }
+    
+    if (lateralImg && lateralImg.length > 100) {
+      const [mime2, data2] = lateralImg.split(',');
+      parts.push({ text: '📸 صورة الوجه الجانبي:' });
+      parts.push({ inlineData: { mimeType: mime2.split(':')[1].split(';')[0], data: data2 } });
+    }
+
+    if (teethImg && teethImg.length > 100) {
+      const [mime3, data3] = teethImg.split(',');
+      parts.push({ text: '📸 صورة إطباق الأسنان:' });
+      parts.push({ inlineData: { mimeType: mime3.split(':')[1].split(';')[0], data: data3 } });
+    }
+
+    const modelName = "gemini-3.8-flash"; 
+    
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey 
+      },
+      body: JSON.stringify({ contents: [{ parts }] }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    const data = await res.json();
+    
+    if (data.error) throw new Error(data.error.message);
+
+    const reply = data.candidates[0].content.parts[0].text;
+
+    out.innerHTML = `
+      <div style="background:var(--card2);padding:18px;border-radius:12px;border-right:4px solid #3b82f6;line-height:1.9">
+        <h3 style="color:#3b82f6;margin-bottom:12px">📐 تقرير تحليل الأطباق وعلاقة الفكين:</h3>
+        <div style="white-space:pre-wrap;font-size:0.9rem">${esc(reply)}</div>
+      </div>
+    `;
+    toast('✅ تم تحليل الأطباق بنجاح');
+
+  } catch(e) {
+    clearTimeout(timeoutId);
+    console.error(e);
+    let errorMsg = e.message;
+    
+    if (errorMsg === 'The user aborted a request.') {
+      errorMsg = '⏳ السيرفر مزدحم جداً ولم يستجب. يرجى المحاولة بعد دقيقة.';
+    } else if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
+      errorMsg = '⚠️ لقد استهلكت الحصة المجانية لهذا اليوم. يرجى المحاولة غداً.';
+    }
+    
+    out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(errorMsg)}</div>`;
+    toast('❌ ' + errorMsg, true);
+  }
+}
+
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// 📐 أداة تحليل تناسب الأسنان (في وسم منفصل لحماية النظام)
+// ═══════════════════════════════════════════════════════════════
+let aestheticCanvas, aestheticCtx;
+let aestheticImg = null;
+let aestheticTool = 'midline';
+let aestheticLines = [];
+let isDrawingAesthetic = false;
+let startX = 0, startY = 0, currentX = 0, currentY = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+  const imgInput = document.getElementById('aestheticImageInput');
+  aestheticCanvas = document.getElementById('aestheticCanvas');
+  
+  if (aestheticCanvas) {
+    aestheticCtx = aestheticCanvas.getContext('2d');
+    
+    if (imgInput) {
+      imgInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          const img = new Image();
+          img.onload = function() {
+            aestheticImg = img;
+            // ✅ تصغير الصورة لتتناسب مع عرض الشاشة (بحد أقصى 900 بكسل)
+const maxWidth = 900;
+const scale = Math.min(1, maxWidth / img.width);
+
+aestheticCanvas.width = img.width * scale;
+aestheticCanvas.height = img.height * scale;
+            aestheticCtx.drawImage(img, 0, 0);
+            aestheticLines = [];
+            document.getElementById('aestheticResults').style.display = 'none';
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    aestheticCanvas.addEventListener('mousedown', function(e) {
+        if (!aestheticImg) return;
+        isDrawingAesthetic = true;
+        const pos = getCanvasPosAesthetic(e);
+        startX = pos.x; startY = pos.y; currentX = pos.x; currentY = pos.y;
+    });
+    
+    aestheticCanvas.addEventListener('mousemove', function(e) {
+        if (!isDrawingAesthetic) return;
+        const pos = getCanvasPosAesthetic(e);
+        currentX = pos.x; currentY = pos.y;
+        redrawAestheticCanvas();
+        
+        aestheticCtx.beginPath();
+        aestheticCtx.strokeStyle = getToolColor();
+        aestheticCtx.lineWidth = getToolWidth();
+        aestheticCtx.setLineDash(getToolDash());
+        aestheticCtx.moveTo(startX, startY);
+        aestheticCtx.lineTo(currentX, currentY);
+        aestheticCtx.stroke();
+    });
+    
+    aestheticCanvas.addEventListener('mouseup', function() {
+        if (!isDrawingAesthetic) return;
+        isDrawingAesthetic = false;
+        aestheticLines.push({ x1: startX, y1: startY, x2: currentX, y2: currentY, tool: aestheticTool });
+        redrawAestheticCanvas();
+        calculateAestheticMetrics();
+    });
+    
+    aestheticCanvas.addEventListener('touchstart', function(e) {
+        if (!aestheticImg) return;
+        e.preventDefault();
+        isDrawingAesthetic = true;
+        const touch = e.touches[0];
+        const pos = getCanvasPosAesthetic({ clientX: touch.clientX, clientY: touch.clientY });
+        startX = pos.x; startY = pos.y; currentX = pos.x; currentY = pos.y;
+    }, {passive: false});
+    
+    aestheticCanvas.addEventListener('touchmove', function(e) {
+        if (!isDrawingAesthetic) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const pos = getCanvasPosAesthetic({ clientX: touch.clientX, clientY: touch.clientY });
+        currentX = pos.x; currentY = pos.y;
+        redrawAestheticCanvas();
+        
+        aestheticCtx.beginPath();
+        aestheticCtx.strokeStyle = getToolColor();
+        aestheticCtx.lineWidth = getToolWidth();
+        aestheticCtx.setLineDash(getToolDash());
+        aestheticCtx.moveTo(startX, startY);
+        aestheticCtx.lineTo(currentX, currentY);
+        aestheticCtx.stroke();
+    }, {passive: false});
+    
+    aestheticCanvas.addEventListener('touchend', function() {
+        if (!isDrawingAesthetic) return;
+        isDrawingAesthetic = false;
+        aestheticLines.push({ x1: startX, y1: startY, x2: currentX, y2: currentY, tool: aestheticTool });
+        redrawAestheticCanvas();
+        calculateAestheticMetrics();
+    });
+  }
+});
+
+function setAestheticTool(tool) { aestheticTool = tool; toast('✅ تم اختيار الأداة'); }
+function getCanvasPosAesthetic(e) {
+  const rect = aestheticCanvas.getBoundingClientRect();
+  return { x: (e.clientX - rect.left) * (aestheticCanvas.width / rect.width), y: (e.clientY - rect.top) * (aestheticCanvas.height / rect.height) };
+}
+function getToolColor() {
+  if (aestheticTool === 'midline') return '#10b981';
+  if (aestheticTool === 'teethWidth') return '#3b82f6';
+  if (aestheticTool === 'gumLine') return '#f59e0b';
+  if (aestheticTool === 'smileArc') return '#8b5cf6';
+  return '#ef4444';
+}
+function getToolDash() {
+  if (aestheticTool === 'midline') return [10, 5];
+  if (aestheticTool === 'smileArc') return [8, 4];
+  return [];
+}
+function getToolWidth() { return aestheticTool === 'teethWidth' || aestheticTool === 'smileArc' ? 3 : 2; }
+
+function redrawAestheticCanvas() {
+  if (!aestheticImg || !aestheticCtx) return;
+  aestheticCtx.clearRect(0, 0, aestheticCanvas.width, aestheticCanvas.height);
+  aestheticCtx.drawImage(aestheticImg, 0, 0);
+  
+  aestheticLines.forEach(line => {
+    aestheticCtx.beginPath();
+    aestheticCtx.strokeStyle = getToolColorForLine(line.tool);
+    aestheticCtx.lineWidth = line.tool === 'teethWidth' || line.tool === 'smileArc' ? 3 : 2;
+    aestheticCtx.setLineDash(line.tool === 'midline' ? [10, 5] : line.tool === 'smileArc' ? [8, 4] : []);
+    aestheticCtx.moveTo(line.x1, line.y1);
+    aestheticCtx.lineTo(line.x2, line.y2);
+    aestheticCtx.stroke();
+  });
+  aestheticCtx.setLineDash([]);
+}
+function getToolColorForLine(tool) {
+  if (tool === 'midline') return '#10b981';
+  if (tool === 'teethWidth') return '#3b82f6';
+  if (tool === 'gumLine') return '#f59e0b';
+  if (tool === 'smileArc') return '#8b5cf6';
+  return '#ef4444';
+}
+
+function clearAesthetic() {
+  if (!aestheticImg) return;
+  aestheticLines = [];
+  redrawAestheticCanvas();
+  document.getElementById('aestheticResults').style.display = 'none';
+  toast('🗑️ تم مسح الرسم');
+}
+
+function calculateAestheticMetrics() {
+  const out = document.getElementById('aestheticResults');
+  const data = document.getElementById('aestheticData');
+  if (!out || !data) return;
+  out.style.display = 'block';
+  
+  let html = '';
+  const teethLines = aestheticLines.filter(l => l.tool === 'teethWidth');
+  if (teethLines.length >= 2) {
+    const line1 = teethLines[teethLines.length - 2];
+    const line2 = teethLines[teethLines.length - 1];
+    const len1 = Math.hypot(line1.x2 - line1.x1, line1.y2 - line1.y1);
+    const len2 = Math.hypot(line2.x2 - line2.x1, line2.y2 - line2.y1);
+    
+    if (len1 > 0 && len2 > 0) {
+      const ratio = Math.max(len1, len2) / Math.min(len1, len2);
+      const isGolden = ratio >= 1.5 && ratio <= 1.7;
+      html += `<div style="background:rgba(59,130,246,.1); padding:10px; border-radius:8px; border-right:3px solid #3b82f6;">
+          <b>📏 عرض الأسنان:</b><br>الخط الأول: ${Math.round(len1)} px<br>الخط الثاني: ${Math.round(len2)} px<br>
+          <b>النسبة:</b> <span style="color:${isGolden ? 'var(--ok)' : 'var(--err)'}; font-weight:800;">${ratio.toFixed(2)}</span> ${isGolden ? '✅ (ذهبية)' : '⚠️ (غير ذهبية)'}</div>`;
+    }
+  }
+  if (html === '') html = '<div style="color:var(--muted);">ارسم خطين على الأقل من نوع "عرض الأسنان".</div>';
+  data.innerHTML = html;
+}
+
+function saveAestheticImage() {
+  if (!aestheticCanvas || !aestheticImg) return toast('⚠️ ارفع الصورة وارسم أولاً', true);
+  const a = document.createElement('a');
+  a.download = 'aesthetic_analysis_' + Date.now() + '.png';
+  a.href = aestheticCanvas.toDataURL('image/png');
+  a.click();
+  toast('✅ تم حفظ الصورة');
+}
+// ═══════════════════════════════════════════════════════════════
+// 🌟 التحليل الشامل — تناغم الأسنان مع الوجه
+// ═══════════════════════════════════════════════════════════════
+async function runHarmonyAnalysis() {
+  const faceInput = document.getElementById('harmonyFaceInput');
+  const smileInput = document.getElementById('harmonySmileInput');
+  const out = document.getElementById('harmonyResult');
+  
+  if ((!faceInput || !faceInput.files[0]) && (!smileInput || !smileInput.files[0])) {
+    return toast('⚠️ ارفع صورة الوجه أو الابتسامة على الأقل', true);
+  }
+  
+  const apiKey = localStorage.getItem('gemini_key');
+  if (!apiKey) return toast('⚠️ أضف مفتاح Gemini أولاً', true);
+  
+  out.innerHTML = '<div style="text-align:center;padding:20px;color:#a855f7;">⏳ جاري التحليل الشامل... قد يستغرق 15-20 ثانية</div>';
+  
+  try {
+    const parts = [
+      { text: `أنت خبير عالمي في طب الأسنان التجميلي (Aesthetic Dentistry) والتناغم الوجهي (Facial Harmony).
+      
+      قم بتحليل الصور المرفقة بشكل شامل ومتكامل، وأعطني تقريراً مفصلاً يتضمن:
+      **1. التناغم الحالي:** هل الأسنان متناغمة مع ملامح الوجه؟ هل عرض الأسنان يتناسب مع مسافة العينين؟ هل خط الابتسامة يتبع انحناء الشفة السفلى؟
+      **2. المشاكل المكتشفة:** مشاكل في لون أو شكل أو ترتيب الأسنان. مشاكل لثوية. انحراف خط منتصف الأسنان.
+      **3. خطة تجميل شاملة مقترحة:** الإجراءات المناسبة (فينير، تبييض، تجميل لثة).
+      **4. النتيجة المتوقعة:** كيف سيبدو الوجه بعد العلاج؟ نسبة التحسن.
+      اكتب التقرير بالعربية بأسلوب طبي احترافي.` }
+    ];
+    
+    if (faceInput && faceInput.files[0]) {
+      const faceBase64 = await fileToBase64(faceInput.files[0]);
+      const [mime1, data1] = faceBase64.split(',');
+      parts.push({ text: '📸 صورة الوجه الأمامي:' });
+      parts.push({ inlineData: { mimeType: mime1.split(':')[1].split(';')[0], data: data1 } });
+    }
+    
+    if (smileInput && smileInput.files[0]) {
+      const smileBase64 = await fileToBase64(smileInput.files[0]);
+      const [mime2, data2] = smileBase64.split(',');
+      parts.push({ text: '😁 صورة الابتسامة:' });
+      parts.push({ inlineData: { mimeType: mime2.split(':')[1].split(';')[0], data: data2 } });
+    }
+    
+    const modelName = "gemini-3.8-flash";
+    
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey 
+      },
+      body: JSON.stringify({ contents: [{ parts }] })
+    });
+    
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    
+    const reply = data.candidates[0].content.parts[0].text;
+    
+    out.innerHTML = `
+      <div style="background:var(--card); padding:18px; border-radius:12px; border-right:4px solid #a855f7; line-height:1.9;">
+        <h3 style="color:#a855f7; margin-bottom:12px;">🌟 تقرير التناغم الشامل:</h3>
+        <div style="white-space:pre-wrap; font-size:0.9rem;">${esc(reply)}</div>
+      </div>
+    `;
+    toast('✅ تم التحليل الشامل بنجاح');
+    
+  } catch (e) {
+    console.error(e);
+    out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(e.message)}</div>`;
+    toast('❌ ' + e.message, true);
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 </script>
 </body>
