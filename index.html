@@ -2531,10 +2531,9 @@ async function analyzeXray() {
     return toast('⚠️ الرجاء رفع صورة الأشعة أو الصورة الجانبية أولاً', true);
   }
   
-  // ✅ التأكد من قراءة المفتاح من الذاكرة المحلية مباشرة
   const apiKey = localStorage.getItem('gemini_key');
-  if (!apiKey) {
-    return toast('⚠️ لم يتم العثور على المفتاح، يرجى حفظه في الإعدادات أولاً', true);
+  if (!apiKey || apiKey.trim() === '') {
+    return toast('⚠️ لم يتم العثور على المفتاح، يرجى لصقه في الإعدادات واضغط حفظ', true);
   }
 
   const btn = event ? event.target : null;
@@ -2556,35 +2555,71 @@ async function analyzeXray() {
 
     let prompt = '';
     if (type === 'سيفالومترية' || type === 'جانبية') {
-      prompt = `أنت خبير في تحليل السيفالومتري. حلل هذه الصورة (${type}) بالتفصيل وقدم تقريراً بالعربية.`;
+      prompt = `أنت خبير في تحليل السيفالومتري. حلل هذه الصورة (${type}) بدقة. تعرف على النقاط التشريحية (Sella, Nasion, A-point, B-point) وقدر الزوايا (SNA, SNB, ANB) وقدم تقريراً بالعربية.`;
     } else {
-      prompt = `أنت طبيب أسنان خبير. حلل صورة الأشعة (${type}) وقدم تقريراً بالعربية.`;
+      prompt = `أنت طبيب أسنان خبير. حلل صورة الأشعة (${type}) المرفقة. ابحث عن أي علامات تسوس أو مشاكل في العظام وقدم تقريراً بالعربية.`;
     }
 
-    // ✅ إرسال الطلب إلى OpenRouter
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}` 
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.0-flash-exp:free", 
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: base64 } }
+    // ✅ قائمة بالنماذج المجانية المتاحة حالياً (سيتم تجربتها بالترتيب)
+    const modelsToTry = [
+      "google/gemma-4-26b-a4b-it:free", 
+      "nvidia/nemotron-3.5-super-vl:free",
+      "qwen/qwen-2.5-vl-7b-instruct:free"
+    ];
+
+    let data = null;
+    let success = false;
+    let lastError = "";
+
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const modelName = modelsToTry[i];
+      try {
+        out.innerHTML = `<div style="text-align:center;padding:20px;color:var(--gold)">⏳ جاري التحليل (محاولة ${i + 1})... يرجى الانتظار</div>`;
+        
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'HTTP-Referer': 'https://naqclinixai-dental-clinic.web.app',
+            'X-Title': 'NAQCLINIXAI'
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: prompt },
+                  { type: "image_url", image_url: { url: base64 } }
+                ]
+              }
             ]
+          })
+        });
+        
+        const result = await res.json();
+        
+        if (result.error) {
+          lastError = result.error.message;
+          // إذا كان النموذج غير مدعوم أو لا يخدم الصور، نجرب النموذج التالي
+          if (lastError.includes('not available') || lastError.includes('no provider')) {
+            continue;
           }
-        ]
-      })
-    });
-    
-    const data = await res.json();
-    
-    if (data.error) throw new Error(data.error.message);
+          throw new Error(lastError);
+        }
+        
+        data = result;
+        success = true;
+        break; // نجح الطلب، اخرج من الحلقة
+        
+      } catch (err) {
+        lastError = err.message;
+        if (i === modelsToTry.length - 1) throw new Error(lastError);
+      }
+    }
+
+    if (!success) throw new Error(lastError || 'فشلت جميع المحاولات');
 
     const reply = data.choices[0].message.content;
 
