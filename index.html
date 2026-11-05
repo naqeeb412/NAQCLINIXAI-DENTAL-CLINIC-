@@ -991,7 +991,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px">
         <div class="stat"><div class="ic">📅</div><div class="num" id="billToday">$0</div><div class="lbl">إجمالي اليوم</div></div>
         <div class="stat"><div class="ic">📆</div><div class="num" id="billWeek">$0</div><div class="lbl">هذا الأسبوع</div></div>
-        <div class="stat"><div class="ic">🗓️</div><div class="num" id="billMonth">$0</div><div class="lbl">هذا الشهر</div></div>
+        <div class="stat"><div class="ic">??️</div><div class="num" id="billMonth">$0</div><div class="lbl">هذا الشهر</div></div>
         <div class="stat"><div class="ic">📊</div><div class="num" id="billYear">$0</div><div class="lbl">هذه السنة</div></div>
         <div class="stat"><div class="ic">💰</div><div class="num" id="billRemaining" style="color:var(--err)">$0</div><div class="lbl">إجمالي المتبقي</div></div>
       </div>
@@ -5721,42 +5721,47 @@ function drawTracing() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 📐 أداة تتبع النقاط السيفالومترية (الجزء الكامل)
+// 📐 أداة تتبع النقاط السيفالومترية (نسخة محمية ضد الأخطاء)
 // ═══════════════════════════════════════════════════════════════
 let tracingPoints = [];
 let tracingCanvas = null;
 let tracingCtx = null;
 
-// ربط الصورة بلوحة الرسم
-document.getElementById('xrayImageInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+// ✅ ننتظر حتى يتم تحميل الصفحة بالكامل قبل ربط الأحداث
+document.addEventListener('DOMContentLoaded', function() {
+  const xrayInput = document.getElementById('xrayImageInput');
+  if (xrayInput) {
+    xrayInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    const img = new Image();
-    img.onload = function() {
-      tracingCanvas = document.getElementById('tracingCanvas');
-      if (!tracingCanvas) return;
-      
-      tracingCanvas.width = img.width;
-      tracingCanvas.height = img.height;
-      tracingCtx = tracingCanvas.getContext('2d');
-      
-      tracingCtx.drawImage(img, 0, 0);
-      
-      document.getElementById('canvasWrapper').style.display = 'block';
-      tracingPoints = [];
-      
-      tracingCanvas.removeEventListener('click', addTracingPoint);
-      tracingCanvas.removeEventListener('touchstart', handleTracingTouch);
-      
-      tracingCanvas.addEventListener('click', addTracingPoint);
-      tracingCanvas.addEventListener('touchstart', handleTracingTouch, {passive: false});
-    };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          tracingCanvas = document.getElementById('tracingCanvas');
+          if (!tracingCanvas) return;
+          
+          tracingCanvas.width = img.width;
+          tracingCanvas.height = img.height;
+          tracingCtx = tracingCanvas.getContext('2d');
+          
+          tracingCtx.drawImage(img, 0, 0);
+          
+          document.getElementById('canvasWrapper').style.display = 'block';
+          tracingPoints = [];
+          
+          tracingCanvas.removeEventListener('click', addTracingPoint);
+          tracingCanvas.removeEventListener('touchstart', handleTracingTouch);
+          
+          tracingCanvas.addEventListener('click', addTracingPoint);
+          tracingCanvas.addEventListener('touchstart', handleTracingTouch, {passive: false});
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 });
 
 function handleTracingTouch(e) {
