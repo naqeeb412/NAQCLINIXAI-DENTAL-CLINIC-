@@ -2594,21 +2594,16 @@ async function analyzeXray() {
       reader.readAsDataURL(file);
     });
 
-    let prompt = '';
-    if (type === 'سيفالومترية' || type === 'جانبية') {
-      prompt = `أنت خبير في تحليل السيفالومتري. حلل هذه الصورة (${type}) بدقة. تعرف على النقاط التشريحية (Sella, Nasion, A-point, B-point) وقدر الزوايا (SNA, SNB, ANB) وقدم تقريراً بالعربية.`;
-    } else {
-      prompt = `أنت طبيب أسنان خبير. حلل صورة الأشعة (${type}) المرفقة. ابحث عن أي علامات تسوس أو مشاكل في العظام وقدم تقريراً بالعربية.`;
-    }
+    let prompt = `أنت خبير في تحليل السيفالومتري. حلل هذه الصورة (${type}) بدقة. تعرف على النقاط التشريحية (Sella, Nasion, A-point, B-point) وقدر الزوايا (SNA, SNB, ANB) وقدم تقريراً بالعربية.`;
 
     const modelName = "gemini-3.8-flash"; 
     
-    // ✅ إرسال المفتاح في الترويسة (Header) ليتوافق مع المفاتيح الجديدة
+    // ✅ إرسال المفتاح في الترويسة (Header) كما علمتك سابقاً
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey // الطريقة الصحيحة للمفاتيح الجديدة
+        'x-goog-api-key': apiKey 
       },
       body: JSON.stringify({
         contents: [{ parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64.split(',')[1] } } ] }]
@@ -2633,9 +2628,9 @@ async function analyzeXray() {
     console.error(e);
     let errorMsg = e.message;
     if (errorMsg.includes('quota') || errorMsg.includes('exceeded')) {
-      errorMsg = '⚠️ لقد استهلكت الحصة المجانية لهذا النموذج. يرجى إنشاء مشروع جديد في Google AI Studio للحصول على مفتاح جديد، أو المحاولة غداً.';
-    } else if (errorMsg.includes('API key not valid') || errorMsg.includes('invalid authentication')) {
-      errorMsg = '⚠️ المفتاح غير صالح. إذا كان المفتاح من Google Cloud، فقد تحتاج إلى تفعيل (Generative Language API) من لوحة التحكم.';
+      errorMsg = '⚠️ لقد استهلكت الحصة المجانية. يرجى المحاولة غداً.';
+    } else if (errorMsg.includes('high demand')) {
+      errorMsg = '⏳ السيرفر مزدحم حالياً، يرجى المحاولة بعد دقيقة.';
     }
     out.innerHTML = `<div style="color:var(--err);padding:15px;background:rgba(239,68,68,.1);border-radius:10px">❌ ${esc(errorMsg)}</div>`;
     toast('❌ ' + errorMsg, true);
@@ -5463,271 +5458,12 @@ async function saveTeamSections(uid){
   } catch(e) { toast('❌ ' + (e.code || e.message), true); }
 }
 // ═══════════════════════════════════════════════════════════════
-// 📐 أداة تتبع النقاط السيفالومترية (داخل قسم التشخيص)
+// 📐 أداة تتبع النقاط السيفالومترية (نسخة نظيفة وموحدة)
 // ═══════════════════════════════════════════════════════════════
 let tracingPoints = [];
 let tracingCanvas = null;
 let tracingCtx = null;
 
-// ربط الصورة بلوحة الرسم عند رفعها (من حقل diagXray)
-document.getElementById('diagXray').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    const img = new Image();
-    img.onload = function() {
-      tracingCanvas = document.getElementById('tracingCanvas');
-      if (!tracingCanvas) return;
-      
-      tracingCanvas.width = img.width;
-      tracingCanvas.height = img.height;
-      tracingCtx = tracingCanvas.getContext('2d');
-      
-      tracingCtx.drawImage(img, 0, 0);
-      
-      document.getElementById('canvasWrapper').style.display = 'block';
-      tracingPoints = [];
-      
-      tracingCanvas.removeEventListener('click', addTracingPoint);
-      tracingCanvas.removeEventListener('touchstart', handleTracingTouch);
-      
-      tracingCanvas.addEventListener('click', addTracingPoint);
-      tracingCanvas.addEventListener('touchstart', handleTracingTouch, {passive: false});
-    };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-function handleTracingTouch(e) {
-  e.preventDefault();
-  if (e.touches.length > 0) {
-    const touch = e.touches[0];
-    const mouseEvent = new MouseEvent("click", {
-      clientX: touch.clientX,
-      clientY: touch.clientY
-    });
-    tracingCanvas.dispatchEvent(mouseEvent);
-  }
-}
-
-function addTracingPoint(e) {
-  if (tracingPoints.length >= 4) return; 
-
-  const rect = tracingCanvas.getBoundingClientRect();
-  const scaleX = tracingCanvas.width / rect.width;
-  const scaleY = tracingCanvas.height / rect.height;
-
-  const x = (e.clientX - rect.left) * scaleX;
-  const y = (e.clientY - rect.top) * scaleY;
-
-  const labels = ['S (Sella)', 'N (Nasion)', 'A (A-point)', 'B (B-point)'];
-  tracingPoints.push({ x: x, y: y, label: labels[tracingPoints.length] });
-
-  drawTracing();
-}
-
-function drawTracing() {
-  const file = document.getElementById('diagXray').files[0];
-  if (!file) return;
-
-  const imgObj = new Image();
-  imgObj.onload = function() {
-    tracingCtx.clearRect(0, 0, tracingCanvas.width, tracingCanvas.height);
-    tracingCtx.drawImage(imgObj, 0, 0);
-    
-    tracingCtx.strokeStyle = '#10b981'; 
-    tracingCtx.lineWidth = 2;
-    tracingCtx.setLineDash([]);
-
-    if (tracingPoints.length >= 2) {
-      tracingCtx.beginPath();
-      tracingCtx.moveTo(tracingPoints[0].x, tracingPoints[0].y);
-      tracingCtx.lineTo(tracingPoints[1].x, tracingPoints[1].y);
-      tracingCtx.stroke();
-    }
-    if (tracingPoints.length >= 3) {
-      tracingCtx.beginPath();
-      tracingCtx.moveTo(tracingPoints[1].x, tracingPoints[1].y);
-      tracingCtx.lineTo(tracingPoints[2].x, tracingPoints[2].y);
-      tracingCtx.stroke();
-    }
-    if (tracingPoints.length >= 4) {
-      tracingCtx.beginPath();
-      tracingCtx.moveTo(tracingPoints[1].x, tracingPoints[1].y);
-      tracingCtx.lineTo(tracingPoints[3].x, tracingPoints[3].y);
-      tracingCtx.stroke();
-    }
-
-    tracingPoints.forEach(p => {
-      tracingCtx.beginPath();
-      tracingCtx.fillStyle = '#ef4444'; 
-      tracingCtx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-      tracingCtx.fill();
-      
-      tracingCtx.fillStyle = '#fff';
-      tracingCtx.font = 'bold 16px Arial';
-      tracingCtx.fillText(p.label, p.x + 8, p.y - 8);
-    });
-
-    if (tracingPoints.length === 4) {
-      const angleSNA = calcAngle(tracingPoints[0], tracingPoints[1], tracingPoints[2]);
-      const angleSNB = calcAngle(tracingPoints[0], tracingPoints[1], tracingPoints[3]);
-      const angleANB = Math.abs(angleSNA - angleSNB);
-
-      const out = document.getElementById('aiOutput');
-      out.innerHTML = `
-        <div style="background:var(--card2);padding:15px;border-radius:12px;border-right:4px solid var(--ok);margin-top:15px;">
-          <h3 style="color:var(--ok);margin-bottom:10px;">📐 النتائج المحسوبة (التتبع اليدوي):</h3>
-          <p><b>زاوية SNA:</b> ${angleSNA.toFixed(1)}°</p>
-          <p><b>زاوية SNB:</b> ${angleSNB.toFixed(1)}°</p>
-          <p><b>زاوية ANB:</b> ${angleANB.toFixed(1)}°</p>
-        </div>
-      `;
-    }
-  };
-  imgObj.src = URL.createObjectURL(file);
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 📐 أداة تتبع النقاط السيفالومترية (الجزء الكامل)
-// ═══════════════════════════════════════════════════════════════
-let tracingPoints = [];
-let tracingCanvas = null;
-let tracingCtx = null;
-
-// ربط الصورة بلوحة الرسم
-document.getElementById('xrayImageInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    const img = new Image();
-    img.onload = function() {
-      tracingCanvas = document.getElementById('tracingCanvas');
-      if (!tracingCanvas) return;
-      
-      tracingCanvas.width = img.width;
-      tracingCanvas.height = img.height;
-      tracingCtx = tracingCanvas.getContext('2d');
-      
-      tracingCtx.drawImage(img, 0, 0);
-      
-      document.getElementById('canvasWrapper').style.display = 'block';
-      tracingPoints = [];
-      
-      tracingCanvas.removeEventListener('click', addTracingPoint);
-      tracingCanvas.removeEventListener('touchstart', handleTracingTouch);
-      
-      tracingCanvas.addEventListener('click', addTracingPoint);
-      tracingCanvas.addEventListener('touchstart', handleTracingTouch, {passive: false});
-    };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-function handleTracingTouch(e) {
-  e.preventDefault();
-  if (e.touches.length > 0) {
-    const touch = e.touches[0];
-    const mouseEvent = new MouseEvent("click", {
-      clientX: touch.clientX,
-      clientY: touch.clientY
-    });
-    tracingCanvas.dispatchEvent(mouseEvent);
-  }
-}
-
-function addTracingPoint(e) {
-  if (tracingPoints.length >= 4) return; 
-
-  const rect = tracingCanvas.getBoundingClientRect();
-  const scaleX = tracingCanvas.width / rect.width;
-  const scaleY = tracingCanvas.height / rect.height;
-
-  const x = (e.clientX - rect.left) * scaleX;
-  const y = (e.clientY - rect.top) * scaleY;
-
-  const labels = ['S (Sella)', 'N (Nasion)', 'A (A-point)', 'B (B-point)'];
-  tracingPoints.push({ x: x, y: y, label: labels[tracingPoints.length] });
-
-  drawTracing();
-}
-
-function drawTracing() {
-  const file = document.getElementById('xrayImageInput').files[0];
-  if (!file) return;
-
-  const imgObj = new Image();
-  imgObj.onload = function() {
-    tracingCtx.clearRect(0, 0, tracingCanvas.width, tracingCanvas.height);
-    tracingCtx.drawImage(imgObj, 0, 0);
-    
-    tracingCtx.strokeStyle = '#10b981'; 
-    tracingCtx.lineWidth = 2;
-    tracingCtx.setLineDash([]);
-
-    if (tracingPoints.length >= 2) {
-      tracingCtx.beginPath();
-      tracingCtx.moveTo(tracingPoints[0].x, tracingPoints[0].y);
-      tracingCtx.lineTo(tracingPoints[1].x, tracingPoints[1].y);
-      tracingCtx.stroke();
-    }
-    if (tracingPoints.length >= 3) {
-      tracingCtx.beginPath();
-      tracingCtx.moveTo(tracingPoints[1].x, tracingPoints[1].y);
-      tracingCtx.lineTo(tracingPoints[2].x, tracingPoints[2].y);
-      tracingCtx.stroke();
-    }
-    if (tracingPoints.length >= 4) {
-      tracingCtx.beginPath();
-      tracingCtx.moveTo(tracingPoints[1].x, tracingPoints[1].y);
-      tracingCtx.lineTo(tracingPoints[3].x, tracingPoints[3].y);
-      tracingCtx.stroke();
-    }
-
-    tracingPoints.forEach(p => {
-      tracingCtx.beginPath();
-      tracingCtx.fillStyle = '#ef4444'; 
-      tracingCtx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-      tracingCtx.fill();
-      
-      tracingCtx.fillStyle = '#fff';
-      tracingCtx.font = 'bold 16px Arial';
-      tracingCtx.fillText(p.label, p.x + 8, p.y - 8);
-    });
-
-    if (tracingPoints.length === 4) {
-      const angleSNA = calcAngle(tracingPoints[0], tracingPoints[1], tracingPoints[2]);
-      const angleSNB = calcAngle(tracingPoints[0], tracingPoints[1], tracingPoints[3]);
-      const angleANB = Math.abs(angleSNA - angleSNB);
-
-      const out = document.getElementById('xrayResult');
-      out.innerHTML = `
-        <div style="background:var(--card2);padding:15px;border-radius:12px;border-right:4px solid var(--ok);margin-top:15px;">
-          <h3 style="color:var(--ok);margin-bottom:10px;">📐 النتائج المحسوبة (التتبع اليدوي):</h3>
-          <p><b>زاوية SNA:</b> ${angleSNA.toFixed(1)}°</p>
-          <p><b>زاوية SNB:</b> ${angleSNB.toFixed(1)}°</p>
-          <p><b>زاوية ANB:</b> ${angleANB.toFixed(1)}°</p>
-        </div>
-      `;
-    }
-  };
-  imgObj.src = URL.createObjectURL(file);
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 📐 أداة تتبع النقاط السيفالومترية (نسخة محمية ضد الأخطاء)
-// ═══════════════════════════════════════════════════════════════
-let tracingPoints = [];
-let tracingCanvas = null;
-let tracingCtx = null;
-
-// ✅ ننتظر حتى يتم تحميل الصفحة بالكامل قبل ربط الأحداث
 document.addEventListener('DOMContentLoaded', function() {
   const xrayInput = document.getElementById('xrayImageInput');
   if (xrayInput) {
@@ -5748,7 +5484,9 @@ document.addEventListener('DOMContentLoaded', function() {
           
           tracingCtx.drawImage(img, 0, 0);
           
-          document.getElementById('canvasWrapper').style.display = 'block';
+          const wrapper = document.getElementById('canvasWrapper');
+          if (wrapper) wrapper.style.display = 'block';
+          
           tracingPoints = [];
           
           tracingCanvas.removeEventListener('click', addTracingPoint);
@@ -5765,6 +5503,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function handleTracingTouch(e) {
+  if (!tracingCanvas) return;
   e.preventDefault();
   if (e.touches.length > 0) {
     const touch = e.touches[0];
@@ -5777,6 +5516,7 @@ function handleTracingTouch(e) {
 }
 
 function addTracingPoint(e) {
+  if (!tracingCanvas) return;
   if (tracingPoints.length >= 4) return; 
 
   const rect = tracingCanvas.getBoundingClientRect();
@@ -5793,6 +5533,7 @@ function addTracingPoint(e) {
 }
 
 function drawTracing() {
+  if (!tracingCanvas || !tracingCtx) return;
   const file = document.getElementById('xrayImageInput').files[0];
   if (!file) return;
 
@@ -5841,14 +5582,16 @@ function drawTracing() {
       const angleANB = Math.abs(angleSNA - angleSNB);
 
       const out = document.getElementById('xrayResult');
-      out.innerHTML = `
-        <div style="background:var(--card2);padding:15px;border-radius:12px;border-right:4px solid var(--ok);margin-top:15px;">
-          <h3 style="color:var(--ok);margin-bottom:10px;">📐 النتائج المحسوبة (التتبع اليدوي):</h3>
-          <p><b>زاوية SNA:</b> ${angleSNA.toFixed(1)}°</p>
-          <p><b>زاوية SNB:</b> ${angleSNB.toFixed(1)}°</p>
-          <p><b>زاوية ANB:</b> ${angleANB.toFixed(1)}°</p>
-        </div>
-      `;
+      if (out) {
+        out.innerHTML = `
+          <div style="background:var(--card2);padding:15px;border-radius:12px;border-right:4px solid var(--ok);margin-top:15px;">
+            <h3 style="color:var(--ok);margin-bottom:10px;">📐 النتائج المحسوبة (التتبع اليدوي):</h3>
+            <p><b>زاوية SNA:</b> ${angleSNA.toFixed(1)}°</p>
+            <p><b>زاوية SNB:</b> ${angleSNB.toFixed(1)}°</p>
+            <p><b>زاوية ANB:</b> ${angleANB.toFixed(1)}°</p>
+          </div>
+        `;
+      }
     }
   };
   imgObj.src = URL.createObjectURL(file);
@@ -5867,7 +5610,7 @@ function calcAngle(p1, p2, p3) {
 function resetTracing() {
   tracingPoints = [];
   const file = document.getElementById('xrayImageInput').files[0];
-  if (!file) return;
+  if (!file || !tracingCtx || !tracingCanvas) return;
   
   const imgObj = new Image();
   imgObj.onload = function() {
@@ -5875,7 +5618,9 @@ function resetTracing() {
     tracingCtx.drawImage(imgObj, 0, 0);
   };
   imgObj.src = URL.createObjectURL(file);
-  document.getElementById('xrayResult').innerHTML = '';
+  
+  const out = document.getElementById('xrayResult');
+  if (out) out.innerHTML = '';
 }
 
 function saveTracingImage() {
