@@ -369,15 +369,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
   </div>
 
-<!-- 🦷 مخطط الفكين الحقيقي (صورة تشريحية تفاعلية) -->
-<div style="position:relative; width:100%; max-width:600px; margin:0 auto; background:#0a0a0a; border-radius:12px; padding:10px; margin-bottom:15px; overflow:hidden; border:1px solid var(--bd);">
-  <!-- الصورة التشريحية للفكين -->
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Adult_teeth_diagram.svg/800px-Adult_teeth_diagram.svg.png" 
-       style="width:100%; display:block; opacity:0.85;" 
-       alt="مخطط الفكين">
-  
-  <!-- النقاط التفاعلية فوق كل سن -->
-  <div style="position:relative; width:100%; max-width:500px; margin:0 auto; background:#0d1830; border-radius:12px; padding:10px; margin-bottom:15px; border:1px solid var(--bd);">
+<!-- 🦷 مخطط الفكين التفاعلي (مرسوم برمجياً) -->
+<div style="position:relative; width:100%; max-width:500px; margin:0 auto; background:#0d1830; border-radius:12px; padding:10px; margin-bottom:15px; border:1px solid var(--bd);">
   <svg viewBox="0 0 400 300" style="width:100%; height:auto; display:block;">
     <path d="M 50,150 Q 200,20 350,150" fill="none" stroke="var(--gold)" stroke-width="2" stroke-dasharray="5,5" opacity="0.3"/>
     <path d="M 50,150 Q 200,280 350,150" fill="none" stroke="var(--gold)" stroke-width="2" stroke-dasharray="5,5" opacity="0.3"/>
@@ -386,7 +379,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   </svg>
 </div>
 <div id="svgToothInfo" style="margin-bottom:15px;text-align:center;padding:12px;background:rgba(197,160,89,.1);border:1px solid var(--bd);border-radius:10px;font-size:.85rem">👆 اضغط على أي سن لتغيير حالته</div>
-<!-- حاوية الفحص الشامل (الموجودة سابقاً) -->
+
+<!-- حاوية الفحص الشامل -->
 <div id="chartForm" class="hidden">
 
   <div class="sec" id="sec-appointments">
@@ -2384,7 +2378,6 @@ function renderChart() {
   upperG.innerHTML = '';
   lowerG.innerHTML = '';
 
-  // دالة لحساب إحداثيات القوس (Bezier Curve)
   function getPointOnArc(t, isUpper) {
     const startX = 50, startY = 150, ctrlX = 200, ctrlY = isUpper ? 20 : 280, endX = 350, endY = 150;
     const x = Math.pow(1-t, 2)*startX + 2*(1-t)*t*ctrlX + Math.pow(t, 2)*endX;
@@ -2392,7 +2385,6 @@ function renderChart() {
     return { x, y };
   }
 
-  // رسم الفك العلوي (16 سن)
   for(let i=0; i<16; i++) {
     const t = i / 15; 
     const pos = getPointOnArc(t, true);
@@ -2411,7 +2403,6 @@ function renderChart() {
     upperG.appendChild(tooth);
   }
 
-  // رسم الفك السفلي (16 سن)
   for(let i=16; i<32; i++) {
     const t = 1 - ((i - 16) / 15); 
     const pos = getPointOnArc(t, false);
@@ -2429,7 +2420,6 @@ function renderChart() {
     tooth.onclick = () => cycleTooth(i);
     lowerG.appendChild(tooth);
   }
-  
   renderChartLegend();
 }
 
@@ -2444,6 +2434,12 @@ function cycleTooth(i){
   if(el) {
     el.innerHTML = `<b>السن ${i+1}:</b> <span style="color:${info.color}">${info.icon} ${info.name}</span>`;
   }
+}
+
+function renderChartLegend(){ 
+  const el = document.getElementById('chartLegend'); 
+  if(!el) return; 
+  el.innerHTML = Object.entries(TOOTH_INFO).map(([k,v]) => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,.05);border-radius:6px"><span style="display:inline-block;width:14px;height:14px;background:${v.color};border-radius:4px;border:1px solid rgba(255,255,255,.2)"></span><span style="font-size:10px">${v.icon} ${v.name}</span></span>`).join(''); 
 }
 
 function renderChartLegend(){ 
