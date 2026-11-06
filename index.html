@@ -2372,8 +2372,6 @@ function renderChart() {
   if (!container) return;
   container.innerHTML = '';
 
-  // إحداثيات الأسنان على الصورة (تمثل النسب المئوية للصورة)
-  // الأسنان العلوية (من 1 إلى 16)
   const upperTeethCoords = [
     { x: 15, y: 25 }, { x: 22, y: 20 }, { x: 30, y: 17 }, { x: 38, y: 15 }, 
     { x: 45, y: 15 }, { x: 52, y: 18 }, { x: 60, y: 22 }, { x: 68, y: 27 },
@@ -2381,7 +2379,6 @@ function renderChart() {
     { x: 97, y: 15 }, { x: 100, y: 15 }, { x: 100, y: 17 }, { x: 100, y: 20 }
   ];
 
-  // الأسنان السفلية (من 17 إلى 32)
   const lowerTeethCoords = [
     { x: 15, y: 75 }, { x: 22, y: 80 }, { x: 30, y: 83 }, { x: 38, y: 85 }, 
     { x: 45, y: 85 }, { x: 52, y: 82 }, { x: 60, y: 78 }, { x: 68, y: 73 },
@@ -2389,7 +2386,6 @@ function renderChart() {
     { x: 97, y: 85 }, { x: 100, y: 85 }, { x: 100, y: 83 }, { x: 100, y: 80 }
   ];
 
-  // رسم النقاط التفاعلية
   for (let i = 0; i < 32; i++) {
     const isUpper = i < 16;
     const coords = isUpper ? upperTeethCoords[i] : lowerTeethCoords[i - 16];
@@ -2404,7 +2400,7 @@ function renderChart() {
     hotspot.style.height = '24px';
     hotspot.style.borderRadius = '50%';
     hotspot.style.backgroundColor = info.color;
-    hotspot.style.opacity = state ? '0.9' : '0.3'; // شفاف إذا كان سليماً
+    hotspot.style.opacity = state ? '0.9' : '0.3';
     hotspot.style.border = '2px solid ' + info.text;
     hotspot.style.cursor = 'pointer';
     hotspot.style.transform = 'translate(-50%, -50%)';
@@ -2417,27 +2413,17 @@ function renderChart() {
     hotspot.style.color = info.text;
     hotspot.textContent = i + 1;
     
-    // تأثير عند التمرير
     hotspot.onmouseenter = () => { hotspot.style.transform = 'translate(-50%, -50%) scale(1.3)'; hotspot.style.zIndex = '10'; };
     hotspot.onmouseleave = () => { hotspot.style.transform = 'translate(-50%, -50%) scale(1)'; hotspot.style.zIndex = '1'; };
     
     hotspot.onclick = () => cycleTooth(i);
     container.appendChild(hotspot);
   }
+  // ✅ السطر التالي يجب أن يكون داخل الدالة، قبل إغلاقها
+  renderChartLegend(); 
 }
-  renderChartLegend();
-}
-var TOOTH_NAMES = {
-  1:'ثنية علوية يمنى', 2:'رباعية علوية يمنى', 3:'ناب علوي أيمن', 4:'ضاحك أول علوي أيمن', 5:'ضاحك ثاني علوي أيمن',
-  6:'رحى أول علوي أيمن', 7:'رحى ثاني علوي أيمن', 8:'رحى ثالث (عقل) علوي أيمن',
-  9:'ثنية علوية يسرى', 10:'رباعية علوية يسرى', 11:'ناب علوي أيسر', 12:'ضاحك أول علوي أيسر', 13:'ضاحك ثاني علوي أيسر',
-  14:'رحى أول علوي أيسر', 15:'رحى ثاني علوي أيسر', 16:'رحى ثالث (عقل) علوي أيسر',
-  17:'ثنية سفلية يمنى', 18:'رباعية سفلية يمنى', 19:'ناب سفلي أيمن', 20:'ضاحك أول سفلي أيمن', 21:'ضاحك ثاني سفلي أيمن',
-  22:'رحى أول سفلي أيمن', 23:'رحى ثاني سفلي أيمن', 24:'رحى ثالث (عقل) سفلي أيمن',
-  25:'ثنية سفلية يسرى', 26:'رباعية سفلية يسرى', 27:'ناب سفلي أيسر', 28:'ضاحك أول سفلي أيسر', 29:'ضاحك ثاني سفلي أيسر',
-  30:'رحى أول سفلي أيسر', 31:'رحى ثاني سفلي أيسر', 32:'رحى ثالث (عقل) سفلي أيسر'
-};
 
+// ✅ الدوال التالية مستقلة وليست داخل renderChart
 function cycleTooth(i){ 
   const cur = toothState[i] || ''; 
   const idx = TOOTH_STATES.indexOf(cur); 
@@ -2445,11 +2431,12 @@ function cycleTooth(i){
   renderChart(); 
   
   const info = TOOTH_INFO[toothState[i] || '']; 
-  const el = document.getElementById('svgToothInfo'); // تحديث النص في المخطط الجديد
+  const el = document.getElementById('svgToothInfo'); 
   if(el) {
     el.innerHTML = `<b>السن ${i+1}:</b> <span style="color:${info.color}">${info.icon} ${info.name}</span>`;
   }
 }
+
 async function saveChart(){
   const pid = document.getElementById('chartPatientSelect')?.value || window._currentPatientId;
   if(!pid) return toast('⚠️', true);
@@ -2457,6 +2444,7 @@ async function saveChart(){
   await db.collection('patients').doc(pid).collection('medical').doc('chart').set({ teeth: toothState, exam, examNotes: document.getElementById('examNotes').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
   toast('✅');
 }
+
 async function saveHistory(){ if(!window._currentPatientId) return; await db.collection('patients').doc(window._currentPatientId).collection('medical').doc('history').set({ chronic: document.getElementById('histChronic').value, allergy: document.getElementById('histAllergy').value }, {merge:true}); toast('✅'); }
 
 // ═══════════════════════════════════════════════════════════════
