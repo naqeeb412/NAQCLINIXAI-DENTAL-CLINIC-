@@ -369,29 +369,16 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
     </div>
   </div>
 
-  <div class="sec" id="sec-chart">
-    <div class="panel">
-      <h2>📊 مخطط الأسنان الشامل</h2>
-      <div class="f"><label>اختر المريض</label><select id="chartPatientSelect" onchange="loadChartForPatient(this.value)"></select></div>
-      <div id="chartForm" class="hidden">
-        <div id="chartLegend" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px;font-size:11px;background:rgba(0,0,0,.2);padding:10px;border-radius:10px"></div>
-        <div style="text-align:center;color:var(--gold);font-size:.85rem;margin:10px 0 5px;font-weight:700">الفك العلوي</div>
-        <div id="upperArch" class="dental-arch"></div>
-        <div style="text-align:center;color:var(--gold);font-size:.85rem;margin:20px 0 5px;font-weight:700">الفك السفلي</div>
-        <div id="lowerArch" class="dental-arch"></div>
-        <div id="toothInfo" style="margin-top:15px;text-align:center;padding:12px;background:rgba(197,160,89,.1);border:1px solid var(--bd);border-radius:10px;font-size:.85rem">👆 اضغط على أي سن لتغيير حالته</div>
-        <h3 style="color:var(--gold);font-size:.95rem;margin:25px 0 12px">👄 فحص شامل للفم</h3>
-        <div style="background:rgba(0,0,0,.2);padding:15px;border-radius:12px;border:1px solid var(--bd)">
-          <div class="exam-row"><label>🩸 اللثة:</label><select data-exam="gums"><option>سليمة</option><option>ملتهبة</option><option>نازفة</option><option>انحسار لثوي</option><option>تضخم</option></select></div>
-          <div class="exam-row"><label>👄 الشفايف:</label><select data-exam="lips"><option>سليمة</option><option>تشقق</option><option>جفاف</option><option>التهاب زوايا</option></select></div>
-          <div class="exam-row"><label>👅 اللسان:</label><select data-exam="tongue"><option>سليم</option><option>طبقة بيضاء</option><option>تشققات</option><option>التهاب</option></select></div>
-          <div class="exam-row"><label>🦴 العظم:</label><select data-exam="bone"><option>سليم</option><option>فقدان بسيط</option><option>فقدان متوسط</option><option>فقدان شديد</option></select></div>
-          <div class="f" style="margin-top:10px"><label>📝 ملاحظات</label><textarea id="examNotes" rows="2"></textarea></div>
-        </div>
-        <button class="btn-save" style="margin-top:15px;width:100%" onclick="saveChart()">💾 حفظ</button>
-      </div>
-    </div>
-  </div>
+  <!-- مخطط الفكين الجديد (SVG) -->
+<div style="position:relative; width:100%; max-width:500px; margin:0 auto; background:rgba(0,0,0,.3); border-radius:12px; padding:10px; margin-bottom:15px;">
+  <svg viewBox="0 0 400 300" style="width:100%; height:auto;">
+    <path d="M 50,150 Q 200,20 350,150" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5,5"/>
+    <path d="M 50,150 Q 200,280 350,150" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5,5"/>
+    <g id="svgUpperTeeth"></g>
+    <g id="svgLowerTeeth"></g>
+  </svg>
+</div>
+<div id="svgToothInfo" style="margin-bottom:15px;text-align:center;padding:12px;background:rgba(197,160,89,.1);border:1px solid var(--bd);border-radius:10px;font-size:.85rem">👆 اضغط على أي سن لتغيير حالته</div>
 
   <div class="sec" id="sec-appointments">
     <div class="panel">
@@ -2255,7 +2242,7 @@ async function editPatient(id) {
 function populateSelects(){
   const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
   ['apptPatient','photoPatient','reportPatient2','historyPatientSelect','interPatient',
-   'aiPatientDiag','chartPatientSelect','dsdPatient','meetPatient',
+   'aiPatientDiag','PatientSelect','dsdPatient','meetPatient',
    'labPatient','billPatient','tpPatient','rxPatient'].forEach(id=>{ // ✅ أضفنا rxPatient هنا
     const el=document.getElementById(id);
     if(el){
@@ -2378,32 +2365,58 @@ var TOOTH_INFO = {
   'implant': {name:'زرعة',icon:'🔩',color:'#3b82f6',text:'#fff'},
   'missing': {name:'مفقودة',icon:'✕',color:'#4b5563',text:'#fff'}
 };
-function renderChartLegend(){ 
-  const el = document.getElementById('chartLegend'); 
-  if(!el) return; 
-  el.innerHTML = Object.entries(TOOTH_INFO).map(([k,v]) => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,.05);border-radius:6px"><span style="display:inline-block;width:14px;height:14px;background:${v.color};border-radius:4px;border:1px solid rgba(255,255,255,.2)"></span><span style="font-size:10px">${v.icon} ${v.name}</span></span>`).join(''); 
-}
+function renderChart() {
+  const upperG = document.getElementById('svgUpperTeeth');
+  const lowerG = document.getElementById('svgLowerTeeth');
+  if (!upperG || !lowerG) return;
+  upperG.innerHTML = '';
+  lowerG.innerHTML = '';
 
-function renderChart(){
-  const up = document.getElementById('upperArch'), lo = document.getElementById('lowerArch');
-  if(!up || !lo) return; 
-  up.innerHTML = ''; lo.innerHTML = '';
-  
-  // ✅ الفك العلوي (قوس للأعلى)
-  for(let i=0;i<16;i++){ 
-    const info = TOOTH_INFO[toothState[i] || '']; 
-    // حساب الانحناء باستخدام دالة الجيب (Sine) لجعل السن يعلو في المنتصف
-    const offsetY = Math.sin((i / 15) * Math.PI) * 20; 
-    up.innerHTML += `<div class="tooth-box ${toothState[i]||''}" style="background:${info.color};color:${info.text}; transform: translateY(-${offsetY}px);" onclick="cycleTooth(${i})"><span class="icon">${info.icon}</span><span class="num">${i+1}</span></div>`; 
+  function getPointOnArc(t, isUpper) {
+    const startX = 50, startY = 150, ctrlX = 200, ctrlY = isUpper ? 20 : 280, endX = 350, endY = 150;
+    const x = Math.pow(1-t, 2)*startX + 2*(1-t)*t*ctrlX + Math.pow(t, 2)*endX;
+    const y = Math.pow(1-t, 2)*startY + 2*(1-t)*t*ctrlY + Math.pow(t, 2)*endY;
+    return { x, y };
   }
-  
-  // ✅ الفك السفلي (قوس للأسفل)
-  for(let i=16;i<32;i++){ 
-    const info = TOOTH_INFO[toothState[i] || '']; 
-    const offsetY = Math.sin(((i-16) / 15) * Math.PI) * 20; 
-    lo.innerHTML += `<div class="tooth-box ${toothState[i]||''}" style="background:${info.color};color:${info.text}; transform: translateY(${offsetY}px);" onclick="cycleTooth(${i})"><span class="icon">${info.icon}</span><span class="num">${i+1}</span></div>`; 
+
+  // رسم الفك العلوي (16 سن)
+  for(let i=0; i<16; i++) {
+    const t = i / 15; 
+    const pos = getPointOnArc(t, true);
+    const state = toothState[i] || '';
+    const info = TOOTH_INFO[state];
+    const rotation = (t - 0.5) * 90; 
+    
+    const tooth = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    tooth.setAttribute('transform', `translate(${pos.x}, ${pos.y}) rotate(${rotation})`);
+    tooth.setAttribute('cursor', 'pointer');
+    tooth.innerHTML = `
+      <rect x="-8" y="-15" width="16" height="24" rx="4" fill="${info.color}" stroke="${info.text}" stroke-width="1"/>
+      <text x="0" y="2" font-size="9" fill="${info.text}" text-anchor="middle" font-weight="bold">${i+1}</text>
+    `;
+    tooth.onclick = () => cycleTooth(i);
+    upperG.appendChild(tooth);
   }
-  
+
+  // رسم الفك السفلي (16 سن)
+  for(let i=16; i<32; i++) {
+    const t = 1 - ((i - 16) / 15); 
+    const pos = getPointOnArc(t, false);
+    const state = toothState[i] || '';
+    const info = TOOTH_INFO[state];
+    const rotation = (t - 0.5) * 90;
+
+    const tooth = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    tooth.setAttribute('transform', `translate(${pos.x}, ${pos.y}) rotate(${rotation})`);
+    tooth.setAttribute('cursor', 'pointer');
+    tooth.innerHTML = `
+      <rect x="-8" y="-9" width="16" height="24" rx="4" fill="${info.color}" stroke="${info.text}" stroke-width="1"/>
+      <text x="0" y="8" font-size="9" fill="${info.text}" text-anchor="middle" font-weight="bold">${i+1}</text>
+    `;
+    tooth.onclick = () => cycleTooth(i);
+    lowerG.appendChild(tooth);
+  }
+}
   renderChartLegend();
 }
 var TOOTH_NAMES = {
@@ -2424,9 +2437,9 @@ function cycleTooth(i){
   renderChart(); 
   
   const info = TOOTH_INFO[toothState[i] || '']; 
-  const el = document.getElementById('toothInfo'); 
+  const el = document.getElementById('svgToothInfo'); // تحديث النص في المخطط الجديد
   if(el) {
-    el.innerHTML = `<b>السن ${i+1} (${TOOTH_NAMES[i+1] || 'سن'}):</b> <span style="color:${info.color}">${info.icon} ${info.name}</span>`;
+    el.innerHTML = `<b>السن ${i+1}:</b> <span style="color:${info.color}">${info.icon} ${info.name}</span>`;
   }
 }
 async function saveChart(){
