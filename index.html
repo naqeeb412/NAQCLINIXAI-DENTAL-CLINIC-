@@ -2442,6 +2442,40 @@ function renderChartLegend(){
   el.innerHTML = Object.entries(TOOTH_INFO).map(([k,v]) => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,.05);border-radius:6px"><span style="display:inline-block;width:14px;height:14px;background:${v.color};border-radius:4px;border:1px solid rgba(255,255,255,.2)"></span><span style="font-size:10px">${v.icon} ${v.name}</span></span>`).join(''); 
 }
 
+async function loadChartForPatient(pid){
+  if(!pid) return; 
+  window._currentPatientId = pid;
+  document.getElementById('chartForm').classList.remove('hidden');
+  const doc = await db.collection('patients').doc(pid).collection('medical').doc('chart').get();
+  if(doc.exists){ 
+    toothState = doc.data().teeth || {}; 
+    const exam = doc.data().exam || {}; 
+    document.querySelectorAll('[data-exam]').forEach(sel => { 
+      const key = sel.dataset.exam; 
+      if(exam[key]) sel.value = exam[key]; 
+    }); 
+    document.getElementById('examNotes').value = doc.data().examNotes || ''; 
+  } else { 
+    toothState = {}; 
+    document.querySelectorAll('[data-exam]').forEach(sel => sel.selectedIndex = 0); 
+    document.getElementById('examNotes').value = ''; 
+  }
+  renderChart();
+}
+
+async function saveChart(){
+  const pid = document.getElementById('chartPatientSelect')?.value || window._currentPatientId;
+  if(!pid) return toast('⚠️', true);
+  const exam = {}; document.querySelectorAll('[data-exam]').forEach(sel => { exam[sel.dataset.exam] = sel.value; });
+  await db.collection('patients').doc(pid).collection('medical').doc('chart').set({ teeth: toothState, exam, examNotes: document.getElementById('examNotes').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  toast('✅');
+}
+function renderChartLegend(){ 
+  const el = document.getElementById('chartLegend'); 
+  if(!el) return; 
+  el.innerHTML = Object.entries(TOOTH_INFO).map(([k,v]) => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,.05);border-radius:6px"><span style="display:inline-block;width:14px;height:14px;background:${v.color};border-radius:4px;border:1px solid rgba(255,255,255,.2)"></span><span style="font-size:10px">${v.icon} ${v.name}</span></span>`).join(''); 
+}
+
 function renderChartLegend(){ 
   const el = document.getElementById('chartLegend'); 
   if(!el) return; 
