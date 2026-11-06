@@ -81,7 +81,25 @@ button{cursor:pointer;font-family:inherit} input,select,textarea{font-family:inh
 @media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr}}
 .stat{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--bd);border-radius:var(--r);padding:18px;text-align:center}
 .stat .ic{font-size:26px} .stat .num{font-size:26px;font-weight:800;color:var(--gold);margin:6px 0 2px} .stat .lbl{color:var(--muted);font-size:.75rem}
-.btn-save{padding:10px 22px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--goldD));color:#0A0A0A;font-weight:800;font-size:.82rem}
+.btn-save{
+  padding:10px 22px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--gold),var(--goldD));
+  color:#0A0A0A;
+  font-weight:800;
+  font-size:.82rem;
+  transition:all 0.3s ease;
+  box-shadow:0 4px 15px rgba(197,160,89,0.2);
+  cursor:pointer;
+}
+.btn-save:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(197,160,89,0.4);
+}
+.btn-save:active{
+  transform:translateY(0);
+}
 .btn-danger{padding:8px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:700;font-size:.76rem}
 .btn-outline{padding:8px 16px;border:1px solid var(--bd);border-radius:10px;background:transparent;color:var(--txt);font-weight:700;font-size:.76rem}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--gold);color:#0A0A0A;padding:12px 24px;border-radius:12px;font-weight:700;z-index:9999;transition:transform .3s}
@@ -179,6 +197,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   <button class="ni" data-sec="history"><span class="ic">💊</span>التاريخ الطبي</button>
   <button class="ni" data-sec="chart"><span class="ic">📊</span>مخطط الأسنان</button>
   <button class="ni" data-sec="appointments"><span class="ic">🗓️</span>المواعيد</button>
+  <button class="ni" data-sec="prescription"><span class="ic">💊</span>الوصفة الطبية</button>
   <button class="ni" data-sec="lab"><span class="ic">🧪</span>المعمل</button>
   <button class="ni" data-sec="inventory"><span class="ic">📦</span>مخزون العيادة</button>
   <div class="ns">التحليل والتصميم AI</div>
@@ -233,7 +252,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
   </div>
 <!-- 🤖 المساعد الذكي -->
 <div id="aiChatWidget" style="position:fixed; bottom:20px; left:20px; z-index:9999;">
-  <button onclick="toggleAiChat()" style="width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg, var(--gold), var(--goldD)); border:none; font-size:28px; box-shadow:0 4px 15px rgba(0,0,0,0.5); cursor:pointer;">🤖</button>
+  <button id="aiChatFloatBtn" onclick="toggleAiChat()" style="width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg, var(--gold), var(--goldD)); border:none; font-size:28px; box-shadow:0 4px 15px rgba(0,0,0,0.5); cursor:pointer;">🤖</button>
   
   <div id="aiChatBox" style="display:none; position:absolute; bottom:70px; left:0; width:320px; height:450px; background:var(--card); border:2px solid var(--gold); border-radius:16px; overflow:hidden; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.8);">
     <div style="background:var(--gold); color:#000; padding:12px; text-align:center; font-weight:800; display:flex; justify-content:space-between;">
@@ -414,13 +433,28 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div class="diag-img-slot" onclick="document.getElementById('diagXray').click()" id="slotXray"><div class="diag-preview" id="prevXray">🩻<br><small>صورة الأشعة</small></div><input type="file" id="diagXray" accept="image/*" style="display:none" onchange="handleDiagImage('xray', event)"></div>
     </div>
 
-    <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap">
   <button class="btn-save" onclick="runAIDiagnosis()">🧠 توليد التشخيص</button>
   <button class="btn-save" onclick="runDentalAI()" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;">🦷 تحليل الأسنان واللثة</button>
   <button class="btn-save" onclick="runOcclusionAI()" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;">📐 تحليل الأطباق</button>
   <button class="btn-outline" onclick="clearDiagImages()">🗑️ مسح</button>
   <button class="btn-outline" onclick="saveDiagToPatient()">💾 حفظ</button>
 </div>
+
+<!-- 🧮 الحاسبة السريرية (تمت الإضافة هنا) -->
+<div style="margin-top:20px; background:rgba(16,185,129,0.05); padding:15px; border-radius:12px; border:1px solid var(--ok);">
+  <h3 style="color:var(--ok); font-size:.9rem; margin-bottom:10px;">🧮 الحاسبة السريرية (الجرعات)</h3>
+  <div class="g2">
+    <div class="f"><label>وزن المريض (كجم)</label><input type="number" id="calcWeight" placeholder="مثال: 70" oninput="calcClinicalDoses()"></div>
+    <div class="f"><label>هل يعاني من قصور كلوي؟</label>
+      <select id="calcKidney" onchange="calcClinicalDoses()">
+        <option value="no">لا</option>
+        <option value="yes">نعم</option>
+      </select>
+    </div>
+  </div>
+  <div id="calcResults" style="margin-top:10px; font-size:13px; line-height:1.8;"></div>
+</div>>
      
      
     <!-- ✍️ أداة تتبع النقاط السيفالومترية -->
@@ -600,6 +634,12 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <p style="font-size:.7rem; color:var(--muted); margin-bottom:10px;">
         ارفع الصورة بالأعلى، ثم يمكنك الضغط على الصورة لوضع النقاط يدوياً، أو استخدام زر الرسم التقديري بالذكاء الاصطناعي.
       </p>
+     
+     <!-- 📐 نتائج تحليل Steiner & Tweed -->
+<div id="cephaloResults" style="display:none; margin-top:15px; background:rgba(59,130,246,0.1); padding:15px; border-radius:12px; border:1px solid #3b82f6;">
+  <h3 style="color:#3b82f6; font-size:.95rem; margin-bottom:10px;">📐 التحليل الإشعاعي (Steiner & Tweed)</h3>
+  <div id="cephaloData" style="font-size:.85rem; line-height:1.9;"></div>
+</div>
       
       <!-- ✅ المربع الأسود الخاص بالرسم -->
       <div id="canvasWrapper" style="position:relative; display:block; overflow:auto; max-height:500px; text-align:center; background:#000; border-radius:8px; margin-bottom:10px; border: 1px solid var(--gold); min-height: 300px;">
@@ -1132,6 +1172,69 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div id="billingList"></div>
     </div>
   </div>
+ 
+ <div class="sec" id="sec-prescription">
+  <div class="panel">
+    <h2>💊 الوصفة الطبية الإلكترونية</h2>
+    <div class="desc">اكتب الوصفة، ثم اطبعها أو أرسلها للمريض عبر واتساب.</div>
+    
+    <div class="g2">
+      <div class="f"><label>👤 المريض *</label><select id="rxPatient"></select></div>
+      <div class="f"><label>📅 التاريخ</label><input type="date" id="rxDate"></div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.03);padding:15px;border-radius:12px;border:1px solid var(--bd);margin-bottom:15px">
+      <h3 style="color:var(--gold);font-size:.95rem;margin-bottom:10px">💊 الأدوية</h3>
+      <div id="rxMedsContainer">
+        <div class="rx-med-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:5px;margin-bottom:8px">
+          <input type="text" placeholder="اسم الدواء" class="rx-name" style="padding:8px;border-radius:6px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+          <input type="text" placeholder="الجرعة" class="rx-dose" style="padding:8px;border-radius:6px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+          <input type="text" placeholder="التكرار" class="rx-freq" style="padding:8px;border-radius:6px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+          <input type="text" placeholder="المدة" class="rx-duration" style="padding:8px;border-radius:6px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+          <button class="btn-danger" onclick="this.parentElement.remove()" style="padding:8px;border-radius:6px">✕</button>
+        </div>
+      </div>
+      <button class="btn-outline" onclick="addRxRow()" style="width:100%;margin-top:5px">➕ إضافة دواء آخر</button>
+    </div>
+
+    <div class="f"><label>📝 ملاحظات إضافية</label><textarea id="rxNotes" rows="2" placeholder="مثال: شرب ماء كثير، تجنب الأطعمة الصلبة..."></textarea></div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:15px">
+      <button class="btn-save" onclick="generatePrescription()">👁️ معاينة الوصفة</button>
+      <button class="btn-outline" onclick="printPrescription()">🖨️ طباعة</button>
+      <button class="btn-outline" onclick="sendRxWhatsApp()" style="color:#25D366;border-color:#25D366">📱 إرسال واتساب</button>
+    </div>
+
+    <!-- 📄 ورقة الوصفة -->
+    <div id="rxPaper" style="display:none;background:#fff;color:#000;padding:30px;border-radius:10px;margin-top:20px;max-width:600px;margin-left:auto;margin-right:auto;font-family:Arial">
+      <div style="text-align:center;border-bottom:3px solid #C5A059;padding-bottom:15px;margin-bottom:20px">
+        <h1 style="color:#C5A059;margin:0;font-size:26px">🦷 NAQCLINIXAI</h1>
+        <p style="margin:5px 0;font-size:14px" id="rxClinicName">عيادة الأسنان</p>
+        <p style="margin:0;font-size:12px;color:#666">وصفة طبية</p>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:13px">
+        <div><b>المريض:</b> <span id="rxPatientName"></span></div>
+        <div><b>التاريخ:</b> <span id="rxDateVal"></span></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+        <thead>
+          <tr style="background:#f0f0f0">
+            <th style="padding:8px;border:1px solid #ddd;text-align:right">الدواء</th>
+            <th style="padding:8px;border:1px solid #ddd;text-align:right">الجرعة</th>
+            <th style="padding:8px;border:1px solid #ddd;text-align:right">التكرار</th>
+            <th style="padding:8px;border:1px solid #ddd;text-align:right">المدة</th>
+          </tr>
+        </thead>
+        <tbody id="rxTableBody"></tbody>
+      </table>
+      <div id="rxNotesDisplay" style="font-size:13px;margin-bottom:30px"></div>
+      <div style="text-align:left;margin-top:40px">
+        <p style="font-size:13px;margin:0">توقيع الطبيب: ____________________</p>
+        <p style="font-size:11px;color:#666;margin-top:5px" id="rxDoctorName"></p>
+      </div>
+    </div>
+  </div>
+</div>
 
   <div class="sec" id="sec-reports">
     <div class="panel">
@@ -1630,25 +1733,23 @@ function showSection(sec){
   const paidSections = ['patients','photography','history','chart','appointments','lab','inventory','billing','debtors','aiDiagnosis','faceHarmony','dsdStudio','xray','beforeAfter','cadcam','treatmentPlan','materialsGuide','store','interdisciplinary','reports'];
   const isOwner = CD && CD.role === 'owner';
 
-// ✅ أقسام منحها المالك لعضو الفريق
-const freeSections = (CD && CD.freeSections) || [];
-const isFreeForTeam = freeSections.includes(sec);
+  const freeSections = (CD && CD.freeSections) || [];
+  const isFreeForTeam = freeSections.includes(sec);
 
-// منع الدخول بدون اشتراك (إلا المالك أو عضو فريق لديه القسم مجاناً)
-if (!isOwner && !isFreeForTeam && paidSections.includes(sec) && !userSubscription) {
-  toast('🔒 يتطلب اشتراكاً نشطاً — يرجى الاشتراك من "خطط الاشتراك"', true); 
-  setTimeout(() => showSection('subscriptions'), 1500);
-  return;
-}
-
-// منع الدخول لقسم غير مشمول في الباقة
-if (!isOwner && !isFreeForTeam && userSubscription && paidSections.includes(sec)) {
-  const access = userSubscription.sectionsAccess || [];
-  if (!access.includes(sec)) { 
-    toast('🔒 هذا القسم غير مشمول في باقتك — قم بالترقية للوصول', true); 
-    return; 
+  if (!isOwner && !isFreeForTeam && paidSections.includes(sec) && !userSubscription) {
+    toast('🔒 يتطلب اشتراكاً نشطاً — يرجى الاشتراك من "خطط الاشتراك"', true); 
+    setTimeout(() => showSection('subscriptions'), 1500);
+    return;
   }
-}
+
+  if (!isOwner && !isFreeForTeam && userSubscription && paidSections.includes(sec)) {
+    const access = userSubscription.sectionsAccess || [];
+    if (!access.includes(sec)) { 
+      toast('🔒 هذا القسم غير مشمول في باقتك — قم بالترقية للوصول', true); 
+      return; 
+    }
+  }
+  
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById('sec-'+sec); if(el) el.classList.add('active');
   
@@ -1676,15 +1777,17 @@ if (!isOwner && !isFreeForTeam && userSubscription && paidSections.includes(sec)
   if(sec==='manageAds') loadAdvertisements();
   if(sec==='paymentConfig') loadPaymentConfig();
   if(sec==='notifications') loadNotifications();
-if(sec==='lab'){ populateSelects(); loadLab(); setTimeout(renderLabSummary, 300); }
-if(sec==='inventory'){ loadInventory(); loadPurchases(); }
-if(sec==='debtors'){ Promise.all([loadBilling(), loadLab()]).then(() => renderDebtors()); }
+  if(sec==='lab'){ populateSelects(); loadLab(); setTimeout(renderLabSummary, 300); }
+  if(sec==='inventory'){ loadInventory(); loadPurchases(); }
+  if(sec==='debtors'){ Promise.all([loadBilling(), loadLab()]).then(() => renderDebtors()); }
   if(sec==='labAccounting'){ loadLab().then(()=>renderLabAccounting()); }
   if(sec==='billing'){ populateSelects(); renderBilling(); updateBillingStats(); renderPatientsSummary(); }
   if(sec==='reports') populateSelects();
   if(sec==='settings') loadPrivacy();
   if(sec==='treatmentPlan') populateSelects();
   if(sec==='interdisciplinary') { populateSelects(); loadInterConsults(); }
+  // ✅ السطر الجديد للوصفة الطبية
+  if(sec==='prescription') { populateSelects(); document.getElementById('rxDate').value = new Date().toISOString().slice(0,10); }
 }
 document.querySelectorAll('.ni[data-sec]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.sec)));
 
@@ -2145,7 +2248,7 @@ function populateSelects(){
   const opts='<option value="">— اختر —</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.fullName)}</option>`).join('');
   ['apptPatient','photoPatient','reportPatient2','historyPatientSelect','interPatient',
    'aiPatientDiag','chartPatientSelect','dsdPatient','meetPatient',
-   'labPatient','billPatient','tpPatient'].forEach(id=>{
+   'labPatient','billPatient','tpPatient','rxPatient'].forEach(id=>{ // ✅ أضفنا rxPatient هنا
     const el=document.getElementById(id);
     if(el){
       const current = el.value;
@@ -2154,7 +2257,6 @@ function populateSelects(){
     }
   });
 }
-
 // ═══════════════════════════════════════════════════════════════
 // 📸 [جديد] إدارة صور المريض (عرض + حذف)
 // ═══════════════════════════════════════════════════════════════
@@ -2276,14 +2378,28 @@ function renderChart(){
   for(let i=16;i<32;i++){ const info = TOOTH_INFO[toothState[i] || '']; lo.innerHTML += `<div class="tooth-box ${toothState[i]||''}" style="background:${info.color};color:${info.text}" onclick="cycleTooth(${i})"><span class="icon">${info.icon}</span><span class="num">${i+1}</span></div>`; }
   renderChartLegend();
 }
-function cycleTooth(i){ const cur = toothState[i] || ''; const idx = TOOTH_STATES.indexOf(cur); toothState[i] = TOOTH_STATES[(idx+1) % TOOTH_STATES.length]; renderChart(); const info = TOOTH_INFO[toothState[i] || '']; const el = document.getElementById('toothInfo'); if(el) el.innerHTML = `<b>السن ${i+1}:</b> <span style="color:${info.color}">${info.icon} ${info.name}</span>`; }
-async function loadChartForPatient(pid){
-  if(!pid) return; window._currentPatientId = pid;
-  document.getElementById('chartForm').classList.remove('hidden');
-  const doc = await db.collection('patients').doc(pid).collection('medical').doc('chart').get();
-  if(doc.exists){ toothState = doc.data().teeth || {}; const exam = doc.data().exam || {}; document.querySelectorAll('[data-exam]').forEach(sel => { const key = sel.dataset.exam; if(exam[key]) sel.value = exam[key]; }); document.getElementById('examNotes').value = doc.data().examNotes || ''; }
-  else { toothState = {}; document.querySelectorAll('[data-exam]').forEach(sel => sel.selectedIndex = 0); document.getElementById('examNotes').value = ''; }
-  renderChart();
+var TOOTH_NAMES = {
+  1:'ثنية علوية يمنى', 2:'رباعية علوية يمنى', 3:'ناب علوي أيمن', 4:'ضاحك أول علوي أيمن', 5:'ضاحك ثاني علوي أيمن',
+  6:'رحى أول علوي أيمن', 7:'رحى ثاني علوي أيمن', 8:'رحى ثالث (عقل) علوي أيمن',
+  9:'ثنية علوية يسرى', 10:'رباعية علوية يسرى', 11:'ناب علوي أيسر', 12:'ضاحك أول علوي أيسر', 13:'ضاحك ثاني علوي أيسر',
+  14:'رحى أول علوي أيسر', 15:'رحى ثاني علوي أيسر', 16:'رحى ثالث (عقل) علوي أيسر',
+  17:'ثنية سفلية يمنى', 18:'رباعية سفلية يمنى', 19:'ناب سفلي أيمن', 20:'ضاحك أول سفلي أيمن', 21:'ضاحك ثاني سفلي أيمن',
+  22:'رحى أول سفلي أيمن', 23:'رحى ثاني سفلي أيمن', 24:'رحى ثالث (عقل) سفلي أيمن',
+  25:'ثنية سفلية يسرى', 26:'رباعية سفلية يسرى', 27:'ناب سفلي أيسر', 28:'ضاحك أول سفلي أيسر', 29:'ضاحك ثاني سفلي أيسر',
+  30:'رحى أول سفلي أيسر', 31:'رحى ثاني سفلي أيسر', 32:'رحى ثالث (عقل) سفلي أيسر'
+};
+
+function cycleTooth(i){ 
+  const cur = toothState[i] || ''; 
+  const idx = TOOTH_STATES.indexOf(cur); 
+  toothState[i] = TOOTH_STATES[(idx+1) % TOOTH_STATES.length]; 
+  renderChart(); 
+  
+  const info = TOOTH_INFO[toothState[i] || '']; 
+  const el = document.getElementById('toothInfo'); 
+  if(el) {
+    el.innerHTML = `<b>السن ${i+1} (${TOOTH_NAMES[i+1] || 'سن'}):</b> <span style="color:${info.color}">${info.icon} ${info.name}</span>`;
+  }
 }
 async function saveChart(){
   const pid = document.getElementById('chartPatientSelect')?.value || window._currentPatientId;
@@ -2334,6 +2450,7 @@ function clearDiagImages(){
   toast('🗑️');
 }
 async function runAIDiagnosis(){
+if(document.getElementById('aiOutput').innerHTML.includes('⏳')) return toast('⏳ جاري التحليل بالفعل، انتظر قليلاً...', true);
   const complaint = document.getElementById('aiComplaint').value.trim();
   const hasImages = Object.values(diagImages).some(x => x && x.length > 100);
   if(!complaint && !hasImages) return toast('⚠️ أضف شكوى أو صورة', true);
@@ -2690,43 +2807,70 @@ function renderFaceResults() {
   const el = document.getElementById('faceResults'); if (!el) return;
   const a = lastFaceAnalysis;
   
-  // ✅ نطاقات معدلة لتناسب الصورة الأمامية (Frontal View)
+  // حساب النسبة الذهبية
+  const goldenRatio = 1.618;
+  const mouthNoseRatio = a.mouthWidthRatio || 1.0;
+  const diff = Math.abs(mouthNoseRatio - goldenRatio);
+  const isGolden = diff < 0.2;
+
+  // ✅ تصحيح القياسات والنطاقات
   const refs = {
     nasalTipAngle: { min: 150, max: 180, label: 'زاوية الأنف (2D)', unit: '°' },
     facialConvexity: { min: 170, max: 180, label: 'تحدب الوجه (2D)', unit: '°' },
     canthalTiltLeft: { min: -5, max: 8, label: 'ميل العين الأيسر', unit: '°' },
     canthalTiltRight: { min: -5, max: 8, label: 'ميل العين الأيمن', unit: '°' },
+    // تصحيح: النسبة المئوية للتوازن تُضرب في 100
     facialThirds: { min: 75, max: 100, label: 'توازن أثلاث الوجه', unit: '%', isPct: true },
-    mouthWidthRatio: { min: 1.2, max: 1.7, label: 'عرض الفم / عرض الأنف', unit: '' },
-    facialSymmetry: { min: 90, max: 100, label: 'تماثل الوجه', unit: '%' } // تعديل حساب التماثل
+    facialSymmetry: { min: 90, max: 100, label: 'تماثل الوجه', unit: '%' }
   };
 
   const rows = Object.entries(refs).map(([key, ref]) => {
     let val = a[key]; if (val === undefined) return '';
     
-    // تعديل حساب التماثل ليكون نسبة مئوية
+    // تصحيح: تماثل الوجه يُضرب في 100
     if(key === 'facialSymmetry') val = val * 100;
+    // تصحيح: توازن الأثلاث يُضرب في 100
+    if(key === 'facialThirds') val = val * 100;
+
+    // تصحيح: إذا كانت زاوية العين الأيمن خارج النطاق (أكبر من 20)، نقسمها على 10 أو نعكسها
+    // لكن الأفضل عرض القيمة المطلقة للزاوية (Absolute Value)
+    if(key === 'canthalTiltRight' || key === 'canthalTiltLeft') val = Math.abs(val);
     
     const inRange = val >= ref.min && val <= ref.max;
-    const display = ref.isPct ? (val * 100).toFixed(1) + '%' : val.toFixed(1) + ref.unit;
-    const rangeDisplay = ref.isPct ? `${(ref.min * 100).toFixed(0)}-${(ref.max * 100).toFixed(0)}%` : `${ref.min}${ref.unit}-${ref.max}${ref.unit}`;
+    const display = val.toFixed(1) + ref.unit; // إزالة شرط isPct لأننا ضربناها فوق
+    const rangeDisplay = `${ref.min}${ref.unit} - ${ref.max}${ref.unit}`;
     
     return `<tr><td><b>${ref.label}</b></td><td style="font-weight:800;color:${inRange ? 'var(--ok)' : 'var(--err)'}">${display}</td><td style="font-size:.7rem;color:var(--muted)">${rangeDisplay}</td><td>${inRange ? '✅ طبيعي' : '⚠️ خارج النطاق'}</td></tr>`;
   }).join('');
 
   el.innerHTML = `
     <div style="background:var(--card2);padding:16px;border-radius:12px;border:1px solid var(--bd);margin-top:14px">
-      <h3 style="color:var(--gold);margin-bottom:12px;font-size:1rem">📊 نتائج التحليل العلمي</h3>
+      <h3 style="color:var(--gold);margin-bottom:12px;font-size:1rem">📊 نتائج التحليل الجمالي والعلمي</h3>
+      
+      <!-- النسبة الذهبية -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px">
+        <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center">
+          <div style="font-size:11px;color:var(--muted)">نسبة الفم/الأنف</div>
+          <div style="font-size:20px;font-weight:800;color:${isGolden ? 'var(--ok)' : 'var(--warn)'}">${mouthNoseRatio.toFixed(2)}</div>
+        </div>
+        <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center">
+          <div style="font-size:11px;color:var(--muted)">النسبة الذهبية (Φ)</div>
+          <div style="font-size:20px;font-weight:800;color:var(--gold)">1.618</div>
+        </div>
+      </div>
+      <p style="font-size:12px; margin-bottom:15px; color:${isGolden ? 'var(--ok)' : 'var(--warn)'}; font-weight:700;">
+        ${isGolden ? '✅ الابتسامة متناسقة جداً وقريبة من النسبة الذهبية.' : '⚠️ يوجد عدم تناسق، قد يحتاج إلى تجميل لتعديل عرض الأسنان.'}
+      </p>
+
+      <!-- جدول القياسات -->
       <div style="overflow-x:auto">
         <table class="tbl" style="font-size:.78rem">
           <thead><tr><th>القياس</th><th>قيمة المريض</th><th>النطاق الطبيعي</th><th>الحالة</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <canvas id="faceChart" height="100" style="margin-top:16px;background:#fff;border-radius:8px;padding:8px"></canvas>
     </div>
   `;
-  drawFaceChart();
 }
 async function saveFaceAnalysisToPatient() {
   const pid = document.getElementById('dsdPatient')?.value || document.getElementById('aiPatientDiag')?.value;
@@ -3923,7 +4067,8 @@ function renderAppointments(){
           📅 ${esc(a.date||'')} ⏰ ${esc(a.time||'')} · ${esc(a.type||'')}
         </div>
       </div>
-      <button class="btn-danger" style="padding:6px 10px;font-size:11px" onclick="deleteAppointment('${a.id}')">🗑️</button>
+   <button class="btn-outline" style="padding:6px 10px;font-size:11px;color:#25D366;border-color:#25D366" onclick="sendWhatsAppReminderForAppt('${a.id}')" title="إرسال تذكير واتساب">📱</button>
+   <button class="btn-danger" style="padding:6px 10px;font-size:11px" onclick="deleteAppointment('${a.id}')">🗑️</button>
     </div>`;
   }).join('');
 }
@@ -3960,7 +4105,7 @@ async function addAppointment(){
   }
 }
 
-// ✅ دالة جديدة: حذف موعد
+// ✅ دالة حذف الموعد
 async function deleteAppointment(id){
   if(!confirm('هل تريد حذف هذا الموعد؟')) return;
   try {
@@ -3971,6 +4116,17 @@ async function deleteAppointment(id){
   } catch(e) {
     toast('❌ ' + e.message, true);
   }
+}
+
+// ✅ [جديد] دالة إرسال تذكير واتساب للمريض (الصقها هنا)
+function sendWhatsAppReminderForAppt(apptId) {
+  const a = appointments.find(x => x.id === apptId);
+  if(!a) return;
+  const p = patients.find(x => x.id === a.patientId);
+  if(!p || !p.phone) return toast('⚠️ لا يوجد رقم هاتف لهذا المريض', true);
+  
+  const msg = `مرحباً ${p.fullName}،\nنذكرك بموعدك في عيادة الأسنان:\n📅 التاريخ: ${a.date}\n⏰ الوقت: ${a.time}\n\nنرجو الحضور قبل الموعد بـ 10 دقائق.\nشكراً لك 🦷`;
+  window.open(`https://wa.me/${p.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 // ═══════════════════════════════════════════════════════════════
 // 30. Billing (Clinic)
@@ -6303,14 +6459,26 @@ function drawTracing() {
       const angleSNB = calcAngle(tracingPoints[0], tracingPoints[1], tracingPoints[3]);
       const angleANB = Math.abs(angleSNA - angleSNB);
 
-      const out = document.getElementById('xrayResult');
-      if (out) {
-        out.innerHTML = `
-          <div style="background:var(--card2);padding:15px;border-radius:12px;border-right:4px solid var(--ok);margin-top:15px;">
-            <h3 style="color:var(--ok);margin-bottom:10px;">📐 النتائج المحسوبة (التتبع اليدوي):</h3>
-            <p><b>زاوية SNA:</b> ${angleSNA.toFixed(1)}°</p>
-            <p><b>زاوية SNB:</b> ${angleSNB.toFixed(1)}°</p>
-            <p><b>زاوية ANB:</b> ${angleANB.toFixed(1)}°</p>
+      const resBox = document.getElementById('cephaloResults');
+      const resData = document.getElementById('cephaloData');
+      if (resBox && resData) {
+        resBox.style.display = 'block';
+        
+        let snaText = angleSNA > 84 ? 'بروز الفك العلوي (Prognathism)' : angleSNA < 80 ? 'تراجع الفك العلوي (Retrognathism)' : 'طبيعي';
+        let snbText = angleSNB > 82 ? 'بروز الفك السفلي (Prognathism)' : angleSNB < 78 ? 'تراجع الفك السفلي (Retrognathism)' : 'طبيعي';
+        let anbText = angleANB > 4 ? 'الفك العلوي متقدم (Class II)' : angleANB < 0 ? 'الفك السفلي متقدم (Class III)' : 'علاقة هيكلية طبيعية (Class I)';
+
+        resData.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;text-align:center">
+            <div style="background:rgba(0,0,0,.3);padding:8px;border-radius:8px"><b>SNA</b><br><span style="font-size:18px;color:var(--gold);font-weight:800">${angleSNA.toFixed(1)}°</span><br><span style="font-size:10px;color:var(--muted)">المعدل 82°</span></div>
+            <div style="background:rgba(0,0,0,.3);padding:8px;border-radius:8px"><b>SNB</b><br><span style="font-size:18px;color:var(--gold);font-weight:800">${angleSNB.toFixed(1)}°</span><br><span style="font-size:10px;color:var(--muted)">المعدل 80°</span></div>
+            <div style="background:rgba(0,0,0,.3);padding:8px;border-radius:8px"><b>ANB</b><br><span style="font-size:18px;color:var(--gold);font-weight:800">${angleANB.toFixed(1)}°</span><br><span style="font-size:10px;color:var(--muted)">المعدل 2°-4°</span></div>
+          </div>
+          <div style="background:rgba(0,0,0,.2);padding:10px;border-radius:8px;font-size:12px">
+            <b>التشخيص الهيكلي:</b><br>
+            • الفك العلوي: ${snaText}<br>
+            • الفك السفلي: ${snbText}<br>
+            • العلاقة: <b style="color:var(--gold)">${anbText}</b>
           </div>
         `;
       }
@@ -6318,7 +6486,6 @@ function drawTracing() {
   };
   imgObj.src = URL.createObjectURL(file);
 }
-
 function calcAngle(p1, p2, p3) {
   const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
   const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
@@ -6477,7 +6644,8 @@ async function runDentalAI() {
       parts.push({ inlineData: { mimeType: mime2.split(':')[1].split(';')[0], data: data2 } });
     }
 
-    const modelName = "gemini-3.8-flash"; 
+
+const modelName = "gemini-3.5-flash-lite";
     
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
       method: 'POST',
@@ -7034,7 +7202,12 @@ window.aiChatHistory = [];
 
 window.toggleAiChat = function() {
   const box = document.getElementById('aiChatBox');
-  if(box) box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+  const btn = document.getElementById('aiChatFloatBtn');
+  if(box && btn) {
+    const isOpening = box.style.display === 'none';
+    box.style.display = isOpening ? 'flex' : 'none';
+    btn.style.display = isOpening ? 'none' : 'block'; // إخفاء الزر عند الفتح
+  }
 };
 
 window.sendAiChatMessage = async function() {
@@ -7086,6 +7259,174 @@ window.sendAiChatMessage = async function() {
     if(loadEl) loadEl.innerHTML = `<span style="color:var(--err)">❌ ${e.message}</span>`;
   }
 };
+// ✅ دالة إرسال تذكير واتساب للمريض
+function sendWhatsAppReminderForAppt(apptId) {
+  const a = appointments.find(x => x.id === apptId);
+  if(!a) return toast('⚠️ الموعد غير موجود', true);
+  
+  const p = patients.find(x => x.id === a.patientId);
+  if(!p || !p.phone) return toast('⚠️ لا يوجد رقم هاتف لهذا المريض', true);
+  
+  // تنسيق الرسالة
+  const msg = `مرحباً ${p.fullName}،\nنذكرك بموعدك في عيادة الأسنان:\n📅 التاريخ: ${a.date}\n⏰ الوقت: ${a.time}\n🦷 النوع: ${a.type}\n\nنرجو الحضور قبل الموعد بـ 10 دقائق.\nشكراً لك!`;
+  
+  // تنظيف رقم الهاتف من أي رموز
+  const cleanPhone = p.phone.replace(/[^0-9]/g, '');
+  
+  // فتح واتساب مباشرة
+  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+// ═══════════════════════════════════════════════════════════════
+// 🌐 مراقبة حالة الاتصال بالإنترنت
+// ═══════════════════════════════════════════════════════════════
+window.addEventListener('online', () => {
+  toast('✅ عاد الاتصال بالإنترنت');
+  const ind = document.getElementById('netIndicator');
+  if(ind) ind.style.display = 'none';
+});
+
+window.addEventListener('offline', () => {
+  toast('⚠️ انقطع الاتصال بالإنترنت!', true);
+  let ind = document.getElementById('netIndicator');
+  if(!ind) {
+    ind = document.createElement('div');
+    ind.id = 'netIndicator';
+    ind.style.cssText = 'position:fixed;bottom:0;right:0;left:0;background:#ef4444;color:#fff;text-align:center;padding:8px;font-size:12px;z-index:9998;font-weight:700';
+    ind.textContent = '⚠️ لا يوجد اتصال بالإنترنت — قد لا يتم حفظ البيانات';
+    document.body.appendChild(ind);
+  }
+  ind.style.display = 'block';
+});
+// ═══════════════════════════════════════════════════════════════
+// 🧮 الحاسبة السريرية (Clinical Calculator)
+// ═══════════════════════════════════════════════════════════════
+window.calcClinicalDoses = function() {
+  const weight = parseFloat(document.getElementById('calcWeight').value);
+  const hasKidneyIssue = document.getElementById('calcKidney').value === 'yes';
+  const resEl = document.getElementById('calcResults');
+  
+  if(!weight || weight <= 0) {
+    resEl.innerHTML = '<span style="color:var(--muted)">أدخل وزن المريض للحساب...</span>';
+    return;
+  }
+  
+  // 1. الجرعة القصوى من المخدر (Lidocaine 2% بدون أدرينالين)
+  // القاعدة: 4.4 mg/kg للبالغين، و 7 mg/kg مع الأدرينالين (بحد أقصى 300mg)
+  const maxLidocainePlain = weight * 4.4;
+  const maxLidocaineEpi = Math.min(weight * 7, 300);
+  
+  // 2. كمية المحلول (Cartridge 1.8ml يحتوي على 36mg)
+  const cartridgesPlain = Math.floor(maxLidocainePlain / 36);
+  const cartridgesEpi = Math.floor(maxLidocaineEpi / 36);
+  
+  // 3. مؤشر كتلة الجسم (BMI)
+  const height = prompt('لحساب BMI، أدخل طول المريض (سم):', '170');
+  let bmiText = '';
+  if(height && parseFloat(height) > 0) {
+    const hM = parseFloat(height) / 100;
+    const bmi = weight / (hM * hM);
+    let bmiCat = 'وزن طبيعي ✅';
+    if(bmi < 18.5) bmiCat = 'نحافة ⚠️';
+    if(bmi >= 25 && bmi < 30) bmiCat = 'زيادة وزن ⚠️';
+    if(bmi >= 30) bmiCat = 'سمنة مفرطة ❌';
+    bmiText = `<b>BMI:</b> ${bmi.toFixed(1)} (${bmiCat})<br>`;
+  }
+  
+  let warning = '';
+  if(hasKidneyIssue) warning = '<br><span style="color:var(--err)">⚠️ قصور كلوي: تقليل الجرعة بنسبة 50%</span>';
+
+  resEl.innerHTML = `
+    ${bmiText}
+    <b>الجرعة القصوى من Lidocaine (بدون أدرينالين):</b> ${maxLidocainePlain.toFixed(1)} mg<br>
+    <b>عدد الكاربيولات (1.8ml):</b> ${cartridgesPlain} كاربيول<br>
+    <b>الجرعة القصوى مع الأدرينالين:</b> ${maxLidocaineEpi.toFixed(1)} mg (${cartridgesEpi} كاربيول)<br>
+    ${warning}
+  `;
+};
+// ═══════════════════════════════════════════════════════════════
+// 💊 الوصفة الطبية الإلكترونية
+// ═══════════════════════════════════════════════════════════════
+function addRxRow() {
+  const container = document.getElementById('rxMedsContainer');
+  const row = document.createElement('div');
+  row.className = 'rx-med-row';
+  row.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:5px;margin-bottom:8px';
+  row.innerHTML = `
+    <input type="text" placeholder="اسم الدواء" class="rx-name" style="padding:8px;border-radius:6px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+    <input type="text" placeholder="الجرعة" class="rx-dose" style="padding:8px;border-radius:6px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+    <input type="text" placeholder="التكرار" class="rx-freq" style="padding:8px;border-radius:6px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+    <input type="text" placeholder="المدة" class="rx-duration" style="padding:8px;border-radius:6px;border:1px solid var(--bd);background:var(--card2);color:var(--txt)">
+    <button class="btn-danger" onclick="this.parentElement.remove()" style="padding:8px;border-radius:6px">✕</button>
+  `;
+  container.appendChild(row);
+}
+
+function generatePrescription() {
+  const pid = document.getElementById('rxPatient').value;
+  if(!pid) return toast('⚠️ اختر المريض أولاً', true);
+  const p = patients.find(x => x.id === pid);
+  
+  const rows = document.querySelectorAll('.rx-med-row');
+  const meds = [];
+  rows.forEach(row => {
+    const name = row.querySelector('.rx-name').value.trim();
+    if(name) {
+      meds.push({
+        name,
+        dose: row.querySelector('.rx-dose').value.trim() || '—',
+        freq: row.querySelector('.rx-freq').value.trim() || '—',
+        duration: row.querySelector('.rx-duration').value.trim() || '—'
+      });
+    }
+  });
+  
+  if(!meds.length) return toast('⚠️ أضف دواء واحداً على الأقل', true);
+
+  const dateVal = document.getElementById('rxDate').value || new Date().toISOString().slice(0,10);
+  document.getElementById('rxPatientName').textContent = p.fullName;
+  document.getElementById('rxDateVal').textContent = dateVal;
+  document.getElementById('rxClinicName').textContent = CD.clinicName || 'عيادة الأسنان';
+  document.getElementById('rxDoctorName').textContent = CD.fullName;
+  document.getElementById('rxNotesDisplay').textContent = document.getElementById('rxNotes').value;
+
+  const tbody = document.getElementById('rxTableBody');
+  tbody.innerHTML = meds.map(m => `
+    <tr>
+      <td style="padding:8px;border:1px solid #ddd">${esc(m.name)}</td>
+      <td style="padding:8px;border:1px solid #ddd">${esc(m.dose)}</td>
+      <td style="padding:8px;border:1px solid #ddd">${esc(m.freq)}</td>
+      <td style="padding:8px;border:1px solid #ddd">${esc(m.duration)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('rxPaper').style.display = 'block';
+  toast('✅ تم توليد الوصفة');
+}
+
+function printPrescription() {
+  const rx = document.getElementById('rxPaper');
+  if(rx.style.display === 'none') return toast('⚠️ قم بتوليد الوصفة أولاً', true);
+  const w = window.open('', '', 'width=800,height=900');
+  w.document.write(`<html dir="rtl"><head><title>وصفة طبية</title></head><body onload="window.print()">${rx.outerHTML}</body></html>`);
+  w.document.close();
+}
+
+function sendRxWhatsApp() {
+  const pid = document.getElementById('rxPatient').value;
+  if(!pid) return toast('⚠️ اختر المريض أولاً', true);
+  const p = patients.find(x => x.id === pid);
+  if(!p || !p.phone) return toast('⚠️ لا يوجد رقم هاتف', true);
+
+  const meds = Array.from(document.querySelectorAll('.rx-med-row')).map(row => {
+    const name = row.querySelector('.rx-name').value.trim();
+    if(!name) return null;
+    return `💊 ${name} - ${row.querySelector('.rx-dose').value.trim()} - ${row.querySelector('.rx-freq').value.trim()} لمدة ${row.querySelector('.rx-duration').value.trim()}`;
+  }).filter(Boolean).join('\n');
+
+  const msg = `مرحباً ${p.fullName}،\n\nهذه وصفتك الطبية من عيادة الأسنان:\n\n${meds}\n\n📝 ملاحظات: ${document.getElementById('rxNotes').value || 'لا يوجد'}\n\nمع تمنياتنا لك بالشفاء العاجل 🦷\nد. ${CD.fullName}`;
+  
+  window.open(`https://wa.me/${p.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+}
 </script>
 </body>
 </html>
