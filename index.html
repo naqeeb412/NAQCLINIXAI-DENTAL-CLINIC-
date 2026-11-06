@@ -697,6 +697,14 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div class="desc">اسحب لتدوير السن — عجلة الماوس للتكبير</div>
       <div style="position:relative;background:radial-gradient(circle at 50% 50%, #0d1830 0%, #050810 100%);border-radius:16px;overflow:hidden;border:1px solid var(--bd)">
         <div id="threeContainer"></div>
+        <div style="margin-top:15px; background:rgba(197,160,89,.05); padding:15px; border-radius:12px; border:1px solid var(--bd);">
+  <h3 style="color:var(--gold); font-size:.95rem; margin-bottom:10px">🖼️ تحويل صورة 2D إلى 3D</h3>
+  <div class="f">
+    <label>ارفع صورة للسن (خلفية بيضاء يفضل)</label>
+    <input type="file" id="imageTo3dInput" accept="image/*" onchange="convert2DTo3D(event)" style="padding:8px; width:100%; border-radius:8px;">
+  </div>
+  <p style="font-size:12px; color:var(--muted); margin-top:8px;">سيتم بثق الصورة لإنشاء مجسم يمكنك تدويره وتصديره بصيغة STL.</p>
+</div>
         <div style="position:absolute;top:15px;left:15px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-save" style="padding:8px 14px;font-size:12px" onclick="setToothModel('molar')">🦷 ضرس</button>
           <button class="btn-outline" style="padding:8px 14px;font-size:12px;background:rgba(0,0,0,.5)" onclick="setToothModel('incisor')">🦷 قاطع</button>
@@ -2370,12 +2378,32 @@ var TOOTH_INFO = {
   'implant': {name:'زرعة',icon:'🔩',color:'#3b82f6',text:'#fff'},
   'missing': {name:'مفقودة',icon:'✕',color:'#4b5563',text:'#fff'}
 };
-function renderChartLegend(){ const el = document.getElementById('chartLegend'); if(!el) return; el.innerHTML = Object.entries(TOOTH_INFO).map(([k,v]) => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,.05);border-radius:6px"><span style="display:inline-block;width:14px;height:14px;background:${v.color};border-radius:4px;border:1px solid rgba(255,255,255,.2)"></span><span style="font-size:10px">${v.icon} ${v.name}</span></span>`).join(''); }
+function renderChartLegend(){ 
+  const el = document.getElementById('chartLegend'); 
+  if(!el) return; 
+  el.innerHTML = Object.entries(TOOTH_INFO).map(([k,v]) => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,.05);border-radius:6px"><span style="display:inline-block;width:14px;height:14px;background:${v.color};border-radius:4px;border:1px solid rgba(255,255,255,.2)"></span><span style="font-size:10px">${v.icon} ${v.name}</span></span>`).join(''); 
+}
+
 function renderChart(){
   const up = document.getElementById('upperArch'), lo = document.getElementById('lowerArch');
-  if(!up || !lo) return; up.innerHTML = ''; lo.innerHTML = '';
-  for(let i=0;i<16;i++){ const info = TOOTH_INFO[toothState[i] || '']; up.innerHTML += `<div class="tooth-box ${toothState[i]||''}" style="background:${info.color};color:${info.text}" onclick="cycleTooth(${i})"><span class="icon">${info.icon}</span><span class="num">${i+1}</span></div>`; }
-  for(let i=16;i<32;i++){ const info = TOOTH_INFO[toothState[i] || '']; lo.innerHTML += `<div class="tooth-box ${toothState[i]||''}" style="background:${info.color};color:${info.text}" onclick="cycleTooth(${i})"><span class="icon">${info.icon}</span><span class="num">${i+1}</span></div>`; }
+  if(!up || !lo) return; 
+  up.innerHTML = ''; lo.innerHTML = '';
+  
+  // ✅ الفك العلوي (قوس للأعلى)
+  for(let i=0;i<16;i++){ 
+    const info = TOOTH_INFO[toothState[i] || '']; 
+    // حساب الانحناء باستخدام دالة الجيب (Sine) لجعل السن يعلو في المنتصف
+    const offsetY = Math.sin((i / 15) * Math.PI) * 20; 
+    up.innerHTML += `<div class="tooth-box ${toothState[i]||''}" style="background:${info.color};color:${info.text}; transform: translateY(-${offsetY}px);" onclick="cycleTooth(${i})"><span class="icon">${info.icon}</span><span class="num">${i+1}</span></div>`; 
+  }
+  
+  // ✅ الفك السفلي (قوس للأسفل)
+  for(let i=16;i<32;i++){ 
+    const info = TOOTH_INFO[toothState[i] || '']; 
+    const offsetY = Math.sin(((i-16) / 15) * Math.PI) * 20; 
+    lo.innerHTML += `<div class="tooth-box ${toothState[i]||''}" style="background:${info.color};color:${info.text}; transform: translateY(${offsetY}px);" onclick="cycleTooth(${i})"><span class="icon">${info.icon}</span><span class="num">${i+1}</span></div>`; 
+  }
+  
   renderChartLegend();
 }
 var TOOTH_NAMES = {
@@ -7426,6 +7454,57 @@ function sendRxWhatsApp() {
   const msg = `مرحباً ${p.fullName}،\n\nهذه وصفتك الطبية من عيادة الأسنان:\n\n${meds}\n\n📝 ملاحظات: ${document.getElementById('rxNotes').value || 'لا يوجد'}\n\nمع تمنياتنا لك بالشفاء العاجل 🦷\nد. ${CD.fullName}`;
   
   window.open(`https://wa.me/${p.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+// ═══════════════════════════════════════════════════════════════
+// 🖼️ تحويل صورة 2D إلى 3D (Extrude)
+// ═══════════════════════════════════════════════════════════════
+function convert2DTo3D(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // 1. إزالة المجسم القديم
+      if (threeToothGroup) threeScene.remove(threeToothGroup);
+      threeToothGroup = new THREE.Group();
+      
+      // 2. إنشاء نسيج (Texture) من الصورة
+      const texture = new THREE.TextureLoader().load(e.target.result);
+      
+      // 3. حساب أبعاد الصورة
+      const aspect = img.width / img.height;
+      const height = 3; // ارتفاع ثابت
+      const width = height * aspect;
+      
+      // 4. إنشاء مجسم مسطح (Plane)
+      const geometry = new THREE.PlaneGeometry(width, height);
+      const material = new THREE.MeshStandardMaterial({ 
+        map: texture, 
+        transparent: true,
+        side: THREE.DoubleSide 
+      });
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      
+      // 5. إعطاء عمق بسيط (Extrude) باستخدام مجموعة من الطبقات
+      const depthLayers = 5;
+      for (let i = 0; i < depthLayers; i++) {
+        const layerMat = material.clone();
+        layerMat.opacity = 1;
+        const layer = new THREE.Mesh(geometry, layerMat);
+        layer.position.z = -i * 0.05;
+        threeToothGroup.add(layer);
+      }
+      
+      threeToothGroup.add(mesh);
+      threeScene.add(threeToothGroup);
+      toast('✅ تم تحويل الصورة إلى مجسم 3D');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 </script>
 </body>
