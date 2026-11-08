@@ -2239,21 +2239,54 @@ async function generateTreatmentPlan(){
   }catch(e){ out.textContent = '❌ ' + e.message; }
 }
 
-async function generateAlternativePlan(){
-  const txt = document.getElementById('tpDiagnosis')?.value?.trim();
-  if(!txt) return toast('⚠️ أدخل التشخيص أولاً', true);
-  const budget   = document.getElementById('tpBudget')?.value   || 'any';
-  const priority = document.getElementById('tpPriority')?.value || 'balanced';
-  const out = document.getElementById('tpAltResult');
-  out.textContent = '⏳ جاري توليد الخطة البديلة...';
-  try{
-    const res = await callGemini(`أنت طبيب أسنان خبير. اقترح خطة علاج بديلة (نهج مختلف تماماً عن الخيار التقليدي) للحالة التالية:\n\n${txt}\n\nالميزانية: ${budget}\nالأولوية: ${priority}\n\nقدم الخطة البديلة بالشكل:\n1) الفكرة المختلفة عن الحل التقليدي\n2) المراحل\n3) المواد\n4) المدة\n5) التكلفة التقديرية\n6) متى يُنصح بها\nبالعربية.`);
-    lastTreatmentAlt = res;
-    out.textContent = res;
-    toast('✅ تم توليد الخطة البديلة');
-  }catch(e){ out.textContent = '❌ ' + e.message; }
-}
+// ---------------------------------------------------------
+// دالة توليد الخطة البديلة
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// دالة توليد الخطة البديلة (مصححة ومربوطة بالذكاء الاصطناعي)
+// ---------------------------------------------------------
+async function generateAlternativePlan() {
+    // 1. جلب العناصر
+    const patientSelect = document.getElementById('tpPatient');
+    const diagnosisInput = document.getElementById('tpDiagnosis');
+    const budgetSelect = document.getElementById('tpBudget');
+    const prioritySelect = document.getElementById('tpPriority');
+    const altResultBox = document.getElementById('tpAltResult');
 
+    // 2. التحقق من المدخلات
+    const patientId = patientSelect?.value;
+    const diagnosis = diagnosisInput?.value?.trim();
+    const budget = budgetSelect?.value || 'any';
+    const priority = prioritySelect?.value || 'balanced';
+
+    if (!patientId) return toast('⚠️ اختر المريض أولاً', true);
+    if (!diagnosis) return toast('⚠️ أدخل التشخيص أولاً', true);
+
+    // إظهار حالة التحميل
+    altResultBox.innerText = '⏳ جاري توليد الخطة البديلة بالذكاء الاصطناعي...';
+    altResultBox.style.color = '#fbbf24'; // لون أصفر
+
+    try {
+        // 3. استدعاء Gemini AI (نفس الطريقة المستخدمة في الخطة الرئيسية)
+        const prompt = `أنت طبيب أسنان خبير. المريض لديه التشخيص التالي:\n\n${diagnosis}\n\nالميزانية: ${budget}\nالأولوية: ${priority}\n\nاقترح **خطة علاج بديلة** (مختلفة عن الخطة التقليدية) تراعي تقليل التكلفة أو سرعة الإنجاز أو استخدام مواد بديلة. قدم الخطة بالشكل التالي:\n1) المراحل بالترتيب\n2) المواد البديلة المقترحة\n3) المدة الزمنية\n4) التكلفة التقديرية (الأقل)\n5) النتائج المتوقعة\nبالعربية وبتنسيق واضح.`;
+
+        const res = await callGemini(prompt);
+
+        // 4. حفظ النتيجة في المتغير العام (لكي تعمل دالة الحفظ والمقارنة)
+        lastTreatmentAlt = res;
+
+        // 5. عرض النتيجة في الواجهة
+        altResultBox.innerText = res;
+        altResultBox.style.color = '#22d3ee'; // لون أزرق للنجاح
+        toast('✅ تم توليد الخطة البديلة بنجاح');
+
+    } catch (error) {
+        console.error("خطأ في توليد الخطة البديلة:", error);
+        altResultBox.innerText = '❌ حدث خطأ: ' + error.message;
+        altResultBox.style.color = '#ef4444'; // لون أحمر
+        toast('❌ فشل توليد الخطة البديلة', true);
+    }
+}
 async function compareTreatmentPlans(){
   if(!lastTreatmentMain || !lastTreatmentAlt){
     return toast('⚠️ ولّد الخطتين أولاً قبل المقارنة', true);
