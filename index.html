@@ -33,6 +33,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+
 <style>
 :root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
@@ -1375,8 +1376,25 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
         </div>
       </div>
       <button class="btn-save" style="margin-top:15px" onclick="savePrivacy()">💾 حفظ الخصوصية</button>
+
+      <!-- 👇 أزرار Google Drive (في مكانها الصحيح) 👇 -->
+      <div style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed var(--bd);">
+        <h3 style="color:var(--gold);font-size:1rem;margin-bottom:12px">☁️ النسخ الاحتياطي السحابي (Google Drive)</h3>
+        <p id="gdriveStatus" style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">غير متصل بجوجل</p>
+        
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-outline" onclick="connectGoogleDrive()" style="flex:1;min-width:140px;padding:10px;">
+                🔑 الاتصال بجوجل
+            </button>
+            <button class="btn-save" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;padding:10px;">
+                ☁️ رفع النسخة الاحتياطية
+            </button>
+        </div>
+      </div>
+      <!-- 👆 نهاية أزرار Google Drive 👆 -->
+
     </div>
-  </div>
+</div>
 
 </main>
 </div>
@@ -6562,6 +6580,184 @@ function fallbackCopy(text) {
     toast('❌ فشل النسخ', true);
   }
   document.body.removeChild(textarea);
+}
+// ==========================================
+// إعدادات Google Drive
+// ==========================================
+const GDRIVE_CLIENT_ID = '796796158387-qce717n2e21kv4jpkg88acppcpa3d53n.apps.googleusercontent.com'; 
+const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+let tokenClient;
+let gapiInited = false;
+
+function gapiLoaded() { gapi.load('client', initializeGapiClient); }
+
+async function initializeGapiClient() {
+    await gapi.client.init({
+        discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+    });
+    gapiInited = true;
+    console.log("Google API Ready");
+}
+
+window.addEventListener('load', () => {
+    gapiLoaded();
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GDRIVE_CLIENT_ID,
+        scope: GDRIVE_SCOPES,
+        callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+                // هنا نستخدم toast إذا كانت موجودة في نظامك، أو alert إذا لم تكن
+                if(typeof toast === 'function') {
+                    toast('✅ تم الاتصال بجوجل درايف');
+                } else {
+                    alert('✅ تم الاتصال بجوجل درايف');
+                }
+                
+                const statusEl = document.getElementById('gdriveStatus');
+                if(statusEl) {
+                    statusEl.innerText = "✅ متصل بجوجل";
+                    statusEl.style.color = "green";
+                }
+            }
+        },
+    });
+});
+
+// دالة الاتصال (ترتبط بزر)
+function connectGoogleDrive() {
+    if (!gapiInited) {
+        if(typeof toast === 'function') toast('⚠️ انتظر تحميل مكتبة جوجل', true);
+        else alert('⚠️ انتظر تحميل مكتبة جوجل');
+        return;
+    }
+    tokenClient.requestAccessToken({prompt: 'consent'});
+}
+
+// دالة رفع النسخة الاحتياطية (ترتبط بزر)
+async function backupToGoogleDrive() {
+    if (!gapi.client.getToken()) {
+        if(typeof toast === 'function') toast('⚠️ اتصل بجوجل أولاً', true);
+        else alert('⚠️ اتصل بجوجل أولاً');
+        return;
+    }
+    
+    const statusEl = document.getElementById('gdriveStatus');
+    if(statusEl) statusEl.innerText = "⏳ جاري الرفع...";
+
+    // جلب البيانات من localStorage (للتجربة الأولية)
+    const backupData = JSON.stringify(localStorage); 
+    const fileName = `HarmonizeAI_Backup_${new Date().toISOString().slice(0,10)}.json`;
+    const file = new Blob([backupData], {type: 'application/json'});
+    const metadata = { 'name': fileName, 'mimeType': 'application/json' };
+
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+    form.append('file', file);
+
+    try {
+        const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: new Headers({'Authorization': 'Bearer ' + gapi.client.getToken().access_token}),
+            body: form
+        });
+        await response.json();
+        if(typeof toast === 'function') toast('✅ تم حفظ النسخة الاحتياطية على جوجل درايف');
+        else alert('✅ تم الرفع بنجاح');
+        
+        if(statusEl) statusEl.innerText = "✅ تم الرفع بنجاح";
+    } catch (error) {
+        if(typeof toast === 'function') toast('❌ فشل الرفع: ' + error.message, true);
+        else alert('❌ فشل الرفع: ' + error.message);
+        if(statusEl) statusEl.innerText = "❌ فشل الرفع";
+    }
+}
+// ==========================================
+// إعدادات Google Drive (النسخ الاحتياطي)
+// ==========================================
+const GDRIVE_CLIENT_ID = '796796158387-qce717n2e21kv4jpkg88acppcpa3d53n.apps.googleusercontent.com'; 
+const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+let tokenClient;
+let gapiInited = false;
+
+// 1. تهيئة جوجل
+function gapiLoaded() { gapi.load('client', initializeGapiClient); }
+
+async function initializeGapiClient() {
+    await gapi.client.init({
+        discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+    });
+    gapiInited = true;
+    console.log("Google API Ready");
+}
+
+// 2. تشغيل التهيئة عند تحميل الصفحة
+window.addEventListener('load', () => {
+    gapiLoaded();
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GDRIVE_CLIENT_ID,
+        scope: GDRIVE_SCOPES,
+        callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+                if(typeof toast === 'function') toast('✅ تم الاتصال بجوجل درايف');
+                else alert('✅ تم الاتصال بجوجل درايف');
+                
+                const statusEl = document.getElementById('gdriveStatus');
+                if(statusEl) {
+                    statusEl.innerText = "✅ متصل بجوجل";
+                    statusEl.style.color = "green";
+                }
+            }
+        },
+    });
+});
+
+// 3. دالة الاتصال (عند الضغط على زر الاتصال)
+function connectGoogleDrive() {
+    if (!gapiInited) {
+        if(typeof toast === 'function') toast('⚠️ انتظر تحميل مكتبة جوجل', true);
+        else alert('⚠️ انتظر تحميل مكتبة جوجل');
+        return;
+    }
+    tokenClient.requestAccessToken({prompt: 'consent'});
+}
+
+// 4. دالة رفع النسخة الاحتياطية
+async function backupToGoogleDrive() {
+    if (!gapi.client.getToken()) {
+        if(typeof toast === 'function') toast('⚠️ اتصل بجوجل أولاً', true);
+        else alert('⚠️ اتصل بجوجل أولاً');
+        return;
+    }
+    
+    const statusEl = document.getElementById('gdriveStatus');
+    if(statusEl) statusEl.innerText = "⏳ جاري الرفع...";
+
+    const backupData = JSON.stringify(localStorage); 
+    const fileName = `HarmonizeAI_Backup_${new Date().toISOString().slice(0,10)}.json`;
+    const file = new Blob([backupData], {type: 'application/json'});
+    const metadata = { 'name': fileName, 'mimeType': 'application/json' };
+
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+    form.append('file', file);
+
+    try {
+        const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: new Headers({'Authorization': 'Bearer ' + gapi.client.getToken().access_token}),
+            body: form
+        });
+        await response.json();
+        
+        if(typeof toast === 'function') toast('✅ تم حفظ النسخة الاحتياطية على جوجل درايف');
+        else alert('✅ تم الرفع بنجاح');
+        
+        if(statusEl) statusEl.innerText = "✅ تم الرفع بنجاح";
+    } catch (error) {
+        if(typeof toast === 'function') toast('❌ فشل الرفع: ' + error.message, true);
+        else alert('❌ فشل الرفع: ' + error.message);
+        if(statusEl) statusEl.innerText = "❌ فشل الرفع";
+    }
 }
 </script>
 </body>
