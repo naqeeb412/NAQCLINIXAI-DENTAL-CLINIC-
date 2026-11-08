@@ -33,6 +33,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script> 
 
 <style>
 :root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
@@ -6711,27 +6713,31 @@ window.addEventListener('load', () => {
     });
 });
 
-// 3. دالة الاتصال (عند الضغط على زر الاتصال)
 function connectGoogleDrive() {
-    // 1. اختبار هل الزر يعمل؟
-    alert("1. تم الضغط على الزر بنجاح");
+    alert("1. الزر يعمل! جاري الفحص...");
     
-    // 2. اختبار هل مكتبة جوجل تم تحميلها؟
-    if (!gapiInited) {
-        alert("2. المشكلة: مكتبة جوجل لم يتم تحميلها بعد! (gapiInited = false)");
+    // فحص هل مكتبة gapi محملة؟
+    if (typeof gapi === 'undefined') {
+        alert("2. خطأ: مكتبة gapi غير محملة! تأكد من وجود سكربت google api.js");
         return;
     }
     
-    // 3. اختبار هل تم تهيئة العميل؟
-    if (!tokenClient) {
-        alert("3. المشكلة: العميل (tokenClient) غير معرف!");
+    // فحص هل مكتبة google محملة؟
+    if (typeof google === 'undefined') {
+        alert("3. خطأ: مكتبة google client غير محملة! تأكد من وجود سكربت gsi/client");
         return;
     }
 
-    // 4. إذا وصلنا هنا، كل شيء سليم وسيفتح جوجل
-    alert("4. كل شيء يعمل، جاري فتح نافذة جوجل الآن...");
+    // فحص هل تم تهيئة العميل؟
+    if (!tokenClient) {
+        alert("4. خطأ: العميل (tokenClient) لم يتم تهيئته بعد. (gapiInited=" + gapiInited + ")");
+        return;
+    }
+
+    alert("5. كل شيء سليم! سيتم فتح نافذة جوجل الآن.");
     tokenClient.requestAccessToken({prompt: 'consent'});
 }
+
 // 4. دالة رفع النسخة الاحتياطية
 async function backupToGoogleDrive() {
     if (!gapi.client.getToken()) {
