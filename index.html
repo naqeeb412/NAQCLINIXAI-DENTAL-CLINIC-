@@ -6713,14 +6713,25 @@ window.addEventListener('load', () => {
 
 // 3. دالة الاتصال (عند الضغط على زر الاتصال)
 function connectGoogleDrive() {
+    // 1. اختبار هل الزر يعمل؟
+    alert("1. تم الضغط على الزر بنجاح");
+    
+    // 2. اختبار هل مكتبة جوجل تم تحميلها؟
     if (!gapiInited) {
-        if(typeof toast === 'function') toast('⚠️ انتظر تحميل مكتبة جوجل', true);
-        else alert('⚠️ انتظر تحميل مكتبة جوجل');
+        alert("2. المشكلة: مكتبة جوجل لم يتم تحميلها بعد! (gapiInited = false)");
         return;
     }
+    
+    // 3. اختبار هل تم تهيئة العميل؟
+    if (!tokenClient) {
+        alert("3. المشكلة: العميل (tokenClient) غير معرف!");
+        return;
+    }
+
+    // 4. إذا وصلنا هنا، كل شيء سليم وسيفتح جوجل
+    alert("4. كل شيء يعمل، جاري فتح نافذة جوجل الآن...");
     tokenClient.requestAccessToken({prompt: 'consent'});
 }
-
 // 4. دالة رفع النسخة الاحتياطية
 async function backupToGoogleDrive() {
     if (!gapi.client.getToken()) {
