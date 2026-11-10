@@ -154,7 +154,26 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div class="f"><label>📞 هاتف</label><input type="tel" id="regPhone"></div>
       <button class="btn-gold" onclick="doRegister()" id="btnReg">✨ إنشاء (بانتظار الموافقة)</button>
     </div>
-    <div class="social" style="margin-top:16px"><button class="bsoc guest" onclick="doGuestLogin()">👤 دخول كضيف</button></div>
+<div class="social" style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
+  <button class="bsoc" onclick="doGoogleLogin()" style="background:#fff; color:#333; border:none; display:flex; align-items:center; justify-content:center; gap:8px;">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> الدخول بـ Google
+  </button>
+  <button class="bsoc" onclick="showPhoneLogin()" style="background:var(--card2); color:var(--gold); border:1px solid var(--gold);">📱 الدخول برقم الهاتف</button>
+  <button class="bsoc guest" onclick="doGuestLogin()">👤 دخول كضيف</button>
+</div>
+
+<!-- نافذة إدخال رقم الهاتف -->
+<div id="phoneLoginSection" style="display:none; margin-top:15px; border-top:1px solid var(--bd); padding-top:15px;">
+  <div id="recaptcha-container"></div>
+  <div id="phoneInputGroup">
+    <div class="f"><label>📞 رقم الهاتف (مع رمز الدولة مثل +967)</label><input type="tel" id="phoneNumber" placeholder="+967777700412"></div>
+    <button class="btn-gold" onclick="sendOTP()" id="btnSendOTP">إرسال رمز التحقق</button>
+  </div>
+  <div id="otpInputGroup" style="display:none;">
+    <div class="f"><label>🔢 رمز التحقق (SMS)</label><input type="text" id="otpCode" placeholder="123456"></div>
+    <button class="btn-gold" onclick="verifyOTP()" id="btnVerifyOTP">تأكيد الدخول</button>
+  </div>
+</div>
   </div>
 </div>
 
@@ -1505,11 +1524,11 @@ async function doRegister(){
       clinicId:'CLN-'+Date.now().toString(36).toUpperCase(),
       clinicName:document.getElementById('regClinic').value.trim()||name,
       phone:document.getElementById('regPhone').value.trim(),
-      active: email===OWNER_EMAIL, status: email===OWNER_EMAIL?'approved':'pending',
+active: true, status: 'approved',
       privacy:{showEmail:false,showPhone:false,allowFriends:true},
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    if(email!==OWNER_EMAIL){ await auth.signOut(); showAlert('✅ تم التسجيل — بانتظار موافقة الإدارة','success'); }
+showAlert('✅ تم إنشاء الحساب بنجاح!', 'success');
   }catch(e){ showAlert('❌ '+e.message,'error'); }
   btn.disabled=false; btn.textContent='✨ إنشاء';
 }
@@ -6562,6 +6581,101 @@ function fallbackCopy(text) {
     toast('❌ فشل النسخ', true);
   }
   document.body.removeChild(textarea);
+}
+// ═══════════════════════════════════════════════════════════════
+// 📱 تسجيل الدخول عبر Google والهاتف (آمن 100%)
+// ═══════════════════════════════════════════════════════════════
+
+// 1. الدخول بجوجل
+async function doGoogleLogin() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (!doc.exists) {
+      await db.collection('users').doc(user.uid).set({
+        email: user.email,
+        fullName: user.displayName || 'مستخدم جوجل',
+        role: 'guest',
+        clinicId: 'CLN-' + Date.now().toString(36).toUpperCase(),
+        clinicName: 'عيادة جديدة',
+        phone: user.phoneNumber || '',
+        active: true,
+        status: 'approved',
+        privacy: { showEmail: false, showPhone: false, allowFriends: true },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch (e) {
+    if (e.code !== 'auth/popup-closed-by-user') {
+      showAlert('❌ ' + e.message, 'error');
+    }
+  }
+}
+
+// 2. إظهار قسم الهاتف
+function showPhoneLogin() {
+  const sec = document.getElementById('phoneLoginSection');
+  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+}
+
+// 3. إرسال رمز التحقق
+let confirmationResult = null;
+async function sendOTP() {
+  const phone = document.getElementById('phoneNumber').value.trim();
+  if (!phone) return showAlert('⚠️ أدخل رقم الهاتف', 'error');
+  
+  const btn = document.getElementById('btnSendOTP');
+  btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...';
+
+  try {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'invisible',
+        'callback': () => {}
+      });
+    }
+    confirmationResult = await auth.signInWithPhoneNumber(phone, window.recaptchaVerifier);
+    document.getElementById('phoneInputGroup').style.display = 'none';
+    document.getElementById('otpInputGroup').style.display = 'block';
+    showAlert('✅ تم إرسال الرمز، تحقق من رسائلك', 'success');
+  } catch (e) {
+    showAlert('❌ ' + e.message, 'error');
+    btn.disabled = false; btn.textContent = 'إرسال رمز التحقق';
+  }
+}
+
+// 4. التحقق من الرمز
+async function verifyOTP() {
+  const code = document.getElementById('otpCode').value.trim();
+  if (!code) return showAlert('⚠️ أدخل رمز التحقق', 'error');
+  
+  const btn = document.getElementById('btnVerifyOTP');
+  btn.disabled = true; btn.textContent = '⏳ جاري التحقق...';
+
+  try {
+    const result = await confirmationResult.confirm(code);
+    const user = result.user;
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (!doc.exists) {
+      await db.collection('users').doc(user.uid).set({
+        email: user.email || '',
+        fullName: 'مستخدم جديد',
+        role: 'guest',
+        clinicId: 'CLN-' + Date.now().toString(36).toUpperCase(),
+        clinicName: 'عيادة جديدة',
+        phone: user.phoneNumber,
+        active: true,
+        status: 'approved',
+        privacy: { showEmail: false, showPhone: false, allowFriends: true },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch (e) {
+    showAlert('❌ رمز خاطئ أو منتهي الصلاحية', 'error');
+    btn.disabled = false; btn.textContent = 'تأكيد الدخول';
+  }
 }
 </script>
 </body>
