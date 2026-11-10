@@ -33,9 +33,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-<script src="https://apis.google.com/js/api.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script> 
-
 <style>
 :root{--gold:#C5A059;--goldL:#d4b87a;--goldD:#a8893e;--goldDim:rgba(197,160,89,.12);--bg:#0A0A0A;--card:#111827;--card2:#1a2332;--bd:rgba(197,160,89,.22);--txt:#f1f1f1;--muted:#94a3b8;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
@@ -131,51 +128,6 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
 </head>
 <body>
 
-<!-- 🚨 DEBUG OVERLAY -->
-<div id="debugOverlay" style="position:fixed;top:0;left:0;right:0;background:#000;color:#0f0;padding:10px;font-family:monospace;font-size:12px;z-index:99999;max-height:80vh;overflow-y:auto;direction:ltr;text-align:left;display:none">
-  <b style="color:#ff0">🔍 DEBUG MODE</b>
-  <div id="debugLog"></div>
-</div>
-<script>
-  window.__debugLog = function(msg, color = '#0f0') {
-    const el = document.getElementById('debugOverlay');
-    const log = document.getElementById('debugLog');
-    if (!el || !log) return;
-    el.style.display = 'block';
-    log.innerHTML += `<div style="color:${color};border-bottom:1px solid #333;padding:3px 0">${msg}</div>`;
-  };
-
-  // التقاط أي خطأ JavaScript
-  window.addEventListener('error', (e) => {
-    window.__debugLog('❌ JS ERROR: ' + (e.message || 'unknown'), '#f00');
-    window.__debugLog('📍 File: ' + (e.filename || '?').split('/').pop() + ':' + e.lineno, '#f80');
-  });
-
-  window.addEventListener('unhandledrejection', (e) => {
-    window.__debugLog('❌ PROMISE REJECTION: ' + (e.reason?.message || e.reason || 'unknown'), '#f00');
-  });
-
-  // التقاط أخطاء Firebase
-  setTimeout(() => {
-    if (typeof firebase === 'undefined') {
-      window.__debugLog('❌ Firebase SDK لم يتم تحميله!', '#f00');
-    } else {
-      window.__debugLog('✅ Firebase SDK loaded', '#0f0');
-      if (!firebase.apps || !firebase.apps.length) {
-        window.__debugLog('❌ Firebase لم يتم تهيئته بعد', '#f00');
-      } else {
-        window.__debugLog('✅ Firebase initialized', '#0f0');
-        window.__debugLog('📦 Project: ' + (firebase.app().options?.projectId || 'unknown'), '#0ff');
-      }
-    }
-    if (typeof auth === 'undefined') {
-      window.__debugLog('❌ auth variable not defined', '#f00');
-    } else {
-      window.__debugLog('✅ auth variable exists', '#0f0');
-    }
-  }, 2000);
-</script>
-
 <div id="loginScreen">
   <div class="login-card">
     <div class="ll"><div class="ic">🦷</div><h1>NAQCLINIXAI</h1><div class="sub">DENTAL CLINIC PRO</div></div>
@@ -202,24 +154,7 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
       <div class="f"><label>📞 هاتف</label><input type="tel" id="regPhone"></div>
       <button class="btn-gold" onclick="doRegister()" id="btnReg">✨ إنشاء (بانتظار الموافقة)</button>
     </div>
-    <div class="social" style="margin-top:16px; display: flex; flex-direction: column; gap: 8px;">
-  <button class="bsoc" onclick="doGoogleLogin()" style="background:#fff; color:#333; border:none; display:flex; align-items:center; justify-content:center; gap:8px;">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> الدخول بـ Google
-  </button>
-  <button class="bsoc" onclick="showPhoneLogin()" style="background:var(--card2); color:var(--gold); border:1px solid var(--gold);">📱 الدخول برقم الهاتف</button>
-  <button class="bsoc guest" onclick="doGuestLogin()">👤 دخول كضيف</button>
-</div>
-
-<!-- نافذة إدخال رقم الهاتف ورمز التحقق -->
-<div id="phoneLoginSection" style="display:none; margin-top:15px; border-top:1px solid var(--bd); padding-top:15px;">
-  <div id="recaptcha-container"></div>
-  <div id="phoneInputGroup">
-    <div class="f"><label>📞 رقم الهاتف (مع رمز الدولة مثل +967)</label><input type="tel" id="phoneNumber" placeholder="+967777700412"></div>
-    <button class="btn-gold" onclick="sendOTP()" id="btnSendOTP">إرسال رمز التحقق</button>
-  </div>
-  <div id="otpInputGroup" style="display:none;">
-    <div class="f"><label>🔢 رمز التحقق (SMS)</label><input type="text" id="otpCode" placeholder="123456"></div>
-    <button class="btn-gold" onclick="verifyOTP()" id="btnVerifyOTP">تأكيد الدخول</button>
+    <div class="social" style="margin-top:16px"><button class="bsoc guest" onclick="doGuestLogin()">👤 دخول كضيف</button></div>
   </div>
 </div>
 
@@ -1440,25 +1375,8 @@ canvas{max-width:100%;border-radius:12px;background:#000;display:block;margin:0 
         </div>
       </div>
       <button class="btn-save" style="margin-top:15px" onclick="savePrivacy()">💾 حفظ الخصوصية</button>
-
-      <!-- 👇 أزرار Google Drive (في مكانها الصحيح) 👇 -->
-      <div style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed var(--bd);">
-        <h3 style="color:var(--gold);font-size:1rem;margin-bottom:12px">☁️ النسخ الاحتياطي السحابي (Google Drive)</h3>
-        <p id="gdriveStatus" style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">غير متصل بجوجل</p>
-        
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn-outline" onclick="connectGoogleDrive()" style="flex:1;min-width:140px;padding:10px;">
-                🔑 الاتصال بجوجل
-            </button>
-            <button class="btn-save" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;padding:10px;">
-                ☁️ رفع النسخة الاحتياطية
-            </button>
-        </div>
-      </div>
-      <!-- 👆 نهاية أزرار Google Drive 👆 -->
-
     </div>
-</div>
+  </div>
 
 </main>
 </div>
@@ -1608,116 +1526,6 @@ async function doGuestLogin(){
   }catch(e){ showAlert('❌ '+e.message,'error'); }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// 📱 تسجيل الدخول عبر الهاتف و Google
-// ═══════════════════════════════════════════════════════════════
-
-// 1. تسجيل الدخول بجوجل
-async function doGoogleLogin() {
-  try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    const result = await auth.signInWithPopup(provider);
-    const user = result.user;
-    
-    // التحقق مما إذا كان المستخدم موجوداً في قاعدة البيانات
-    const doc = await db.collection('users').doc(user.uid).get();
-    if (!doc.exists) {
-      // إذا كان مستخدماً جديداً، قم بإنشائه تلقائياً (موافقة تلقائية)
-      await db.collection('users').doc(user.uid).set({
-        email: user.email,
-        fullName: user.displayName || 'مستخدم جوجل',
-        role: 'guest',
-        clinicId: 'CLN-' + Date.now().toString(36).toUpperCase(),
-        clinicName: 'عيادة جديدة',
-        phone: user.phoneNumber || '',
-        active: true, // ✅ مفعل تلقائياً
-        status: 'approved', // ✅ موافقة تلقائية
-        privacy: { showEmail: false, showPhone: false, allowFriends: true },
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-  } catch (e) {
-    console.error(e);
-    if (e.code !== 'auth/popup-closed-by-user') {
-      showAlert('❌ ' + e.message, 'error');
-    }
-  }
-}
-
-// 2. إظهار قسم الهاتف
-function showPhoneLogin() {
-  const sec = document.getElementById('phoneLoginSection');
-  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
-}
-
-// 3. إرسال رمز التحقق (SMS)
-let confirmationResult = null;
-async function sendOTP() {
-  const phone = document.getElementById('phoneNumber').value.trim();
-  if (!phone) return showAlert('⚠️ أدخل رقم الهاتف', 'error');
-  
-  const btn = document.getElementById('btnSendOTP');
-  btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...';
-
-  try {
-    // إعداد reCAPTCHA (مخفي)
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response) => { /* تم التحقق */ }
-      });
-    }
-    
-    confirmationResult = await auth.signInWithPhoneNumber(phone, window.recaptchaVerifier);
-    
-    // إظهار حقل إدخال الرمز
-    document.getElementById('phoneInputGroup').style.display = 'none';
-    document.getElementById('otpInputGroup').style.display = 'block';
-    showAlert('✅ تم إرسال الرمز، تحقق من رسائلك', 'success');
-    
-  } catch (e) {
-    console.error(e);
-    showAlert('❌ ' + e.message, 'error');
-    btn.disabled = false; btn.textContent = 'إرسال رمز التحقق';
-  }
-}
-
-// 4. التحقق من الرمز وإكمال الدخول
-async function verifyOTP() {
-  const code = document.getElementById('otpCode').value.trim();
-  if (!code) return showAlert('⚠️ أدخل رمز التحقق', 'error');
-  
-  const btn = document.getElementById('btnVerifyOTP');
-  btn.disabled = true; btn.textContent = '⏳ جاري التحقق...';
-
-  try {
-    const result = await confirmationResult.confirm(code);
-    const user = result.user;
-    
-    // التحقق من وجود المستخدم في Firestore
-    const doc = await db.collection('users').doc(user.uid).get();
-    if (!doc.exists) {
-      // إنشاء حساب جديد تلقائياً (موافقة تلقائية)
-      await db.collection('users').doc(user.uid).set({
-        email: user.email || '',
-        fullName: 'مستخدم جديد',
-        role: 'guest',
-        clinicId: 'CLN-' + Date.now().toString(36).toUpperCase(),
-        clinicName: 'عيادة جديدة',
-        phone: user.phoneNumber, // رقم الهاتف من Firebase
-        active: true, // ✅ مفعل تلقائياً
-        status: 'approved', // ✅ موافقة تلقائية
-        privacy: { showEmail: false, showPhone: false, allowFriends: true },
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-  } catch (e) {
-    console.error(e);
-    showAlert('❌ رمز خاطئ أو منتهي الصلاحية', 'error');
-    btn.disabled = false; btn.textContent = 'تأكيد الدخول';
-  }
-}
-
 function doForgotPassword(){
   const email=document.getElementById('loginEmail').value.trim();
   if(!email) return showAlert('⚠️ أدخل بريدك','error');
@@ -1756,18 +1564,7 @@ auth.onAuthStateChanged(async user=>{
         loadNotifications(), loadFriends(), loadAdvertisements(), loadLab()
       ]);
       updateDashboard();
-      setTimeout(() => {
-  const isMobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
-  if (!isMobile) {
-    try {
-      if (typeof initThree === 'function') initThree();
-    } catch(e) {
-      console.warn('CAD/CAM غير متاح:', e.message);
-    }
-  } else {
-    console.log('📱 تم تخطي CAD/CAM 3D على الهاتف لتجنب مشاكل WebGL');
-  }
-}, 500);
+      setTimeout(initThree, 500);
       toast('✅ مرحباً '+CD.fullName);
     }catch(e){ console.error(e); toast('❌ '+e.message,true); }
   }else{
@@ -6765,110 +6562,6 @@ function fallbackCopy(text) {
     toast('❌ فشل النسخ', true);
   }
   document.body.removeChild(textarea);
-}
-
-// ==========================================
-// إعدادات Google Drive (النسخ الاحتياطي)
-// ==========================================
-const GDRIVE_CLIENT_ID = '796796158387-qce717n2e21kv4jpkg88acppcpa3d53n.apps.googleusercontent.com'; 
-const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
-let tokenClient;
-let gapiInited = false;
-
-// 1. تهيئة جوجل
-function gapiLoaded() { gapi.load('client', initializeGapiClient); }
-
-async function initializeGapiClient() {
-    await gapi.client.init({
-        discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-    });
-    gapiInited = true;
-    console.log("Google API Ready");
-}
-
-// 2. تشغيل التهيئة عند تحميل الصفحة
-window.addEventListener('load', () => {
-    gapiLoaded();
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: GDRIVE_CLIENT_ID,
-        scope: GDRIVE_SCOPES,
-        callback: (tokenResponse) => {
-            if (tokenResponse && tokenResponse.access_token) {
-                if(typeof toast === 'function') toast('✅ تم الاتصال بجوجل درايف');
-                else alert('✅ تم الاتصال بجوجل درايف');
-                
-                const statusEl = document.getElementById('gdriveStatus');
-                if(statusEl) {
-                    statusEl.innerText = "✅ متصل بجوجل";
-                    statusEl.style.color = "green";
-                }
-            }
-        },
-    });
-});
-
-function connectGoogleDrive() {
-    alert("1. الزر يعمل! جاري الفحص...");
-    
-    // فحص هل مكتبة gapi محملة؟
-    if (typeof gapi === 'undefined') {
-        alert("2. خطأ: مكتبة gapi غير محملة! تأكد من وجود سكربت google api.js");
-        return;
-    }
-    
-    // فحص هل مكتبة google محملة؟
-    if (typeof google === 'undefined') {
-        alert("3. خطأ: مكتبة google client غير محملة! تأكد من وجود سكربت gsi/client");
-        return;
-    }
-
-    // فحص هل تم تهيئة العميل؟
-    if (!tokenClient) {
-        alert("4. خطأ: العميل (tokenClient) لم يتم تهيئته بعد. (gapiInited=" + gapiInited + ")");
-        return;
-    }
-
-    alert("5. كل شيء سليم! سيتم فتح نافذة جوجل الآن.");
-    tokenClient.requestAccessToken({prompt: 'consent'});
-}
-
-// 4. دالة رفع النسخة الاحتياطية
-async function backupToGoogleDrive() {
-    if (!gapi.client.getToken()) {
-        if(typeof toast === 'function') toast('⚠️ اتصل بجوجل أولاً', true);
-        else alert('⚠️ اتصل بجوجل أولاً');
-        return;
-    }
-    
-    const statusEl = document.getElementById('gdriveStatus');
-    if(statusEl) statusEl.innerText = "⏳ جاري الرفع...";
-
-    const backupData = JSON.stringify(localStorage); 
-    const fileName = `HarmonizeAI_Backup_${new Date().toISOString().slice(0,10)}.json`;
-    const file = new Blob([backupData], {type: 'application/json'});
-    const metadata = { 'name': fileName, 'mimeType': 'application/json' };
-
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-    form.append('file', file);
-
-    try {
-        const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-            method: 'POST',
-            headers: new Headers({'Authorization': 'Bearer ' + gapi.client.getToken().access_token}),
-            body: form
-        });
-        await response.json();
-        
-        if(typeof toast === 'function') toast('✅ تم حفظ النسخة الاحتياطية على جوجل درايف');
-        else alert('✅ تم الرفع بنجاح');
-        
-        if(statusEl) statusEl.innerText = "✅ تم الرفع بنجاح";
-    } catch (error) {
-        if(typeof toast === 'function') toast('❌ فشل الرفع: ' + error.message, true);
-        else alert('❌ فشل الرفع: ' + error.message);
-        if(statusEl) statusEl.innerText = "❌ فشل الرفع";
-    }
 }
 </script>
 </body>
